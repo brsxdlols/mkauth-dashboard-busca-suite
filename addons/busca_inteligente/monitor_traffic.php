@@ -2,6 +2,7 @@
 <?php
 // INCLUE FUNCOES DE ADDONS -----------------------------------------------------------------------
 require_once ('config.php');
+$embed_mode = isset($_GET['embed']) && $_GET['embed'] == '1';
 ?>
 <!DOCTYPE html>
 
@@ -15,6 +16,17 @@ require_once ('config.php');
     <script src="js/exporting.js"></script>
 
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: <?= $embed_mode ? '#f3f7fb' : '#ffffff'; ?>;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            padding: <?= $embed_mode ? '12px' : '0'; ?>;
+        }
+
         .highcharts-figure,
         .highcharts-data-table table {
             min-width: 320px;
@@ -23,11 +35,11 @@ require_once ('config.php');
         }
 
         #container {
-            height: 325px;
+            height: <?= $embed_mode ? '290px' : '325px'; ?>;
         }
 
         #container2 {
-            height: 215px;
+            height: <?= $embed_mode ? '190px' : '215px'; ?>;
         }
 
         .tit_monitor { text-align:center; font-size: 15px; margin:0;}
@@ -46,6 +58,54 @@ require_once ('config.php');
             text-align: center;
         }
 
+        .monitor-embed-shell {
+            background: #ffffff;
+            border: 1px solid #dbe5ef;
+            border-radius: 14px;
+            box-shadow: 0 12px 28px rgba(25, 52, 77, 0.08);
+            overflow: hidden;
+        }
+
+        .monitor-embed-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e8eef5;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .monitor-embed-title {
+            margin: 0;
+            color: #17324a;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .monitor-embed-subtitle {
+            margin: 4px 0 0;
+            color: #54708a;
+            font-size: 12px;
+        }
+
+        .monitor-embed-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #e8f6ed;
+            color: #167342;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .monitor-embed-body {
+            padding: 6px 12px 10px;
+        }
+
     </style>
 
     <?php
@@ -60,10 +120,23 @@ require_once ('config.php');
 
     <body>
 
-    <?php
-    echo "<p class='tit_monitor'><b>Cliente:</b> $cli_nome <b>[$_GET[login]]</b><br> <b>Plano:</b> $cli_plano - <b>Uptime: </b><span id='span_uptime'></span></p> ";
-    ?>
-    <div id="monitor_error"></div>
+    <?php if ($embed_mode) { ?>
+    <div class="monitor-embed-shell">
+        <div class="monitor-embed-head">
+            <div>
+                <p class="monitor-embed-title"><?= htmlspecialchars($cli_nome); ?></p>
+                <p class="monitor-embed-subtitle">PPPoE monitorado: <b><?= htmlspecialchars($_GET['login']); ?></b> | Plano: <b><?= htmlspecialchars($cli_plano); ?></b></p>
+            </div>
+            <div class="monitor-embed-pill">Uptime: <span id="span_uptime" style="margin-left: 6px;">--</span></div>
+        </div>
+        <div class="monitor-embed-body">
+            <div id="monitor_error"></div>
+    <?php } else { ?>
+        <?php
+        echo "<p class='tit_monitor'><b>Cliente:</b> $cli_nome <b>[$_GET[login]]</b><br> <b>Plano:</b> $cli_plano - <b>Uptime: </b><span id='span_uptime'></span></p> ";
+        ?>
+        <div id="monitor_error"></div>
+    <?php } ?>
     
     <script>
 
@@ -237,11 +310,13 @@ require_once ('config.php');
     <figure class="highcharts-figure">
         <div id="container"></div>
         <p class="highcharts-description">
-    
 
-        
     <figure class="highcharts-figure">
         <div id="container2"></div>
         <p class="highcharts-description">
+    <?php if ($embed_mode) { ?>
+        </div>
+    </div>
+    <?php } ?>
     </body>
 </html>

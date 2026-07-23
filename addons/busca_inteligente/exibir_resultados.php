@@ -1,4 +1,4 @@
-<script>
+﻿<script>
     $(document).ready(function() {
         $('#selectall').click(function(event) { //on click 
             if (this.checked) { // check select status
@@ -12,7 +12,211 @@
             }
         });
     });
+
+    function openTrafficModal(login, router, clientName, plano) {
+        var overlay = document.getElementById('trafficMonitorModal');
+        var frame = document.getElementById('trafficMonitorFrame');
+        var title = document.getElementById('trafficMonitorClient');
+        var subtitle = document.getElementById('trafficMonitorPppoe');
+
+        if (!overlay || !frame || !title || !subtitle) {
+            return false;
+        }
+
+        title.textContent = clientName || 'Monitor de trÃ¡fego';
+        subtitle.textContent = 'PPPoE monitorado: ' + login + (plano ? ' | Plano: ' + plano : '');
+        frame.src = 'monitor_traffic.php?embed=1&login=' + encodeURIComponent(login) + '&router=' + encodeURIComponent(router);
+        overlay.classList.add('is-open');
+        document.body.classList.add('traffic-modal-open');
+        return false;
+    }
+
+    function closeTrafficModal() {
+        var overlay = document.getElementById('trafficMonitorModal');
+        var frame = document.getElementById('trafficMonitorFrame');
+        if (overlay) {
+            overlay.classList.remove('is-open');
+        }
+        if (frame) {
+            frame.src = 'about:blank';
+        }
+        document.body.classList.remove('traffic-modal-open');
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeTrafficModal();
+        }
+    });
 </script>
+<style>
+    body.traffic-modal-open {
+        overflow: hidden;
+    }
+
+    .traffic-monitor-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.52);
+        z-index: 3000;
+    }
+
+    .traffic-monitor-modal.is-open {
+        display: flex;
+    }
+
+    .traffic-monitor-dialog {
+        width: min(1040px, calc(100vw - 32px));
+        max-height: calc(100vh - 32px);
+        overflow: hidden;
+        border-radius: 14px;
+        background: #f3f7fb;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+        border: 1px solid rgba(209, 219, 230, 0.9);
+    }
+
+    .traffic-monitor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5edf5;
+    }
+
+    .traffic-monitor-title {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 700;
+        color: #16324a;
+    }
+
+    .traffic-monitor-subtitle {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #5c738a;
+    }
+
+    .traffic-monitor-close {
+        border: 0;
+        border-radius: 10px;
+        background: #eef3f8;
+        color: #31465a;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .traffic-monitor-close:hover {
+        background: #e3ebf3;
+    }
+
+    .traffic-monitor-frame {
+        display: block;
+        width: 100%;
+        height: min(760px, calc(100vh - 110px));
+        border: 0;
+        background: #f3f7fb;
+    }
+
+    .client-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: #eaf7ef;
+        color: #1f8f4e;
+        box-shadow: inset 0 0 0 1px rgba(31, 143, 78, 0.16);
+    }
+
+    .client-status-badge.is-offline {
+        background: #f1f4f8;
+        color: #5b6572 !important;
+        box-shadow: inset 0 0 0 1px rgba(91, 101, 114, 0.14);
+    }
+
+    .client-status-badge.is-locked {
+        background: #fff0f0;
+        color: #dc3545 !important;
+        box-shadow: inset 0 0 0 1px rgba(220, 53, 69, 0.14);
+    }
+
+    .client-status-badge.is-disabled {
+        background: #f3f5f7;
+        color: #8a94a1 !important;
+        box-shadow: inset 0 0 0 1px rgba(138, 148, 161, 0.14);
+    }
+
+    .client-action-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin-top: 4px;
+    }
+
+    .client-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #f3f7fb;
+        color: #43566a;
+        text-decoration: none;
+        box-shadow: inset 0 0 0 1px rgba(179, 194, 209, 0.75);
+        transition: all .15s ease;
+    }
+
+    .client-action-btn:hover {
+        background: #eaf1f8;
+        color: #1b3f64;
+    }
+
+    .client-action-btn.is-warning {
+        background: #fff6dd;
+        color: #9d6b00;
+        box-shadow: inset 0 0 0 1px rgba(226, 186, 74, 0.85);
+    }
+
+    .client-action-btn.is-danger {
+        background: #fff0f0;
+        color: #c43a3a;
+        box-shadow: inset 0 0 0 1px rgba(233, 136, 136, 0.8);
+    }
+
+    .client-action-btn.is-success {
+        background: #eaf7ef;
+        color: #18794a;
+        box-shadow: inset 0 0 0 1px rgba(117, 202, 150, 0.8);
+    }
+
+    .client-add-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #42576b;
+        text-decoration: none;
+    }
+
+    .client-add-status.is-online {
+        color: #18794a;
+    }
+
+    .client-add-status.is-offline {
+        color: #66707c;
+    }
+</style>
 <?php
 
 //Contagem dos clientes adicionais na pesquisa
@@ -33,11 +237,11 @@ foreach ($login_ as $res) {
 
 $tot_resultados = mysqli_num_rows($result);
 
-// Paginaçço
+// PaginaÃ§Ã§o
 $limite = mysqli_num_rows($result_limit);
 $tot_paginas = $tot_resultados / $registros_por_pagina;
 
-// agora vamos criar os botçes "Anterior e próximo"
+// agora vamos criar os botÃ§es "Anterior e prÃ³ximo"
 $anterior = $pc - 1;
 $proximo = $pc + 1;
 
@@ -93,13 +297,13 @@ if ($acesso_permitido) {
         if ($organizar == 'endereco') {
         ?>
             <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco DESC&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right;margin:0px -50px" class='center'>Endereço</p>
+            <p style="text-align:right;margin:0px -50px" class='center'>EndereÃ§o</p>
             </a>
         <?php
         } else {
         ?>
             <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right;margin:0px -50px" class='center'>Endereço</p>
+            <p style="text-align:right;margin:0px -50px" class='center'>EndereÃ§o</p>
             </a>
         <?php
         }
@@ -111,7 +315,7 @@ if ($acesso_permitido) {
         <p style="text-align:right;margin-left:280px" class='center'>Contato</p>
     </div>
     <div class='col-3'>
-        <p style="text-align:right;margin-left:0px 85px" class='center'>Dados da Conexão</p>
+        <p style="text-align:right;margin-left:0px 85px" class='center'>Dados da ConexÃ£o</p>
     </div>
 </div>
 
@@ -181,6 +385,19 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
 ?>
 
+<div id="trafficMonitorModal" class="traffic-monitor-modal" onclick="if(event.target === this){ closeTrafficModal(); }">
+    <div class="traffic-monitor-dialog">
+        <div class="traffic-monitor-header">
+            <div>
+                <p id="trafficMonitorClient" class="traffic-monitor-title">Monitor de trÃ¡fego</p>
+                <p id="trafficMonitorPppoe" class="traffic-monitor-subtitle">PPPoE monitorado</p>
+            </div>
+            <button type="button" class="traffic-monitor-close" onclick="closeTrafficModal()" aria-label="Fechar monitor">Ã—</button>
+        </div>
+        <iframe id="trafficMonitorFrame" class="traffic-monitor-frame" src="about:blank" loading="lazy"></iframe>
+    </div>
+</div>
+
 <form method='POST' action='' target='_blank'>
 
     <?php
@@ -231,7 +448,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $anoCad = substr($dataCon, 6, 4);
 
         $cli_ativado = $row['cli_ativado']; // Extrai diretamente o valor de cli_ativado
-        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($cli_ativado))); // Usa cli_ativado como base para a renovação
+        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($cli_ativado))); // Usa cli_ativado como base para a renovaÃ§Ã£o
 
         
 
@@ -358,12 +575,14 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             if ($cli_ativado == "n") {
                 if ($data_desativado != '') {
                     $data_desativado = date('d/m/Y - H:i:s', strtotime($data_desativado));
-                    $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($data_desativado))); // Usa cli_ativado como base para a renovação
+                    $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($data_desativado))); // Usa cli_ativado como base para a renovaÃ§Ã£o
                 }
             ?>
 
                 <div class='col-auto col-sm-1 col-md-1'>
-                    <i class="fa-solid fa-user text-secondary fs-4"></i>
+                    <span class="client-status-badge is-disabled" title="Cliente desativado">
+                        <i class="fa-solid fa-user-xmark fs-5"></i>
+                    </span>
                 </div>
                 <div class='col-auto col-sm-6 col-md-3'>
                     <p class='desativado'>
@@ -382,20 +601,16 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         if ($bloqueado == "sim") {
                     ?>
                             <div class='col-auto col-sm-1 col-md-1'>
-                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank'>
-                                    <!-- <img src='img/icon_on_bloq.png' class='icon_g mouse_hover' title='Acessar Cliente Online e Bloqueado http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>'> -->
-
-                                    <i class="fa-solid fa-user-lock fs-4" style="color: #ff2d00;"></i>
+                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-locked" title="Cliente online e bloqueado">
+                                    <i class="fa-solid fa-user-lock fs-5"></i>
                                 </a>
                             <?php
                         } else {
                             ?>
 
                                 <div class='col-auto col-sm-1 col-md-1'>
-                                    <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank'>
-                                        <!-- <img src='img/icon_online.png' class='icon mouse_hover' title='Acessar http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>'> -->
-                                        <i class="fa-solid fa-user text-success fs-4"></i>
-
+                                    <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge" title="Cliente online">
+                                        <i class="fa-solid fa-user-check fs-5"></i>
                                     </a>
                                 <?php
                             }
@@ -428,20 +643,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <?php
 if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24)) {
     if ($cli_parc_abertas > 0 || $cli_tit_abertos > 0) {
-        // Mostra o número de parcelas abertas
-        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior número entre as duas variáveis
+        // Mostra o nÃºmero de parcelas abertas
+        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior nÃºmero entre as duas variÃ¡veis
 ?>
 
 <?php
     } elseif ($cli_parc_abertas == 0 && $cli_tit_abertos == 0) {
-        // Mensagem para quando não há carnê
+        // Mensagem para quando nÃ£o hÃ¡ carnÃª
 ?>
-        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente não tem carnê"></i>
+        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente nÃ£o tem carnÃª"></i>
 <?php
     }
 } else {
-    // Mensagem para valores inválidos (maior que 24 ou negativos)
-    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='Número de parcelas inválido'></i>";
+    // Mensagem para valores invÃ¡lidos (maior que 24 ou negativos)
+    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='NÃºmero de parcelas invÃ¡lido'></i>";
 }
 ?>
 
@@ -471,7 +686,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
                                             </p>
 
-                                            <p class='info_add'><b>Obs será removida em:</b> <?= $obs_data; ?></p>
+                                            <p class='info_add'><b>Obs serÃ¡ removida em:</b> <?= $obs_data; ?></p>
 
                                         <?php
                                     } else {
@@ -492,16 +707,16 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                         if ($bloqueado == "sim") {
                                             ?>
                                                 <div class='col-auto col-sm-1 col-md-1'>
-                                                    <a href='#'>
-                                                        <i class="fa-solid fa-user-lock text-danger fs-4"></i>
-                                                    </a>
+                                                    <span class="client-status-badge is-locked" title="Cliente offline e bloqueado">
+                                                        <i class="fa-solid fa-user-lock fs-5"></i>
+                                                    </span>
                                                 <?php
                                             } else {
                                                 ?>
                                                     <div class='col-auto col-sm-1 col-md-1'>
-                                                        <a href='#'>
-                                                            <i class="fa-solid fa-user text-danger fs-4" style="color: #575656 !important;"></i>
-                                                        </a>
+                                                        <span class="client-status-badge is-offline" title="Cliente offline">
+                                                            <i class="fa-solid fa-user-slash fs-5"></i>
+                                                        </span>
                                                     <?php
                                                 }
 
@@ -532,20 +747,20 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                     <?php
 if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24)) {
     if ($cli_parc_abertas > 0 || $cli_tit_abertos > 0) {
-        // Mostra o número de parcelas abertas
-        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior número entre as duas variáveis
+        // Mostra o nÃºmero de parcelas abertas
+        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior nÃºmero entre as duas variÃ¡veis
 ?>
 
 <?php
     } elseif ($cli_parc_abertas == 0 && $cli_tit_abertos == 0) {
-        // Mensagem para quando não há carnê
+        // Mensagem para quando nÃ£o hÃ¡ carnÃª
 ?>
-        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente não tem carnê"></i>
+        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente nÃ£o tem carnÃª"></i>
 <?php
     }
 } else {
-    // Mensagem para valores inválidos (maior que 24 ou negativos)
-    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='Número de parcelas inválido'></i>";
+    // Mensagem para valores invÃ¡lidos (maior que 24 ou negativos)
+    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='NÃºmero de parcelas invÃ¡lido'></i>";
 }
 ?>
 
@@ -575,7 +790,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                                                 <p class='final_conn'><b>Caiu em:</b> <?= $final_conn; ?></p>
 
-                                                                <p class='info_add'><b>Obs será removida em:</b> <?= $obs_data; ?></p>
+                                                                <p class='info_add'><b>Obs serÃ¡ removida em:</b> <?= $obs_data; ?></p>
 
                                                             <?php
                                                         } else {
@@ -603,58 +818,44 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                     if ($organizar == 'c.last_update DESC') {
                                                         $last_update = date('d/m/Y - H:i:s', strtotime($last_update));
                                                         ?>
-                                                            <p class='info_add'><b>Ultima alteração:</b> <?= $last_update; ?></p>
+                                                            <p class='info_add'><b>Ultima alteraÃ§Ã£o:</b> <?= $last_update; ?></p>
 
                                                         <?php
                                                     }
 
                                                         ?>
 
-                                                        <p class='op_cliente no_print'>
-                                                        <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>' style="position: relative;">
-                                                        <i class="fa-solid fa-file-pdf fs-5" style="color: #e95151;"></i>
-                                                        <span class="badge-parcelas" title="Número de parcelas em aberto">
-                                                        <?= $num_parcelas; ?>
-                                                        </span>
+                                                        <div class='op_cliente no_print client-action-toolbar'>
+                                                            <a class="client-action-btn is-danger" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>' style="position: relative;">
+                                                                <i class="fa-solid fa-file-invoice"></i>
+                                                                <span class="badge-parcelas" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
+                                                            </a>
+                                                            <a class="client-action-btn" href='../../cliente_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='ALTERAR CLIENTE: <?= $nome_cliente; ?>'>
+                                                                <i class="fa-solid fa-user-pen"></i>
+                                                            </a>
+                                                            <a class="client-action-btn" href='det_conn.php?login=<?= $login_cliente; ?>' title='CONEXÕES CLIENTE: <?= $nome_cliente; ?>'>
+                                                                <i class="fa-solid fa-router"></i>
+                                                            </a>
+                                                            <a class="client-action-btn" href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
+                                                                <i class="fa-solid fa-headset"></i>
+                                                            </a>
+                                                            <a class="client-action-btn is-warning" href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 270, 270); return false;" title="Desbloqueio de Confiança x dias">
+                                                                <i class="fa-solid fa-lock-open"></i>
+                                                            </a>
+                                                            <a class="client-action-btn" href='#' onclick="javascript:abrirJanela('../../cliente_info.<?= $links_ext; ?>?cliente=<?= $uuid_cliente; ?>', 600, 900); return false;" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
+                                                                <i class="fa-solid fa-circle-info"></i>
+                                                            </a>
+                                                            <?php if ($cli_email != '') { ?>
+                                                                <a class="client-action-btn" href='mailto:<?= $cli_email; ?>' title='Enviar e-mail para <?= $nome_cliente; ?>'>
+                                                                    <i class="fa-solid fa-envelope"></i>
                                                                 </a>
-
- |
-                                                            <a href='../../cliente_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='ALTERAR CLIENTE: <?= $nome_cliente; ?>'>
-                                                                <i class="fa-solid fa-user-pen fs-5"></i>
-                                                            </a> |
-                                                            <a href='det_conn.php?login=<?= $login_cliente; ?>' title='CONXÕES CLIENTE: <?= $nome_cliente; ?>'>
-                                                                <i class="fa-solid fa-globe fs-5"></i>
-                                                            </a> |
-                                                            <a href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
-                                                                <i class="fa-solid fa-headset fs-5"></i>
-                                                                </a> |
-
-                                                                 <a href='#' title='VER CLIENTE: <?= $nome_cliente; ?></a>
-                                                                 <a href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 270, 270);">
-                                                                  <i class="fa-solid fa-lock-open fs-5" title="Desbloqueio de Confiança x dias"></i>
+                                                            <?php } ?>
+                                                            <?php if (!empty($nas_ip[strtolower($login_cliente)])) { ?>
+                                                                <a class="client-action-btn is-success" href='#' onclick='return openTrafficModal(<?= json_encode($login_cliente); ?>, <?= json_encode($nas_ip[strtolower($login_cliente)]); ?>, <?= json_encode($nome_cliente); ?>, <?= json_encode($plano_cliente); ?>);' title='Tráfego em tempo real'>
+                                                                    <i class="fa-solid fa-chart-line"></i>
                                                                 </a>
-
-                                                                 </a> |
-
-
-
-
-                                                            <a href='#' onclick="javascript:abrirJanela('../../cliente_info.<?= $links_ext; ?>?cliente=<?= $uuid_cliente; ?>', 600, 900);">
-                                                                <i class="fa-solid fa-circle-info fs-5"></i>
-                                                            </a> |
-                                                            <?php
-
-                                                            if ($cli_email != '') {
-                                                            ?>
-                                                                <a href='mailto:<?= $cli_email; ?>'>
-                                                                    <i class="fa-solid fa-envelope fs-5"></i>
-                                                                </a> |
-                                                            <?php
-                                                            }
-
-
-                                                            ?>
-
+                                                            <?php } ?>
+                                                        </div>
 
                                                             <?php
 
@@ -679,21 +880,21 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                                                     $add_online = $username_on[strtolower($username_cli_adicional)];
 
-                                                                    $conn_add = " <a href='det_conn.php?login=$username_cli_adicional' title='CONXÕES CLIENTE: $nome_cliente'>
-                                                                        <img src='img/icon_menu_conexoes.png' class='icon_p' title='Conexoes'>
+                                                                    $conn_add = " <a class='client-action-btn' href='det_conn.php?login=$username_cli_adicional' title='CONEXOES CLIENTE: $nome_cliente'>
+                                                                        <i class='fa-solid fa-router'></i>
                                                                          </a> ";
 
                                                                     if (strcasecmp(strtolower($add_online), strtolower($username_cli_adicional)) == 0) {
                                                             ?>
-                                                                    <a href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
-                                                                        <img src='img/icon_bola_on.png' class='icon_p' title='Cliente Online'><?= $username_cli_adicional; ?></a>
+                                                                    <a class='client-add-status is-online' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
+                                                                        <i class="fa-solid fa-circle-check"></i><?= $username_cli_adicional; ?></a>
 
 
                                                                 <?php
                                                                     } else {
                                                                 ?>
-                                                                    <a href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
-                                                                        <img src='img/icon_bola_off.png' class='icon_p' title='Cliente Offline'><?= $username_cli_adicional; ?></a> <?= $conn_add; ?>|
+                                                                    <a class='client-add-status is-offline' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
+                                                                        <i class="fa-solid fa-circle-minus"></i><?= $username_cli_adicional; ?></a> <?= $conn_add; ?>
                                                             <?php
                                                                     }
                                                                 }
@@ -713,7 +914,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                                                 <div class='col-12 col-sm-4 col-md-3 text-center'>
                                                                     <p class=''>
-                                                                        <?= $end_cliente; ?> <b>n°.</b> <?= $numero_casa; ?>
+                                                                        <?= $end_cliente; ?> <b>nÂ°.</b> <?= $numero_casa; ?>
 
                                                                         <?= $bairro_cliente; ?>
                                                                         <?= $complemento_cliente; ?>
@@ -937,7 +1138,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                 if ($pc < $tot_paginas) {
                                                                     ?>
                                                                     <li class="page-item">
-                                                                        <span class="page-link"><a href="<?= $url; ?>&pagina=<?= $proximo; ?>">Próxima</a> </span>
+                                                                        <span class="page-link"><a href="<?= $url; ?>&pagina=<?= $proximo; ?>">PrÃ³xima</a> </span>
                                                                     </li>
 
                                                                 <?php
