@@ -178,7 +178,7 @@ function dashboardMobileMenuToggle(event) {
 <script>
 jQuery(function($){
     $('#systopo').removeClass('is-invisible').css('visibility','visible');
-    $('#UUE_NProvedor').text(<?php echo json_encode($dashTopCompany !== '' ? $dashTopCompany : $dashTopProvider); ?>);
+    $('#UUE_NProvedor').text(<?php echo json_encode($dashTopProvider !== '' ? $dashTopProvider : $dashTopCompany); ?>);
     $('#UUE_Usuario').text(<?php echo json_encode($dashTopUser); ?>);
     $('#UUE_SESSOES').text(<?php echo json_encode($dashTopSessions); ?>);
     $('#UUE_Data').text(<?php echo json_encode($dashTopDate); ?>);
@@ -227,3 +227,4 @@ jQuery(function($){
     setTimeout(bindDashboardMobileMenu, 500);
 })();
 </script>
+
