@@ -24,6 +24,29 @@ install.sh
 
 ## Instalar no servidor
 
+### Instalacao direta via curl
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-dashboard-busca-suite/main/install-from-github.sh)
+```
+
+Opcionalmente, informe outro caminho do MK Auth e outro diretorio de backup:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-dashboard-busca-suite/main/install-from-github.sh) /opt/mk-auth/admin /opt/mk-auth/backups/codex-install
+```
+
+Esse bootstrap:
+
+- baixa o repositorio completo do GitHub
+- instala `admin/index.hhvm`
+- instala `addons/dashboard`
+- instala `addons/busca_inteligente`
+- cria backup antes de substituir
+- valida os arquivos PHP/HHVM apos a copia
+
+### Instalacao a partir do repositorio local
+
 Copie o repositorio para o servidor e execute:
 
 ```bash
