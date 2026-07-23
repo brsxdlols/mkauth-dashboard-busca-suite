@@ -1,0 +1,265 @@
+.striped-line:nth-last-child(2n) {background:#E0E0F8;}
+
+.linha { display:none; }
+        /* cfg.php*/
+        #busca_inteligente_config {width: 70%; margin:0 auto;}
+
+        .div_cfg { border: 1px solid #888; padding: 15px; }
+        .div_cfg legend { font-size: 12px; font-weight: bold; }
+        
+        .cfg_titulo  { font-weight:bold;  width: 30%; }
+        .cfg_opcao, #btn_buscar { padding: 12px; font-size:20px; font-weight:normal; width: 100%;}
+        
+        /* chamados_abertos.php */
+        .input_pesquisar { width:100%; font-weight: bold;}
+        #btn_buscar, .input_pesquisar:last-child { padding: 12px; font-size:20px; font-weight:normal; }
+
+        #busca_inteligente_config {width: 60%; margin:0 auto;}
+        #cfg { width: 100%; } 
+
+        .div_chamados { width: 100%; border-bottom: 1px dashed #000; max-height: 260px; page-break-inside: avoid; margin-bottom: 2px;}
+
+        .div_chamados:nth-last-child(2n) {background:#E0E0F8;}
+
+        .tab_chamados_abertos td { padding: 0px 3px;  font-size: 14px;}
+        .tit_table { font-weight: bold; font-size: 13px; }
+
+        .col_nome a:hover { text-decoration:underline; }
+
+        /* cli_conn_alerta.php */
+        #form_graf { width: 100%; min-width: 700px;}
+        #form_graf input { padding: 10px; font-size:18px; width:100%;}
+        #btn_buscar { padding: 10px; font-size:18px;  background: Navy; color:#FFF; border: 1.5px solid Navy; }
+
+        /* det_conn.php */
+        #conn_cliente {width: 100% }
+        .linha_conexoes { font-size: 14px; }
+        .linha_conexoes:nth-last-child(2n) {background:#E0E0F8;}
+
+        .width_auto { width:auto; font-weight:bold; }
+        .conn_alerta { color:red; font-weight: bold; }
+        .conn_boa { color:DarkGreen; font-weight: bold; }
+
+        .link a { font-weight: bold; }
+        .link a:hover { text-decoration:underline; }
+
+        /* index.php */
+
+        /* Tabela dos Clientes */
+
+        .dp_block p { padding:0; margin:0; font-size: 14px; width: 100%;}
+
+        .box_select, .status, .nome_completo, .endereco, .contato, .dados_acesso { display:inline-flex; flex-wrap: wrap; }
+
+        .box_select { width: 25px; }
+        .status { width:50px; }
+        .nome_completo { width: 33%; font-weight: bold;}
+        .endereco { width: 19%; }
+        .contato { width: 12%; }
+        .dados_acesso { width: 24%; }
+
+        .center { text-align:center; }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .input_pesquisar { width:100%; font-weight: bold;}
+        #btn_buscar, .input_pesquisar:last-child { padding: 12px; font-size:20px; font-weight:normal; }
+        #btn_buscar { background: Navy; color:#FFF; border: 1.5px solid Navy;}
+        
+        #buscar { width: 100%; }
+        #resultado_pesquisa { width: 100%; }
+        .linha_titulo {font-weight: bold; text-align:center; background: Navy; color: #FFF; padding: 20px; font-size: 14px; text-align: center;}
+        .linha_titulo { margin:0; padding:0; }
+        
+        .tit_org a {color:#FFF;}
+
+        .linha_resultados:nth-last-child(2n) {background:#E0E0F8;}
+        .linha_resultados td{ width: auto; font-size: 14px;}
+        
+        #resultado_pesquisa td a:hover { text-decoration: underline; }
+        
+        .bloqueado, .bloqueado a {font-weight:bold; color:Red;}
+        .observacao, .observacao a {font-weight:bold; color:DarkGreen;}
+        .desativado, .desativado a { font-weight:bold; }
+        
+        .op_cliente { font-weight:bold; font-size: 11px; }
+
+        .cli_adicional { font-size: 12px; }
+        .icon_menu { width: 20px; height: 20px; }
+        
+        .align_middle { vertical-align: middle; }
+
+        .icon { width: 25px; height: 25px;  }
+        .icon_p { width: 15px; height: 15px; }
+        .icon_g { width: 30px; height: 30px; }
+        .icon_xg { width: 40px; height: 40px; }
+
+        .icon, .icon_g, .icon_xg { vertical-align:middle; }
+        
+        .titulos_vencidos { font-weight:bold; font-size: 18px; }
+        .titulos_vencidos a { color:red; }
+
+        .mouse_hover:hover  { background: silver; width: 50px; height: 50px; }
+
+        .dicas { 
+            display:none;
+            }
+
+        .mostrar_dicas:hover + .dicas{ 
+            border: 4px solid DarkBlue; 
+            font-size: 14px; 
+            padding: 4px; 
+            background: #E0E0F8; 
+            height: 80%;
+            position: absolute; bottom: 1px; right: 1px;
+            display:block; 
+            z-index: -1;
+            }
+
+        .span_mais{ font-size: 20px; font-weight:bold; }
+
+        .box-radius { width: 25px; height: 25px; background: darkblue; color:#FFF; border-radius:50%; font-size: 12px; padding: 3px; }
+                
+        .font_destaque { color:red; font-weight: bold; }
+
+        p { margin:0; padding:0; }
+
+
+        /* Formulario PEsquisa */
+        .form_pesquisa { width:100%; }
+        .form_pesquisa label { font-size:12px; font-weight: bold; }
+        .form_pesquisa div { display:inline-flex; }
+        .form_pesquisa div:first-child, .form_pesquisa input:first-child { min-width: 450px; }
+
+        .form_pesquisa input, .form_pesquisa select { display:block; padding:12px 20px; font-size: 18px;}      
+
+        .btn_pesquisa { background: darkblue; border-color:darkblue; color:#FFF; }
+
+        /* Menu Padrao */
+        .menu_padrao { margin:0 auto; }
+        .menu_padrao li { display:inline-flex; vertical-align: middle; padding: 0px 5px; }
+
+        .div_middle { 
+            /*background: #6C7A89;*/
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .opcoes input { width: 48px; padding: 7px;  }
+
+        .alert_red {
+            background: red;
+            color: #FFF;
+        }
+
+        .alert_orange_red {
+            background: OrangeRed;
+            color: #FFF;
+        }
+
+        .alert_orange {
+            background: orange;
+            color: #FFF;
+        }
+
+        .alert_yellow {
+            background: yellow;
+            color: #000;
+        }
+
+        .alert_green {
+            background: green;
+            color: #FFF;
+        }
+
+        .alert_green2 {
+            background: DarkGreen;
+            color: #FFF;
+        }
+
+        /* Responsive
+        @media only Screen and (max-width: 750px) 
+        {
+
+            .dp_block p { font-size:13px; }
+
+            .status { width:50px; }
+            .nome_completo { width: 35%; }
+            .endereco { width: 25%; }
+            .contato { width: 10%; }
+            .dados_acesso { display:none; }
+            .no_exb { display:none; }
+
+            #btn_buscar, .select_organizar, #num_registros, .input_pesquisar:last-child 
+            { 
+                padding: 2px; 
+                font-size:14px;
+            }
+            .icon_menu { width: 20px; height: 20px; }
+            .icon_xg { width: 25px; height: 25px; }     
+            
+            #buscar { max-width: 800px; }
+
+            .form_pesquisa div { display:block; }
+            .form_pesquisa input, .form_pesquisa select { padding:3px 10px; width: 100%;}
+
+            .div_middle { display:block; }
+        } */
+
+        /* @media only Screen and (max-width: 1050px){
+            .box_busca_inteligente { max-width: 850px; }
+
+            .form_pesquisa div:first-child, .form_pesquisa input:first-child { min-width: 300px; }
+            .form_pesquisa input, .form_pesquisa select { padding:10px 12px; width: 100%;}
+        } */
+
+        /*@media only All and (max-width: 1200px)
+        {
+            .status { width:50px; }
+            .nome_completo { width: 30%; }
+            .endereco { width: 25%; }
+            .contato { width: 10%; }
+            .dados_acesso { width: 22%; }
+
+            #btn_buscar, .select_organizar, #num_registros, .input_pesquisar:last-child 
+            { 
+                padding: 4px; 
+                font-size:16px;
+            }    
+            
+            #buscar { max-width: 1024px; }
+
+        }*/
+        
+        /*@media screen and (min-width: 800px){
+            #conn_cliente { width: 70%; }
+        }*/
+
+        /* impressao
+        @media print {
+            .no_print  { display:none; }
+            .linha { display:block; width: 100%; border-bottom: rgb(213, 213, 213) solid 0.5px; }
+
+            .no_cut_content { page-break-inside: avoid;  }
+
+            .status { width:50px; }
+            .nome_completo { width: 300px; }
+            .endereco { width: 220px; }
+            .contato { width: 70px; }  
+        } */
+            .grafico-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    height: 350px; /* controla altura fixa */
+}
+
+.grafico-container canvas {
+    max-width: 350px;
+    max-height: 350px;
+}
