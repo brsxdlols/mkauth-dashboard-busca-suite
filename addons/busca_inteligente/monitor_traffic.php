@@ -109,10 +109,20 @@ $embed_mode = isset($_GET['embed']) && $_GET['embed'] == '1';
     </style>
 
     <?php
-        $query_clientes = mysqli_query($link, "SELECT nome, plano FROM sis_cliente WHERE login LIKE '$_GET[login]'");
+        $login_param = mysqli_real_escape_string($link, $_GET['login']);
+        $router_param = mysqli_real_escape_string($link, $_GET['router']);
+        $query_clientes = mysqli_query($link, "SELECT nome, plano FROM sis_cliente WHERE login LIKE '$login_param'");
         while($row = mysqli_fetch_array($query_clientes)){
             $cli_nome = $row['nome'];
             $cli_plano = $row['plano'];
+        }
+        $cli_concentrador = '';
+        $query_nas = mysqli_query($link, "SELECT shortname, nasname FROM nas WHERE nasname = '$router_param' LIMIT 1");
+        if ($query_nas && mysqli_num_rows($query_nas) > 0) {
+            $nas_row = mysqli_fetch_assoc($query_nas);
+            $cli_concentrador = !empty($nas_row['shortname']) ? $nas_row['shortname'] : $nas_row['nasname'];
+        } elseif (!empty($_GET['concentrador'])) {
+            $cli_concentrador = $_GET['concentrador'];
         }
     ?>
 
@@ -125,7 +135,7 @@ $embed_mode = isset($_GET['embed']) && $_GET['embed'] == '1';
         <div class="monitor-embed-head">
             <div>
                 <p class="monitor-embed-title"><?= htmlspecialchars($cli_nome); ?></p>
-                <p class="monitor-embed-subtitle">PPPoE monitorado: <b><?= htmlspecialchars($_GET['login']); ?></b> | Plano: <b><?= htmlspecialchars($cli_plano); ?></b></p>
+                <p class="monitor-embed-subtitle">PPPoE monitorado: <b><?= htmlspecialchars($_GET['login']); ?></b> | Plano: <b><?= htmlspecialchars($cli_plano); ?></b><?php if ($cli_concentrador != '') { ?> | Concentrador: <b><?= htmlspecialchars($cli_concentrador); ?></b><?php } ?></p>
             </div>
             <div class="monitor-embed-pill">Uptime: <span id="span_uptime" style="margin-left: 6px;">--</span></div>
         </div>
@@ -133,7 +143,11 @@ $embed_mode = isset($_GET['embed']) && $_GET['embed'] == '1';
             <div id="monitor_error"></div>
     <?php } else { ?>
         <?php
-        echo "<p class='tit_monitor'><b>Cliente:</b> $cli_nome <b>[$_GET[login]]</b><br> <b>Plano:</b> $cli_plano - <b>Uptime: </b><span id='span_uptime'></span></p> ";
+        echo "<p class='tit_monitor'><b>Cliente:</b> $cli_nome <b>[$_GET[login]]</b><br> <b>Plano:</b> $cli_plano";
+        if ($cli_concentrador != '') {
+            echo " - <b>Concentrador:</b> $cli_concentrador";
+        }
+        echo " - <b>Uptime: </b><span id='span_uptime'></span></p> ";
         ?>
         <div id="monitor_error"></div>
     <?php } ?>

@@ -13,7 +13,7 @@
         });
     });
 
-    function openTrafficModal(login, router, clientName, plano) {
+    function openTrafficModal(login, router, clientName, plano, concentrador) {
         var overlay = document.getElementById('trafficMonitorModal');
         var frame = document.getElementById('trafficMonitorFrame');
         var title = document.getElementById('trafficMonitorClient');
@@ -23,9 +23,9 @@
             return false;
         }
 
-        title.textContent = clientName || 'Monitor de trÃ¡fego';
-        subtitle.textContent = 'PPPoE monitorado: ' + login + (plano ? ' | Plano: ' + plano : '');
-        frame.src = 'monitor_traffic.php?embed=1&login=' + encodeURIComponent(login) + '&router=' + encodeURIComponent(router);
+        title.textContent = clientName || 'Monitor de tráfego';
+        subtitle.textContent = 'PPPoE monitorado: ' + login + (plano ? ' | Plano: ' + plano : '') + (concentrador ? ' | Concentrador: ' + concentrador : '');
+        frame.src = 'monitor_traffic.php?embed=1&login=' + encodeURIComponent(login) + '&router=' + encodeURIComponent(router) + '&concentrador=' + encodeURIComponent(concentrador || '');
         overlay.classList.add('is-open');
         document.body.classList.add('traffic-modal-open');
         return false;
@@ -104,18 +104,20 @@
 
     .traffic-monitor-close {
         border: 0;
-        border-radius: 10px;
-        background: #eef3f8;
+        border-radius: 0;
+        background: transparent;
         color: #31465a;
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        font-size: 22px;
+        font-weight: 700;
         line-height: 1;
         cursor: pointer;
     }
 
     .traffic-monitor-close:hover {
-        background: #e3ebf3;
+        color: #0f172a;
     }
 
     .traffic-monitor-frame {
@@ -130,8 +132,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 34px;
-        height: 34px;
+        width: 28px;
+        height: 28px;
         border-radius: 999px;
         background: #eaf7ef;
         color: #1f8f4e;
@@ -168,8 +170,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
+        min-width: 30px;
+        height: 30px;
         border-radius: 8px;
         background: #f3f7fb;
         color: #43566a;
@@ -199,6 +201,41 @@
         background: #eaf7ef;
         color: #18794a;
         box-shadow: inset 0 0 0 1px rgba(117, 202, 150, 0.8);
+    }
+
+    .client-action-btn.has-counter {
+        justify-content: flex-start;
+        gap: 7px;
+        min-width: 48px;
+        padding: 0 8px;
+    }
+
+    .badge-parcelas-inline {
+        min-width: 16px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .map-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #eef4ff;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: inset 0 0 0 1px rgba(29, 78, 216, 0.16);
+    }
+
+    .map-link-btn:hover {
+        background: #dbeafe;
+        color: #1e40af;
+        text-decoration: none;
     }
 
     .client-add-status {
@@ -237,11 +274,11 @@ foreach ($login_ as $res) {
 
 $tot_resultados = mysqli_num_rows($result);
 
-// PaginaÃ§Ã§o
+// Paginação
 $limite = mysqli_num_rows($result_limit);
 $tot_paginas = $tot_resultados / $registros_por_pagina;
 
-// agora vamos criar os botÃ§es "Anterior e prÃ³ximo"
+// agora vamos criar os botões "Anterior e próximo"
 $anterior = $pc - 1;
 $proximo = $pc + 1;
 
@@ -297,13 +334,13 @@ if ($acesso_permitido) {
         if ($organizar == 'endereco') {
         ?>
             <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco DESC&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right;margin:0px -50px" class='center'>EndereÃ§o</p>
+            <p style="text-align:right;margin:0px -50px" class='center'>Endereço</p>
             </a>
         <?php
         } else {
         ?>
             <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right;margin:0px -50px" class='center'>EndereÃ§o</p>
+            <p style="text-align:right;margin:0px -50px" class='center'>Endereço</p>
             </a>
         <?php
         }
@@ -315,7 +352,7 @@ if ($acesso_permitido) {
         <p style="text-align:right;margin-left:280px" class='center'>Contato</p>
     </div>
     <div class='col-3'>
-        <p style="text-align:right;margin-left:0px 85px" class='center'>Dados da ConexÃ£o</p>
+        <p style="text-align:right;margin-left:0px 85px" class='center'>Dados da Conexão</p>
     </div>
 </div>
 
@@ -330,6 +367,17 @@ if ($check_online == 'mkauth') {
         $nas_ip[trim(strtolower($row2['username']))] = $row2['nasipaddress'];
         $ip_conn[trim(strtolower($row2['username']))] = $row2['framedipaddress'];
     }
+
+    $query_nas_map = mysqli_query($link, "SELECT nasname, nasipaddress, shortname FROM nas");
+    while ($nas_map = mysqli_fetch_assoc($query_nas_map)) {
+        $nas_label = !empty($nas_map['shortname']) ? $nas_map['shortname'] : $nas_map['nasname'];
+        if (!empty($nas_map['nasname'])) {
+            $nas_nome[$nas_map['nasname']] = $nas_label;
+        }
+        if (!empty($nas_map['nasipaddress'])) {
+            $nas_nome[$nas_map['nasipaddress']] = $nas_label;
+        }
+    }
 } else {
     // INFO DE CLIENTES ONLINE COM MIKROTIK VIA API
 
@@ -343,6 +391,10 @@ if ($check_online == 'mkauth') {
         $ramal_ip2 = $nas['nasname'];
         $login_router[$ramal_ip2] = $nas['userapi'] == '' ? 'mkauth' : $nas['userapi'];
         $pass_router[$ramal_ip2]  = $nas['senha'];
+        $nas_nome[$ramal_ip2] = !empty($nas['shortname']) ? $nas['shortname'] : $nas['nasname'];
+        if (!empty($nas['nasipaddress'])) {
+            $nas_nome[$nas['nasipaddress']] = $nas_nome[$ramal_ip2];
+        }
     }
 
     $API = new RouterosAPI();
@@ -389,10 +441,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
     <div class="traffic-monitor-dialog">
         <div class="traffic-monitor-header">
             <div>
-                <p id="trafficMonitorClient" class="traffic-monitor-title">Monitor de trÃ¡fego</p>
+                <p id="trafficMonitorClient" class="traffic-monitor-title">Monitor de tráfego</p>
                 <p id="trafficMonitorPppoe" class="traffic-monitor-subtitle">PPPoE monitorado</p>
             </div>
-            <button type="button" class="traffic-monitor-close" onclick="closeTrafficModal()" aria-label="Fechar monitor">Ã—</button>
+            <button type="button" class="traffic-monitor-close" onclick="closeTrafficModal()" aria-label="Fechar monitor">X</button>
         </div>
         <iframe id="trafficMonitorFrame" class="traffic-monitor-frame" src="about:blank" loading="lazy"></iframe>
     </div>
@@ -448,7 +500,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $anoCad = substr($dataCon, 6, 4);
 
         $cli_ativado = $row['cli_ativado']; // Extrai diretamente o valor de cli_ativado
-        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($cli_ativado))); // Usa cli_ativado como base para a renovaÃ§Ã£o
+        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($cli_ativado))); // Usa cli_ativado como base para a renovação
 
         
 
@@ -575,11 +627,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             if ($cli_ativado == "n") {
                 if ($data_desativado != '') {
                     $data_desativado = date('d/m/Y - H:i:s', strtotime($data_desativado));
-                    $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($data_desativado))); // Usa cli_ativado como base para a renovaÃ§Ã£o
+                    $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($data_desativado))); // Usa cli_ativado como base para a renovação
                 }
             ?>
 
-                <div class='col-auto col-sm-1 col-md-1'>
+                <div class='col-auto px-1'>
                     <span class="client-status-badge is-disabled" title="Cliente desativado">
                         <i class="fa-solid fa-user-xmark fs-5"></i>
                     </span>
@@ -600,7 +652,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                         if ($bloqueado == "sim") {
                     ?>
-                            <div class='col-auto col-sm-1 col-md-1'>
+                            <div class='col-auto px-1'>
                                 <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-locked" title="Cliente online e bloqueado">
                                     <i class="fa-solid fa-user-lock fs-5"></i>
                                 </a>
@@ -608,7 +660,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         } else {
                             ?>
 
-                                <div class='col-auto col-sm-1 col-md-1'>
+                                <div class='col-auto px-1'>
                                     <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge" title="Cliente online">
                                         <i class="fa-solid fa-user-check fs-5"></i>
                                     </a>
@@ -643,20 +695,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <?php
 if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24)) {
     if ($cli_parc_abertas > 0 || $cli_tit_abertos > 0) {
-        // Mostra o nÃºmero de parcelas abertas
-        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior nÃºmero entre as duas variÃ¡veis
+        // Mostra o número de parcelas abertas
+        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior número entre as duas variáveis
 ?>
 
 <?php
     } elseif ($cli_parc_abertas == 0 && $cli_tit_abertos == 0) {
-        // Mensagem para quando nÃ£o hÃ¡ carnÃª
+        // Mensagem para quando não há carnê
 ?>
-        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente nÃ£o tem carnÃª"></i>
+        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente não tem carnê"></i>
 <?php
     }
 } else {
-    // Mensagem para valores invÃ¡lidos (maior que 24 ou negativos)
-    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='NÃºmero de parcelas invÃ¡lido'></i>";
+    // Mensagem para valores inválidos (maior que 24 ou negativos)
+    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='Número de parcelas inválido'></i>";
 }
 ?>
 
@@ -671,7 +723,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                     <div class='col-auto col-sm-6 col-md-3'>
                                                  <p class='bloqueado'>
                                             <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
-                                            <a href="#" onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 400, 300);">
+                                            <a href="#" onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 440, 320);">
     <img src="img/icon_desbloquear.png" class="icon_g no_print" title="Liberar por X dias" />
 
                                         </p>
@@ -686,7 +738,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
                                             </p>
 
-                                            <p class='info_add'><b>Obs serÃ¡ removida em:</b> <?= $obs_data; ?></p>
+                                            <p class='info_add'><b>Obs será removida em:</b> <?= $obs_data; ?></p>
 
                                         <?php
                                     } else {
@@ -706,14 +758,14 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                         if ($bloqueado == "sim") {
                                             ?>
-                                                <div class='col-auto col-sm-1 col-md-1'>
+                                                <div class='col-auto px-1'>
                                                     <span class="client-status-badge is-locked" title="Cliente offline e bloqueado">
                                                         <i class="fa-solid fa-user-lock fs-5"></i>
                                                     </span>
                                                 <?php
                                             } else {
                                                 ?>
-                                                    <div class='col-auto col-sm-1 col-md-1'>
+                                                    <div class='col-auto px-1'>
                                                         <span class="client-status-badge is-offline" title="Cliente offline">
                                                             <i class="fa-solid fa-user-slash fs-5"></i>
                                                         </span>
@@ -747,20 +799,20 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                     <?php
 if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24)) {
     if ($cli_parc_abertas > 0 || $cli_tit_abertos > 0) {
-        // Mostra o nÃºmero de parcelas abertas
-        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior nÃºmero entre as duas variÃ¡veis
+        // Mostra o número de parcelas abertas
+        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior número entre as duas variáveis
 ?>
 
 <?php
     } elseif ($cli_parc_abertas == 0 && $cli_tit_abertos == 0) {
-        // Mensagem para quando nÃ£o hÃ¡ carnÃª
+        // Mensagem para quando não há carnê
 ?>
-        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente nÃ£o tem carnÃª"></i>
+        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente não tem carnê"></i>
 <?php
     }
 } else {
-    // Mensagem para valores invÃ¡lidos (maior que 24 ou negativos)
-    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='NÃºmero de parcelas invÃ¡lido'></i>";
+    // Mensagem para valores inválidos (maior que 24 ou negativos)
+    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='Número de parcelas inválido'></i>";
 }
 ?>
 
@@ -773,7 +825,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         <div class='col-auto col-sm-6 col-md-3'>
                                                             <p class='bloqueado'>
                                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
-                                                                <a href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 200, 200);"><img src='img/icon_desbloquear.png' class='icon_g no_print' title='Liberar por x dias' /></a>
+                                                                <a href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 440, 320);"><img src='img/icon_desbloquear.png' class='icon_g no_print' title='Liberar por x dias' /></a>
                                                             </p>
 
                                                             <p class='final_conn no_print'><b>Caiu em:</b> <?= $final_conn; ?></p>
@@ -790,7 +842,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                                                 <p class='final_conn'><b>Caiu em:</b> <?= $final_conn; ?></p>
 
-                                                                <p class='info_add'><b>Obs serÃ¡ removida em:</b> <?= $obs_data; ?></p>
+                                                                <p class='info_add'><b>Obs será removida em:</b> <?= $obs_data; ?></p>
 
                                                             <?php
                                                         } else {
@@ -818,7 +870,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                     if ($organizar == 'c.last_update DESC') {
                                                         $last_update = date('d/m/Y - H:i:s', strtotime($last_update));
                                                         ?>
-                                                            <p class='info_add'><b>Ultima alteraÃ§Ã£o:</b> <?= $last_update; ?></p>
+                                                            <p class='info_add'><b>Última alteração:</b> <?= $last_update; ?></p>
 
                                                         <?php
                                                     }
@@ -826,9 +878,9 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         ?>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
-                                                            <a class="client-action-btn is-danger" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>' style="position: relative;">
+                                                            <a class="client-action-btn has-counter is-danger" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-file-invoice"></i>
-                                                                <span class="badge-parcelas" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
+                                                                <span class="badge-parcelas-inline" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
                                                             </a>
                                                             <a class="client-action-btn" href='../../cliente_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='ALTERAR CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-user-pen"></i>
@@ -839,7 +891,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                             <a class="client-action-btn" href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset"></i>
                                                             </a>
-                                                            <a class="client-action-btn is-warning" href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 270, 270); return false;" title="Desbloqueio de Confiança x dias">
+                                                            <a class="client-action-btn is-warning" href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 440, 320); return false;" title="Desbloqueio de Confiança x dias">
                                                                 <i class="fa-solid fa-lock-open"></i>
                                                             </a>
                                                             <a class="client-action-btn" href='#' onclick="javascript:abrirJanela('../../cliente_info.<?= $links_ext; ?>?cliente=<?= $uuid_cliente; ?>', 600, 900); return false;" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
@@ -851,7 +903,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                 </a>
                                                             <?php } ?>
                                                             <?php if (!empty($nas_ip[strtolower($login_cliente)])) { ?>
-                                                                <a class="client-action-btn is-success" href='#' onclick='return openTrafficModal(<?= json_encode($login_cliente); ?>, <?= json_encode($nas_ip[strtolower($login_cliente)]); ?>, <?= json_encode($nome_cliente); ?>, <?= json_encode($plano_cliente); ?>);' title='Tráfego em tempo real'>
+                                                                <a class="client-action-btn is-success" href='#' onclick='return openTrafficModal(<?= json_encode($login_cliente); ?>, <?= json_encode($nas_ip[strtolower($login_cliente)]); ?>, <?= json_encode($nome_cliente); ?>, <?= json_encode($plano_cliente); ?>, <?= json_encode(isset($nas_nome[$nas_ip[strtolower($login_cliente)]]) ? $nas_nome[$nas_ip[strtolower($login_cliente)]] : ""); ?>);' title='Tráfego em tempo real'>
                                                                     <i class="fa-solid fa-chart-line"></i>
                                                                 </a>
                                                             <?php } ?>
@@ -912,9 +964,9 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         </p>
                                                                 </div>
 
-                                                                <div class='col-12 col-sm-4 col-md-3 text-center'>
+                                                                <div class='col-12 col-sm-5 col-md-3 text-center'>
                                                                     <p class=''>
-                                                                        <?= $end_cliente; ?> <b>nÂ°.</b> <?= $numero_casa; ?>
+                                                                        <?= $end_cliente; ?> <b>nº</b> <?= $numero_casa; ?>
 
                                                                         <?= $bairro_cliente; ?>
                                                                         <?= $complemento_cliente; ?>
@@ -925,8 +977,30 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                         echo "<b>Score:</b> {$showScore} ";
                                                                         echo diffDate(date('Y-m-d'), $dataRenovacao);
 
+                                                                        $loc_cliente_limpo = trim((string) $loc_cliente);
+                                                                        $mapa_link = '';
+                                                                        if ($loc_cliente_limpo !== '' && preg_match('/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/', $loc_cliente_limpo)) {
+                                                                            $mapa_link = 'https://www.google.com/maps?q=' . rawurlencode($loc_cliente_limpo);
+                                                                        } else {
+                                                                            $endereco_mapa = array_filter([
+                                                                                trim((string) $end_cliente),
+                                                                                trim((string) $numero_casa),
+                                                                                trim((string) $bairro_cliente),
+                                                                                trim((string) $cidade_cliente),
+                                                                                trim((string) $uf_cliente),
+                                                                            ]);
+                                                                            if (!empty($endereco_mapa)) {
+                                                                                $mapa_link = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode(implode(', ', $endereco_mapa));
+                                                                            }
+                                                                        }
+
                                                                         ?>
                                                                     </p>
+                                                                    <?php if ($mapa_link != '') { ?>
+                                                                        <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localização no Google Maps">
+                                                                            <i class="fa-solid fa-location-dot"></i> Localização no mapa
+                                                                        </a>
+                                                                    <?php } ?>
                                                                 </div>
 
                                                                 <!-- <hr class="d-block d-sm-none"> -->
@@ -1138,7 +1212,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                 if ($pc < $tot_paginas) {
                                                                     ?>
                                                                     <li class="page-item">
-                                                                        <span class="page-link"><a href="<?= $url; ?>&pagina=<?= $proximo; ?>">PrÃ³xima</a> </span>
+                                                                        <span class="page-link"><a href="<?= $url; ?>&pagina=<?= $proximo; ?>">Próxima</a> </span>
                                                                     </li>
 
                                                                 <?php
