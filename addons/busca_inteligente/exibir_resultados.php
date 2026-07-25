@@ -982,13 +982,13 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                         if ($loc_cliente_limpo !== '' && preg_match('/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/', $loc_cliente_limpo)) {
                                                                             $mapa_link = 'https://www.google.com/maps?q=' . rawurlencode($loc_cliente_limpo);
                                                                         } else {
-                                                                            $endereco_mapa = array_filter([
+                                                                            $endereco_mapa = array_filter(array(
                                                                                 trim((string) $end_cliente),
                                                                                 trim((string) $numero_casa),
                                                                                 trim((string) $bairro_cliente),
                                                                                 trim((string) $cidade_cliente),
-                                                                                trim((string) $uf_cliente),
-                                                                            ]);
+                                                                                trim((string) $uf_cliente)
+                                                                            ));
                                                                             if (!empty($endereco_mapa)) {
                                                                                 $mapa_link = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode(implode(', ', $endereco_mapa));
                                                                             }
