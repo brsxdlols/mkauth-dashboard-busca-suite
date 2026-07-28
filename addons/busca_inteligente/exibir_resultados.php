@@ -253,6 +253,162 @@
     .client-add-status.is-offline {
         color: #66707c;
     }
+
+    .client-head,
+    .client-row {
+        --bs-gutter-x: 0;
+        align-items: flex-start;
+    }
+
+    .client-head {
+        padding: 0 8px;
+    }
+
+    .client-row {
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .client-check-col {
+        width: 28px;
+        padding-top: 4px;
+    }
+
+    .client-status-col {
+        width: 42px;
+        padding: 0 6px 0 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .client-name-col {
+        padding-right: 12px;
+    }
+
+    .client-address-col {
+        padding: 0 12px;
+    }
+
+    .client-contact-col {
+        padding: 0 12px 0 4px;
+    }
+
+    .client-data-col {
+        padding-left: 12px;
+    }
+
+    .client-name-col p,
+    .client-address-col p,
+    .client-contact-col p,
+    .client-data-col p {
+        margin-bottom: 6px;
+    }
+
+    .client-name-col .op_cliente,
+    .client-name-col .client-action-toolbar {
+        margin-bottom: 4px;
+    }
+
+    .client-address-col,
+    .client-contact-col,
+    .client-data-col {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .client-address-col .map-link-btn {
+        margin-top: 4px;
+    }
+
+    .client-head .center {
+        margin: 0;
+        text-align: left !important;
+    }
+
+    .client-head .client-name-col .center {
+        text-align: center !important;
+    }
+
+    .client-head .client-address-col .center,
+    .client-head .client-contact-col .center,
+    .client-head .client-data-col .center {
+        padding-left: 8px;
+    }
+
+    @media (min-width: 992px) {
+        .client-head,
+        .client-row {
+            display: grid;
+            grid-template-columns: 28px 42px minmax(280px, 1.45fr) minmax(360px, 1.95fr) minmax(120px, 0.7fr) minmax(320px, 1.35fr);
+            column-gap: 12px;
+        }
+
+        .client-head > *,
+        .client-row > * {
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0;
+        }
+
+        .client-check-col { grid-column: 1; }
+        .client-status-col { grid-column: 2; }
+        .client-name-col { grid-column: 3; }
+        .client-address-col { grid-column: 4; }
+        .client-contact-col { grid-column: 5; }
+        .client-data-col { grid-column: 6; }
+
+        .client-head {
+            align-items: center;
+        }
+
+        .client-head .client-name-col .center,
+        .client-head .client-address-col .center,
+        .client-head .client-contact-col .center,
+        .client-head .client-data-col .center {
+            text-align: center !important;
+            padding-left: 0;
+        }
+
+        .client-name-col,
+        .client-address-col,
+        .client-contact-col,
+        .client-data-col {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .client-address-col {
+            text-align: center;
+        }
+
+        .client-contact-col {
+            text-align: left;
+        }
+
+        .client-data-col {
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .client-row {
+            padding: 10px 6px;
+        }
+
+        .client-check-col,
+        .client-status-col {
+            width: auto;
+        }
+
+        .client-name-col,
+        .client-address-col,
+        .client-contact-col,
+        .client-data-col {
+            padding: 6px 2px;
+        }
+    }
 </style>
 <?php
 
@@ -302,12 +458,12 @@ if ($acesso_permitido) {
 
 ?>
 
-<div class='row bg-primary text-light text-center'>
-    <div class='col-auto no_print'>
+<div class='row bg-primary text-light text-center client-head'>
+    <div class='col-auto no_print client-check-col'>
         <input type='checkbox' name='selectall' id='selectall' />
     </div>
-    <div class='col-auto'> </div>
-    <div class='col-3'>
+    <div class='col-auto client-status-col'> </div>
+    <div class='col-12 col-md-3 client-name-col'>
 
         <?php
         if ($organizar == 'nome') {
@@ -329,18 +485,18 @@ if ($acesso_permitido) {
 
     </div>
 
-    <div class='col-3'>
+    <div class='col-12 col-md-4 client-address-col'>
         <?php
         if ($organizar == 'endereco') {
         ?>
             <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco DESC&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right;margin:0px -50px" class='center'>Endereço</p>
+            <p class='center'>Endereço</p>
             </a>
         <?php
         } else {
         ?>
             <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right;margin:0px -50px" class='center'>Endereço</p>
+            <p class='center'>Endereço</p>
             </a>
         <?php
         }
@@ -348,11 +504,11 @@ if ($acesso_permitido) {
 
 
 </div>
-    <div class='col-1'>
-        <p style="text-align:right;margin-left:280px" class='center'>Contato</p>
+    <div class='col-12 col-md-2 client-contact-col'>
+        <p class='center'>Contato</p>
     </div>
-    <div class='col-3'>
-        <p style="text-align:right;margin-left:0px 85px" class='center'>Dados da Conexão</p>
+    <div class='col-12 col-md-3 client-data-col'>
+        <p class='center'>Dados da Conexão</p>
     </div>
 </div>
 
@@ -368,14 +524,13 @@ if ($check_online == 'mkauth') {
         $ip_conn[trim(strtolower($row2['username']))] = $row2['framedipaddress'];
     }
 
-    $query_nas_map = mysqli_query($link, "SELECT nasname, nasipaddress, shortname FROM nas");
-    while ($nas_map = mysqli_fetch_assoc($query_nas_map)) {
-        $nas_label = !empty($nas_map['shortname']) ? $nas_map['shortname'] : $nas_map['nasname'];
-        if (!empty($nas_map['nasname'])) {
-            $nas_nome[$nas_map['nasname']] = $nas_label;
-        }
-        if (!empty($nas_map['nasipaddress'])) {
-            $nas_nome[$nas_map['nasipaddress']] = $nas_label;
+    $query_nas_map = mysqli_query($link, "SELECT nasname, shortname FROM nas");
+    if ($query_nas_map) {
+        while ($nas_map = mysqli_fetch_assoc($query_nas_map)) {
+            $nas_label = !empty($nas_map['shortname']) ? $nas_map['shortname'] : $nas_map['nasname'];
+            if (!empty($nas_map['nasname'])) {
+                $nas_nome[$nas_map['nasname']] = $nas_label;
+            }
         }
     }
 } else {
@@ -612,9 +767,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
     ?>
 
-        <div class='row row-cols-1 row-cols-sm-2 row-cols-md-4 small <?= $bgColor; ?>'>
+        <div class='row client-row small <?= $bgColor; ?>'>
 
-            <div class='col-1 col-sm-1 col-md-1'>
+            <div class='col-auto client-check-col'>
                 <input type='checkbox' name='login[]' class='login_select' value='<?= $login_cliente; ?>'>
             </div>
 
@@ -631,12 +786,12 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
             ?>
 
-                <div class='col-auto px-1'>
+                <div class='col-auto client-status-col'>
                     <span class="client-status-badge is-disabled" title="Cliente desativado">
                         <i class="fa-solid fa-user-xmark fs-5"></i>
                     </span>
                 </div>
-                <div class='col-auto col-sm-6 col-md-3'>
+                <div class='col-12 col-md-3 client-name-col'>
                     <p class='desativado'>
 
                         <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
@@ -652,7 +807,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                         if ($bloqueado == "sim") {
                     ?>
-                            <div class='col-auto px-1'>
+                            <div class='col-auto client-status-col'>
                                 <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-locked" title="Cliente online e bloqueado">
                                     <i class="fa-solid fa-user-lock fs-5"></i>
                                 </a>
@@ -660,7 +815,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         } else {
                             ?>
 
-                                <div class='col-auto px-1'>
+                                <div class='col-auto client-status-col'>
                                     <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge" title="Cliente online">
                                         <i class="fa-solid fa-user-check fs-5"></i>
                                     </a>
@@ -720,11 +875,9 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                 <?php
                                 if ($bloqueado == "sim") {
                                 ?>
-                                    <div class='col-auto col-sm-6 col-md-3'>
+                                    <div class='col-12 col-md-3 client-name-col'>
                                                  <p class='bloqueado'>
                                             <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
-                                            <a href="#" onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 440, 320);">
-    <img src="img/icon_desbloquear.png" class="icon_g no_print" title="Liberar por X dias" />
 
                                         </p>
 
@@ -732,7 +885,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                     <?php
                                 } elseif ($observacao == "sim") {
                                     ?>
-                                        <div class='col-auto col-sm-6 col-md-3'>
+                                        <div class='col-12 col-md-3 client-name-col'>
 
                                             <p class='observacao'>
                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
@@ -743,7 +896,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                         <?php
                                     } else {
                                         ?>
-                                            <div class='col-auto col-sm-6 col-md-3'>
+                                            <div class='col-12 col-md-3 client-name-col'>
 
                                                 <p><a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a></p>
 
@@ -758,14 +911,14 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                         if ($bloqueado == "sim") {
                                             ?>
-                                                <div class='col-auto px-1'>
+                                                <div class='col-auto client-status-col'>
                                                     <span class="client-status-badge is-locked" title="Cliente offline e bloqueado">
                                                         <i class="fa-solid fa-user-lock fs-5"></i>
                                                     </span>
                                                 <?php
                                             } else {
                                                 ?>
-                                                    <div class='col-auto px-1'>
+                                                    <div class='col-auto client-status-col'>
                                                         <span class="client-status-badge is-offline" title="Cliente offline">
                                                             <i class="fa-solid fa-user-slash fs-5"></i>
                                                         </span>
@@ -822,10 +975,10 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                     <?php
                                                     if ($bloqueado == "sim") {
                                                     ?>
-                                                        <div class='col-auto col-sm-6 col-md-3'>
+                                                        <div class='col-12 col-md-3 client-name-col'>
                                                             <p class='bloqueado'>
                                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
-                                                                <a href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 440, 320);"><img src='img/icon_desbloquear.png' class='icon_g no_print' title='Liberar por x dias' /></a>
+                                                                <a href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 560, 640);"><img src='img/icon_desbloquear.png' class='icon_g no_print' title='Liberar por x dias' /></a>
                                                             </p>
 
                                                             <p class='final_conn no_print'><b>Caiu em:</b> <?= $final_conn; ?></p>
@@ -834,7 +987,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         <?php
                                                     } elseif ($observacao == "sim") {
                                                         ?>
-                                                            <div class='col-auto col-sm-6 col-md-3'>
+                                                            <div class='col-12 col-md-3 client-name-col'>
 
                                                                 <p class='observacao'>
                                                                     <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
@@ -847,7 +1000,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                             <?php
                                                         } else {
                                                             ?>
-                                                                <div class='col-auto col-sm-6 col-md-3'>
+                                                                <div class='col-12 col-md-3 client-name-col'>
 
                                                                     <p>
                                                                         <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
@@ -891,9 +1044,11 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                             <a class="client-action-btn" href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset"></i>
                                                             </a>
-                                                            <a class="client-action-btn is-warning" href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 440, 320); return false;" title="Desbloqueio de Confiança x dias">
+<?php if ($bloqueado == "sim") { ?>
+                                                            <a class="client-action-btn is-warning" href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 560, 640); return false;" title="Desbloqueio de Confianca x dias">
                                                                 <i class="fa-solid fa-lock-open"></i>
                                                             </a>
+                                                            <?php } ?>
                                                             <a class="client-action-btn" href='#' onclick="javascript:abrirJanela('../../cliente_info.<?= $links_ext; ?>?cliente=<?= $uuid_cliente; ?>', 600, 900); return false;" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-circle-info"></i>
                                                             </a>
@@ -964,7 +1119,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         </p>
                                                                 </div>
 
-                                                                <div class='col-12 col-sm-5 col-md-3 text-center'>
+                                                                <div class='col-12 col-md-4 client-address-col text-center'>
                                                                     <p class=''>
                                                                         <?= $end_cliente; ?> <b>nº</b> <?= $numero_casa; ?>
 
@@ -1005,7 +1160,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                                                 <!-- <hr class="d-block d-sm-none"> -->
 
-                                                                <div class='col-4 col-sm-4 col-md-1'>
+                                                                <div class='col-12 col-md-2 client-contact-col'>
                                                                     <p>
                                                                         <?php
                                                                         if ($fones_cliente != '') {
@@ -1051,7 +1206,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                         font-size: 0.8em;
                                                                     }
                                                                 </style>
-                                                                <div class='col-8 col-sm-8 col-md-3'>                                                              
+                                                                <div class='col-12 col-md-3 client-data-col'>                                                              
                                                                     <p class='dados_cliente'>
                                                                     <b>Nome Resumido:</b> <span style="color: blue;"><?= $nome_cliente_res; ?></span>
 

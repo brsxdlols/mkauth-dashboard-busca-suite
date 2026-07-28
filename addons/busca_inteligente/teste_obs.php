@@ -35,7 +35,7 @@ $login_cliente = $_GET['login'];
         }
 
         .unlock-card {
-            width: min(100%, 380px);
+            width: min(100%, 460px);
             background: #ffffff;
             border: 1px solid rgba(209, 219, 230, 0.9);
             border-radius: 18px;
