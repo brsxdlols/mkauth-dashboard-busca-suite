@@ -99,6 +99,25 @@ if (isset($_SESSION['MM_Usuario'])) {
         $i++;
     }
 
+    $cfgDefault = function ($value, $default = 's') {
+        $value = trim((string) $value);
+        return $value === '' ? $default : $value;
+    };
+
+    $exb_ticket_medio = $cfgDefault($exb_ticket_medio, 's');
+    $exb_saldo_conta = $cfgDefault($exb_saldo_conta, 's');
+    $exb_clientes_ramal = $cfgDefault($exb_clientes_ramal, 'n');
+    $exb_balanco_faturamento = $cfgDefault($exb_balanco_faturamento, 's');
+    $exb_balanco_clientes = $cfgDefault($exb_balanco_clientes, 's');
+    $exb_balanco_chamados = $cfgDefault($exb_balanco_chamados, 's');
+    $exb_busca_inteligente = $cfgDefault($exb_busca_inteligente, 's');
+    $contabilizar_bloq_offline = $cfgDefault($contabilizar_bloq_offline, 's');
+    $exb_graficos_em_baixo = $cfgDefault($exb_graficos_em_baixo, 's');
+    $tbl_logs_sistema = $cfgDefault($tbl_logs_sistema, 's');
+    $tbl_chamados_abertos = $cfgDefault($tbl_chamados_abertos, 's');
+    $tbl_contas_pagar = $cfgDefault($tbl_contas_pagar, 'n');
+    $popup_clientes_sessao = $cfgDefault($popup_clientes_sessao, 'n');
+
     ?>
 
     <div class='container-fluid'>

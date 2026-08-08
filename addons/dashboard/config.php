@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../shared/contract_helper.php';
 // INCLUE FUNCOES DE ADDONS -----------------------------------------------------------------------
 include_once('addons.class.php');
 

@@ -691,9 +691,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $mesCad = substr($dataCon, 3, 2);
         $anoCad = substr($dataCon, 6, 4);
 
-        $cli_ativado = $row['cli_ativado']; // Extrai diretamente o valor de cli_ativado
-        $baseRenovacao = !empty($dataCon) && strtotime($dataCon) ? $dataCon : date('Y-m-d');
-        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($baseRenovacao)));
+        $cli_ativado = $row['cli_ativado'];
 
         
 
@@ -705,6 +703,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $cli_email = $row['email'];
         $cli_parc_abertas = $row['parc_abertas'];
         $cli_tit_abertos = $row['tit_abertos'];
+
+        $contract_row = mka_contract_get_latest($link, $uuid_cliente, $login_cliente);
+        $contract_status = mka_contract_build_status($contract_row);
+        $contract_inline = mka_contract_render_inline($contract_status);
 
         $caixa_herm = $row['caixa_herm'];
         $porta_splitter = $row['porta_splitter'];
@@ -1086,6 +1088,9 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                             <a class="client-action-btn" href='#' onclick="javascript:abrirJanela('../../cliente_info.<?= $links_ext; ?>?cliente=<?= $uuid_cliente; ?>', 600, 900); return false;" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-circle-info"></i>
                                                             </a>
+                                                            <a class="client-action-btn" href='#' onclick="abrirJanela('contrato_popup.php?uuid=<?= urlencode($uuid_cliente); ?>&login=<?= urlencode($login_cliente); ?>&nome=<?= urlencode($nome_cliente); ?>', 620, 760); return false;" title="Ativar ou renovar contrato">
+                                                                <i class="fa-solid fa-file-signature"></i>
+                                                            </a>
                                                             <?php if ($cli_email != '') { ?>
                                                                 <a class="client-action-btn" href='mailto:<?= $cli_email; ?>' title='Enviar e-mail para <?= $nome_cliente; ?>'>
                                                                     <i class="fa-solid fa-envelope"></i>
@@ -1162,7 +1167,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                         <span class='no_print'><?= $cidade_cliente; ?> / <?= $uf_cliente; ?></span><br>
 
                                                                         <?php
-                                                                        echo "<span class='client-contract-line'><span><b>Score:</b> {$showScore}</span><span>" . diffDate(date('Y-m-d'), $dataRenovacao) . "</span></span>";
+                                                                        echo "<span class='client-contract-line'><span><b>Score:</b> {$showScore}</span><span>{$contract_inline}</span></span>";
 
                                                                         $loc_cliente_limpo = trim((string) $loc_cliente);
                                                                         $mapa_link = '';

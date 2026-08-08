@@ -1,4 +1,5 @@
 <?php include('addons.class.php'); ?>
+<?php require_once __DIR__ . '/../shared/contract_helper.php'; ?>
 
 <?php
 
@@ -76,25 +77,13 @@ $now = date('Y-m-d');
 
         function diffDate($ds, $de)
         {
-            $d1 = new DateTime($ds);
-            $d2 = new DateTime($de);
-    
-            // Resgata diferenca entre as datas
-            //$dateInterval = ;
-    
-            if ($d1 < $d2) {
-                $diff = $d1->diff($d2)->days;
-            } else {
-                $diff = ($d1->diff($d2)->days) * (-1);
-            }
-    
-            if ($diff < 0) {
-                return "<b>Contrato:</b> <span class='conn_alerta'>Vencido</span>";
-            } else if ($diff <= 60) {
-                return "<b>Contrato:</b> A vencer";
-            } else {
-                return "<b>Contrato:</b> <span class='conn_boa'>Ativo</span>";
-            }
+            $status_info = mka_contract_build_status(array(
+                'end_date' => $de,
+                'duration_months' => 12,
+                'start_date' => $ds,
+            ), $ds);
+
+            return mka_contract_render_inline($status_info);
         }
     
         //Funçço parar verificaçço de String iniciada por um termo

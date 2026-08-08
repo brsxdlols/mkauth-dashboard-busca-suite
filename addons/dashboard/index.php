@@ -639,6 +639,23 @@ if ($query_ler_notificacoes) {
             pointer-events: none;
         }
 
+        .dashboard-session-toast-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 0 4px;
+            pointer-events: auto;
+        }
+
+        .dashboard-session-toast-toolbar.is-hidden {
+            display: none;
+        }
+
+        .dashboard-session-toast-list {
+            display: grid;
+            gap: 12px;
+        }
+
         .dashboard-session-toast {
             display: flex;
             gap: 12px;
@@ -776,6 +793,18 @@ if ($query_ler_notificacoes) {
 
         .dashboard-session-toast-link:hover {
             color: #153a5b;
+        }
+
+        .dashboard-session-toast-link.is-secondary {
+            color: #475569;
+        }
+
+        .dashboard-session-toast.is-guide {
+            border-left: 5px solid #2563eb;
+        }
+
+        .dashboard-session-toast.is-guide .dashboard-session-toast-icon {
+            background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
         }
 
         @keyframes dashboardToastIn {
@@ -954,6 +983,25 @@ if ($query_ler_notificacoes) {
             $texto = $cfg['texto'];
         }
 
+        $cfgDefault = function ($value, $default = 's') {
+            $value = trim((string) $value);
+            return $value === '' ? $default : $value;
+        };
+
+        $exb_ticket_medio = $cfgDefault(isset($exb_ticket_medio) ? $exb_ticket_medio : '', 's');
+        $exb_saldo_conta = $cfgDefault(isset($exb_saldo_conta) ? $exb_saldo_conta : '', 's');
+        $exb_clientes_ramal = $cfgDefault(isset($exb_clientes_ramal) ? $exb_clientes_ramal : '', 'n');
+        $exb_balanco_faturamento = $cfgDefault(isset($exb_balanco_faturamento) ? $exb_balanco_faturamento : '', 's');
+        $exb_balanco_clientes = $cfgDefault(isset($exb_balanco_clientes) ? $exb_balanco_clientes : '', 's');
+        $exb_balanco_chamados = $cfgDefault(isset($exb_balanco_chamados) ? $exb_balanco_chamados : '', 's');
+        $exb_busca_inteligente = $cfgDefault(isset($exb_busca_inteligente) ? $exb_busca_inteligente : '', 's');
+        $contabilizar_bloq_offline = $cfgDefault(isset($contabilizar_bloq_offline) ? $contabilizar_bloq_offline : '', 's');
+        $exb_graficos_em_baixo = $cfgDefault(isset($exb_graficos_em_baixo) ? $exb_graficos_em_baixo : '', 's');
+        $tbl_logs_sistema = $cfgDefault(isset($tbl_logs_sistema) ? $tbl_logs_sistema : '', 's');
+        $tbl_chamados_abertos = $cfgDefault(isset($tbl_chamados_abertos) ? $tbl_chamados_abertos : '', 's');
+        $tbl_contas_pagar = $cfgDefault(isset($tbl_contas_pagar) ? $tbl_contas_pagar : '', 'n');
+        $popup_clientes_sessao = $cfgDefault(isset($popup_clientes_sessao) ? $popup_clientes_sessao : '', 'n');
+
 
         // Relação de grupos do usuário logado
 
@@ -1047,7 +1095,7 @@ if ($query_ler_notificacoes) {
             $dashboard_session_toasts = array();
             if ($popup_clientes_sessao === 's') {
                 $query_dashboard_session_toasts = mysqli_query($conn, "
-                    SELECT evento, username, nome, concentrador, data_evento, bloqueado, cli_ativado
+                    SELECT evento, username, nome, concentrador, data_evento, event_id, bloqueado, cli_ativado
                     FROM (
                         SELECT 
                             'login' AS evento,
@@ -1055,6 +1103,7 @@ if ($query_ler_notificacoes) {
                             COALESCE(NULLIF(c.nome, ''), r.username) AS nome,
                             COALESCE(NULLIF(r.nasipaddress, ''), '-') AS concentrador,
                             r.acctstarttime AS data_evento,
+                            CONCAT('login-', r.radacctid) AS event_id,
                             COALESCE(NULLIF(c.bloqueado, ''), 'nao') AS bloqueado,
                             COALESCE(NULLIF(c.cli_ativado, ''), 's') AS cli_ativado
                         FROM radacct r
@@ -1070,6 +1119,7 @@ if ($query_ler_notificacoes) {
                             COALESCE(NULLIF(c.nome, ''), r.username) AS nome,
                             COALESCE(NULLIF(r.nasipaddress, ''), '-') AS concentrador,
                             r.acctstoptime AS data_evento,
+                            CONCAT('logout-', r.radacctid) AS event_id,
                             COALESCE(NULLIF(c.bloqueado, ''), 'nao') AS bloqueado,
                             COALESCE(NULLIF(c.cli_ativado, ''), 's') AS cli_ativado
                         FROM radacct r
@@ -1091,6 +1141,11 @@ if ($query_ler_notificacoes) {
             if (!empty($dashboard_session_toasts)) {
             ?>
                 <div class="dashboard-session-toast-stack" id="dashboard-session-toast-stack">
+                    <div class="dashboard-session-toast-toolbar" id="dashboard-session-toast-toolbar">
+                        <button type="button" class="dashboard-session-toast-link is-secondary" data-clear-session-popups="1">Limpar</button>
+                        <button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button>
+                    </div>
+                    <div class="dashboard-session-toast-list" id="dashboard-session-toast-list">
                     <?php foreach ($dashboard_session_toasts as $session_toast) {
                         $is_login = $session_toast['evento'] === 'login';
                         $toast_class = $is_login ? 'is-login' : 'is-logout';
@@ -1114,7 +1169,7 @@ if ($query_ler_notificacoes) {
                             $toast_contract_icon = 'bi bi-pause-circle';
                         }
                     ?>
-                        <div class="dashboard-session-toast <?= $toast_class; ?>">
+                        <div class="dashboard-session-toast <?= $toast_class; ?>" data-event-id="<?= htmlspecialchars((string) $session_toast['event_id'], ENT_QUOTES, 'UTF-8'); ?>">
                             <span class="dashboard-session-toast-icon">
                                 <i class="<?= $toast_icon; ?>"></i>
                             </span>
@@ -1134,12 +1189,10 @@ if ($query_ler_notificacoes) {
                                     <i class="<?= $toast_contract_icon; ?>"></i>
                                     <span><?= htmlspecialchars($toast_contract_label, ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
-                                <div class="dashboard-session-toast-actions">
-                                    <button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button>
-                                </div>
                             </div>
                         </div>
                     <?php } ?>
+                    </div>
                 </div>
             <?php
             }
@@ -1964,6 +2017,45 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     return stack;
                 }
 
+                function ensureToastToolbar(stack) {
+                    var toolbar = document.getElementById('dashboard-session-toast-toolbar');
+                    if (!toolbar) {
+                        toolbar = document.createElement('div');
+                        toolbar.id = 'dashboard-session-toast-toolbar';
+                        toolbar.className = 'dashboard-session-toast-toolbar';
+                        toolbar.innerHTML =
+                            '<button type="button" class="dashboard-session-toast-link is-secondary" data-clear-session-popups="1">Limpar</button>' +
+                            '<button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button>';
+                        stack.appendChild(toolbar);
+                    }
+                    return toolbar;
+                }
+
+                function ensureToastList(stack) {
+                    var list = document.getElementById('dashboard-session-toast-list');
+                    if (!list) {
+                        list = document.createElement('div');
+                        list.id = 'dashboard-session-toast-list';
+                        list.className = 'dashboard-session-toast-list';
+                        stack.appendChild(list);
+                    }
+                    return list;
+                }
+
+                function toggleToastToolbar() {
+                    var toolbar = document.getElementById('dashboard-session-toast-toolbar');
+                    var list = document.getElementById('dashboard-session-toast-list');
+                    if (!toolbar || !list) {
+                        return;
+                    }
+
+                    if (list.children.length > 0 && window.dashboardSessionPopupEnabled) {
+                        toolbar.classList.remove('is-hidden');
+                    } else {
+                        toolbar.classList.add('is-hidden');
+                    }
+                }
+
                 function scheduleToastRemoval(item) {
                     window.setTimeout(function() {
                         item.classList.add('is-fading');
@@ -1971,24 +2063,28 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             if (item && item.parentNode) {
                                 item.parentNode.removeChild(item);
                             }
+                            toggleToastToolbar();
                             var stack = document.getElementById('dashboard-session-toast-stack');
-                            if (stack && stack.children.length === 0) {
+                            var list = document.getElementById('dashboard-session-toast-list');
+                            if (stack && list && list.children.length === 0) {
                                 stack.remove();
                             }
                         }, 560);
-                    }, 5200);
+                    }, 1000);
                 }
 
                 function createSessionToast(eventData) {
                     var stack = ensureToastStack();
+                    var list = ensureToastList(stack);
+                    ensureToastToolbar(stack);
                     var item = document.createElement('div');
                     var isLogin = eventData.type === 'login';
 
-                    item.className = 'dashboard-session-toast ' + (isLogin ? 'is-login' : 'is-logout');
+                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isLogin ? 'is-login' : 'is-logout'));
                     item.setAttribute('data-event-id', eventData.id);
 
-                    var iconClass = isLogin ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right';
-                    var label = isLogin ? 'Cliente conectou' : 'Cliente desconectou';
+                    var iconClass = eventData.icon ? eventData.icon : (isLogin ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right');
+                    var label = eventData.label ? eventData.label : (isLogin ? 'Cliente conectou' : 'Cliente desconectou');
                     var concentratorHtml = '';
                     if (eventData.concentrator && eventData.concentrator !== '-') {
                         concentratorHtml = '<span><i class="bi bi-hdd-network"></i>' + eventData.concentrator + '</span>';
@@ -2007,12 +2103,36 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         concentratorHtml +
                         '<span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span>' +
                         '</div>' +
-                        '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>' +
-                        '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button></div>' +
+                        (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') +
                         '</div>';
 
-                    stack.prepend(item);
+                    list.prepend(item);
+                    toggleToastToolbar();
                     scheduleToastRemoval(item);
+                }
+
+                function clearVisibleSessionToasts() {
+                    jQuery('#dashboard-session-toast-list .dashboard-session-toast').remove();
+                    toggleToastToolbar();
+                    jQuery('#dashboard-session-toast-stack').remove();
+                }
+
+                function showSessionGuideToast() {
+                    createSessionToast({
+                        id: 'guide-' + Date.now(),
+                        type: 'guide',
+                        label: 'Notificações pausadas',
+                        name: 'Você pode ativar novamente em Configurações > Popup de Clientes ao Logar/Deslogar.',
+                        login: 'dashboard',
+                        concentrator: '',
+                        formatted_time: '',
+                        contract_status: 'inactive',
+                        contract_label: 'Reativação manual',
+                        contract_icon: 'bi bi-gear-fill',
+                        icon: 'bi bi-info-circle-fill',
+                        show_contract: false,
+                        guide: true
+                    });
                 }
 
                 function disableSessionPopups() {
@@ -2027,6 +2147,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         window.dashboardSessionPopupEnabled = false;
                         sessionStorage.setItem('dashboard-session-popups-disabled', '1');
                         jQuery('#dashboard-session-toast-stack').remove();
+                        showSessionGuideToast();
                     });
                 }
 
@@ -2040,6 +2161,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             scheduleToastRemoval(item);
                         }, index * 240);
                     });
+                    toggleToastToolbar();
                 }
 
                 function fetchSessionToasts() {
@@ -2070,6 +2192,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 jQuery(document).on('click', '[data-disable-session-popups="1"]', function(event) {
                     event.preventDefault();
                     disableSessionPopups();
+                });
+
+                jQuery(document).on('click', '[data-clear-session-popups="1"]', function(event) {
+                    event.preventDefault();
+                    clearVisibleSessionToasts();
                 });
 
                 if (sessionStorage.getItem('dashboard-session-popups-disabled') === '1') {
