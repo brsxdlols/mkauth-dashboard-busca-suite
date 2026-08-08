@@ -40,6 +40,692 @@ if ($query_ler_notificacoes) {
 
     <link href="css/estilo.css" rel="stylesheet" type="text/css" />
 
+    <style>
+        html,
+        body,
+        .container-fluid,
+        .container,
+        .row,
+        .card,
+        .card-body,
+        .card-header {
+            background-color: #ffffff;
+        }
+
+        body {
+            background: #ffffff !important;
+            color: #243041;
+        }
+
+        html,
+        body,
+        #pagina,
+        #conteudo,
+        .container-fluid {
+            background: #ffffff !important;
+        }
+
+        .dashboard-surface {
+            border: 1px solid rgba(203, 213, 225, 0.72);
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 14px 42px rgba(15, 23, 42, 0.07);
+            overflow: hidden;
+        }
+
+        .dashboard-section-title {
+            margin: 0;
+            padding: 16px 18px 10px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #223048;
+        }
+
+        .dashboard-section-body {
+            padding: 6px 12px 14px;
+        }
+
+        .dashboard-stat-grid {
+            display: grid !important;
+            grid-template-columns: repeat(10, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .dashboard-stat-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 126px;
+            padding: 12px 14px 14px;
+            border-radius: 16px;
+            text-decoration: none !important;
+            color: inherit !important;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+            overflow: hidden;
+        }
+
+        .dashboard-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+            filter: saturate(1.03);
+        }
+
+        .dashboard-stat-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 42%);
+            pointer-events: none;
+        }
+
+        .dashboard-stat-head,
+        .dashboard-stat-foot,
+        .dashboard-stat-value {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-stat-head {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+
+        .dashboard-stat-value {
+            margin: 12px 0 0;
+            font-size: clamp(2.6rem, 1.6vw + 1.5rem, 3.8rem);
+            line-height: 0.9;
+            font-weight: 300;
+            letter-spacing: 0;
+            text-align: center;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .dashboard-stat-foot {
+            margin-top: 12px;
+            padding-top: 9px;
+            font-size: 1.12rem;
+            font-weight: 600;
+            line-height: 1.15;
+            text-align: center;
+            border-top: 1px solid rgba(15, 23, 42, 0.10);
+        }
+
+        .dashboard-stat-card.is-primary {
+            background: linear-gradient(180deg, #2f80ff 0%, #1f6de8 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-stat-card.is-light {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: #1f2937 !important;
+            border: 1px solid rgba(203, 213, 225, 0.88);
+        }
+
+        .dashboard-stat-card.is-info {
+            background: linear-gradient(180deg, #35c8eb 0%, #22b8db 100%);
+            color: #0f172a !important;
+        }
+
+        .dashboard-stat-card.is-observation {
+            background: linear-gradient(180deg, #96edba 0%, #80E7AB 100%);
+            color: #0f5132 !important;
+        }
+
+        .dashboard-stat-card.is-danger {
+            background: linear-gradient(180deg, #eb455a 0%, #df3148 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-stat-card.is-warning {
+            background: linear-gradient(180deg, #ffcf35 0%, #ffc107 100%);
+            color: #2f2500 !important;
+        }
+
+        .dashboard-stat-card.is-success {
+            background: linear-gradient(180deg, #21945a 0%, #1f8b54 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-stat-card.is-dark {
+            background: linear-gradient(180deg, #2b3138 0%, #1f242b 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-stat-card.is-outline-danger {
+            background: linear-gradient(180deg, #ffffff 0%, #fffdfd 100%);
+            color: #e23f53 !important;
+            border: 1px solid rgba(248, 113, 113, 0.72);
+        }
+
+        .dashboard-stat-card.is-outline-danger .dashboard-stat-foot {
+            border-top-color: rgba(248, 113, 113, 0.22);
+        }
+
+        .dashboard-attendance-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .dashboard-quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 8px 8px 2px;
+        }
+
+        .dashboard-quick-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+
+        .dashboard-quick-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(15, 23, 42, 0.14);
+            filter: brightness(1.02);
+        }
+
+        .dashboard-quick-link.is-primary {
+            background: linear-gradient(180deg, #2f80ff 0%, #1f6de8 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-quick-link.is-success {
+            background: linear-gradient(180deg, #23995f 0%, #1d8d56 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-quick-link.is-secondary {
+            background: linear-gradient(180deg, #6f7a86 0%, #5d6773 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-ramal-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .dashboard-ramal-panel {
+            border: 1px solid rgba(203, 213, 225, 0.9);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+        }
+
+        .dashboard-ramal-title {
+            padding: 12px 14px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #223048;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+        }
+
+        .dashboard-ramal-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px;
+            padding: 6px;
+        }
+
+        .dashboard-ramal-stats .dashboard-stat-card {
+            min-height: 108px;
+            padding: 10px 10px 12px;
+            border-radius: 12px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .dashboard-ramal-stats .dashboard-stat-head {
+            font-size: 12px;
+        }
+
+        .dashboard-ramal-stats .dashboard-stat-value {
+            font-size: clamp(1.85rem, 1.2vw + 1rem, 2.45rem);
+        }
+
+        .dashboard-ramal-stats .dashboard-stat-foot {
+            display: none;
+        }
+
+        .dashboard-hero-space {
+            background: #ffffff;
+        }
+
+        @media (max-width: 1399.98px) {
+            .dashboard-stat-grid {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 1199.98px) {
+            .dashboard-stat-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .dashboard-attendance-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .dashboard-section-title {
+                padding: 14px 14px 8px;
+            }
+
+            .dashboard-section-body {
+                padding: 4px 8px 12px;
+            }
+
+            .dashboard-stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .dashboard-attendance-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .dashboard-stat-card {
+                min-height: 132px;
+                padding: 10px 10px 12px;
+                border-radius: 14px;
+            }
+
+            .dashboard-stat-head {
+                font-size: 12px;
+            }
+
+            .dashboard-stat-value {
+                font-size: clamp(2.4rem, 5vw + 1rem, 3.1rem);
+            }
+
+            .dashboard-stat-foot {
+                margin-top: 12px;
+                padding-top: 8px;
+                font-size: 1.08rem;
+            }
+
+            .dashboard-ramal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .dashboard-attendance-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .dashboard-stat-card {
+                min-height: 138px;
+            }
+
+            .dashboard-quick-links {
+                justify-content: flex-start;
+            }
+
+            .dashboard-ramal-stats .dashboard-stat-card {
+                min-height: 96px;
+            }
+        }
+
+        .installation-alert-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #fff7d6 0%, #fff1b1 100%);
+            border: 1px solid rgba(229, 194, 84, 0.45);
+            box-shadow: 0 10px 24px rgba(168, 120, 0, 0.12);
+            color: #5f4300;
+            text-decoration: none;
+        }
+
+        .installation-alert-link:hover {
+            color: #5f4300;
+            text-decoration: none;
+            box-shadow: 0 12px 28px rgba(168, 120, 0, 0.18);
+        }
+
+        .installation-alert-main {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .installation-alert-icon {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.72);
+            color: #b77900;
+            font-size: 24px;
+            flex: 0 0 auto;
+        }
+
+        .installation-alert-icon::after {
+            content: "Novo";
+            position: absolute;
+            margin-top: 44px;
+            margin-left: 38px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #16a34a;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            box-shadow: 0 6px 12px rgba(22, 163, 74, 0.18);
+        }
+
+        .installation-alert-title {
+            margin: 0 0 2px;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        #solicitacoes-instalacao {
+            scroll-margin-top: 110px;
+        }
+
+        .installation-highlight-target {
+            position: relative;
+            border-radius: 14px;
+            transition: box-shadow 0.35s ease, background-color 0.35s ease;
+        }
+
+        .installation-highlight-target.is-flashing {
+            animation: installation-highlight-fade 2.2s ease forwards;
+        }
+
+        @keyframes installation-highlight-fade {
+            0% {
+                background-color: rgba(255, 244, 186, 0.96);
+                box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.78), 0 16px 36px rgba(234, 179, 8, 0.20);
+            }
+            55% {
+                background-color: rgba(255, 248, 216, 0.78);
+                box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.64), 0 12px 28px rgba(234, 179, 8, 0.14);
+            }
+            100% {
+                background-color: transparent;
+                box-shadow: 0 0 0 0 rgba(255, 193, 7, 0), 0 0 0 rgba(234, 179, 8, 0);
+            }
+        }
+
+        .installation-alert-copy {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #7a5b10;
+        }
+
+        .installation-alert-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.86);
+            color: #7a4f00;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+
+        @media (max-width: 767.98px) {
+            .installation-alert-link {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .installation-alert-cta {
+                width: 100%;
+            }
+        }
+
+        .radius-alert-box {
+            position: relative;
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #fff7d6 0%, #fff0bf 100%);
+            border-left: 6px solid #f2b84b;
+            box-shadow: 0 12px 28px rgba(168, 120, 0, 0.12);
+            color: #5b4300;
+        }
+
+        .radius-alert-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.76);
+            color: #c27a00;
+            font-size: 22px;
+        }
+
+        .radius-alert-content {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .radius-alert-title {
+            margin: 0 0 6px;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .radius-alert-copy {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.45;
+            color: #6b4b00;
+        }
+
+        .radius-alert-list {
+            margin: 10px 0 0;
+            padding-left: 18px;
+        }
+
+        .radius-alert-list li {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .radius-alert-meta {
+            display: block;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #86630f;
+        }
+
+        .radius-alert-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            border: 0;
+            background: transparent;
+            color: #8b6a19;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .radius-alert-box.is-hidden {
+            display: none;
+        }
+
+        .dashboard-session-toast-stack {
+            position: fixed;
+            top: 84px;
+            right: 24px;
+            z-index: 1060;
+            width: min(360px, calc(100vw - 32px));
+            display: grid;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .dashboard-session-toast {
+            display: flex;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(25, 43, 72, 0.08);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 38px rgba(26, 41, 64, 0.18);
+            color: #243041;
+            pointer-events: auto;
+            opacity: 0;
+            transform: translateY(-12px);
+            animation: dashboardToastIn 0.28s ease forwards;
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-session-toast.is-login {
+            border-left: 5px solid #1e9b5d;
+        }
+
+        .dashboard-session-toast.is-logout {
+            border-left: 5px solid #f05d5e;
+        }
+
+        .dashboard-session-toast.is-fading {
+            animation: dashboardToastOut 0.55s ease forwards;
+        }
+
+        .dashboard-session-toast-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #ffffff;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .dashboard-session-toast.is-login .dashboard-session-toast-icon {
+            background: linear-gradient(135deg, #23b26d 0%, #15824e 100%);
+        }
+
+        .dashboard-session-toast.is-logout .dashboard-session-toast-icon {
+            background: linear-gradient(135deg, #ff7b7d 0%, #e04143 100%);
+        }
+
+        .dashboard-session-toast-content {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .dashboard-session-toast-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #7c8aa5;
+        }
+
+        .dashboard-session-toast-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.28;
+            color: #22324d;
+        }
+
+        .dashboard-session-toast-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+            margin-top: 7px;
+            font-size: 12px;
+            color: #61708d;
+        }
+
+        .dashboard-session-toast-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        @keyframes dashboardToastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes dashboardToastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .dashboard-session-toast-stack {
+                top: 68px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+        }
+    </style>
 
 
 </head>
@@ -70,6 +756,7 @@ if ($query_ler_notificacoes) {
             tbl_logs_sistema VARCHAR(1) NOT NULL DEFAULT 's',
             tbl_chamados_abertos VARCHAR(1) NOT NULL DEFAULT 's',
             tbl_contas_pagar VARCHAR(1) NOT NULL DEFAULT 's',
+            popup_clientes_sessao VARCHAR(1) NOT NULL DEFAULT 'n',
             qtd_meses_graficos INT NOT NULL DEFAULT 3,
             limite_ticket INT NOT NULL DEFAULT 1000,
             link TEXT,
@@ -143,6 +830,18 @@ if ($query_ler_notificacoes) {
             }
         }
 
+        $query5 = mysqli_query($conn, "SHOW COLUMNS FROM dashboard_am_sis_cfg WHERE field = 'popup_clientes_sessao'");
+
+        if (mysqli_num_rows($query5) == 0) {
+            $query_alterar_table = mysqli_query($conn, "ALTER TABLE dashboard_am_sis_cfg 
+            ADD popup_clientes_sessao VARCHAR(1) NOT NULL DEFAULT 'n'
+            AFTER tbl_contas_pagar");
+
+            if (!$query_alterar_table) {
+                echo mysqli_error($conn);
+            }
+        }
+
         $query_atual_cfg = mysqli_query($conn, "SELECT * FROM dashboard_am_sis_cfg");
         if (mysqli_num_rows($query_atual_cfg) == 0) {
             $query_cfg_inicial = mysqli_query($conn, "INSERT INTO dashboard_am_sis_cfg (id) VALUES (1)");
@@ -163,6 +862,7 @@ if ($query_ler_notificacoes) {
             $tbl_logs_sistema = $cfg['tbl_logs_sistema'];
             $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
             $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
+            $popup_clientes_sessao = isset($cfg['popup_clientes_sessao']) ? $cfg['popup_clientes_sessao'] : 'n';
             $qtd_meses_graficos = $cfg['qtd_meses_graficos'];
             $limite_ticket = $cfg['limite_ticket'];
             $link = $cfg['link'];
@@ -262,6 +962,191 @@ if ($query_ler_notificacoes) {
                 </div>
             </div>
 
+            <?php
+            $dashboard_session_toasts = array();
+            if ($popup_clientes_sessao === 's') {
+                $query_dashboard_session_toasts = mysqli_query($conn, "
+                    SELECT evento, username, nome, concentrador, data_evento
+                    FROM (
+                        SELECT 
+                            'login' AS evento,
+                            r.username,
+                            COALESCE(NULLIF(c.nome, ''), r.username) AS nome,
+                            COALESCE(NULLIF(r.nasipaddress, ''), '-') AS concentrador,
+                            r.acctstarttime AS data_evento
+                        FROM radacct r
+                        LEFT JOIN sis_cliente c ON c.login = r.username
+                        WHERE r.acctstarttime IS NOT NULL
+                        AND r.acctstarttime >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+
+                        UNION ALL
+
+                        SELECT 
+                            'logout' AS evento,
+                            r.username,
+                            COALESCE(NULLIF(c.nome, ''), r.username) AS nome,
+                            COALESCE(NULLIF(r.nasipaddress, ''), '-') AS concentrador,
+                            r.acctstoptime AS data_evento
+                        FROM radacct r
+                        LEFT JOIN sis_cliente c ON c.login = r.username
+                        WHERE r.acctstoptime IS NOT NULL
+                        AND r.acctstoptime >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+                    ) AS eventos_recent
+                    ORDER BY data_evento DESC
+                    LIMIT 4
+                ");
+
+                if ($query_dashboard_session_toasts) {
+                    while ($row_session_toast = mysqli_fetch_assoc($query_dashboard_session_toasts)) {
+                        $dashboard_session_toasts[] = $row_session_toast;
+                    }
+                }
+            }
+
+            if (!empty($dashboard_session_toasts)) {
+            ?>
+                <div class="dashboard-session-toast-stack" id="dashboard-session-toast-stack">
+                    <?php foreach ($dashboard_session_toasts as $session_toast) {
+                        $is_login = $session_toast['evento'] === 'login';
+                        $toast_class = $is_login ? 'is-login' : 'is-logout';
+                        $toast_icon = $is_login ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right';
+                        $toast_label = $is_login ? 'Cliente conectou' : 'Cliente desconectou';
+                        $toast_title = trim((string) $session_toast['nome']);
+                        $toast_login = trim((string) $session_toast['username']);
+                        $toast_concentrador = trim((string) $session_toast['concentrador']);
+                        $toast_data = !empty($session_toast['data_evento']) ? date('d/m H:i:s', strtotime($session_toast['data_evento'])) : '';
+                    ?>
+                        <div class="dashboard-session-toast <?= $toast_class; ?>">
+                            <span class="dashboard-session-toast-icon">
+                                <i class="<?= $toast_icon; ?>"></i>
+                            </span>
+                            <div class="dashboard-session-toast-content">
+                                <span class="dashboard-session-toast-label"><?= $toast_label; ?></span>
+                                <p class="dashboard-session-toast-title"><?= htmlspecialchars($toast_title, ENT_QUOTES, 'UTF-8'); ?></p>
+                                <div class="dashboard-session-toast-meta">
+                                    <span><i class="bi bi-person-badge"></i><?= htmlspecialchars($toast_login, ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <?php if ($toast_concentrador !== '' && $toast_concentrador !== '-') { ?>
+                                        <span><i class="bi bi-hdd-network"></i><?= htmlspecialchars($toast_concentrador, ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <?php } ?>
+                                    <?php if ($toast_data !== '') { ?>
+                                        <span><i class="bi bi-clock"></i><?= $toast_data; ?></span>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+            <?php
+            }
+
+            if (permissao('perm_instalacao')) {
+                $query_alerta_instalacao = mysqli_query($conn, "
+                    SELECT uuid_solic, nome, login, processamento
+                    FROM sis_solic
+                    WHERE status = 'aberto'
+                    AND (datainst <= '$nova_data_1' OR visita <= '$nova_data_1' OR datainst IS NULL)
+                    ORDER BY processamento DESC, datainst
+                    LIMIT 1
+                ");
+
+                $query_total_alerta_instalacao = mysqli_query($conn, "
+                    SELECT COUNT(*) AS total
+                    FROM sis_solic
+                    WHERE status = 'aberto'
+                    AND (datainst <= '$nova_data_1' OR visita <= '$nova_data_1' OR datainst IS NULL)
+                ");
+
+                $total_alerta_instalacao = 0;
+                if ($query_total_alerta_instalacao) {
+                    $row_total_alerta_instalacao = mysqli_fetch_assoc($query_total_alerta_instalacao);
+                    $total_alerta_instalacao = (int) $row_total_alerta_instalacao['total'];
+                }
+
+                if ($total_alerta_instalacao > 0 && $query_alerta_instalacao && ($alerta_instalacao = mysqli_fetch_assoc($query_alerta_instalacao))) {
+                    $alerta_nome = trim((string) $alerta_instalacao['nome']);
+                    $alerta_login = trim((string) $alerta_instalacao['login']);
+                    $alerta_processamento = !empty($alerta_instalacao['processamento']) ? date('d/m/Y', strtotime($alerta_instalacao['processamento'])) : date('d/m/Y');
+                    $alerta_titulo = 'Um novo cadastro foi realizado';
+                    $alerta_resumo = $total_alerta_instalacao === 1
+                        ? "Foi solicitada uma nova instalação pelo site e ela está aguardando atendimento."
+                        : "Foram solicitadas $total_alerta_instalacao novas instalações pelo site e elas estão aguardando atendimento.";
+            ?>
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <a href="#solicitacoes-instalacao" class="installation-alert-link" id="installation-alert-link">
+                                <div class="installation-alert-main">
+                                    <span class="installation-alert-icon">
+                                        <i class="bi bi-journal-plus"></i>
+                                    </span>
+                                    <div>
+                                        <p class="installation-alert-title"><?= $alerta_titulo; ?></p>
+                                        <p class="installation-alert-copy"><?= $alerta_resumo; ?> Último cadastro: <strong><?= $alerta_nome; ?> [<?= $alerta_login; ?>]</strong> em <?= $alerta_processamento; ?>.</p>
+                                    </div>
+                                </div>
+                                <span class="installation-alert-cta">Ver na dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+            <?php
+                }
+            }
+            ?>
+
+            <?php
+            $radius_state_file = '/var/lib/mkauth_radius_ppp_reconcile/status.json';
+            $radius_alert_items = array();
+            $radius_alert_generated_at = '';
+
+            if (@is_file($radius_state_file) && @is_readable($radius_state_file)) {
+                $radius_state_raw = @file_get_contents($radius_state_file);
+                $radius_state = json_decode((string) $radius_state_raw, true);
+
+                if (is_array($radius_state)) {
+                    if (!empty($radius_state['generated_at'])) {
+                        $radius_alert_generated_at = date('d/m/Y H:i:s', strtotime($radius_state['generated_at']));
+                    }
+
+                    if (!empty($radius_state['failed_routers']) && is_array($radius_state['failed_routers'])) {
+                        foreach ($radius_state['failed_routers'] as $failed_router) {
+                            $router_name = trim((string) ($failed_router['name'] ?? ''));
+                            $router_ip = trim((string) ($failed_router['router'] ?? ''));
+                            if ($router_name === '' && $router_ip === '') {
+                                continue;
+                            }
+                            $radius_alert_items[] = trim($router_name . ' - ' . $router_ip, ' -');
+                        }
+                    }
+                }
+            }
+
+            if (!empty($radius_alert_items)) {
+            ?>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <div class="radius-alert-box" id="radius-alert-box">
+                            <span class="radius-alert-icon">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </span>
+                            <div class="radius-alert-content">
+                                <p class="radius-alert-title">Alerta de integração Radius</p>
+                                <p class="radius-alert-copy">Existe ramal/NAS com falha na API do MikroTik. Verifique usuário `mkauth`, senha do ramal, porta `8728` ou rota VPN.</p>
+                                <ul class="radius-alert-list">
+                                    <?php foreach ($radius_alert_items as $radius_alert_item) { ?>
+                                        <li><strong><?= htmlspecialchars($radius_alert_item, ENT_QUOTES, 'UTF-8'); ?></strong></li>
+                                    <?php } ?>
+                                </ul>
+                                <?php if ($radius_alert_generated_at !== '') { ?>
+                                    <span class="radius-alert-meta">Última verificação: <?= $radius_alert_generated_at; ?></span>
+                                <?php } ?>
+                            </div>
+                            <button type="button" class="radius-alert-close" id="radius-alert-close" aria-label="Fechar alerta">×</button>
+                        </div>
+                    </div>
+                </div>
+            <?php
+            }
+            ?>
+
         <?php
         }
 
@@ -343,6 +1228,19 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $perc_clientes_sem_carne = number_format($tot_sem_carne / $tot_clientes * 100, 2);
         $perc_clientes_sem_titulo = number_format($tot_sem_titulo / $tot_clientes * 100, 2);
 
+        $dashboard_stats = array(
+            array('label' => 'Total', 'value' => $tot_clientes, 'percent' => '100.00%', 'href' => '/admin/addons/busca_inteligente/index.php', 'theme' => 'is-primary', 'text' => 'text-light'),
+            array('label' => 'Adicional', 'value' => $c_add, 'percent' => $perc_clientes_adicional . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=adicionais', 'theme' => 'is-light', 'text' => 'text-dark'),
+            array('label' => 'Livres', 'value' => $tot_clientes_livres, 'percent' => $perc_clientes_livres . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=', 'theme' => 'is-info', 'text' => 'text-dark'),
+            array('label' => 'Observação', 'value' => $cli_obs, 'percent' => $perc_clientes_observacao . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=obs', 'theme' => 'is-observation', 'text' => 'text-dark'),
+            array('label' => 'Bloqueado', 'value' => $cli_bloq, 'percent' => $perc_clientes_bloqueado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloq', 'theme' => 'is-danger', 'text' => 'text-light'),
+            array('label' => 'Atraso', 'value' => $cli_atraso, 'percent' => $perc_clientes_atrasado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=atrasado', 'theme' => 'is-warning', 'text' => 'text-dark'),
+            array('label' => 'Online', 'value' => $cli_on, 'percent' => $perc_clientes_online . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=on', 'theme' => 'is-success', 'text' => 'text-light'),
+            array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light'),
+            array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark'),
+            array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark'),
+        );
+
         ?>
 
         <?php include('graf_periodo.php'); ?>
@@ -354,142 +1252,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
         <div class='row mb-2'>
             <div class='col-12 col-md-12 col-lg-9 mb-2'>
-                <!-- Card Clientes -->
-                <div class='card border-light'>
-                    <div class="card-header text-uppercase">Clientes - <?php echo $tot_clientes; ?></div>
-                    <div class="card-body m-0 p-1">
-                        <div class='row g-1'>
-                            <div class='col'>
-                                <div class="card text-bg-primary">
-                                    <div class="card-header">Total</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php" class="text-light">
-
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_cliente_sem_adicionais%"; ?></p>
-                                        </div>
-                                    </a>
-
-                                </div>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-light">
-
-                                    <div class="card-header">Adicional</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=adicionais" class="text-dark">
-
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $c_add; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_adicional%"; ?></p>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-info">
-
-                                    <div class="card-header">Livres</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=" class="text-dark">
-
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_clientes_livres; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_livres%"; ?></p>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-warning">
-
-                                    <div class="card-header">Observação</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=obs" class="text-dark">
-
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_obs; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_observacao%"; ?></p>
-                                        </div>
-                                </div>
+                <div class='dashboard-surface'>
+                    <h2 class="dashboard-section-title">Clientes</h2>
+                    <div class="dashboard-section-body">
+                        <div class='dashboard-stat-grid'>
+                            <?php foreach ($dashboard_stats as $stat) { ?>
+                                <a href="<?= $stat['href']; ?>" class="dashboard-stat-card <?= $stat['theme']; ?> <?= $stat['text']; ?>">
+                                    <div class="dashboard-stat-head"><?= $stat['label']; ?></div>
+                                    <div class="dashboard-stat-value"><?php if (permissao('perm_totais')) echo $stat['value']; ?></div>
+                                    <div class="dashboard-stat-foot"><?= $stat['percent']; ?></div>
                                 </a>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-danger">
-
-                                    <div class="card-header">Bloqueado</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=bloq" class="text-light">
-
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_bloq; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_bloqueado%"; ?></p>
-                                        </div>
-                                </div>
-                                </a>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-warning">
-
-                                    <div class="card-header">Atraso</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=atrasado" class="text-dark">
-
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_atraso; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_atrasado%"; ?></p>
-                                        </div>
-                                </div>
-                                </a>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-success">
-                                    <div class="card-header">Online</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=on" class="text-light">
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_on; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_online%"; ?></p>
-                                        </div>
-                                </div>
-                                </a>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card text-bg-dark">
-                                    <div class="card-header">Offline</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=off" class="text-light">
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_offline; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_offline%"; ?></p>
-                                        </div>
-                                </div>
-                                </a>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card border-danger">
-                                    <div class="card-header">Sem Carne</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=sem carne" class="text-dark">
-                                        <div class="card-body text-danger m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_sem_carne; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_sem_carne%"; ?></p>
-                                        </div>
-                                </div>
-                                </a>
-                            </div>
-
-                            <div class='col'>
-                                <div class="card border-danger">
-                                    <div class="card-header">Sem Titulos</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=sem tit" class="text-dark">
-                                        <div class="card-body text-danger m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_sem_titulo; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_sem_titulo%"; ?></p>
-                                        </div>
-                                </div>
-                                </a>
-                            </div>
+                            <?php } ?>
                         </div>
                     </div>
                 </div>
@@ -506,39 +1279,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
             ?>
             <div class='col-12 col-md-12 col-lg-3 mb-2'>
-                <div class='card border-light'>
-                    <div class="card-header text-uppercase">
-                        Atendimentos
-                    </div>
-                    <div class="card-body m-0 p-1">
-
-                        <div class="row g-1">
-                            <div class="col">
-                                <div class="card text-bg-light">
-                                    <div class="card-header">
-                                        Chamados
-                                    </div>
-                                    <div class="card-body m-0 p-0">
-									<a href="/admin/suporte_aberto.hhvm" class="text-decoration-none">
-                                        <p class="display-6 m-0 p-0 text-center" id="tot_chamados"></p>
-                                        <p class="text-center m-0 p-0" id="perc_chamados">0.00</p>
-                                    </div>
-									 </a>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card text-bg-light">
-                                    <div class="card-header">
-                                        Instalações
-                                    </div>
-									<a href="/admin/instalacoes_abertas.hhvm" class="text-decoration-none">
-                                        <div class="card-body m-0 p-0">
-                                            <p class="display-6 m-0 p-0 text-center" id="tot_instalacoes"></p>
-                                            <p class="text-center m-0 p-0" id="perc_instalacoes">0.00</p>
-                                        </div>
-									 </a>
-                                </div>
-                            </div>
+                <div class='dashboard-surface'>
+                    <h2 class="dashboard-section-title">Atendimentos</h2>
+                    <div class="dashboard-section-body">
+                        <div class="dashboard-attendance-grid">
+                            <a href="/admin/suporte_aberto.hhvm" class="dashboard-stat-card is-light text-dark text-decoration-none">
+                                <div class="dashboard-stat-head">Chamados</div>
+                                <div class="dashboard-stat-value" id="tot_chamados"></div>
+                                <div class="dashboard-stat-foot" id="perc_chamados">0.00</div>
+                            </a>
+                            <a href="/admin/instalacoes_abertas.hhvm" class="dashboard-stat-card is-light text-dark text-decoration-none">
+                                <div class="dashboard-stat-head">Instalações</div>
+                                <div class="dashboard-stat-value" id="tot_instalacoes"></div>
+                                <div class="dashboard-stat-foot" id="perc_instalacoes">0.00</div>
+                            </a>
 
                             <?php
                             $dd = date('Y-m');
@@ -551,22 +1305,12 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             $result = mysqli_query($conn, $query);
                             $totAcessos = mysqli_num_rows($result);
                             ?>
-                            <div class="col">
-                                <div class="card text-bg-light">
-                                    <div class="card-header">
-                                        Central
-                                    </div>
-                                    <a href="relAcessoCentral.php">
-                                    <div class="card-body m-0 p-0">
-                                        <p class="display-6 m-0 p-0 text-center" id=""><?= $totAcessos; ?></p>
-                                        <p class="text-center m-0 p-0" id="">.</p>
-                                    </div>
-        </a>
-                                </div>
-                            </div>
+                            <a href="relAcessoCentral.php" class="dashboard-stat-card is-light text-dark text-decoration-none">
+                                <div class="dashboard-stat-head">Central</div>
+                                <div class="dashboard-stat-value"><?= $totAcessos; ?></div>
+                                <div class="dashboard-stat-foot">.</div>
+                            </a>
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -589,13 +1333,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                 <!-- Ramais -->
                 <div class='col-12 col-md-12 col-lg-12'>
-                    <div class='card border-light mb-2'>
-                        <div class="card-header text-uppercase">
-                            Clientes Ramais
-                        </div>
-                        <div class="card-body m-0 p-0">
-
-                            <div class="row g-1">
+                    <div class='dashboard-surface mb-2'>
+                        <h2 class="dashboard-section-title">Clientes Ramais</h2>
+                        <div class="dashboard-section-body">
+                            <div class="dashboard-ramal-grid">
 
                                 <?php
                                 foreach ($ramal_cliente as $key => $value) {
@@ -621,55 +1362,24 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                     $totOffline = $totGeral - $totOnline;
 
                                 ?>
-                                    <div class="col">
-                                        <div class="card text-bg-light">
-                                            <div class="card-header">
-                                                <?= $nomeRamal; ?>
-                                            </div>
-                                            <div class="row g-1">
-                                                <div class="col">
-                                                    <div class="card-body m-0 p-0">
-                                                        <div class="card text-bg-dark">
-                                                            <div class="card-header">
-                                                                Total
-                                                            </div>
-                                                            <div class="card-body m-0 p-0">
-                                                                <p class="display-6 m-0 p-0 text-center">
-                                                                    <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=ramal%2B' . $key; ?>" class="text-light"><?= $totGeral; ?></a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="card-body m-0 p-0">
-                                                        <div class="card text-bg-success">
-                                                            <div class="card-header">
-                                                                Online
-                                                            </div>
-                                                            <div class="card-body m-0 p-0">
-                                                                <p class="display-6 m-0 p-0 text-center">
-                                                                    <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=on%2B' . $key; ?>" class="text-light"><?= $totOnline; ?></a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="card-body m-0 p-0">
-                                                        <div class="card text-bg-danger">
-                                                            <div class="card-header">
-                                                                Offline
-                                                            </div>
-                                                            <div class="card-body m-0 p-0">
-                                                                <p class="display-6 m-0 p-0 text-center text-light">
-                                                                    <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=off%2B' . $key; ?>" class="text-light"><?= $totOffline; ?></a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <div class="dashboard-ramal-panel">
+                                        <div class="dashboard-ramal-title"><?= $nomeRamal; ?></div>
+                                        <div class="dashboard-ramal-stats">
+                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=ramal%2B' . $key; ?>" class="dashboard-stat-card is-dark text-light">
+                                                <div class="dashboard-stat-head">Total</div>
+                                                <div class="dashboard-stat-value"><?= $totGeral; ?></div>
+                                                <div class="dashboard-stat-foot"></div>
+                                            </a>
+                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=on%2B' . $key; ?>" class="dashboard-stat-card is-success text-light">
+                                                <div class="dashboard-stat-head">Online</div>
+                                                <div class="dashboard-stat-value"><?= $totOnline; ?></div>
+                                                <div class="dashboard-stat-foot"></div>
+                                            </a>
+                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=off%2B' . $key; ?>" class="dashboard-stat-card is-danger text-light">
+                                                <div class="dashboard-stat-head">Offline</div>
+                                                <div class="dashboard-stat-value"><?= $totOffline; ?></div>
+                                                <div class="dashboard-stat-foot"></div>
+                                            </a>
                                         </div>
                                     </div>
 
@@ -687,17 +1397,14 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
             <!-- Acesso Rápido -->
             <div class='col-12 col-md-12 col-lg-12'>
-                <div class='card border-light mb-2'>
-                    <div class="card-header text-uppercase">
-                        Acesso Rápido
-                    </div>
-                    <div class="card-body m-0 p-0">
-
-                        <div class="d-flex flex-wrap justify-content-center">
+                <div class='dashboard-surface mb-2'>
+                    <h2 class="dashboard-section-title">Acesso Rápido</h2>
+                    <div class="dashboard-section-body">
+                        <div class="dashboard-quick-links">
 
                             <?php if (permissao('perm_config')) {
                             ?>
-                                <div class='p-1'><a href='cfg.php' class='btn btn-primary m-0 px-2'><img src='img/icon_config.png' class='align-middle icon_sm_2 ' title='Configurações Dash Board' /> Configurações</a></div>
+                                <a href='cfg.php' class='dashboard-quick-link is-primary'><img src='img/icon_config.png' class='align-middle icon_sm_2 me-1' title='Configurações Dash Board' /> Configurações</a>
                             <?php } ?>
 
                             <?php
@@ -709,9 +1416,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             foreach ($links as $k) {
                                 if ($k != "") {
                                     if (startsWith($k, strtolower("http"))) {
-                                        echo "<div class='p-1'><a href='$k' target='_blank' class='btn btn-success m-0 px-2'>$textos[$indice]</a></div>";
+                                        echo "<a href='$k' target='_blank' class='dashboard-quick-link is-success'>$textos[$indice]</a>";
                                     } else {
-                                        echo "<div class='p-1'><a href='/admin/$k' class='btn btn-secondary m-0 px-2'>$textos[$indice]</a></div>";
+                                        echo "<a href='/admin/$k' class='dashboard-quick-link is-secondary'>$textos[$indice]</a>";
                                     }
                                 }
                                 $indice++;
@@ -860,7 +1567,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
             <?php if ((permissao('perm_instalacao'))) { ?>
 
-                <div class='col-12 mb-3'>
+                <div class='col-12 mb-3 installation-highlight-target' id='solicitacoes-instalacao'>
                     <table class='table table-sm'>
                         <thead>
                             <tr class="bg-primary text-uppercase">
@@ -1097,6 +1804,59 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             jQuery(document).ready(function() {
                 run_shuffle();
                 ver_eventos(0);
+
+                function destacarSolicitacoesInstalacao() {
+                    var alvo = document.getElementById('solicitacoes-instalacao');
+                    if (!alvo) {
+                        return;
+                    }
+
+                    alvo.classList.remove('is-flashing');
+                    void alvo.offsetWidth;
+                    alvo.classList.add('is-flashing');
+
+                    window.setTimeout(function() {
+                        alvo.classList.remove('is-flashing');
+                    }, 2300);
+                }
+
+                jQuery(document).on('click', '#installation-alert-link', function(event) {
+                    var alvo = document.getElementById('solicitacoes-instalacao');
+                    if (!alvo) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    history.replaceState(null, '', '#solicitacoes-instalacao');
+                    alvo.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+
+                    window.setTimeout(destacarSolicitacoesInstalacao, 500);
+                });
+
+                if (window.location.hash === '#solicitacoes-instalacao') {
+                    window.setTimeout(destacarSolicitacoesInstalacao, 250);
+                }
+
+                jQuery(document).on('click', '#radius-alert-close', function() {
+                    jQuery('#radius-alert-box').addClass('is-hidden');
+                });
+
+                window.setTimeout(function() {
+                    jQuery('.dashboard-session-toast').each(function(index, item) {
+                        window.setTimeout(function() {
+                            jQuery(item).addClass('is-fading');
+                            window.setTimeout(function() {
+                                jQuery(item).remove();
+                                if (jQuery('#dashboard-session-toast-stack').children().length === 0) {
+                                    jQuery('#dashboard-session-toast-stack').remove();
+                                }
+                            }, 560);
+                        }, index * 240);
+                    });
+                }, 5200);
             });
         </script>
 </body>

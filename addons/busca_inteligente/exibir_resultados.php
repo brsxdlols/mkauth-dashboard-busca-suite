@@ -293,6 +293,7 @@
 
     .client-contact-col {
         padding: 0 12px 0 4px;
+        text-align: center;
     }
 
     .client-data-col {
@@ -316,6 +317,28 @@
     .client-data-col {
         font-size: 14px;
         line-height: 1.35;
+    }
+
+    .client-meta-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin: 6px 0 8px;
+        font-size: 13px;
+        line-height: 1.3;
+        color: #42576b;
+    }
+
+    .client-meta-stack p {
+        margin: 0;
+    }
+
+    .client-contract-line {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
     }
 
     .client-address-col .map-link-btn {
@@ -384,11 +407,17 @@
         }
 
         .client-contact-col {
-            text-align: left;
+            text-align: center;
         }
 
         .client-data-col {
             text-align: left;
+        }
+
+        .client-contact-col p,
+        .client-contact-col a {
+            text-align: center;
+            justify-content: center;
         }
     }
 
@@ -655,7 +684,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $anoCad = substr($dataCon, 6, 4);
 
         $cli_ativado = $row['cli_ativado']; // Extrai diretamente o valor de cli_ativado
-        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($cli_ativado))); // Usa cli_ativado como base para a renovação
+        $baseRenovacao = !empty($dataCon) && strtotime($dataCon) ? $dataCon : date('Y-m-d');
+        $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($baseRenovacao)));
 
         
 
@@ -670,6 +700,12 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
         $caixa_herm = $row['caixa_herm'];
         $porta_splitter = $row['porta_splitter'];
+
+        $cpf_cnpj_fmt = trim((string) $cpf_cnpj_cliente) !== '' ? $cpf_cnpj_cliente : '-';
+        $email_fmt = trim((string) $cli_email) !== '' ? $cli_email : '-';
+        $data_cad_fmt = (!empty($data_cad) && strtotime($data_cad)) ? date('d/m/Y - H:i:s', strtotime($data_cad)) : '-';
+        $last_update_fmt = (!empty($last_update) && strtotime($last_update)) ? date('d/m/Y - H:i:s', strtotime($last_update)) : '-';
+        $venc_cliente_fmt = trim((string) $venc_cliente) !== '' ? $venc_cliente : '-';
 
         $color = $bloqueado == "sim" ? "bloqueado" : "observacao";
 
@@ -978,7 +1014,6 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         <div class='col-12 col-md-3 client-name-col'>
                                                             <p class='bloqueado'>
                                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
-                                                                <a href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 560, 640);"><img src='img/icon_desbloquear.png' class='icon_g no_print' title='Liberar por x dias' /></a>
                                                             </p>
 
                                                             <p class='final_conn no_print'><b>Caiu em:</b> <?= $final_conn; ?></p>
@@ -1011,24 +1046,15 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         }
                                                     }
                                                 }
+                                                ?>
 
-                                                if ($organizar == 'c.data_ins DESC') {
-                                                    $data_cad = date('d/m/Y - H:i:s', strtotime($data_cad));
-                                                            ?>
-
-                                                            <p class='info_add'><b>Data cadastro:</b> <?= $data_cad; ?></p>
-
-                                                        <?php
-                                                    }
-                                                    if ($organizar == 'c.last_update DESC') {
-                                                        $last_update = date('d/m/Y - H:i:s', strtotime($last_update));
-                                                        ?>
-                                                            <p class='info_add'><b>Última alteração:</b> <?= $last_update; ?></p>
-
-                                                        <?php
-                                                    }
-
-                                                        ?>
+                                                            <div class='client-meta-stack'>
+                                                                <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
+                                                                <p class='info_add'><b>E-mail:</b> <?= $email_fmt; ?></p>
+                                                                <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
+                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_fmt; ?></p>
+                                                                <p class='info_add'><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
+                                                            </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
                                                             <a class="client-action-btn has-counter is-danger" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
@@ -1128,9 +1154,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                         <span class='no_print'><?= $cidade_cliente; ?> / <?= $uf_cliente; ?></span><br>
 
                                                                         <?php
-
-                                                                        echo "<b>Score:</b> {$showScore} ";
-                                                                        echo diffDate(date('Y-m-d'), $dataRenovacao);
+                                                                        echo "<span class='client-contract-line'><span><b>Score:</b> {$showScore}</span><span>" . diffDate(date('Y-m-d'), $dataRenovacao) . "</span></span>";
 
                                                                         $loc_cliente_limpo = trim((string) $loc_cliente);
                                                                         $mapa_link = '';

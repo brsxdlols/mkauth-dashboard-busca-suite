@@ -48,6 +48,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         $tbl_logs_sistema = $cfg['tbl_logs_sistema'];
         $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
         $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
+        $popup_clientes_sessao = isset($cfg['popup_clientes_sessao']) ? $cfg['popup_clientes_sessao'] : 'n';
         $qtd_meses_graficos = $cfg['qtd_meses_graficos'];
         $limite_ticket = $cfg['limite_ticket'];
         $link = $cfg['link'];
@@ -76,6 +77,8 @@ if (isset($_SESSION['MM_Usuario'])) {
     $tbl_chamados_abertos = isset($_POST['tbl_chamados_abertos']) ? $_POST['tbl_chamados_abertos'] : $tbl_chamados_abertos;
 
     $tbl_contas_pagar = isset($_POST['tbl_contas_pagar']) ? $_POST['tbl_contas_pagar'] : $tbl_contas_pagar;
+
+    $popup_clientes_sessao = isset($_POST['popup_clientes_sessao']) ? $_POST['popup_clientes_sessao'] : $popup_clientes_sessao;
 
     $qtd_meses_graficos = isset($_POST['qtd_meses_graficos']) ? $_POST['qtd_meses_graficos'] : $qtd_meses_graficos;
 
@@ -323,6 +326,24 @@ if (isset($_SESSION['MM_Usuario'])) {
                         </select>
                         <label for="floatingSelect">Exibir Tabela de Contas a Pagar</label>
                     </div>
+                    <div class="col-4 form-floating mb-2 g-1">
+                        <select class="form-select" name="popup_clientes_sessao" id="floatingSelect" aria-label="">
+                            <?php
+                            if ($popup_clientes_sessao == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>NÃ£o</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>NÃ£o</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="floatingSelect">Popup de Clientes ao Logar/Deslogar?</label>
+                    </div>
                     <div class="col-6 form-floating mb-2 g-1">
                         <select class="form-select" name="qtd_meses_graficos" id="floatingSelect" aria-label="">
                             <?php
@@ -425,6 +446,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             tbl_logs_sistema = '$tbl_logs_sistema',
             tbl_chamados_abertos = '$tbl_chamados_abertos',
             tbl_contas_pagar = '$tbl_contas_pagar',
+            popup_clientes_sessao = '$popup_clientes_sessao',
             qtd_meses_graficos = '$qtd_meses_graficos',
             limite_ticket = '$limite_ticket',
             link = '$links_db',
