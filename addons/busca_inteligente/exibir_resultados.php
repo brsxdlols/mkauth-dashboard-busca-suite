@@ -267,6 +267,14 @@
     .client-row {
         padding: 10px 8px;
         border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 14px;
+        transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+
+    .client-row:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        background-color: rgba(255, 255, 255, 0.94) !important;
     }
 
     .client-check-col {

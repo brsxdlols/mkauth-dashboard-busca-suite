@@ -728,6 +728,56 @@ if ($query_ler_notificacoes) {
             gap: 4px;
         }
 
+        .dashboard-session-toast-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .dashboard-session-toast-status.is-active {
+            background: rgba(31, 143, 78, 0.10);
+            color: #18794a;
+        }
+
+        .dashboard-session-toast-status.is-blocked {
+            background: rgba(239, 68, 68, 0.12);
+            color: #c0392b;
+        }
+
+        .dashboard-session-toast-status.is-inactive {
+            background: rgba(245, 158, 11, 0.14);
+            color: #9a6700;
+        }
+
+        .dashboard-session-toast-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .dashboard-session-toast-link {
+            border: 0;
+            background: transparent;
+            color: #5f6f82;
+            padding: 0;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .dashboard-session-toast-link:hover {
+            color: #153a5b;
+        }
+
         @keyframes dashboardToastIn {
             from {
                 opacity: 0;
@@ -978,40 +1028,35 @@ if ($query_ler_notificacoes) {
                     ?>
             </datalist>
 
-            <div class="row">
-                <div class="col-auto">
-                    <a href="dash_notificacoes.php" onclick="window.open(this.href, this.target, 'width=650, height=700, scrollbars=yes'); return false;"><img src="img/icon_notificacao.png" alt="Notificações" class=""></a>
-                </div>
-                <div class="col">
-                    <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline">
-                        <div class="row g-1">
+            <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline">
+                <div class="row g-1">
 
-                            <div class="col form-floating mb-3">
-                                <input type="search" name="busca" class="form-control" id="floatingInput" placeholder="Busca Inteligente" value="<?php echo $busca; ?>" list="sugestoes">
-                                <label for="floatingInput">(Busca Inteligente) Digite o que procura:</label>
-                            </div>
-                            <div class="col-auto mb-3">
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg btn-block">Buscar</button>
-                                </div>
-                            </div>
+                    <div class="col form-floating mb-3">
+                        <input type="search" name="busca" class="form-control" id="floatingInput" placeholder="Busca Inteligente" value="<?php echo $busca; ?>" list="sugestoes">
+                        <label for="floatingInput">(Busca Inteligente) Digite o que procura:</label>
+                    </div>
+                    <div class="col-auto mb-3">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">Buscar</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+            </form>
 
             <?php
             $dashboard_session_toasts = array();
             if ($popup_clientes_sessao === 's') {
                 $query_dashboard_session_toasts = mysqli_query($conn, "
-                    SELECT evento, username, nome, concentrador, data_evento
+                    SELECT evento, username, nome, concentrador, data_evento, bloqueado, cli_ativado
                     FROM (
                         SELECT 
                             'login' AS evento,
                             r.username,
                             COALESCE(NULLIF(c.nome, ''), r.username) AS nome,
                             COALESCE(NULLIF(r.nasipaddress, ''), '-') AS concentrador,
-                            r.acctstarttime AS data_evento
+                            r.acctstarttime AS data_evento,
+                            COALESCE(NULLIF(c.bloqueado, ''), 'nao') AS bloqueado,
+                            COALESCE(NULLIF(c.cli_ativado, ''), 's') AS cli_ativado
                         FROM radacct r
                         LEFT JOIN sis_cliente c ON c.login = r.username
                         WHERE r.acctstarttime IS NOT NULL
@@ -1024,7 +1069,9 @@ if ($query_ler_notificacoes) {
                             r.username,
                             COALESCE(NULLIF(c.nome, ''), r.username) AS nome,
                             COALESCE(NULLIF(r.nasipaddress, ''), '-') AS concentrador,
-                            r.acctstoptime AS data_evento
+                            r.acctstoptime AS data_evento,
+                            COALESCE(NULLIF(c.bloqueado, ''), 'nao') AS bloqueado,
+                            COALESCE(NULLIF(c.cli_ativado, ''), 's') AS cli_ativado
                         FROM radacct r
                         LEFT JOIN sis_cliente c ON c.login = r.username
                         WHERE r.acctstoptime IS NOT NULL
@@ -1053,6 +1100,19 @@ if ($query_ler_notificacoes) {
                         $toast_login = trim((string) $session_toast['username']);
                         $toast_concentrador = trim((string) $session_toast['concentrador']);
                         $toast_data = !empty($session_toast['data_evento']) ? date('d/m H:i:s', strtotime($session_toast['data_evento'])) : '';
+                        $toast_contract_status = 'active';
+                        $toast_contract_label = 'Contrato ativo';
+                        $toast_contract_icon = 'bi bi-shield-check';
+
+                        if (isset($session_toast['bloqueado']) && $session_toast['bloqueado'] === 'sim') {
+                            $toast_contract_status = 'blocked';
+                            $toast_contract_label = 'Contrato bloqueado';
+                            $toast_contract_icon = 'bi bi-lock-fill';
+                        } elseif (isset($session_toast['cli_ativado']) && $session_toast['cli_ativado'] !== 's') {
+                            $toast_contract_status = 'inactive';
+                            $toast_contract_label = 'Contrato inativo';
+                            $toast_contract_icon = 'bi bi-pause-circle';
+                        }
                     ?>
                         <div class="dashboard-session-toast <?= $toast_class; ?>">
                             <span class="dashboard-session-toast-icon">
@@ -1069,6 +1129,13 @@ if ($query_ler_notificacoes) {
                                     <?php if ($toast_data !== '') { ?>
                                         <span><i class="bi bi-clock"></i><?= $toast_data; ?></span>
                                     <?php } ?>
+                                </div>
+                                <div class="dashboard-session-toast-status is-<?= $toast_contract_status; ?>">
+                                    <i class="<?= $toast_contract_icon; ?>"></i>
+                                    <span><?= htmlspecialchars($toast_contract_label, ENT_QUOTES, 'UTF-8'); ?></span>
+                                </div>
+                                <div class="dashboard-session-toast-actions">
+                                    <button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button>
                                 </div>
                             </div>
                         </div>
@@ -1926,6 +1993,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     if (eventData.concentrator && eventData.concentrator !== '-') {
                         concentratorHtml = '<span><i class="bi bi-hdd-network"></i>' + eventData.concentrator + '</span>';
                     }
+                    var contractStatus = eventData.contract_status ? eventData.contract_status : 'active';
+                    var contractIcon = eventData.contract_icon ? eventData.contract_icon : 'bi bi-shield-check';
+                    var contractLabel = eventData.contract_label ? eventData.contract_label : 'Contrato ativo';
 
                     item.innerHTML =
                         '<span class="dashboard-session-toast-icon"><i class="' + iconClass + '"></i></span>' +
@@ -1937,10 +2007,27 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         concentratorHtml +
                         '<span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span>' +
                         '</div>' +
+                        '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>' +
+                        '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button></div>' +
                         '</div>';
 
                     stack.prepend(item);
                     scheduleToastRemoval(item);
+                }
+
+                function disableSessionPopups() {
+                    return jQuery.ajax({
+                        url: 'session_events.php',
+                        method: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'disable_notifications'
+                        }
+                    }).done(function() {
+                        window.dashboardSessionPopupEnabled = false;
+                        sessionStorage.setItem('dashboard-session-popups-disabled', '1');
+                        jQuery('#dashboard-session-toast-stack').remove();
+                    });
                 }
 
                 function hydrateExistingSessionToasts() {
@@ -1978,6 +2065,16 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 createSessionToast(eventData);
                             });
                         });
+                }
+
+                jQuery(document).on('click', '[data-disable-session-popups="1"]', function(event) {
+                    event.preventDefault();
+                    disableSessionPopups();
+                });
+
+                if (sessionStorage.getItem('dashboard-session-popups-disabled') === '1') {
+                    window.dashboardSessionPopupEnabled = false;
+                    jQuery('#dashboard-session-toast-stack').remove();
                 }
 
                 hydrateExistingSessionToasts();
