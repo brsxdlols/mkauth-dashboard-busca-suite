@@ -258,8 +258,8 @@ if ($query_ler_notificacoes) {
 
         .dashboard-ramal-grid {
             display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
         }
 
         .dashboard-ramal-panel {
@@ -282,15 +282,15 @@ if ($query_ler_notificacoes) {
         .dashboard-ramal-stats {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 4px;
-            padding: 6px;
+            gap: 6px;
+            padding: 8px;
         }
 
         .dashboard-ramal-stats .dashboard-stat-card {
-            min-height: 108px;
-            padding: 10px 10px 12px;
+            min-height: 132px;
+            padding: 12px 12px 14px;
             border-radius: 12px;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: auto;
         }
 
         .dashboard-ramal-stats .dashboard-stat-head {
@@ -298,11 +298,18 @@ if ($query_ler_notificacoes) {
         }
 
         .dashboard-ramal-stats .dashboard-stat-value {
-            font-size: clamp(1.85rem, 1.2vw + 1rem, 2.45rem);
+            margin-top: 14px;
+            font-size: clamp(2rem, 0.8vw + 1.2rem, 2.45rem);
+            line-height: 0.94;
+            white-space: nowrap;
         }
 
         .dashboard-ramal-stats .dashboard-stat-foot {
-            display: none;
+            display: block;
+            margin-top: 14px;
+            padding-top: 10px;
+            font-size: 1rem;
+            font-weight: 700;
         }
 
         .dashboard-hero-space {
@@ -367,6 +374,19 @@ if ($query_ler_notificacoes) {
             .dashboard-ramal-grid {
                 grid-template-columns: 1fr;
             }
+
+            .dashboard-ramal-stats .dashboard-stat-card {
+                min-height: 148px;
+            }
+
+            .dashboard-ramal-stats .dashboard-stat-value {
+                font-size: clamp(2rem, 3vw + 0.8rem, 2.75rem);
+            }
+
+            .dashboard-ramal-stats .dashboard-stat-foot {
+                font-size: 1.02rem;
+                margin-top: 12px;
+            }
         }
 
         @media (max-width: 575.98px) {
@@ -387,7 +407,22 @@ if ($query_ler_notificacoes) {
             }
 
             .dashboard-ramal-stats .dashboard-stat-card {
-                min-height: 96px;
+                min-height: 154px;
+                padding: 10px 10px 14px;
+            }
+
+            .dashboard-ramal-stats .dashboard-stat-head {
+                font-size: 11px;
+            }
+
+            .dashboard-ramal-stats .dashboard-stat-value {
+                font-size: clamp(1.9rem, 4.8vw + 0.6rem, 2.65rem);
+            }
+
+            .dashboard-ramal-stats .dashboard-stat-foot {
+                font-size: 1rem;
+                margin-top: 12px;
+                padding-top: 10px;
             }
         }
 
@@ -722,7 +757,7 @@ if ($query_ler_notificacoes) {
                 top: 68px;
                 right: 10px;
                 left: 10px;
-                width: auto;
+            width: auto;
             }
         }
     </style>
@@ -916,6 +951,9 @@ if ($query_ler_notificacoes) {
 
         if ($exb_busca_inteligente == 's') {
         ?>
+            <script>
+                window.dashboardSessionPopupEnabled = <?= ($popup_clientes_sessao === 's') ? 'true' : 'false'; ?>;
+            </script>
 
             <datalist id="sugestoes">
                 <option value="on">
@@ -1361,6 +1399,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                     $totOffline = $totGeral - $totOnline;
 
+                                    $percTotalRamal = $totGeral > 0 ? '100.00%' : '0.00%';
+                                    $percOnlineRamal = $totGeral > 0 ? number_format(($totOnline / $totGeral) * 100, 2, '.', '') . '%' : '0.00%';
+                                    $percOfflineRamal = $totGeral > 0 ? number_format(($totOffline / $totGeral) * 100, 2, '.', '') . '%' : '0.00%';
+
                                 ?>
                                     <div class="dashboard-ramal-panel">
                                         <div class="dashboard-ramal-title"><?= $nomeRamal; ?></div>
@@ -1368,17 +1410,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                             <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=ramal%2B' . $key; ?>" class="dashboard-stat-card is-dark text-light">
                                                 <div class="dashboard-stat-head">Total</div>
                                                 <div class="dashboard-stat-value"><?= $totGeral; ?></div>
-                                                <div class="dashboard-stat-foot"></div>
+                                                <div class="dashboard-stat-foot"><?= $percTotalRamal; ?></div>
                                             </a>
                                             <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=on%2B' . $key; ?>" class="dashboard-stat-card is-success text-light">
                                                 <div class="dashboard-stat-head">Online</div>
                                                 <div class="dashboard-stat-value"><?= $totOnline; ?></div>
-                                                <div class="dashboard-stat-foot"></div>
+                                                <div class="dashboard-stat-foot"><?= $percOnlineRamal; ?></div>
                                             </a>
                                             <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=off%2B' . $key; ?>" class="dashboard-stat-card is-danger text-light">
                                                 <div class="dashboard-stat-head">Offline</div>
                                                 <div class="dashboard-stat-value"><?= $totOffline; ?></div>
-                                                <div class="dashboard-stat-foot"></div>
+                                                <div class="dashboard-stat-foot"><?= $percOfflineRamal; ?></div>
                                             </a>
                                         </div>
                                     </div>
@@ -1844,19 +1886,102 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     jQuery('#radius-alert-box').addClass('is-hidden');
                 });
 
-                window.setTimeout(function() {
-                    jQuery('.dashboard-session-toast').each(function(index, item) {
+                function ensureToastStack() {
+                    var stack = document.getElementById('dashboard-session-toast-stack');
+                    if (!stack) {
+                        stack = document.createElement('div');
+                        stack.id = 'dashboard-session-toast-stack';
+                        stack.className = 'dashboard-session-toast-stack';
+                        document.body.appendChild(stack);
+                    }
+                    return stack;
+                }
+
+                function scheduleToastRemoval(item) {
+                    window.setTimeout(function() {
+                        item.classList.add('is-fading');
                         window.setTimeout(function() {
-                            jQuery(item).addClass('is-fading');
-                            window.setTimeout(function() {
-                                jQuery(item).remove();
-                                if (jQuery('#dashboard-session-toast-stack').children().length === 0) {
-                                    jQuery('#dashboard-session-toast-stack').remove();
-                                }
-                            }, 560);
+                            if (item && item.parentNode) {
+                                item.parentNode.removeChild(item);
+                            }
+                            var stack = document.getElementById('dashboard-session-toast-stack');
+                            if (stack && stack.children.length === 0) {
+                                stack.remove();
+                            }
+                        }, 560);
+                    }, 5200);
+                }
+
+                function createSessionToast(eventData) {
+                    var stack = ensureToastStack();
+                    var item = document.createElement('div');
+                    var isLogin = eventData.type === 'login';
+
+                    item.className = 'dashboard-session-toast ' + (isLogin ? 'is-login' : 'is-logout');
+                    item.setAttribute('data-event-id', eventData.id);
+
+                    var iconClass = isLogin ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right';
+                    var label = isLogin ? 'Cliente conectou' : 'Cliente desconectou';
+                    var concentratorHtml = '';
+                    if (eventData.concentrator && eventData.concentrator !== '-') {
+                        concentratorHtml = '<span><i class="bi bi-hdd-network"></i>' + eventData.concentrator + '</span>';
+                    }
+
+                    item.innerHTML =
+                        '<span class="dashboard-session-toast-icon"><i class="' + iconClass + '"></i></span>' +
+                        '<div class="dashboard-session-toast-content">' +
+                        '<span class="dashboard-session-toast-label">' + label + '</span>' +
+                        '<p class="dashboard-session-toast-title">' + eventData.name + '</p>' +
+                        '<div class="dashboard-session-toast-meta">' +
+                        '<span><i class="bi bi-person-badge"></i>' + eventData.login + '</span>' +
+                        concentratorHtml +
+                        '<span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span>' +
+                        '</div>' +
+                        '</div>';
+
+                    stack.prepend(item);
+                    scheduleToastRemoval(item);
+                }
+
+                function hydrateExistingSessionToasts() {
+                    jQuery('.dashboard-session-toast').each(function(index, item) {
+                        var eventId = item.getAttribute('data-event-id');
+                        if (eventId) {
+                            sessionStorage.setItem('dashboard-session-toast-' + eventId, '1');
+                        }
+                        window.setTimeout(function() {
+                            scheduleToastRemoval(item);
                         }, index * 240);
                     });
-                }, 5200);
+                }
+
+                function fetchSessionToasts() {
+                    if (!window.dashboardSessionPopupEnabled) {
+                        return;
+                    }
+
+                    jQuery.getJSON('session_events.php')
+                        .done(function(response) {
+                            if (!response || response.enabled !== true || !Array.isArray(response.events)) {
+                                return;
+                            }
+
+                            response.events.slice().reverse().forEach(function(eventData) {
+                                if (!eventData.id) {
+                                    return;
+                                }
+                                var storageKey = 'dashboard-session-toast-' + eventData.id;
+                                if (sessionStorage.getItem(storageKey)) {
+                                    return;
+                                }
+                                sessionStorage.setItem(storageKey, '1');
+                                createSessionToast(eventData);
+                            });
+                        });
+                }
+
+                hydrateExistingSessionToasts();
+                window.setInterval(fetchSessionToasts, 15000);
             });
         </script>
 </body>
