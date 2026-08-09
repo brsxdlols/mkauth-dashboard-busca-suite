@@ -1,4 +1,7 @@
-<?php include('config.php'); ?>
+<?php
+include('config.php');
+require_once __DIR__ . '/../shared/layout_mode.php';
+?>
 
 <!DOCTYPE html>
 <?php
@@ -34,6 +37,9 @@ if (isset($_SESSION['MM_Usuario'])) {
     <?php include("../../topo.php"); ?>
 
     <?php
+    mka_suite_ensure_layout_column($conn);
+    $suite_layout_mode = mka_suite_get_layout_mode($conn);
+
     $query_atual_cfg = mysqli_query($conn, "SELECT * FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
     while ($cfg = mysqli_fetch_array($query_atual_cfg)) {
         $exb_ticket_medio = $cfg['exb_ticket_medio'];
@@ -49,11 +55,13 @@ if (isset($_SESSION['MM_Usuario'])) {
         $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
         $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
         $popup_clientes_sessao = isset($cfg['popup_clientes_sessao']) ? $cfg['popup_clientes_sessao'] : 'n';
+        $popup_clientes_sessao_duracao = isset($cfg['popup_clientes_sessao_duracao']) ? (int) $cfg['popup_clientes_sessao_duracao'] : 2;
         $qtd_meses_graficos = $cfg['qtd_meses_graficos'];
         $limite_ticket = $cfg['limite_ticket'];
         $link = $cfg['link'];
         $texto = $cfg['texto'];
         $tot_acesso_rapido = $cfg['tot_acesso_rapido'];
+        $suite_layout_mode = isset($cfg['suite_layout_mode']) ? mka_suite_normalize_layout_mode($cfg['suite_layout_mode']) : $suite_layout_mode;
     }
 
     $exb_ticket_medio = isset($_POST['exb_ticket_medio']) ? $_POST['exb_ticket_medio'] : $exb_ticket_medio;
@@ -79,6 +87,8 @@ if (isset($_SESSION['MM_Usuario'])) {
     $tbl_contas_pagar = isset($_POST['tbl_contas_pagar']) ? $_POST['tbl_contas_pagar'] : $tbl_contas_pagar;
 
     $popup_clientes_sessao = isset($_POST['popup_clientes_sessao']) ? $_POST['popup_clientes_sessao'] : $popup_clientes_sessao;
+    $popup_clientes_sessao_duracao = isset($_POST['popup_clientes_sessao_duracao']) ? $_POST['popup_clientes_sessao_duracao'] : $popup_clientes_sessao_duracao;
+    $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
 
     $qtd_meses_graficos = isset($_POST['qtd_meses_graficos']) ? $_POST['qtd_meses_graficos'] : $qtd_meses_graficos;
 
@@ -117,6 +127,8 @@ if (isset($_SESSION['MM_Usuario'])) {
     $tbl_chamados_abertos = $cfgDefault($tbl_chamados_abertos, 's');
     $tbl_contas_pagar = $cfgDefault($tbl_contas_pagar, 'n');
     $popup_clientes_sessao = $cfgDefault($popup_clientes_sessao, 'n');
+    $popup_clientes_sessao_duracao = max(1, min(15, (int) $popup_clientes_sessao_duracao));
+    $suite_layout_mode = mka_suite_normalize_layout_mode($suite_layout_mode);
 
     ?>
 
@@ -127,6 +139,24 @@ if (isset($_SESSION['MM_Usuario'])) {
                 <div class='row'>
                 <p class="lead text-center">Configurações Dashboard - Sistemas</p>
 
+                    <div class="col-4 form-floating mb-2 g-1">
+                        <select class="form-select" name="suite_layout_mode" id="suite_layout_mode" aria-label="">
+                            <?php
+                            if ($suite_layout_mode === 'legado') {
+                                echo "
+                        <option value='novo'>Novo</option>
+                        <option value='legado' selected>Legado</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='novo' selected>Novo</option>
+                        <option value='legado'>Legado</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="suite_layout_mode">Layout Dashboard + Busca</label>
+                    </div>
                     <div class="col-4 form-floating mb-2 g-1">
                         <select class="form-select" name="exb_ticket_medio" id="floatingSelect" aria-label="">
                             <?php
@@ -363,6 +393,10 @@ if (isset($_SESSION['MM_Usuario'])) {
                         </select>
                         <label for="floatingSelect">Popup de Clientes ao Logar/Deslogar?</label>
                     </div>
+                    <div class="col-2 form-floating mb-2 g-1">
+                        <input type="number" name="popup_clientes_sessao_duracao" class="form-control" id="popup_clientes_sessao_duracao" placeholder="2" min="1" max="15" step="1" value="<?php echo (int) $popup_clientes_sessao_duracao; ?>">
+                        <label for="popup_clientes_sessao_duracao">Tempo do Popup (s)</label>
+                    </div>
                     <div class="col-6 form-floating mb-2 g-1">
                         <select class="form-select" name="qtd_meses_graficos" id="floatingSelect" aria-label="">
                             <?php
@@ -466,6 +500,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             tbl_chamados_abertos = '$tbl_chamados_abertos',
             tbl_contas_pagar = '$tbl_contas_pagar',
             popup_clientes_sessao = '$popup_clientes_sessao',
+            popup_clientes_sessao_duracao = '$popup_clientes_sessao_duracao',
             qtd_meses_graficos = '$qtd_meses_graficos',
             limite_ticket = '$limite_ticket',
             link = '$links_db',
@@ -476,6 +511,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                 if (!$update_table_dashboard_am_sis_cfg) {
                     echo mysqli_error($link);
                 }
+
+                mka_suite_set_layout_mode($conn, $suite_layout_mode);
             }
             mysqli_close($link);
         } // FIm Permissao

@@ -1,0 +1,63 @@
+
+
+#tabela_fat {float:left;}
+
+#table_busca { margin:0 auto; }
+
+#btn_buscar, #form_graf input, #form_graf select { padding: 10px; font-size:18px; }
+#btn_buscar { background: Navy; color:#FFF; border: 1.5px solid Navy;}
+
+.block { display:inline-block; width: 100%;}
+
+
+/* Graficos */
+
+
+.highcharts-figure{
+    width:100%;
+    margin: 1em auto;
+}
+
+/* Clientes, Ticket e Saldo Conta */
+.temp, #container-graf-fat-6, #container-graf-fat-7{
+    width:100%;
+    height: 250px; 
+}
+
+/* Faturamento e Balanco*/
+#container-graf-fat-1, #container-graf-fat-2
+{
+    width: 100%;
+    height: 350px; 
+}
+
+/* Planos, Clientes e Balanco*/
+#container-rel-cli-planos-1, #container-rel-cli-1, #container-rel-cli-2 {
+    width: 100%;
+    height: 300px; 
+}
+
+
+#container-rel-chamados-1, #container-rel-chamados-2, #container-rel-chamados-3, #container-rel-chamados-4,#container-rel-chamados-5
+{
+    width: 100%;
+    height: 300px;
+}
+
+/* Tabelas */
+.tabela { width: 100%; color: #000;}
+.linha_titulo {font-weight: bold; text-align:center; background: Navy; font-size: 14px; }
+.linha_titulo td { width: auto; padding: 4px 3px; color: #FFF; } 
+
+.linha_resultados:nth-last-child(2n) {background:#E0E0F8;}
+.linha_resultados td{ width: auto; font-size: 13px; padding: 4px 3px;}
+
+
+/* Titulo e Conteudo Tabelas */
+.font-title { font-size: 0.9rem; background: var(--bs-primary); color:#FFF;}
+.font-field { font-size: 0.8rem; }
+.font-field:nth-last-child(2n) { background: var(--bs-gray-200); }
+
+/* icon_small */
+.icon_sm { width: 25px;}
+.icon_sm_2 { width: 20px;}

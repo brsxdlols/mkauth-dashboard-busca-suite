@@ -1,4 +1,12 @@
-﻿<?php include('config.php'); ?>
+<?php
+include('config.php');
+require_once __DIR__ . '/../shared/layout_mode.php';
+
+if (mka_suite_get_layout_mode($conn) === 'legado') {
+    header('Location: ../dashboard-legado/');
+    exit;
+}
+?>
 
 <!DOCTYPE html>
 <?php
@@ -11,16 +19,6 @@ if (isset($_SESSION['MM_Usuario'])) {
    
 }
 
-// Consultar as notificações não lidas
-$query_ler_notificacoes = mysqli_query($conn, "SELECT COUNT(*) as total FROM dashboard_am_sis_notificacoes WHERE id_usuario = '$usuario_logado'");
-
-if ($query_ler_notificacoes) {
-    $num_notificacoes = mysqli_num_rows($query_ler_notificacoes);
-    $result = mysqli_fetch_assoc($query_ler_notificacoes);
-    $notificacoes_count = $result['total']; // Total de notificações para o usuário
-} else {
-    echo mysqli_error($conn);
-}
 ?>
 
 <head>
@@ -871,6 +869,7 @@ if ($query_ler_notificacoes) {
             tbl_chamados_abertos VARCHAR(1) NOT NULL DEFAULT 's',
             tbl_contas_pagar VARCHAR(1) NOT NULL DEFAULT 's',
             popup_clientes_sessao VARCHAR(1) NOT NULL DEFAULT 'n',
+            popup_clientes_sessao_duracao INT NOT NULL DEFAULT 2,
             qtd_meses_graficos INT NOT NULL DEFAULT 3,
             limite_ticket INT NOT NULL DEFAULT 1000,
             link TEXT,
@@ -878,21 +877,6 @@ if ($query_ler_notificacoes) {
             PRIMARY KEY (id)
         )");
 
-        $query_check_notify = mysqli_query($conn, "SHOW COLUMNS FROM dashboard_am_sis_notificacoes WHERE field = 'id_remetente'");
-
-        if (mysqli_num_rows($query_check_notify) == 0) {
-            $drop_table = mysqli_query($conn, "DROP TABLE dashboard_am_sis_notificacoes");
-        }
-
-        $query_cria_tabelas2 = mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_sis_notificacoes (
-            id int NOT NULL AUTO_INCREMENT,
-            id_usuario INT NOT NULL,
-            id_remetente INT NOT NULL,
-            data DATETIME NOT NULL,
-            mensagem TEXT NOT NULL,
-            ativo VARCHAR(1) NOT NULL DEFAULT 's',
-            PRIMARY KEY (id)
-        )");
 
         $query = mysqli_query($conn, "SHOW COLUMNS FROM dashboard_am_sis_cfg WHERE field = 'link'");
 
@@ -956,6 +940,18 @@ if ($query_ler_notificacoes) {
             }
         }
 
+        $query5b = mysqli_query($conn, "SHOW COLUMNS FROM dashboard_am_sis_cfg WHERE field = 'popup_clientes_sessao_duracao'");
+
+        if (mysqli_num_rows($query5b) == 0) {
+            $query_alterar_table = mysqli_query($conn, "ALTER TABLE dashboard_am_sis_cfg 
+            ADD popup_clientes_sessao_duracao INT NOT NULL DEFAULT 2
+            AFTER popup_clientes_sessao");
+
+            if (!$query_alterar_table) {
+                echo mysqli_error($conn);
+            }
+        }
+
         $query_atual_cfg = mysqli_query($conn, "SELECT * FROM dashboard_am_sis_cfg");
         if (mysqli_num_rows($query_atual_cfg) == 0) {
             $query_cfg_inicial = mysqli_query($conn, "INSERT INTO dashboard_am_sis_cfg (id) VALUES (1)");
@@ -977,6 +973,7 @@ if ($query_ler_notificacoes) {
             $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
             $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
             $popup_clientes_sessao = isset($cfg['popup_clientes_sessao']) ? $cfg['popup_clientes_sessao'] : 'n';
+            $popup_clientes_sessao_duracao = isset($cfg['popup_clientes_sessao_duracao']) ? (int) $cfg['popup_clientes_sessao_duracao'] : 2;
             $qtd_meses_graficos = $cfg['qtd_meses_graficos'];
             $limite_ticket = $cfg['limite_ticket'];
             $link = $cfg['link'];
@@ -1001,6 +998,7 @@ if ($query_ler_notificacoes) {
         $tbl_chamados_abertos = $cfgDefault(isset($tbl_chamados_abertos) ? $tbl_chamados_abertos : '', 's');
         $tbl_contas_pagar = $cfgDefault(isset($tbl_contas_pagar) ? $tbl_contas_pagar : '', 'n');
         $popup_clientes_sessao = $cfgDefault(isset($popup_clientes_sessao) ? $popup_clientes_sessao : '', 'n');
+        $popup_clientes_sessao_duracao = isset($popup_clientes_sessao_duracao) ? max(1, min(15, (int) $popup_clientes_sessao_duracao)) : 2;
 
 
         // Relação de grupos do usuário logado
@@ -1051,6 +1049,7 @@ if ($query_ler_notificacoes) {
         ?>
             <script>
                 window.dashboardSessionPopupEnabled = <?= ($popup_clientes_sessao === 's') ? 'true' : 'false'; ?>;
+                window.dashboardSessionPopupDuration = <?= (int) $popup_clientes_sessao_duracao; ?>;
             </script>
 
             <datalist id="sugestoes">
@@ -2070,7 +2069,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 stack.remove();
                             }
                         }, 560);
-                    }, 1000);
+                    }, Math.max(1000, (window.dashboardSessionPopupDuration || 2) * 1000));
                 }
 
                 function createSessionToast(eventData) {

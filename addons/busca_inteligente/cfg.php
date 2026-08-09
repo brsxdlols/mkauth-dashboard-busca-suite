@@ -1,4 +1,7 @@
-<?php include('nav/header.php'); ?>
+<?php
+include('nav/header.php');
+require_once __DIR__ . '/../shared/layout_mode.php';
+?>
 
 <body class="">
 
@@ -48,6 +51,9 @@
 
     <?php
 
+    mka_suite_ensure_layout_column($link);
+    $suite_layout_mode = mka_suite_get_layout_mode($link);
+
     // Busca Inteligente
     $query_atual_cfg = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg ORDER BY id DESC LIMIT 1");
     while ($cfg = mysqli_fetch_array($query_atual_cfg)) {
@@ -60,6 +66,7 @@
         $links_ext = $cfg['links_ext'];
         $check_online = $cfg['check_online'];
         $contabilizar_bloq_offline = $cfg['contabilizar_bloq_offline'];
+        $suite_layout_mode = isset($cfg['suite_layout_mode']) ? mka_suite_normalize_layout_mode($cfg['suite_layout_mode']) : $suite_layout_mode;
     }
 
     $num_conexoes = isset($_POST['num_conexoes']) ? $_POST['num_conexoes'] : $num_conexoes;
@@ -71,6 +78,8 @@
     $links_ext = isset($_POST['links_ext']) ? $_POST['links_ext'] : $links_ext;
     $check_online = isset($_POST['check_online']) ? $_POST['check_online'] : $check_online;
     $contabilizar_bloq_offline = isset($_POST['contabilizar_bloq_offline']) ? $_POST['contabilizar_bloq_offline'] : $contabilizar_bloq_offline;
+    $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
+    $suite_layout_mode = mka_suite_normalize_layout_mode($suite_layout_mode);
 
 
     // Score Clientes
@@ -119,6 +128,26 @@
                 <legend class="lead text-center">Configurações do Busca Inteligente</legend>
 
                     <table class="table table-sm small">
+
+                        <tr>
+                            <td class="">Layout Dashboard + Busca
+                                <select class="" name="suite_layout_mode">
+                                    <?php
+                                    if ($suite_layout_mode === "legado") {
+                                        echo "
+            <option value='novo'>Novo</option>
+            <option value='legado' selected>Legado</option>";
+                                    } else {
+                                        echo "
+            <option value='novo' selected>Novo</option>
+            <option value='legado'>Legado</option>";
+                                    }
+
+                                    ?>
+
+                                </select>
+                            </td>
+                        </tr>
 
                         <tr>
                             <td class="">Número de Conexões <input type="number" name="num_conexoes" class="" value="<?php echo $num_conexoes; ?>"></td>
@@ -323,6 +352,8 @@
         if (!$update_table_busca_inteligente_cfg) {
             echo mysqli_error($link);
         }
+
+        mka_suite_set_layout_mode($link, $suite_layout_mode);
     }
 
     $update_table_score_cliente_cfg = mysqli_query($link, "UPDATE score_cliente_cfg 

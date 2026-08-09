@@ -1,4 +1,12 @@
-<?php include('nav/header.php'); ?>
+<?php
+include('nav/header.php');
+require_once __DIR__ . '/../shared/layout_mode.php';
+
+if (mka_suite_get_layout_mode($link) === 'legado') {
+    header('Location: ../busca_inteligente-legado/');
+    exit;
+}
+?>
 
 <body class="">
 
