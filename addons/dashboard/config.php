@@ -31,6 +31,9 @@ if (!$conn) {
 	exit;
 }
 
+require_once __DIR__ . '/../shared/layout_mode.php';
+mka_suite_ensure_layout_column($conn);
+
 // Fix MK-AUTH versoes antigas
 if (isset($_SESSION['MM_Usuario'])) {
 	echo '<script src="scripts/vue.js"></script>';

@@ -40,11 +40,18 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             PRIMARY KEY (id)
         )");
 
-        $query = @mysqli_query($conn, "SHOW COLUMNS FROM dashboard_am_sis_cfg WHERE field = 'suite_layout_mode'");
-        if ($query && mysqli_num_rows($query) === 0) {
-            @mysqli_query($conn, "ALTER TABLE dashboard_am_sis_cfg
-                ADD suite_layout_mode VARCHAR(10) NOT NULL DEFAULT 'novo'
-                AFTER popup_clientes_sessao_duracao");
+        // Additive migrations keep older MK-Auth installations compatible.
+        $columns = array(
+            'popup_clientes_sessao' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
+            'popup_clientes_sessao_duracao' => "INT NOT NULL DEFAULT 2",
+            'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
+        );
+
+        foreach ($columns as $column => $definition) {
+            $query = @mysqli_query($conn, "SHOW COLUMNS FROM dashboard_am_sis_cfg WHERE field = '" . $column . "'");
+            if ($query && mysqli_num_rows($query) === 0) {
+                @mysqli_query($conn, "ALTER TABLE dashboard_am_sis_cfg ADD COLUMN `" . $column . "` " . $definition);
+            }
         }
 
         @mysqli_query($conn, "INSERT IGNORE INTO dashboard_am_sis_cfg (id, suite_layout_mode) VALUES (1, 'novo')");

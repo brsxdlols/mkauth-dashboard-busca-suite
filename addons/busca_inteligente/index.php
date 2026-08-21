@@ -2,7 +2,7 @@
 include('nav/header.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
 
-if (mka_suite_get_layout_mode($link) === 'legado') {
+if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     header('Location: ../busca_inteligente-legado/');
     exit;
 }
@@ -20,11 +20,6 @@ if (mka_suite_get_layout_mode($link) === 'legado') {
         </li>
         <li class="nav-item">
             <a href="index.php" class="nav-link active" aria-current="page"><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a>
-        </li>
-        <li class="nav-item">
-            <a href="cli_conn_alerta.php" class="nav-link">
-            <i class="fa-solid fa-circle-exclamation fs-4 text-warning"></i>
-            </a>
         </li>
         <li class="nav-item">
             <a href="chamados_abertos.php" class="nav-link">

@@ -11,22 +11,29 @@ $dashTopDisk = '';
 $dashTopSessions = $dashTopUser !== '' ? '01' : '00';
 $dashTopMenuColor = 'warning';
 $dashTopMenuClass = 'is-warning';
+$dashTopDb = null;
 
 if (isset($conn) && $conn instanceof mysqli) {
-    if ($q = @mysqli_query($conn, "SELECT valor FROM sis_opcao WHERE nome = 'cor_menu' LIMIT 1")) {
+    $dashTopDb = $conn;
+} elseif (isset($link) && $link instanceof mysqli) {
+    $dashTopDb = $link;
+}
+
+if ($dashTopDb instanceof mysqli) {
+    if ($q = @mysqli_query($dashTopDb, "SELECT valor FROM sis_opcao WHERE nome = 'cor_menu' LIMIT 1")) {
         if ($r = mysqli_fetch_assoc($q)) {
             $dashTopMenuColor = strtolower(trim((string) ($r['valor'] ?? '')));
         }
     }
-    if ($q = @mysqli_query($conn, 'SELECT nome, razao FROM sis_provedor LIMIT 1')) {
+    if ($q = @mysqli_query($dashTopDb, 'SELECT nome, razao FROM sis_provedor LIMIT 1')) {
         if ($r = mysqli_fetch_assoc($q)) {
             $dashTopProvider = $r['nome'] ?: $dashTopProvider;
             $dashTopCompany = $r['razao'] ?: $dashTopCompany;
         }
     }
 
-    $safeUser = mysqli_real_escape_string($conn, $dashTopUser);
-    if ($safeUser !== '' && $q = @mysqli_query($conn, "SELECT ultacesso, sesid FROM sis_acesso WHERE login = '$safeUser' LIMIT 1")) {
+    $safeUser = mysqli_real_escape_string($dashTopDb, $dashTopUser);
+    if ($safeUser !== '' && $q = @mysqli_query($dashTopDb, "SELECT ultacesso, sesid FROM sis_acesso WHERE login = '$safeUser' LIMIT 1")) {
         if ($r = mysqli_fetch_assoc($q)) {
             $dashTopLast = $r['ultacesso'] ?? '';
             $dashTopSessions = !empty($r['sesid']) ? '01' : '00';
@@ -34,6 +41,21 @@ if (isset($conn) && $conn instanceof mysqli) {
     }
 }
 
+$dashTopMenuAliases = [
+    'preto' => 'black',
+    'black' => 'black',
+    'branco' => 'light',
+    'claro' => 'light',
+    'light' => 'light',
+    'azul' => 'primary',
+    'primary' => 'primary',
+    'ciano' => 'info',
+    'info' => 'info',
+    'amarelo' => 'warning',
+    'warning' => 'warning',
+    'vermelho' => 'danger',
+    'danger' => 'danger',
+];
 $dashTopMenuClassMap = [
     'black' => 'is-black',
     'light' => 'is-light',
@@ -42,11 +64,16 @@ $dashTopMenuClassMap = [
     'warning' => 'is-warning',
     'danger' => 'is-danger',
 ];
-$dashTopMenuClass = $dashTopMenuClassMap[$dashTopMenuColor] ?? 'is-warning';
+$dashTopMenuKey = $dashTopMenuAliases[$dashTopMenuColor] ?? $dashTopMenuColor;
+$dashTopMenuClass = $dashTopMenuClassMap[$dashTopMenuKey] ?? 'is-warning';
 
-$free = trim((string) @shell_exec('free | awk \'/Mem:/ {printf "%d%%", $3/$2*100}\''));
-$disk = trim((string) @shell_exec('df / | awk \'NR==2 {print $5}\''));
-$nproc = (int) trim((string) @shell_exec('nproc 2>/dev/null'));
+// Some shared hosting PHP builds disable shell_exec; the dashboard must still render.
+$dashTopShell = function ($command) {
+    return function_exists('shell_exec') ? trim((string) @shell_exec($command)) : '';
+};
+$free = $dashTopShell('free | awk \'/Mem:/ {printf "%d%%", $3/$2*100}\'');
+$disk = $dashTopShell('df / | awk \'NR==2 {print $5}\'');
+$nproc = (int) $dashTopShell('nproc 2>/dev/null');
 $load = function_exists('sys_getloadavg') ? sys_getloadavg() : [0];
 if ($free !== '') $dashTopRam = $free;
 if ($disk !== '') $dashTopDisk = $disk;
@@ -79,6 +106,27 @@ nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
 #mkauth-dashboard-navbar {
     z-index: 1030;
 }
+/* Mantem a cor escolhida no tema mesmo quando o CSS do MK-Auth a sobrescreve. */
+#mkauth-dashboard-navbar.is-black { background-color: #0b0b0c !important; color: #fff !important; }
+#mkauth-dashboard-navbar.is-primary { background-color: #1677e8 !important; color: #fff !important; }
+#mkauth-dashboard-navbar.is-info { background-color: #1592b8 !important; color: #fff !important; }
+#mkauth-dashboard-navbar.is-warning { background-color: #ffd95a !important; color: #3d3210 !important; }
+#mkauth-dashboard-navbar.is-danger { background-color: #ff3860 !important; color: #fff !important; }
+#mkauth-dashboard-navbar.is-light { background-color: #f8fafc !important; color: #1f2937 !important; }
+#mkauth-dashboard-navbar.is-black .navbar-item,
+#mkauth-dashboard-navbar.is-black .navbar-link,
+#mkauth-dashboard-navbar.is-primary .navbar-item,
+#mkauth-dashboard-navbar.is-primary .navbar-link,
+#mkauth-dashboard-navbar.is-info .navbar-item,
+#mkauth-dashboard-navbar.is-info .navbar-link,
+#mkauth-dashboard-navbar.is-danger .navbar-item,
+#mkauth-dashboard-navbar.is-danger .navbar-link { color: #fff !important; }
+#mkauth-dashboard-navbar.is-warning .navbar-item,
+#mkauth-dashboard-navbar.is-warning .navbar-link,
+#mkauth-dashboard-navbar.is-light .navbar-item,
+#mkauth-dashboard-navbar.is-light .navbar-link { color: inherit !important; }
+#mkauth-dashboard-navbar .navbar-item:hover,
+#mkauth-dashboard-navbar .navbar-link:hover { background-color: rgba(255,255,255,.14) !important; }
 @media screen and (max-width: 1023px) {
     #mkauth-dashboard-navbar .navbar-menu.is-active {
         display: block !important;

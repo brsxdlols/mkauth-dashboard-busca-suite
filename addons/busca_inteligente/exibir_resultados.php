@@ -152,6 +152,32 @@
         box-shadow: inset 0 0 0 1px rgba(220, 53, 69, 0.14);
     }
 
+    .client-status-badge.is-locked-online {
+        background: #eaf7ef;
+        color: #1f8f4e !important;
+        box-shadow: inset 0 0 0 1px rgba(31, 143, 78, 0.16);
+    }
+
+    .client-status-badge.is-locked-offline {
+        background: #eef1f4;
+        color: #111827 !important;
+        box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.18);
+        position: relative;
+    }
+
+    .client-status-badge.is-locked-offline .status-lock-slash {
+        position: absolute;
+        font-size: 25px;
+        transform: rotate(-28deg);
+        color: #111827;
+    }
+
+    .client-status-badge.is-observation {
+        background: #fff8dd;
+        color: #d4a017 !important;
+        box-shadow: inset 0 0 0 1px rgba(212, 160, 23, 0.22);
+    }
+
     .client-status-badge.is-disabled {
         background: #f3f5f7;
         color: #8a94a1 !important;
@@ -319,6 +345,8 @@
     .client-name-col .client-action-toolbar {
         margin-bottom: 4px;
     }
+
+    .client-name-col .observacao a { color: #d4a017 !important; }
 
     .client-address-col,
     .client-contact-col,
@@ -715,9 +743,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $email_fmt = trim((string) $cli_email) !== '' ? $cli_email : '-';
         $data_cad_fmt = (!empty($data_cad) && strtotime($data_cad)) ? date('d/m/Y - H:i:s', strtotime($data_cad)) : '-';
         $last_update_fmt = (!empty($last_update) && strtotime($last_update)) ? date('d/m/Y - H:i:s', strtotime($last_update)) : '-';
+        $last_update_user = '';
+        foreach (array('last_update_user', 'usuario_alteracao', 'ultima_alteracao_usuario', 'alterado_por', 'user_update', 'last_user', 'usuario') as $update_user_field) {
+            if (!empty($row[$update_user_field])) {
+                $last_update_user = trim((string) $row[$update_user_field]);
+                break;
+            }
+        }
+        $last_update_display = $last_update_fmt;
+        if ($last_update_display !== '-' && $last_update_user !== '') {
+            $last_update_display .= ' por ' . $last_update_user;
+        }
         $venc_cliente_fmt = trim((string) $venc_cliente) !== '' ? $venc_cliente : '-';
 
-        $color = $bloqueado == "sim" ? "bloqueado" : "observacao";
+        $color = $bloqueado == "sim" ? "bloqueado" : ($observacao == "sim" ? "observacao" : "");
 
         // Score Integration kKKKKkkkkKKKKK
         $cliente_tempo = 0;
@@ -854,8 +893,15 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         if ($bloqueado == "sim") {
                     ?>
                             <div class='col-auto client-status-col'>
-                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-locked" title="Cliente online e bloqueado">
+                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-locked-online" title="Cliente online e bloqueado">
                                     <i class="fa-solid fa-user-lock fs-5"></i>
+                                </a>
+                            <?php
+                        } elseif ($observacao == "sim") {
+                            ?>
+                            <div class='col-auto client-status-col'>
+                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-observation" title="Cliente em observação">
+                                    <i class="fa-solid fa-user-clock fs-5"></i>
                                 </a>
                             <?php
                         } else {
@@ -933,7 +979,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                     ?>
                                         <div class='col-12 col-md-3 client-name-col'>
 
-                                            <p class='observacao'>
+                                            <p class='observacao' style='color:#d4a017;'>
                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
                                             </p>
 
@@ -958,8 +1004,8 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                         if ($bloqueado == "sim") {
                                             ?>
                                                 <div class='col-auto client-status-col'>
-                                                    <span class="client-status-badge is-locked" title="Cliente offline e bloqueado">
-                                                        <i class="fa-solid fa-user-lock fs-5"></i>
+                                                    <span class="client-status-badge is-locked-offline" title="Cliente offline e bloqueado">
+                                                        <i class="fa-solid fa-user-lock fs-5"></i><i class="fa-solid fa-slash status-lock-slash"></i>
                                                     </span>
                                                 <?php
                                             } else {
@@ -1034,7 +1080,7 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                         ?>
                                                             <div class='col-12 col-md-3 client-name-col'>
 
-                                                                <p class='observacao'>
+                                                            <p class='observacao' style='color:#d4a017;'>
                                                                     <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
                                                                 </p>
 
@@ -1062,12 +1108,12 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
                                                                 <p class='info_add'><b>E-mail:</b> <?= $email_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
-                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_fmt; ?></p>
+                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?></p>
                                                                 <p class='info_add'><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
-                                                            <a class="client-action-btn has-counter is-danger" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn has-counter <?= !empty($tit[strtolower(trim($login_cliente))]) ? 'is-danger' : ''; ?>" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-file-invoice"></i>
                                                                 <span class="badge-parcelas-inline" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
                                                             </a>
