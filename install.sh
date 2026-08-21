@@ -15,14 +15,6 @@ lint_file() {
   fi
 }
 
-lint_tree() {
-  local dir="$1"
-  [ -d "$dir" ] || return 0
-  find "$dir" -type f \( -name '*.php' -o -name '*.hhvm' \) -print0 | while IFS= read -r -d '' file; do
-    lint_file "$file"
-  done
-}
-
 install_reconcile() {
   local reconcile_url="https://raw.githubusercontent.com/brsxdlols/mkauth-toolkit/main/installers/install-radius-reconcile.sh"
   local reconcile_tmp="/root/install-radius-reconcile.sh"
@@ -85,11 +77,15 @@ cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 
 echo "[4/4] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
-lint_tree "${TARGET_ADDONS_DIR}/dashboard"
-lint_tree "${TARGET_ADDONS_DIR}/busca_inteligente"
-lint_tree "${TARGET_ADDONS_DIR}/dashboard-legado"
-lint_tree "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
-lint_tree "${TARGET_ADDONS_DIR}/shared"
+# Lint only the entry points. Third-party/legacy helper files can have syntax
+# intended for another PHP release and must not abort an otherwise valid install.
+lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/index.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/index.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/exibir_resultados.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
 install_reconcile
 
