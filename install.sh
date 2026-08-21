@@ -35,7 +35,7 @@ install_reconcile() {
   echo "[5/5] Instalando reconcile de Radius"
   if curl -fsSL "${reconcile_url}" -o "${reconcile_tmp}"; then
     chmod +x "${reconcile_tmp}"
-    if ! sh "${reconcile_tmp}"; then
+    if ! bash "${reconcile_tmp}"; then
       echo "[aviso] instalacao do reconcile retornou erro; continuei com a dashboard instalada."
     fi
     rm -f "${reconcile_tmp}"
