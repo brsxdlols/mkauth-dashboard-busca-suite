@@ -216,7 +216,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
             <div class="row">
                 <div class="col">
-                    <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline">
+                    <form action="/admin/addons/busca_inteligente-legado/index.php" method="get" id="" class="form-inline">
                         <div class="row g-1">
 
                             <div class="col form-floating mb-3">
@@ -333,7 +333,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <div class='col'>
                                 <div class="card text-bg-primary">
                                     <div class="card-header">Total</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php" class="text-light">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php" class="text-light">
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_; ?></p>
@@ -348,7 +348,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="card text-bg-light">
 
                                     <div class="card-header">Adicional</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=adicionais" class="text-dark">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=adicionais" class="text-dark">
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $c_add; ?></p>
@@ -362,7 +362,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="card text-bg-info">
 
                                     <div class="card-header">Livres</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=" class="text-dark">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=" class="text-dark">
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_clientes_livres; ?></p>
@@ -376,7 +376,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="card text-bg-warning">
 
                                     <div class="card-header">Observação</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=obs" class="text-dark">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=obs" class="text-dark">
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_obs; ?></p>
@@ -390,7 +390,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="card text-bg-danger">
 
                                     <div class="card-header">Bloqueado</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=bloq" class="text-light">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=bloq" class="text-light">
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_bloq; ?></p>
@@ -404,7 +404,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="card text-bg-warning">
 
                                     <div class="card-header">Atraso</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=atrasado" class="text-dark">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=atrasado" class="text-dark">
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_atraso; ?></p>
@@ -417,7 +417,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <div class='col'>
                                 <div class="card text-bg-success">
                                     <div class="card-header">Online</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=on" class="text-light">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=on" class="text-light">
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_on; ?></p>
                                             <p class="text-center m-0 p-0"><?php echo "$perc_clientes_online%"; ?></p>
@@ -429,7 +429,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <div class='col'>
                                 <div class="card text-bg-dark">
                                     <div class="card-header">Offline</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=off" class="text-light">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=off" class="text-light">
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_offline; ?></p>
                                             <p class="text-center m-0 p-0"><?php echo "$perc_clientes_offline%"; ?></p>
@@ -441,7 +441,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <div class='col'>
                                 <div class="card border-danger">
                                     <div class="card-header">Sem Carne</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=sem carne" class="text-dark">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=sem carne" class="text-dark">
                                         <div class="card-body text-danger m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_sem_carne; ?></p>
                                             <p class="text-center m-0 p-0"><?php echo "$perc_clientes_sem_carne%"; ?></p>
@@ -453,7 +453,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <div class='col'>
                                 <div class="card border-danger">
                                     <div class="card-header">Sem Titulos</div>
-                                    <a href="/admin/addons/busca_inteligente/index.php?busca=sem tit" class="text-dark">
+                    <a href="/admin/addons/busca_inteligente-legado/index.php?busca=sem tit" class="text-dark">
                                         <div class="card-body text-danger m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_sem_titulo; ?></p>
                                             <p class="text-center m-0 p-0"><?php echo "$perc_clientes_sem_titulo%"; ?></p>
@@ -606,7 +606,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             </div>
                                                             <div class="card-body m-0 p-0">
                                                                 <p class="display-6 m-0 p-0 text-center">
-                                                                    <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=ramal%2B' . $key; ?>" class="text-light"><?= $totGeral; ?></a>
+                                    <a href="<?= '/admin/addons/busca_inteligente-legado/index.php?busca=ramal%2B' . $key; ?>" class="text-light"><?= $totGeral; ?></a>
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -620,7 +620,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             </div>
                                                             <div class="card-body m-0 p-0">
                                                                 <p class="display-6 m-0 p-0 text-center">
-                                                                    <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=on%2B' . $key; ?>" class="text-light"><?= $totOnline; ?></a>
+                                    <a href="<?= '/admin/addons/busca_inteligente-legado/index.php?busca=on%2B' . $key; ?>" class="text-light"><?= $totOnline; ?></a>
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -634,7 +634,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             </div>
                                                             <div class="card-body m-0 p-0">
                                                                 <p class="display-6 m-0 p-0 text-center text-light">
-                                                                    <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=off%2B' . $key; ?>" class="text-light"><?= $totOffline; ?></a>
+                                    <a href="<?= '/admin/addons/busca_inteligente-legado/index.php?busca=off%2B' . $key; ?>" class="text-light"><?= $totOffline; ?></a>
                                                                 </p>
                                                             </div>
                                                         </div>
