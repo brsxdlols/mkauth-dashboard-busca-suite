@@ -210,23 +210,26 @@
 
     .overdue-title-action {
         display: inline-flex;
+        flex-direction: column;
         align-items: center;
-        gap: 4px;
-        margin: 4px 0 0;
-        padding: 3px 7px;
-        border: 1px solid #f5b5bd;
-        border-radius: 6px;
-        background: #fff5f6;
-        color: #c92a3a !important;
+        justify-content: center;
+        gap: 1px;
+        min-width: 20px;
+        margin: 5px 0 0;
+        color: #d92d3f !important;
         font-size: 12px;
-        font-weight: 700;
-        line-height: 1.1;
+        font-weight: 800;
+        line-height: 1;
         text-decoration: none;
     }
 
+    .overdue-title-action i {
+        font-size: 15px;
+    }
+
     .overdue-title-action:hover {
-        background: #ffe3e6;
-        color: #a61e2c !important;
+        color: #9f1239 !important;
+        transform: translateY(-1px);
     }
 
     .client-status-badge.is-disabled {
@@ -698,9 +701,13 @@ if ($check_online == 'mkauth') {
 // Titulos Vencidos
 // $now = date('Y-m-d');
 
+$tit = array();
 $qTitulos = mysqli_query($link, "SELECT l.login FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login = c.login WHERE l.status NOT LIKE 'pago' AND l.deltitulo = 0 AND l.datavenc <= '$now' AND c.cli_ativado = 's'");
 while ($row = mysqli_fetch_assoc($qTitulos)) {
-    $tit[$row['login']] += 1;
+    $titulo_login = strtolower(trim($row['login']));
+    if ($titulo_login !== '') {
+        $tit[$titulo_login] = isset($tit[$titulo_login]) ? $tit[$titulo_login] + 1 : 1;
+    }
 }
 
 // arsort($tit);
