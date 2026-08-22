@@ -514,7 +514,9 @@ if (isset($_SESSION['MM_Usuario'])) {
 
                 mka_suite_set_layout_mode($conn, $suite_layout_mode);
             }
-            mysqli_close($link);
+            if (isset($conn) && $conn instanceof mysqli) {
+                mysqli_close($conn);
+            }
         } // FIm Permissao
         ?>
 

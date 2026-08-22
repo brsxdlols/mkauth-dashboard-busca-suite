@@ -5,7 +5,6 @@
 <ul class="nav nav-tabs justify-content-center py-2">
     <li class="nav-item"><a href="#" class="nav-link" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left fs-4"></i></a></li>
     <li class="nav-item"><a href="index.php" class="nav-link"><?= $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a></li>
-    <li class="nav-item"><a href="cli_conn_alerta.php" class="nav-link"><i class="fa-solid fa-circle-exclamation fs-4 text-warning"></i></a></li>
     <li class="nav-item"><a href="chamados_abertos.php" class="nav-link"><i class="fa-solid fa-headset fs-4"></i></a></li>
     <li class="nav-item"><a href="score.php" class="nav-link"><i class="fa-solid fa-ranking-star fs-4"></i></a></li>
     <li class="nav-item"><a href="relcontratos.php" class="nav-link active"><i class="fa-solid fa-file-signature fs-4"></i></a></li>

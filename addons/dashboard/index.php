@@ -548,93 +548,20 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
         }
 
-        .radius-alert-box {
-            position: relative;
-            display: flex;
-            gap: 14px;
-            padding: 16px 18px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #fff7d6 0%, #fff0bf 100%);
-            border-left: 6px solid #f2b84b;
-            box-shadow: 0 12px 28px rgba(168, 120, 0, 0.12);
-            color: #5b4300;
-        }
-
-        .radius-alert-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            flex: 0 0 auto;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.76);
-            color: #c27a00;
-            font-size: 22px;
-        }
-
-        .radius-alert-content {
-            min-width: 0;
-            flex: 1 1 auto;
-        }
-
-        .radius-alert-title {
-            margin: 0 0 6px;
-            font-size: 18px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .radius-alert-copy {
-            margin: 0;
-            font-size: 14px;
-            line-height: 1.45;
-            color: #6b4b00;
-        }
-
-        .radius-alert-list {
-            margin: 10px 0 0;
-            padding-left: 18px;
-        }
-
-        .radius-alert-list li {
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .radius-alert-meta {
-            display: block;
-            margin-top: 10px;
-            font-size: 12px;
-            color: #86630f;
-        }
-
-        .radius-alert-close {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            border: 0;
-            background: transparent;
-            color: #8b6a19;
-            font-size: 18px;
-            line-height: 1;
-            cursor: pointer;
-            padding: 2px;
-        }
-
-        .radius-alert-box.is-hidden {
-            display: none;
-        }
-
         .dashboard-session-toast-stack {
             position: fixed;
-            top: 84px;
             right: 24px;
+            bottom: 24px;
             z-index: 1060;
             width: min(360px, calc(100vw - 32px));
             display: grid;
             gap: 12px;
             pointer-events: none;
+        }
+
+        .dashboard-session-toast-stack.is-minimized {
+            width: auto;
+            gap: 8px;
         }
 
         .dashboard-session-toast-toolbar {
@@ -654,7 +581,20 @@ if (isset($_SESSION['MM_Usuario'])) {
             gap: 12px;
         }
 
+        .dashboard-session-toast-stack.is-minimized .dashboard-session-toast-list {
+            display: none;
+        }
+
+        .dashboard-session-toast-stack.is-minimized .dashboard-session-toast-toolbar {
+            justify-content: flex-end;
+        }
+
+        .dashboard-session-toast-stack.is-minimized .dashboard-session-toast-toolbar.is-hidden {
+            display: flex;
+        }
+
         .dashboard-session-toast {
+            position: relative;
             display: flex;
             gap: 12px;
             padding: 14px 16px;
@@ -777,6 +717,20 @@ if (isset($_SESSION['MM_Usuario'])) {
             justify-content: flex-end;
             margin-top: 10px;
         }
+
+        .dashboard-session-toast-close {
+            position: absolute;
+            top: 8px;
+            right: 9px;
+            border: 0;
+            background: transparent;
+            color: #64748b;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .dashboard-session-toast-close:hover { color: #0f172a; }
 
         .dashboard-session-toast-link {
             border: 0;
@@ -1137,11 +1091,12 @@ if (isset($_SESSION['MM_Usuario'])) {
                 }
             }
 
-            if (!empty($dashboard_session_toasts)) {
+            if (!empty($dashboard_session_toasts) && false) {
             ?>
                 <div class="dashboard-session-toast-stack" id="dashboard-session-toast-stack">
                     <div class="dashboard-session-toast-toolbar" id="dashboard-session-toast-toolbar">
                         <button type="button" class="dashboard-session-toast-link is-secondary" data-clear-session-popups="1">Limpar</button>
+                        <button type="button" class="dashboard-session-toast-link is-secondary" data-minimize-session-popups="1">Ocultar</button>
                         <button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button>
                     </div>
                     <div class="dashboard-session-toast-list" id="dashboard-session-toast-list">
@@ -1276,31 +1231,22 @@ if (isset($_SESSION['MM_Usuario'])) {
                 }
             }
 
+            $radius_alert_payload = null;
             if (!empty($radius_alert_items)) {
-            ?>
-                <div class="row mb-2">
-                    <div class="col-12">
-                        <div class="radius-alert-box" id="radius-alert-box">
-                            <span class="radius-alert-icon">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </span>
-                            <div class="radius-alert-content">
-                                <p class="radius-alert-title">Alerta de integração Radius</p>
-                                <p class="radius-alert-copy">Existe ramal/NAS com falha na API do MikroTik. Verifique usuário `mkauth`, senha do ramal, porta `8728` ou rota VPN.</p>
-                                <ul class="radius-alert-list">
-                                    <?php foreach ($radius_alert_items as $radius_alert_item) { ?>
-                                        <li><strong><?= htmlspecialchars($radius_alert_item, ENT_QUOTES, 'UTF-8'); ?></strong></li>
-                                    <?php } ?>
-                                </ul>
-                                <?php if ($radius_alert_generated_at !== '') { ?>
-                                    <span class="radius-alert-meta">Última verificação: <?= $radius_alert_generated_at; ?></span>
-                                <?php } ?>
-                            </div>
-                            <button type="button" class="radius-alert-close" id="radius-alert-close" aria-label="Fechar alerta">×</button>
-                        </div>
-                    </div>
-                </div>
-            <?php
+                $radius_alert_payload = [
+                    'id' => 'radius-' . md5(implode('|', $radius_alert_items) . $radius_alert_generated_at),
+                    'type' => 'radius',
+                    'name' => 'Alerta de integração Radius',
+                    'login' => 'Verifique usuário `mkauth`, senha do ramal, porta `8728` ou rota VPN.',
+                    'concentrator' => implode(' | ', $radius_alert_items),
+                    'formatted_time' => $radius_alert_generated_at !== '' ? $radius_alert_generated_at : date('d/m/Y H:i:s'),
+                    'contract_status' => 'inactive',
+                    'contract_label' => 'Falha de integração',
+                    'contract_icon' => 'fa-solid fa-triangle-exclamation',
+                    'show_contract' => true,
+                    'radius_alert' => true,
+                    'persistent' => true
+                ];
             }
             ?>
 
@@ -2001,10 +1947,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     window.setTimeout(destacarSolicitacoesInstalacao, 250);
                 }
 
-                jQuery(document).on('click', '#radius-alert-close', function() {
-                    jQuery('#radius-alert-box').addClass('is-hidden');
-                });
-
                 function ensureToastStack() {
                     var stack = document.getElementById('dashboard-session-toast-stack');
                     if (!stack) {
@@ -2024,6 +1966,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         toolbar.className = 'dashboard-session-toast-toolbar';
                         toolbar.innerHTML =
                             '<button type="button" class="dashboard-session-toast-link is-secondary" data-clear-session-popups="1">Limpar</button>' +
+                            '<button type="button" class="dashboard-session-toast-link is-secondary" data-minimize-session-popups="1">Minimizar</button>' +
                             '<button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Desativar notificações</button>';
                         stack.appendChild(toolbar);
                     }
@@ -2042,20 +1985,44 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
 
                 function toggleToastToolbar() {
+                    var stack = document.getElementById('dashboard-session-toast-stack');
                     var toolbar = document.getElementById('dashboard-session-toast-toolbar');
                     var list = document.getElementById('dashboard-session-toast-list');
                     if (!toolbar || !list) {
                         return;
                     }
 
-                    if (list.children.length > 0 && window.dashboardSessionPopupEnabled) {
+                    if ((list.children.length > 0 || (stack && stack.classList.contains('is-minimized'))) && window.dashboardSessionPopupEnabled) {
                         toolbar.classList.remove('is-hidden');
                     } else {
                         toolbar.classList.add('is-hidden');
                     }
                 }
 
+                function setToastStackMinimized(minimized) {
+                    var stack = ensureToastStack();
+                    ensureToastToolbar(stack);
+
+                    if (minimized) {
+                        stack.classList.add('is-minimized');
+                        sessionStorage.setItem('dashboard-session-popups-minimized', '1');
+                    } else {
+                        stack.classList.remove('is-minimized');
+                        sessionStorage.removeItem('dashboard-session-popups-minimized');
+                    }
+
+                    var minimizeButton = stack.querySelector('[data-minimize-session-popups="1"]');
+                    if (minimizeButton) {
+                        minimizeButton.textContent = minimized ? 'Mostrar' : 'Minimizar';
+                    }
+
+                    toggleToastToolbar();
+                }
+
                 function scheduleToastRemoval(item) {
+                    if (item.getAttribute('data-persistent') === '1') {
+                        return;
+                    }
                     window.setTimeout(function() {
                         item.classList.add('is-fading');
                         window.setTimeout(function() {
@@ -2078,21 +2045,26 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     ensureToastToolbar(stack);
                     var item = document.createElement('div');
                     var isLogin = eventData.type === 'login';
+                    var isRadiusAlert = eventData.type === 'radius';
 
-                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isLogin ? 'is-login' : 'is-logout'));
+                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isRadiusAlert ? 'is-guide' : (isLogin ? 'is-login' : 'is-logout')));
                     item.setAttribute('data-event-id', eventData.id);
+                    if (eventData.persistent) {
+                        item.setAttribute('data-persistent', '1');
+                    }
 
-                    var iconClass = eventData.icon ? eventData.icon : (isLogin ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right');
-                    var label = eventData.label ? eventData.label : (isLogin ? 'Cliente conectou' : 'Cliente desconectou');
+                    var iconClass = eventData.icon ? eventData.icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : (isLogin ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right'));
+                    var label = eventData.label ? eventData.label : (isRadiusAlert ? 'Alerta Radius' : (isLogin ? 'Cliente conectou' : 'Cliente desconectou'));
                     var concentratorHtml = '';
                     if (eventData.concentrator && eventData.concentrator !== '-') {
                         concentratorHtml = '<span><i class="bi bi-hdd-network"></i>' + eventData.concentrator + '</span>';
                     }
-                    var contractStatus = eventData.contract_status ? eventData.contract_status : 'active';
-                    var contractIcon = eventData.contract_icon ? eventData.contract_icon : 'bi bi-shield-check';
-                    var contractLabel = eventData.contract_label ? eventData.contract_label : 'Contrato ativo';
+                    var contractStatus = eventData.contract_status ? eventData.contract_status : (isRadiusAlert ? 'inactive' : 'active');
+                    var contractIcon = eventData.contract_icon ? eventData.contract_icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : 'bi bi-shield-check');
+                    var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Falha de integração' : 'Contrato ativo');
 
                     item.innerHTML =
+                        '<button type="button" class="dashboard-session-toast-close" data-close-session-toast="1" aria-label="Fechar">&times;</button>' +
                         '<span class="dashboard-session-toast-icon"><i class="' + iconClass + '"></i></span>' +
                         '<div class="dashboard-session-toast-content">' +
                         '<span class="dashboard-session-toast-label">' + label + '</span>' +
@@ -2106,6 +2078,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         '</div>';
 
                     list.prepend(item);
+                    if (sessionStorage.getItem('dashboard-session-popups-minimized') === '1') {
+                        setToastStackMinimized(true);
+                    }
                     toggleToastToolbar();
                     scheduleToastRemoval(item);
                 }
@@ -2114,6 +2089,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     jQuery('#dashboard-session-toast-list .dashboard-session-toast').remove();
                     toggleToastToolbar();
                     jQuery('#dashboard-session-toast-stack').remove();
+                    sessionStorage.removeItem('dashboard-session-popups-minimized');
                 }
 
                 function showSessionGuideToast() {
@@ -2188,6 +2164,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         });
                 }
 
+                <?php if ($radius_alert_payload !== null) { ?>
+                (function() {
+                    var radiusBootstrapToast = <?= json_encode($radius_alert_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+                    var radiusBootstrapKey = 'dashboard-session-toast-' + radiusBootstrapToast.id;
+                    if (!sessionStorage.getItem(radiusBootstrapKey)) {
+                        sessionStorage.setItem(radiusBootstrapKey, '1');
+                        createSessionToast(radiusBootstrapToast);
+                    }
+                })();
+                <?php } ?>
+
                 jQuery(document).on('click', '[data-disable-session-popups="1"]', function(event) {
                     event.preventDefault();
                     disableSessionPopups();
@@ -2198,13 +2185,33 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     clearVisibleSessionToasts();
                 });
 
+                jQuery(document).on('click', '[data-close-session-toast="1"]', function(event) {
+                    event.preventDefault();
+                    var item = jQuery(this).closest('.dashboard-session-toast');
+                    item.remove();
+                    toggleToastToolbar();
+                    var list = document.getElementById('dashboard-session-toast-list');
+                    if (list && list.children.length === 0) {
+                        jQuery('#dashboard-session-toast-stack').remove();
+                    }
+                });
+
+                jQuery(document).on('click', '[data-minimize-session-popups="1"]', function(event) {
+                    event.preventDefault();
+                    var stack = ensureToastStack();
+                    setToastStackMinimized(!stack.classList.contains('is-minimized'));
+                });
+
                 if (sessionStorage.getItem('dashboard-session-popups-disabled') === '1') {
                     window.dashboardSessionPopupEnabled = false;
                     jQuery('#dashboard-session-toast-stack').remove();
                 }
 
                 hydrateExistingSessionToasts();
-                window.setInterval(fetchSessionToasts, 15000);
+                if (sessionStorage.getItem('dashboard-session-popups-minimized') === '1') {
+                    setToastStackMinimized(true);
+                }
+                window.setInterval(fetchSessionToasts, 5000);
             });
         </script>
 </body>
