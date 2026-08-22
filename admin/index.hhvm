@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../addons/shared/layout_mode.php';
+require_once __DIR__ . '/addons/shared/layout_mode.php';
 
 $mode = mka_suite_get_layout_mode();
 $target = mka_suite_dashboard_target($mode);
