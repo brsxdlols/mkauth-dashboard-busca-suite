@@ -160,22 +160,73 @@
 
     .client-status-badge.is-locked-offline {
         background: #eef1f4;
-        color: #111827 !important;
+        color: #5b6572 !important;
         box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.18);
         position: relative;
     }
 
-    .client-status-badge.is-locked-offline .status-lock-slash {
+    .client-status-badge .status-lock-overlay,
+    .client-status-badge .status-clock-overlay {
         position: absolute;
-        font-size: 25px;
-        transform: rotate(-28deg);
+        line-height: 1;
+    }
+
+    .client-status-badge .status-lock-overlay {
+        right: -5px;
+        bottom: -4px;
+        font-size: 11px;
         color: #111827;
     }
 
-    .client-status-badge.is-observation {
-        background: #fff8dd;
-        color: #d4a017 !important;
-        box-shadow: inset 0 0 0 1px rgba(212, 160, 23, 0.22);
+    .client-status-badge .status-clock-overlay {
+        right: -5px;
+        top: -4px;
+        font-size: 10px;
+    }
+
+    .client-status-badge.is-observation-online {
+        background: #eaf7ef;
+        color: #1f8f4e !important;
+        box-shadow: inset 0 0 0 1px rgba(31, 143, 78, 0.16);
+        position: relative;
+    }
+
+    .client-status-badge.is-observation-online .status-lock-overlay,
+    .client-status-badge.is-observation-online .status-clock-overlay {
+        color: #1f8f4e;
+    }
+
+    .client-status-badge.is-observation-offline {
+        background: #f1f4f8;
+        color: #5b6572 !important;
+        box-shadow: inset 0 0 0 1px rgba(91, 101, 114, 0.14);
+        position: relative;
+    }
+
+    .client-status-badge.is-observation-offline .status-lock-overlay,
+    .client-status-badge.is-observation-offline .status-clock-overlay {
+        color: #5b6572;
+    }
+
+    .overdue-title-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin: 4px 0 0;
+        padding: 3px 7px;
+        border: 1px solid #f5b5bd;
+        border-radius: 6px;
+        background: #fff5f6;
+        color: #c92a3a !important;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.1;
+        text-decoration: none;
+    }
+
+    .overdue-title-action:hover {
+        background: #ffe3e6;
+        color: #a61e2c !important;
     }
 
     .client-status-badge.is-disabled {
@@ -900,8 +951,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         } elseif ($observacao == "sim") {
                             ?>
                             <div class='col-auto client-status-col'>
-                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-observation" title="Cliente em observação">
-                                    <i class="fa-solid fa-user-clock fs-5"></i>
+                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-observation-online" title="Cliente online em observação">
+                                    <i class="fa-solid fa-user-check fs-5"></i>
+                                    <i class="fa-solid fa-lock-open status-lock-overlay"></i>
+                                    <i class="fa-solid fa-clock status-clock-overlay"></i>
                                 </a>
                             <?php
                         } else {
@@ -927,13 +980,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                             if ($tit[strtolower(trim($login_cliente))] > 0) {
                                 ?>
-                                    <p class='titulos_vencidos'>
-
-                                        <a href='../../cliente_det.<?= $links_ext ?>?uuid=<?= $uuid_cliente; ?>' title='TITULOS VENCIDOS: <?= $nome_cliente; ?>'>
-                                            <i class="fa-solid fa-file-invoice-dollar text-danger fs-4"></i>
-                                            <?= $tit[strtolower(trim($login_cliente))]; ?>
-                                        </a>
-                                    </p>
+                                    <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
+                                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                                        <?= $tit[strtolower(trim($login_cliente))]; ?>
+                                    </a>
                                 <?php
                             }
 
@@ -1005,9 +1055,19 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                             ?>
                                                 <div class='col-auto client-status-col'>
                                                     <span class="client-status-badge is-locked-offline" title="Cliente offline e bloqueado">
-                                                        <i class="fa-solid fa-user-lock fs-5"></i><i class="fa-solid fa-slash status-lock-slash"></i>
+                                                        <i class="fa-solid fa-user-slash fs-5"></i>
+                                                        <i class="fa-solid fa-lock status-lock-overlay"></i>
                                                     </span>
                                                 <?php
+                                            } elseif ($observacao == "sim") {
+                                                ?>
+                                                    <div class='col-auto client-status-col'>
+                                                        <span class="client-status-badge is-observation-offline" title="Cliente offline em observação">
+                                                            <i class="fa-solid fa-user-check fs-5"></i>
+                                                            <i class="fa-solid fa-lock-open status-lock-overlay"></i>
+                                                            <i class="fa-solid fa-clock status-clock-overlay"></i>
+                                                        </span>
+                                                    <?php
                                             } else {
                                                 ?>
                                                     <div class='col-auto client-status-col'>
@@ -1030,12 +1090,10 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
 
                                                 if ($tit[strtolower(trim($login_cliente))] > 0) {
                                                     ?>
-                                                        <p class='titulos_vencidos'>
-
-                                                            <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='TITULOS VENCIDOS: <?= $nome_cliente; ?>'>
-                                                                <i class="fa-solid fa-file-invoice-dollar text-danger fs-4"></i> <?= $tit[strtolower(trim($login_cliente))]; ?>
-                                                            </a>
-                                                        </p>
+                                                        <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
+                                                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                                                            <?= $tit[strtolower(trim($login_cliente))]; ?>
+                                                        </a>
                                                     <?php
                                                 }
                                                     ?>
