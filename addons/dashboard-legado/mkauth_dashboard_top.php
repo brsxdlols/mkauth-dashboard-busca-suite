@@ -126,8 +126,22 @@ nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
 #mkauth-dashboard-navbar.is-light .navbar-link { color: inherit !important; }
 #mkauth-dashboard-navbar .navbar-item:hover,
 #mkauth-dashboard-navbar .navbar-link:hover { background-color: rgba(255,255,255,.14) !important; }
+#mkauth-dashboard-navbar .navbar-dropdown,
+#mkauth-dashboard-navbar .navbar-dropdown a,
+#mkauth-dashboard-navbar .navbar-dropdown .navbar-item,
+#mkauth-dashboard-navbar .navbar-dropdown .navbar-link,
+#mkauth-dashboard-navbar .navbar-dropdown span,
+#mkauth-dashboard-navbar .navbar-dropdown strong,
+#mkauth-dashboard-navbar .navbar-dropdown p { color:#1f2937 !important; text-shadow:none !important; }
+#mkauth-dashboard-navbar .navbar-dropdown a:hover,
+#mkauth-dashboard-navbar .navbar-dropdown .navbar-item:hover { background:#eef4ff !important; color:#0f5db8 !important; }
 @media screen and (max-width: 1023px) {
-    #mkauth-dashboard-navbar .navbar-menu.is-active { display: block !important; position: absolute !important; top: 3.25rem !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1031 !important; }
+    #mkauth-dashboard-navbar .navbar-menu.is-active { display: block !important; position: absolute !important; top: 3.25rem !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1031 !important; background: #fff !important; }
+    #mkauth-dashboard-navbar .navbar-menu.is-active .navbar-dropdown { background: #fff !important; }
+    #mkauth-dashboard-navbar .navbar-menu.is-active .navbar-item,
+    #mkauth-dashboard-navbar .navbar-menu.is-active .navbar-link,
+    #mkauth-dashboard-navbar .navbar-menu.is-active a { color: #1f2937 !important; text-shadow: none !important; }
+    #mkauth-dashboard-navbar .navbar-menu.is-active .navbar-link::after { border-color: #1f2937 !important; }
     #mkauth-dashboard-navbar .has-dropdown.is-active > .navbar-dropdown { display: block !important; position: static !important; }
     #mkauth-dashboard-navbar .navbar-dropdown .columns { display: block; }
     #mkauth-dashboard-navbar .navbar-dropdown .is-divisor-vertical { display: none; }
