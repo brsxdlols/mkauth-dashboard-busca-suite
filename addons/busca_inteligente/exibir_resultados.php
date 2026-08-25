@@ -223,7 +223,7 @@
     }
 
     .overdue-title-action i {
-        font-size: 25px;
+        font-size: 32px !important;
     }
 
     .overdue-title-action:hover {
@@ -258,12 +258,16 @@
     .ending-booklet-alert i,
     .no-booklet-alert i,
     .invalid-booklet-alert i {
-        font-size: 25px;
+        width: 32px;
+        height: 32px;
+        font-size: 32px !important;
+        line-height: 32px !important;
+        text-align: center;
     }
 
     .ending-booklet-alert .remaining-title-count {
         margin-top: 1px;
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .no-booklet-alert {
