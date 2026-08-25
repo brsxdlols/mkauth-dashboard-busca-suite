@@ -16,25 +16,19 @@ lint_file() {
 }
 
 install_client_audit_hook() {
-  local target="${TARGET_ADMIN_DIR}/executar_cliente.hhvm"
-  local hook_line="<?php require_once __DIR__ . '/addons/shared/client_update_audit.php'; ?>"
-  local temp_file
+  local target="${TARGET_ADMIN_DIR}/scripts/mk-auth.js"
+  local hook_line=';document.addEventListener("DOMContentLoaded",function(){if(!document.getElementById("mka-client-update-audit")){var s=document.createElement("script");s.id="mka-client-update-audit";s.src="/admin/addons/shared/client_update_audit.js?v=1";document.head.appendChild(s);}});'
 
   if [ ! -f "${target}" ]; then
-    echo "[aviso] executar_cliente.hhvm nao encontrado; auditoria de alteracoes nao foi ativada."
+    echo "[aviso] scripts/mk-auth.js nao encontrado; auditoria de alteracoes nao foi ativada."
     return 0
   fi
 
-  if grep -q "client_update_audit.php" "${target}"; then
+  if grep -q "mka-client-update-audit" "${target}"; then
     return 0
   fi
 
-  temp_file="${target}.codex-audit.$$"
-  printf '%s\n' "${hook_line}" > "${temp_file}"
-  cat "${target}" >> "${temp_file}"
-  chmod --reference="${target}" "${temp_file}" 2>/dev/null || chmod 755 "${temp_file}"
-  chown --reference="${target}" "${temp_file}" 2>/dev/null || true
-  mv "${temp_file}" "${target}"
+  printf '%s\n' "${hook_line}" >> "${target}"
 }
 
 install_reconcile() {
@@ -60,8 +54,9 @@ mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
 if [ -f "${TARGET_ADMIN_DIR}/index.hhvm" ]; then
   cp -a "${TARGET_ADMIN_DIR}/index.hhvm" "${BACKUP_DIR}/admin/index.hhvm"
 fi
-if [ -f "${TARGET_ADMIN_DIR}/executar_cliente.hhvm" ]; then
-  cp -a "${TARGET_ADMIN_DIR}/executar_cliente.hhvm" "${BACKUP_DIR}/admin/executar_cliente.hhvm"
+if [ -f "${TARGET_ADMIN_DIR}/scripts/mk-auth.js" ]; then
+  mkdir -p "${BACKUP_DIR}/admin/scripts"
+  cp -a "${TARGET_ADMIN_DIR}/scripts/mk-auth.js" "${BACKUP_DIR}/admin/scripts/mk-auth.js"
 fi
 if [ -d "${TARGET_ADDONS_DIR}/dashboard" ]; then
   cp -a "${TARGET_ADDONS_DIR}/dashboard" "${BACKUP_DIR}/addons/dashboard"

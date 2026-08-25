@@ -449,7 +449,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         LEFT JOIN sis_adicional c2
         ON c.login = c2.login
         LEFT JOIN dashboard_am_client_update_audit cua
-        ON c.uuid_cliente = cua.uuid_cliente AND c.last_update = cua.alterado_em
+        ON c.uuid_cliente = cua.uuid_cliente
+        AND c.last_update <> cua.previous_last_update
+        AND c.last_update BETWEEN DATE_SUB(cua.captured_at, INTERVAL 5 SECOND) AND DATE_ADD(cua.captured_at, INTERVAL 5 MINUTE)
         WHERE $filtro $grupos";
 
     // echo $query_default ."<br>";
