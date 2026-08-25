@@ -2041,10 +2041,28 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
 
                 function scheduleToastRemoval(item) {
-                    if (item.getAttribute('data-persistent') === '1') {
+                    if (item.getAttribute('data-persistent') === '1' || item.getAttribute('data-removal-scheduled') === '1') {
                         return;
                     }
-                    window.setTimeout(function() {
+
+                    var configuredSeconds = Number.parseInt(window.dashboardSessionPopupDuration, 10);
+                    if (!Number.isFinite(configuredSeconds)) {
+                        configuredSeconds = 2;
+                    }
+                    configuredSeconds = Math.max(1, Math.min(15, configuredSeconds));
+
+                    var visibleDuration = configuredSeconds * 1000;
+                    var removalDeadline = Date.now() + visibleDuration;
+                    item.setAttribute('data-removal-scheduled', '1');
+                    item.setAttribute('data-popup-duration', String(configuredSeconds));
+
+                    function beginToastRemoval() {
+                        var remaining = removalDeadline - Date.now();
+                        if (remaining > 25) {
+                            window.setTimeout(beginToastRemoval, remaining);
+                            return;
+                        }
+
                         item.classList.add('is-fading');
                         window.setTimeout(function() {
                             if (item && item.parentNode) {
@@ -2057,7 +2075,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 stack.remove();
                             }
                         }, 560);
-                    }, Math.max(1000, (window.dashboardSessionPopupDuration || 2) * 1000));
+                    }
+
+                    window.setTimeout(beginToastRemoval, visibleDuration);
                 }
 
                 function createSessionToast(eventData) {
