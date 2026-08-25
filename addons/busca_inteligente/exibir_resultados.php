@@ -222,7 +222,11 @@
         text-decoration: none;
     }
 
-    .overdue-title-action i {
+    .overdue-title-action i,
+    .overdue-title-action svg,
+    .overdue-title-action .svg-inline--fa {
+        width: 32px !important;
+        height: 32px !important;
         font-size: 32px !important;
     }
 
@@ -256,10 +260,16 @@
     }
 
     .ending-booklet-alert i,
+    .ending-booklet-alert svg,
+    .ending-booklet-alert .svg-inline--fa,
     .no-booklet-alert i,
-    .invalid-booklet-alert i {
-        width: 32px;
-        height: 32px;
+    .no-booklet-alert svg,
+    .no-booklet-alert .svg-inline--fa,
+    .invalid-booklet-alert i,
+    .invalid-booklet-alert svg,
+    .invalid-booklet-alert .svg-inline--fa {
+        width: 32px !important;
+        height: 32px !important;
         font-size: 32px !important;
         line-height: 32px !important;
         text-align: center;
