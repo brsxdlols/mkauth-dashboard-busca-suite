@@ -15,6 +15,23 @@ lint_file() {
   fi
 }
 
+install_client_audit_hook() {
+  local target="${TARGET_ADMIN_DIR}/scripts/mk-auth.js"
+  local hook_line=';document.addEventListener("DOMContentLoaded",function(){if(!document.getElementById("mka-client-update-audit")){var s=document.createElement("script");s.id="mka-client-update-audit";s.src="/admin/addons/shared/client_update_audit.js?v=2";document.head.appendChild(s);}});'
+
+  if [ ! -f "${target}" ]; then
+    echo "[aviso] scripts/mk-auth.js nao encontrado; auditoria de alteracoes nao foi ativada."
+    return 0
+  fi
+
+  if grep -q "mka-client-update-audit" "${target}"; then
+    sed -i 's/client_update_audit\.js?v=[0-9][0-9]*/client_update_audit.js?v=2/g' "${target}"
+    return 0
+  fi
+
+  printf '%s\n' "${hook_line}" >> "${target}"
+}
+
 install_reconcile() {
   echo "[5/5] Instalando reconcile de Radius"
   local reconcile_installer="${SCRIPT_DIR}/scripts/install-radius-reconcile.sh"
@@ -37,6 +54,10 @@ echo "[2/4] Gerando backup"
 mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
 if [ -f "${TARGET_ADMIN_DIR}/index.hhvm" ]; then
   cp -a "${TARGET_ADMIN_DIR}/index.hhvm" "${BACKUP_DIR}/admin/index.hhvm"
+fi
+if [ -f "${TARGET_ADMIN_DIR}/scripts/mk-auth.js" ]; then
+  mkdir -p "${BACKUP_DIR}/admin/scripts"
+  cp -a "${TARGET_ADMIN_DIR}/scripts/mk-auth.js" "${BACKUP_DIR}/admin/scripts/mk-auth.js"
 fi
 if [ -d "${TARGET_ADDONS_DIR}/dashboard" ]; then
   cp -a "${TARGET_ADDONS_DIR}/dashboard" "${BACKUP_DIR}/addons/dashboard"
@@ -67,12 +88,14 @@ rm -rf "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
 cp -a "${SCRIPT_DIR}/addons/busca_inteligente-legado" "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
 rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
+install_client_audit_hook
 
 echo "[4/4] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/index.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/index.php"

@@ -214,8 +214,7 @@
         align-items: center;
         justify-content: center;
         gap: 1px;
-        min-width: 20px;
-        margin: 5px 0 0;
+        min-width: 28px;
         color: #d92d3f !important;
         font-size: 12px;
         font-weight: 800;
@@ -223,13 +222,115 @@
         text-decoration: none;
     }
 
-    .overdue-title-action i {
-        font-size: 15px;
+    .overdue-title-action i,
+    .overdue-title-action svg,
+    .overdue-title-action .svg-inline--fa {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 22px !important;
     }
 
     .overdue-title-action:hover {
         color: #9f1239 !important;
         transform: translateY(-1px);
+    }
+
+    .billing-alert-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        margin-top: 6px;
+    }
+
+    .ending-booklet-alert,
+    .no-booklet-alert,
+    .invalid-booklet-alert {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .ending-booklet-alert {
+        color: #e59f00;
+    }
+
+    .ending-booklet-alert i,
+    .ending-booklet-alert svg,
+    .ending-booklet-alert .svg-inline--fa,
+    .no-booklet-alert i,
+    .no-booklet-alert svg,
+    .no-booklet-alert .svg-inline--fa,
+    .invalid-booklet-alert i,
+    .invalid-booklet-alert svg,
+    .invalid-booklet-alert .svg-inline--fa {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 22px !important;
+        line-height: 22px !important;
+        text-align: center;
+    }
+
+    .ending-booklet-alert .remaining-title-count {
+        margin-top: 1px;
+        font-size: 14px;
+    }
+
+    .no-booklet-alert {
+        color: #ffc107;
+    }
+
+    .invalid-booklet-alert {
+        color: #dc3545;
+    }
+
+    .last-update-audit-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    .last-update-user-link {
+        font-weight: 700;
+        text-decoration: underline dotted;
+        text-underline-offset: 2px;
+    }
+
+    .last-update-popover {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 9px);
+        z-index: 1080;
+        width: max-content;
+        max-width: min(420px, 80vw);
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #fff;
+        color: #1f2937;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, .18);
+        white-space: pre-line;
+        transform: translateX(-50%);
+        text-align: left;
+        font-weight: 400;
+        line-height: 1.35;
+    }
+
+    .last-update-popover::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        border: 7px solid transparent;
+        border-top-color: #fff;
+        transform: translateX(-50%);
+    }
+
+    .last-update-popover[hidden] {
+        display: none !important;
     }
 
     .client-status-badge.is-disabled {
@@ -529,6 +630,26 @@
         }
     }
 </style>
+<script>
+function mkaShowLastUpdateDetails(link) {
+    var wrap = link.closest('.last-update-audit-wrap');
+    var popover = wrap ? wrap.querySelector('.last-update-popover') : null;
+    if (!popover) return false;
+    document.querySelectorAll('.last-update-popover:not([hidden])').forEach(function (item) {
+        if (item !== popover) item.hidden = true;
+    });
+    popover.hidden = !popover.hidden;
+    return false;
+}
+
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.last-update-audit-wrap')) {
+        document.querySelectorAll('.last-update-popover:not([hidden])').forEach(function (item) {
+            item.hidden = true;
+        });
+    }
+});
+</script>
 <?php
 
 //Contagem dos clientes adicionais na pesquisa
@@ -761,6 +882,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
 
         $titulos_vencidos = $row['tit_vencidos'];
+        $titulo_login_key = strtolower(trim($login_cliente));
+        $quantidade_titulos_vencidos = isset($tit[$titulo_login_key]) ? (int) $tit[$titulo_login_key] : 0;
+        $tem_titulo_vencido = $quantidade_titulos_vencidos > 0;
         $bloqueado = $row['bloqueado'];
         $data_bloq = $row['data_bloq'];
         $observacao = $row['observacao'];
@@ -789,6 +913,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $cli_email = $row['email'];
         $cli_parc_abertas = $row['parc_abertas'];
         $cli_tit_abertos = $row['tit_abertos'];
+        $parcelas_validas = ($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24)
+            && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24);
+        $num_parcelas = $parcelas_validas ? (int) max($cli_parc_abertas, $cli_tit_abertos) : 0;
+        $carne_terminando = $parcelas_validas && $num_parcelas >= 1 && $num_parcelas <= 3;
+        $sem_carne = $parcelas_validas && $num_parcelas === 0;
 
         $contract_row = mka_contract_get_latest($link, $uuid_cliente, $login_cliente);
         $contract_status = mka_contract_build_status($contract_row);
@@ -808,10 +937,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 break;
             }
         }
+        $last_update_details = isset($row['last_update_details']) ? trim((string) $row['last_update_details']) : '';
         $last_update_display = $last_update_fmt;
-        if ($last_update_display !== '-' && $last_update_user !== '') {
-            $last_update_display .= ' por ' . $last_update_user;
-        }
         $venc_cliente_fmt = trim((string) $venc_cliente) !== '' ? $venc_cliente : '-';
 
         $color = $bloqueado == "sim" ? "bloqueado" : ($observacao == "sim" ? "observacao" : "");
@@ -985,40 +1112,33 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <?php
                             }
 
-                            if ($tit[strtolower(trim($login_cliente))] > 0) {
+                            if ($tem_titulo_vencido || $carne_terminando || $sem_carne || !$parcelas_validas) {
                                 ?>
+                                <div class="billing-alert-stack">
+                                <?php if ($tem_titulo_vencido) { ?>
                                     <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
                                         <i class="fa-solid fa-file-invoice-dollar"></i>
-                                        <?= $tit[strtolower(trim($login_cliente))]; ?>
+                                        <?= $quantidade_titulos_vencidos; ?>
                                     </a>
+                                <?php } ?>
+                                <?php if ($carne_terminando) { ?>
+                                    <span class="ending-booklet-alert" title="Restam <?= $num_parcelas; ?> títulos no carnê de <?= $nome_cliente; ?>">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        <span class="remaining-title-count"><?= $num_parcelas; ?></span>
+                                    </span>
+                                <?php } elseif ($sem_carne) { ?>
+                                    <span class="no-booklet-alert" title="O cliente não tem carnê">
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                    </span>
+                                <?php } elseif (!$parcelas_validas) { ?>
+                                    <span class="invalid-booklet-alert" title="Número de parcelas inválido">
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                    </span>
+                                <?php } ?>
+                                </div>
                                 <?php
                             }
-
                                 ?>
-                                <p>
-                                <?php
-if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24)) {
-    if ($cli_parc_abertas > 0 || $cli_tit_abertos > 0) {
-        // Mostra o número de parcelas abertas
-        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior número entre as duas variáveis
-?>
-
-<?php
-    } elseif ($cli_parc_abertas == 0 && $cli_tit_abertos == 0) {
-        // Mensagem para quando não há carnê
-?>
-        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente não tem carnê"></i>
-<?php
-    }
-} else {
-    // Mensagem para valores inválidos (maior que 24 ou negativos)
-    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='Número de parcelas inválido'></i>";
-}
-?>
-
-
-
-                                </p>
                                 </div>
 
                                 <?php
@@ -1095,38 +1215,33 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                     <?php
                                                 }
 
-                                                if ($tit[strtolower(trim($login_cliente))] > 0) {
+                                                if ($tem_titulo_vencido || $carne_terminando || $sem_carne || !$parcelas_validas) {
                                                     ?>
+                                                    <div class="billing-alert-stack">
+                                                    <?php if ($tem_titulo_vencido) { ?>
                                                         <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
                                                             <i class="fa-solid fa-file-invoice-dollar"></i>
-                                                            <?= $tit[strtolower(trim($login_cliente))]; ?>
+                                                            <?= $quantidade_titulos_vencidos; ?>
                                                         </a>
+                                                    <?php } ?>
+                                                    <?php if ($carne_terminando) { ?>
+                                                        <span class="ending-booklet-alert" title="Restam <?= $num_parcelas; ?> títulos no carnê de <?= $nome_cliente; ?>">
+                                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                                            <span class="remaining-title-count"><?= $num_parcelas; ?></span>
+                                                        </span>
+                                                    <?php } elseif ($sem_carne) { ?>
+                                                        <span class="no-booklet-alert" title="O cliente não tem carnê">
+                                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                                        </span>
+                                                    <?php } elseif (!$parcelas_validas) { ?>
+                                                        <span class="invalid-booklet-alert" title="Número de parcelas inválido">
+                                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                                        </span>
+                                                    <?php } ?>
+                                                    </div>
                                                     <?php
                                                 }
                                                     ?>
-
-                                                    <p>
-                                                    <?php
-if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 0 && $cli_tit_abertos <= 24)) {
-    if ($cli_parc_abertas > 0 || $cli_tit_abertos > 0) {
-        // Mostra o número de parcelas abertas
-        $num_parcelas = max($cli_parc_abertas, $cli_tit_abertos); // Considera o maior número entre as duas variáveis
-?>
-
-<?php
-    } elseif ($cli_parc_abertas == 0 && $cli_tit_abertos == 0) {
-        // Mensagem para quando não há carnê
-?>
-        <i class="fa-solid fa-circle-exclamation fs-4 text-warning" title="O cliente não tem carnê"></i>
-<?php
-    }
-} else {
-    // Mensagem para valores inválidos (maior que 24 ou negativos)
-    echo "<i class='fa-solid fa-circle-exclamation fs-4 text-danger' title='Número de parcelas inválido'></i>";
-}
-?>
-
-                                                    </p>
                                                     </div>
 
                                                     <?php
@@ -1173,12 +1288,12 @@ if (($cli_parc_abertas >= 0 && $cli_parc_abertas <= 24) && ($cli_tit_abertos >= 
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
                                                                 <p class='info_add'><b>E-mail:</b> <?= $email_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
-                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?></p>
+                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
                                                                 <p class='info_add'><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
-                                                            <a class="client-action-btn has-counter <?= !empty($tit[strtolower(trim($login_cliente))]) ? 'is-danger' : ''; ?>" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : ''; ?>" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-file-invoice"></i>
                                                                 <span class="badge-parcelas-inline" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
                                                             </a>
