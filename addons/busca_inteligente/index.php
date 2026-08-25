@@ -427,6 +427,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.data_ins,
             c.last_update,
             cua.usuario AS last_update_user,
+            cua.detalhes AS last_update_details,
             c.cep,
             c.uuid_cliente,
             c.switch,

@@ -288,6 +288,51 @@
         color: #dc3545;
     }
 
+    .last-update-audit-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    .last-update-user-link {
+        font-weight: 700;
+        text-decoration: underline dotted;
+        text-underline-offset: 2px;
+    }
+
+    .last-update-popover {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 9px);
+        z-index: 1080;
+        width: max-content;
+        max-width: min(420px, 80vw);
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #fff;
+        color: #1f2937;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, .18);
+        white-space: pre-line;
+        transform: translateX(-50%);
+        text-align: left;
+        font-weight: 400;
+        line-height: 1.35;
+    }
+
+    .last-update-popover::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        border: 7px solid transparent;
+        border-top-color: #fff;
+        transform: translateX(-50%);
+    }
+
+    .last-update-popover[hidden] {
+        display: none !important;
+    }
+
     .client-status-badge.is-disabled {
         background: #f3f5f7;
         color: #8a94a1 !important;
@@ -585,6 +630,26 @@
         }
     }
 </style>
+<script>
+function mkaShowLastUpdateDetails(link) {
+    var wrap = link.closest('.last-update-audit-wrap');
+    var popover = wrap ? wrap.querySelector('.last-update-popover') : null;
+    if (!popover) return false;
+    document.querySelectorAll('.last-update-popover:not([hidden])').forEach(function (item) {
+        if (item !== popover) item.hidden = true;
+    });
+    popover.hidden = !popover.hidden;
+    return false;
+}
+
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.last-update-audit-wrap')) {
+        document.querySelectorAll('.last-update-popover:not([hidden])').forEach(function (item) {
+            item.hidden = true;
+        });
+    }
+});
+</script>
 <?php
 
 //Contagem dos clientes adicionais na pesquisa
@@ -872,10 +937,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 break;
             }
         }
+        $last_update_details = isset($row['last_update_details']) ? trim((string) $row['last_update_details']) : '';
         $last_update_display = $last_update_fmt;
-        if ($last_update_display !== '-' && $last_update_user !== '') {
-            $last_update_display .= ' por ' . $last_update_user;
-        }
         $venc_cliente_fmt = trim((string) $venc_cliente) !== '' ? $venc_cliente : '-';
 
         $color = $bloqueado == "sim" ? "bloqueado" : ($observacao == "sim" ? "observacao" : "");
@@ -1225,7 +1288,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
                                                                 <p class='info_add'><b>E-mail:</b> <?= $email_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
-                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?></p>
+                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
                                                                 <p class='info_add'><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
                                                             </div>
 
