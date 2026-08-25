@@ -381,12 +381,12 @@ if (isset($_SESSION['MM_Usuario'])) {
                             if ($popup_clientes_sessao == 's') {
                                 echo "
                         <option value='s' selected>Sim</option>
-                        <option value='n'>NÃ£o</option>
+                        <option value='n'>Não</option>
                         ";
                             } else {
                                 echo "
                         <option value='s'>Sim</option>
-                        <option value='n' selected>NÃ£o</option>
+                        <option value='n' selected>Não</option>
                     ";
                             }
                             ?>
