@@ -1,6 +1,8 @@
 <?php
 include('nav/header.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
+require_once __DIR__ . '/../shared/client_update_audit.php';
+mka_client_audit_ensure_table(isset($link) ? $link : null);
 
 if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     header('Location: ../busca_inteligente-legado/');
@@ -424,6 +426,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.equipamento,
             c.data_ins,
             c.last_update,
+            cua.usuario AS last_update_user,
             c.cep,
             c.uuid_cliente,
             c.switch,
@@ -445,6 +448,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
         LEFT JOIN sis_adicional c2
         ON c.login = c2.login
+        LEFT JOIN dashboard_am_client_update_audit cua
+        ON c.uuid_cliente = cua.uuid_cliente AND c.last_update = cua.alterado_em
         WHERE $filtro $grupos";
 
     // echo $query_default ."<br>";

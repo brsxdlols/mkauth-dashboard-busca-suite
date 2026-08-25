@@ -15,6 +15,28 @@ lint_file() {
   fi
 }
 
+install_client_audit_hook() {
+  local target="${TARGET_ADMIN_DIR}/executar_cliente.hhvm"
+  local hook_line="<?php require_once __DIR__ . '/addons/shared/client_update_audit.php'; ?>"
+  local temp_file
+
+  if [ ! -f "${target}" ]; then
+    echo "[aviso] executar_cliente.hhvm nao encontrado; auditoria de alteracoes nao foi ativada."
+    return 0
+  fi
+
+  if grep -q "client_update_audit.php" "${target}"; then
+    return 0
+  fi
+
+  temp_file="${target}.codex-audit.$$"
+  printf '%s\n' "${hook_line}" > "${temp_file}"
+  cat "${target}" >> "${temp_file}"
+  chmod --reference="${target}" "${temp_file}" 2>/dev/null || chmod 755 "${temp_file}"
+  chown --reference="${target}" "${temp_file}" 2>/dev/null || true
+  mv "${temp_file}" "${target}"
+}
+
 install_reconcile() {
   echo "[5/5] Instalando reconcile de Radius"
   local reconcile_installer="${SCRIPT_DIR}/scripts/install-radius-reconcile.sh"
@@ -37,6 +59,9 @@ echo "[2/4] Gerando backup"
 mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
 if [ -f "${TARGET_ADMIN_DIR}/index.hhvm" ]; then
   cp -a "${TARGET_ADMIN_DIR}/index.hhvm" "${BACKUP_DIR}/admin/index.hhvm"
+fi
+if [ -f "${TARGET_ADMIN_DIR}/executar_cliente.hhvm" ]; then
+  cp -a "${TARGET_ADMIN_DIR}/executar_cliente.hhvm" "${BACKUP_DIR}/admin/executar_cliente.hhvm"
 fi
 if [ -d "${TARGET_ADDONS_DIR}/dashboard" ]; then
   cp -a "${TARGET_ADDONS_DIR}/dashboard" "${BACKUP_DIR}/addons/dashboard"
@@ -67,12 +92,14 @@ rm -rf "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
 cp -a "${SCRIPT_DIR}/addons/busca_inteligente-legado" "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
 rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
+install_client_audit_hook
 
 echo "[4/4] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/index.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/index.php"
