@@ -223,7 +223,7 @@
     }
 
     .overdue-title-action i {
-        font-size: 24px;
+        font-size: 25px;
     }
 
     .overdue-title-action:hover {
@@ -258,7 +258,7 @@
     .ending-booklet-alert i,
     .no-booklet-alert i,
     .invalid-booklet-alert i {
-        font-size: 24px;
+        font-size: 25px;
     }
 
     .ending-booklet-alert .remaining-title-count {
