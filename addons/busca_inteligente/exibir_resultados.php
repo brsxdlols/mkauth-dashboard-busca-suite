@@ -225,9 +225,9 @@
     .overdue-title-action i,
     .overdue-title-action svg,
     .overdue-title-action .svg-inline--fa {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 32px !important;
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 22px !important;
     }
 
     .overdue-title-action:hover {
@@ -268,10 +268,10 @@
     .invalid-booklet-alert i,
     .invalid-booklet-alert svg,
     .invalid-booklet-alert .svg-inline--fa {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 32px !important;
-        line-height: 32px !important;
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 22px !important;
+        line-height: 22px !important;
         text-align: center;
     }
 
