@@ -135,13 +135,29 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-stat-value {
             margin: 12px 0 0;
-            font-size: clamp(2.6rem, 1.6vw + 1.5rem, 3.8rem);
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-inline: 2px;
+            font-size: clamp(2.45rem, 1.35vw + 1.35rem, 3.35rem);
             line-height: 0.9;
             font-weight: 300;
             letter-spacing: 0;
             text-align: center;
             white-space: nowrap;
             font-variant-numeric: tabular-nums;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .dashboard-stat-value--digits-5 {
+            font-size: clamp(2.15rem, 1.15vw + 1.2rem, 2.85rem);
+        }
+
+        .dashboard-stat-value--digits-6-plus {
+            font-size: clamp(1.85rem, 0.95vw + 1.05rem, 2.4rem);
         }
 
         .dashboard-stat-foot {
@@ -1362,7 +1378,12 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <?php foreach ($dashboard_stats as $stat) { ?>
                                 <a href="<?= $stat['href']; ?>" class="dashboard-stat-card <?= $stat['theme']; ?> <?= $stat['text']; ?>">
                                     <div class="dashboard-stat-head"><?= $stat['label']; ?></div>
-                                    <div class="dashboard-stat-value"><?php if (permissao('perm_totais')) echo $stat['value']; ?></div>
+                                    <?php
+                                    $stat_value = permissao('perm_totais') ? (string) $stat['value'] : '';
+                                    $stat_digits = strlen(preg_replace('/\D+/', '', $stat_value));
+                                    $stat_size_class = $stat_digits >= 6 ? ' dashboard-stat-value--digits-6-plus' : ($stat_digits === 5 ? ' dashboard-stat-value--digits-5' : '');
+                                    ?>
+                                    <div class="dashboard-stat-value<?= $stat_size_class; ?>"><?= $stat_value; ?></div>
                                     <div class="dashboard-stat-foot"><?= $stat['percent']; ?></div>
                                 </a>
                             <?php } ?>
