@@ -4,6 +4,8 @@ set -eu
 SCRIPT_DIR="/opt/mk-auth/scripts"
 SCRIPT_FILE="$SCRIPT_DIR/mkauth_radius_ppp_reconcile.php"
 CRON_FILE="/etc/cron.d/mkauth-radius-ppp-reconcile"
+LEGACY_CRON_FILE="/etc/cron.d/sistel-radius-ppp-reconcile"
+LEGACY_SCRIPT_FILE="$SCRIPT_DIR/sistel_radius_ppp_reconcile.php"
 BACKUP_DIR="/root/mkauth_radius_reconcile_backup_$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="/var/log/mkauth_radius_ppp_reconcile.log"
 STATE_DIR="/var/lib/mkauth_radius_ppp_reconcile"
@@ -32,6 +34,12 @@ fi
 if [ -f "$CRON_FILE" ]; then
   cp -a "$CRON_FILE" "$BACKUP_DIR/$(basename "$CRON_FILE").bak"
 fi
+if [ -f "$LEGACY_CRON_FILE" ]; then
+  cp -a "$LEGACY_CRON_FILE" "$BACKUP_DIR/$(basename "$LEGACY_CRON_FILE").legacy.bak"
+fi
+if [ -f "$LEGACY_SCRIPT_FILE" ]; then
+  cp -a "$LEGACY_SCRIPT_FILE" "$BACKUP_DIR/$(basename "$LEGACY_SCRIPT_FILE").legacy.bak"
+fi
 if [ -f "$DASHBOARD_INDEX" ]; then
   cp -a "$DASHBOARD_INDEX" "$BACKUP_DIR/dashboard_index.php.bak"
 fi
@@ -40,6 +48,12 @@ if [ -f "$DASHBOARD_STATUS" ]; then
 fi
 
 mysqldump -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASS" "$MYSQL_DB" radacct nas 2>/dev/null | gzip > "$BACKUP_DIR/radacct_nas.sql.gz" || true
+
+# The standalone installer used the "sistel" names below. Disable that
+# implementation before installing this suite version so two reconcilers can
+# never update radacct concurrently.
+pkill -f '[s]istel_radius_ppp_reconcile.php' 2>/dev/null || true
+rm -f "$LEGACY_CRON_FILE" "$LEGACY_SCRIPT_FILE"
 
 cat > "$SCRIPT_FILE" <<'PHP'
 #!/usr/bin/env php
