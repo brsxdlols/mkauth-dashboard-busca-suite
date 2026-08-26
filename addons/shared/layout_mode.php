@@ -102,7 +102,7 @@ if (!function_exists('mka_suite_render_top_spacing_style')) {
     {
         $spacing = mka_suite_get_header_spacing($conn);
         $contentSpacing = mka_suite_get_top_spacing($conn);
-        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px;--mka-suite-content-spacing:' . $contentSpacing . 'px}#systopo{position:relative;top:var(--mka-suite-header-spacing)}.mka-suite-content-start{margin-top:var(--mka-suite-content-spacing)!important}</style>';
+        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px;--mka-suite-content-spacing:' . $contentSpacing . 'px}#systopo{position:relative;top:var(--mka-suite-header-spacing)}.mka-suite-content-start{margin-top:var(--mka-suite-content-spacing)!important}body:not(.mka-suite-dashboard-page) #sistema-corpo1 .navbar-start{position:relative;left:-16px}</style>';
     }
 }
 
