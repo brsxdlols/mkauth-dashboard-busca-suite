@@ -442,7 +442,18 @@
     }
 
     .client-head {
-        padding: 0 8px;
+        margin: 4px 8px 6px;
+        padding: 10px 8px;
+        border-radius: 14px;
+        background: #29313a;
+        color: #ffffff;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+    }
+
+    .client-head a,
+    .client-head .link-light {
+        color: #ffffff !important;
+        text-decoration: none;
     }
 
     .client-row {
@@ -698,7 +709,7 @@ if ($acesso_permitido) {
 
 ?>
 
-<div class='row bg-primary text-light text-center client-head'>
+<div class='row text-light text-center client-head'>
     <div class='col-auto no_print client-check-col'>
         <input type='checkbox' name='selectall' id='selectall' />
     </div>
