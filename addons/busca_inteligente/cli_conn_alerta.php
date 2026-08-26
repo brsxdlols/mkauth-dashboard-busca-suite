@@ -4,47 +4,46 @@
 
     <?php include('../../topo.php'); ?>
 
-    <ul class="nav nav-tabs justify-content-center py-2">
+    <style>
+        .alert-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 15px 18px;padding:10px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.06)}.alert-toolbar a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:11px;color:#36506c;text-decoration:none;font-size:13px;font-weight:700;transition:.18s}.alert-toolbar a:hover{background:#edf5ff;color:#1268db}.alert-toolbar a.is-active{background:#1268db;color:#fff}.alert-toolbar i{font-size:16px}
+        .alert-search{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr)) minmax(210px,1.3fr) auto;gap:9px;align-items:end;margin:0 15px 14px;padding:14px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.04)}.alert-field{display:flex;flex-direction:column;gap:5px}.alert-field label{font-size:12px;font-weight:700;color:#334155}.alert-field input{width:100%;height:42px;padding:0 11px;border:1px solid #cbd8e6;border-radius:10px;box-sizing:border-box}.alert-search button{height:42px;padding:0 22px;border:0;border-radius:11px;background:#1268db;color:#fff;font-weight:700}
+        .alert-count{margin:0 15px 10px;font-weight:700;color:#334155}.alert-table-wrap{margin:0 15px 18px;border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.alert-table{margin:0!important}.alert-table thead th{padding:13px 12px;background:#27313d;color:#fff;border:0}.alert-table td{padding:11px 12px;vertical-align:middle}.alert-table a{color:#193755;text-decoration:none;font-weight:700}.alert-table a:hover{color:#1268db;text-decoration:underline}
+        @media(max-width:1100px){.alert-search{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.alert-search{grid-template-columns:1fr 1fr}.alert-table-wrap{overflow-x:auto}}@media(max-width:520px){.alert-toolbar span{display:none}.alert-search{grid-template-columns:1fr;margin-inline:8px}.alert-count,.alert-table-wrap{margin-inline:8px}}
+    </style>
+    <nav class="alert-toolbar no_print" aria-label="Navegação de alertas">
         <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.history.back()">
-            <i class="fa-solid fa-circle-chevron-left fs-4"></i>
+            <a href="#" onClick="window.history.back();return false;"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="index.php" class="nav-link" aria-current="page"><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a>
+            <a href="index.php"><i class="fa-solid fa-house"></i><span><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></span></a>
         </li>
         <li class="nav-item">
-            <a href="cli_conn_alerta.php" class="nav-link active">
-            <i class="fa-solid fa-circle-exclamation fs-4 text-warning"></i>
+            <a href="cli_conn_alerta.php" class="is-active"><i class="fa-solid fa-circle-exclamation"></i><span>Alertas</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="chamados_abertos.php" class="nav-link">
-            <i class="fa-solid fa-headset fs-4"></i>
+            <a href="chamados_abertos.php"><i class="fa-solid fa-headset"></i><span>Chamados</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="score.php" class="nav-link">
-            <i class="fa-solid fa-ranking-star fs-4"></i>
+            <a href="score.php"><i class="fa-solid fa-ranking-star"></i><span>Score</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="relcontratos.php" class="nav-link">
-            <i class="fa-solid fa-file-signature fs-4"></i>
+            <a href="relcontratos.php"><i class="fa-solid fa-file-signature"></i><span>Contratos</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="cfg.php" class="nav-link">
-            <i class="fa-solid fa-gear fs-4"></i>
+            <a href="cfg.php"><i class="fa-solid fa-gear"></i><span>Configurações</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.print()" >
-            <i class="fa-solid fa-print fs-4"></i>
+            <a href="#" onClick="window.print();return false;"><i class="fa-solid fa-print"></i><span>Imprimir</span>
             </a>
         </li>
 
-    </ul>
+    </nav>
 <?php
 
     function formatBytes($size, $precision = 2)
@@ -83,7 +82,8 @@
     $tempo_conn = isset($_GET['tempo_conn']) == '' ? 15 : $_GET['tempo_conn'];
     $qtd_quedas = isset($_GET['qtd_quedas']) == '' ? 20 : $_GET['qtd_quedas'];
 
-    $busca = isset($_GET['busca']) == '' ? $busca : $_GET['busca'];
+    $busca = isset($_GET['busca']) ? trim((string) $_GET['busca']) : '';
+    $busca_sql = mysqli_real_escape_string($link, $busca);
 
     /*$query_conn_online = mysqli_query($link, "SELECT * FROM radacct WHERE (username LIKE '$login_cliente' 
     OR username IN (SELECT username FROM sis_adicional WHERE login = '$login_cliente')) AND acctstoptime IS NULL ORDER BY username");
@@ -95,7 +95,7 @@
     WHERE username IN (SELECT login FROM sis_cliente WHERE cli_ativado = 's' AND bloqueado = 'nao') 
     AND acctstarttime BETWEEN '$data_inicial' AND '$data_final 23:59:59' 
     AND acctsessiontime < $tempo_conn * 60
-    AND username LIKE '%$busca%'
+    AND username LIKE '%$busca_sql%'
     ORDER BY username");
 
     if (!$query_conn){
@@ -105,25 +105,13 @@
 ?>
 
 
-<form action="" method="get">
-        <table id="form_graf">
-            <tr>
-                <td><b>Data Inicial:</b></td>
-                <td><b>Data Final:</b></td>
-                <td><b>Tempo de Conexão (MIN):</b></td>
-                <td><b>Quant. Mínima de Quedas:</b></td>
-                <td class="buscar"><b>Buscar Login:</b></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><input type="date" name="data_inicial" value="<?php echo $data_inicial; ?>"/></td>
-                <td><input type="date" name="data_final" value="<?php echo $data_final; ?>"/></td>
-                <td><input type="number" name="tempo_conn" min="1" max="240" value="<?php echo $tempo_conn; ?>"/></td>
-                <td><input type="number" name="qtd_quedas" min="1" max="100" value="<?php echo $qtd_quedas; ?>"/></td>
-                <td><input type="text" name="busca" class="buscar" placeholder="Pesquise pelo Login" value="<?php echo $busca; ?>"/></td>
-                <td><input type="submit" name="submit" id="btn_buscar" value="OK" /></td>
-            </tr>
-        </table>
+<form action="" method="get" class="alert-search no_print">
+        <div class="alert-field"><label>Data inicial</label><input type="date" name="data_inicial" value="<?php echo htmlspecialchars($data_inicial, ENT_QUOTES, 'UTF-8'); ?>"></div>
+        <div class="alert-field"><label>Data final</label><input type="date" name="data_final" value="<?php echo htmlspecialchars($data_final, ENT_QUOTES, 'UTF-8'); ?>"></div>
+        <div class="alert-field"><label>Conexão máxima (min)</label><input type="number" name="tempo_conn" min="1" max="240" value="<?php echo (int)$tempo_conn; ?>"></div>
+        <div class="alert-field"><label>Mínimo de quedas</label><input type="number" name="qtd_quedas" min="1" max="1000" value="<?php echo (int)$qtd_quedas; ?>"></div>
+        <div class="alert-field"><label>Buscar login</label><input type="search" name="busca" placeholder="Pesquise pelo login" value="<?php echo htmlspecialchars($busca, ENT_QUOTES, 'UTF-8'); ?>"></div>
+        <button type="submit" name="submit"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
     </form>
 
 
@@ -143,13 +131,9 @@
 ?>
 
 
-<table class="table table-sm table-hover table-striped small">
-    <tr class="table-dark fw-bold">
-        <td>Cliente</td>
-        <td>Endereço</td>
-        <td>Login</td>
-        <td>Quant. Quedas</td>
-    </tr>
+<div class="alert-count">Total de clientes com desconexões: <span id="alert-total">0</span></div>
+<div class="alert-table-wrap"><table class="table table-sm table-hover table-striped small alert-table">
+    <thead><tr><th>Cliente</th><th>Endereço</th><th>Login</th><th>Quantidade de quedas</th></tr></thead><tbody>
 
 <?php
     foreach ($quedas_cli_ as $key => $value) {
@@ -196,13 +180,13 @@
     }
     mysqli_close($link);
 
-    echo "<b>Total Clientes com Desconexões: $tot_clientes</b>";
+    echo "<script>document.getElementById('alert-total').textContent='" . (int)$tot_clientes . "';</script>";
 
 ?>
 
 
 
-</table>
+</tbody></table></div>
 
 
 <?php include('../../baixo.php'); ?>
