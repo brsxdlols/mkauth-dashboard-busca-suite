@@ -2,15 +2,15 @@
 <body class="">
 <?php include('../../topo.php'); ?>
 
-<ul class="nav nav-tabs justify-content-center py-2">
-    <li class="nav-item"><a href="#" class="nav-link" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left fs-4"></i></a></li>
-    <li class="nav-item"><a href="index.php" class="nav-link"><?= $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a></li>
-    <li class="nav-item"><a href="chamados_abertos.php" class="nav-link"><i class="fa-solid fa-headset fs-4"></i></a></li>
-    <li class="nav-item"><a href="score.php" class="nav-link"><i class="fa-solid fa-ranking-star fs-4"></i></a></li>
-    <li class="nav-item"><a href="relcontratos.php" class="nav-link active"><i class="fa-solid fa-file-signature fs-4"></i></a></li>
-    <li class="nav-item"><a href="cfg.php" class="nav-link"><i class="fa-solid fa-gear fs-4"></i></a></li>
-    <li class="nav-item"><a href="#" class="nav-link" onClick="window.print()"><i class="fa-solid fa-print fs-4"></i></a></li>
-</ul>
+<nav class="contract-toolbar" aria-label="Navegação de contratos">
+    <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
+    <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= mka_contract_escape($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}); ?></span></a>
+    <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
+    <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
+    <a href="relcontratos.php" class="is-active"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
+    <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
+    <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
+</nav>
 
 <?php
 mka_contract_ensure_schema($link);
@@ -74,6 +74,15 @@ if ($result) {
 ?>
 
 <style>
+    .contract-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 0 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
+    .contract-toolbar a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border-radius:11px; color:#36506c; text-decoration:none; font-size:13px; font-weight:700; transition:background .18s ease,color .18s ease,transform .18s ease; }
+    .contract-toolbar a:hover { background:#edf5ff; color:#1268db; transform:translateY(-1px); }
+    .contract-toolbar a.is-active { background:#1268db; color:#fff; }
+    .contract-toolbar i { font-size:16px; }
+    .contract-search { display:flex; align-items:flex-end; gap:10px; margin:0 0 16px; padding:14px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; }
+    .contract-search label { flex:1 1 auto; margin:0; color:#334155; font-size:13px; font-weight:700; }
+    .contract-search input { display:block; width:100%; margin-top:6px; padding:11px 13px; border:1px solid #cbd8e8; border-radius:10px; box-sizing:border-box; font-size:14px; }
+    .contract-search button { flex:0 0 auto; min-height:42px; padding:0 20px; border:0; border-radius:10px; background:#1268db; color:#fff; font-weight:700; cursor:pointer; }
     .contract-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:12px 0 18px; }
     .contract-summary-card { background:#fff; border:1px solid #dbe5f0; border-radius:18px; padding:16px; box-shadow:0 12px 30px rgba(15,23,42,.06); }
     .contract-summary-card h3 { margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:#64748b; }
@@ -91,18 +100,22 @@ if ($result) {
     .contract-action-link { display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:700; }
     .contract-action-group { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
     .contract-view-link { display:inline-flex; align-items:center; gap:6px; color:#157347; text-decoration:none; font-weight:700; }
+    .contract-table-wrap { width:100%; overflow-x:auto; border:1px solid #dbe5f0; border-radius:16px; background:#fff; }
+    .contract-table { width:100%; min-width:1120px; margin:0; border-collapse:collapse; }
+    .contract-table th { padding:12px 11px; background:#29313a; color:#fff; text-align:left; font-size:12px; letter-spacing:.03em; }
+    .contract-table td { padding:11px; vertical-align:middle; }
+    .contract-table tbody tr:nth-child(even) { background:#f6f8fb; }
+    .contract-client-link { color:#193755; text-decoration:none; }
+    .contract-client-link:hover { color:#1268db; text-decoration:underline; }
     @media (max-width: 900px) { .contract-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width: 560px) { .contract-summary-grid { grid-template-columns:1fr; } }
+    @media (max-width: 560px) { .contract-summary-grid { grid-template-columns:1fr; } .contract-search { align-items:stretch; flex-direction:column; } .contract-search button { width:100%; } .contract-toolbar span { display:none; } }
 </style>
 
-<form action="" method="get" class="mb-3">
-    <table class="form_graf">
-        <tr><td class="buscar"><b>Busca Integrada :</b></td><td></td></tr>
-        <tr>
-            <td><input type="text" name="busca" class="buscar" placeholder="Pesquisar Nome, Login, Plano, SSID, Telefone, Tags ou Data Cadastro" value="<?= mka_contract_escape($busca); ?>" /></td>
-            <td><input type="submit" name="submit" id="btn_buscar" value="OK" /></td>
-        </tr>
-    </table>
+<form action="" method="get" class="contract-search">
+    <label>Busca integrada
+        <input type="search" name="busca" placeholder="Pesquisar nome, login, plano, tecnologia, telefone, tags ou cadastro" value="<?= mka_contract_escape($busca); ?>" />
+    </label>
+    <button type="submit"><i class="bi bi-search"></i> Pesquisar</button>
 </form>
 
 <div class="contract-summary-grid">
@@ -112,18 +125,20 @@ if ($result) {
     <div class="contract-summary-card is-missing"><h3>Sem contrato</h3><strong><?= $totals['missing']; ?></strong><p>aguarda ativação</p></div>
 </div>
 
-<table class="table table-sm table-hover table-striped small">
-    <tr class="table-dark fw-bold">
-        <td>INÍCIO</td>
-        <td>VENCIMENTO</td>
-        <td>NOME</td>
-        <td>TECNOLOGIA</td>
-        <td>FONE</td>
-        <td>PLANO</td>
-        <td>VALOR PLANO</td>
-        <td>SITUAÇÃO ATUAL</td>
-        <td>AÇÃO</td>
-    </tr>
+<div class="contract-table-wrap">
+<table class="contract-table small">
+    <thead><tr>
+        <th>INÍCIO</th>
+        <th>VENCIMENTO</th>
+        <th>NOME</th>
+        <th>TECNOLOGIA</th>
+        <th>FONE</th>
+        <th>PLANO</th>
+        <th>VALOR PLANO</th>
+        <th>SITUAÇÃO ATUAL</th>
+        <th>AÇÃO</th>
+    </tr></thead>
+    <tbody>
     <?php foreach ($rows as $row) {
         $status = $row['status'];
         $start = $status['start_date'] ? date('d/m/Y', strtotime($status['start_date'])) : '--';
@@ -138,7 +153,7 @@ if ($result) {
     <tr>
         <td><?= $start; ?></td>
         <td><?= $end; ?></td>
-        <td><a href="../../cliente_alt<?= $ext_mk; ?>?uuid=<?= urlencode($row['uuid']); ?>" target="_blank"><?= mka_contract_escape($row['nome']); ?> <b>[<?= mka_contract_escape($row['login']); ?>]</b></a></td>
+        <td><a class="contract-client-link" href="../../cliente_alt<?= $ext_mk; ?>?uuid=<?= urlencode($row['uuid']); ?>" target="_blank"><?= mka_contract_escape($row['nome']); ?> <b>[<?= mka_contract_escape($row['login']); ?>]</b></a></td>
         <td><?= mka_contract_escape($row['ssid']); ?></td>
         <td><?= mka_contract_escape(trim($row['fone'])); ?></td>
         <td><?= mka_contract_escape($row['plano']); ?></td>
@@ -154,6 +169,8 @@ if ($result) {
         </td>
     </tr>
     <?php } ?>
+    </tbody>
 </table>
+</div>
 </body>
 </html>
