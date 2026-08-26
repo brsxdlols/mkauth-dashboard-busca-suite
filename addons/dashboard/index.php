@@ -812,7 +812,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 </head>
 
-<body>
+<body class="mka-suite-dashboard-page">
     <?php if (!defined('ADMIN2URL')) define('ADMIN2URL', '/admin/'); ?>
     <?php include('../../topo.php'); ?>
     <?php include('mkauth_dashboard_top.php'); ?>
