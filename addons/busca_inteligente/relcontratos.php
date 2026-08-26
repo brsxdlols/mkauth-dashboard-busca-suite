@@ -1,8 +1,9 @@
 <?php include('nav/header.php'); ?>
 <body class="">
 <?php include('../../topo.php'); ?>
+<?php require_once __DIR__ . '/../shared/layout_mode.php'; mka_suite_render_top_spacing_style($link); ?>
 
-<nav class="contract-toolbar" aria-label="Navegação de contratos">
+<nav class="contract-toolbar mka-suite-content-start" aria-label="Navegação de contratos">
     <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
     <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= mka_contract_escape($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}); ?></span></a>
     <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
