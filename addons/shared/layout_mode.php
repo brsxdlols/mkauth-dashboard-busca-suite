@@ -101,7 +101,7 @@ if (!function_exists('mka_suite_render_top_spacing_style')) {
     function mka_suite_render_top_spacing_style($conn = null)
     {
         $spacing = mka_suite_get_header_spacing($conn);
-        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px}#systopo{position:relative;top:var(--mka-suite-header-spacing)}body.mka-suite-dashboard-page #systopo{top:calc(var(--mka-suite-header-spacing) - 8px)}</style>';
+        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px}#systopo{position:relative;top:var(--mka-suite-header-spacing)}</style>';
     }
 }
 
