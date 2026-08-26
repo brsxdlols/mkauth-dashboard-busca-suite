@@ -17,9 +17,11 @@ mka_contract_ensure_schema($link);
 $busca = isset($_GET['busca']) ? trim((string) $_GET['busca']) : '';
 
 $query = "
-    SELECT c.uuid_cliente, c.nome, c.login, c.cadastro, c.fone, c.ssid, c.celular, c.celular2, c.plano, p.valor
+    SELECT c.uuid_cliente, c.nome, c.login, c.cadastro, c.fone, c.ssid, c.celular, c.celular2, c.plano, c.contrato,
+           p.valor, sc.nome AS contrato_nome
     FROM sis_cliente c
     LEFT JOIN sis_plano p ON c.plano = p.nome
+    LEFT JOIN sis_contrato sc ON c.contrato = sc.codigo
     WHERE c.cli_ativado = 's'
 ";
 
@@ -49,6 +51,9 @@ $totals = array('active' => 0, 'warning' => 0, 'expired' => 0, 'missing' => 0);
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
         $contract = mka_contract_get_latest($link, $row['uuid_cliente'], $row['login']);
+        if (!$contract) {
+            $contract = mka_contract_get_native_signed($row['uuid_cliente'], $row['contrato_nome']);
+        }
         $status = mka_contract_build_status($contract);
         $totals[$status['status']]++;
 
@@ -61,6 +66,7 @@ if ($result) {
             'ssid' => $row['ssid'],
             'plano' => $row['plano'],
             'valor' => 'R$ ' . number_format((float) $row['valor'], 2, ',', '.'),
+            'contrato_nome' => $row['contrato_nome'],
             'status' => $status,
         );
     }
@@ -83,6 +89,8 @@ if ($result) {
     .contract-status-chip.contract-expired { background:#fde7ea; color:#b42318; }
     .contract-status-chip.contract-missing { background:#edf2f7; color:#445469; }
     .contract-action-link { display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:700; }
+    .contract-action-group { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+    .contract-view-link { display:inline-flex; align-items:center; gap:6px; color:#157347; text-decoration:none; font-weight:700; }
     @media (max-width: 900px) { .contract-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width: 560px) { .contract-summary-grid { grid-template-columns:1fr; } }
 </style>
@@ -136,7 +144,14 @@ if ($result) {
         <td><?= mka_contract_escape($row['plano']); ?></td>
         <td><?= $row['valor']; ?></td>
         <td><span class="contract-status-chip <?= $status['class']; ?>"><i class="<?= mka_contract_escape($status['icon']); ?>"></i><?= mka_contract_escape($label); ?></span></td>
-        <td><a href="#" class="contract-action-link" onclick="abrirJanela('contrato_popup.php?uuid=<?= urlencode($row['uuid']); ?>&login=<?= urlencode($row['login']); ?>&nome=<?= urlencode($row['nome']); ?>', 620, 760); return false;"><i class="fa-solid fa-file-signature"></i><?= $status['status'] === 'missing' ? 'Ativar contrato' : 'Renovar'; ?></a></td>
+        <td>
+            <div class="contract-action-group">
+                <?php if (!empty($status['pdf_url'])) { ?>
+                    <a class="contract-view-link" href="<?= mka_contract_escape($status['pdf_url']); ?>" target="_blank"><i class="fa-solid fa-file-pdf"></i>Visualizar</a>
+                <?php } ?>
+                <a href="#" class="contract-action-link" onclick="abrirJanela('contrato_popup.php?uuid=<?= urlencode($row['uuid']); ?>&login=<?= urlencode($row['login']); ?>&nome=<?= urlencode($row['nome']); ?>', 620, 760); return false;"><i class="fa-solid fa-file-signature"></i><?= $status['status'] === 'missing' ? 'Ativar vigência' : 'Renovar'; ?></a>
+            </div>
+        </td>
     </tr>
     <?php } ?>
 </table>
