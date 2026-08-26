@@ -13,6 +13,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 <body class="">
 
     <?php include('../../topo.php'); ?>
+    <?php mka_suite_render_top_spacing_style($link); ?>
 
     <style>
         .smart-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
@@ -28,7 +29,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } }
     </style>
 
-    <nav class="smart-toolbar no_print" aria-label="Navegação da Busca Inteligente">
+    <nav class="smart-toolbar no_print mka-suite-content-start" aria-label="Navegação da Busca Inteligente">
         <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
         <a href="index.php" class="is-active"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
         <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
