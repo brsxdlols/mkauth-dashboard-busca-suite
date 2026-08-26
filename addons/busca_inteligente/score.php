@@ -3,6 +3,7 @@
 <body class="">
 
     <?php include('../../topo.php'); ?>
+    <?php require_once __DIR__ . '/../shared/layout_mode.php'; mka_suite_render_top_spacing_style($link); ?>
 
     <style>
         .suite-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 15px 18px;padding:10px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.06)}
@@ -12,7 +13,7 @@
         .score-table-wrap{margin:0 15px;border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.score-table{margin:0!important}.score-table thead th{padding:13px 12px;background:#27313d;color:#fff;border:0}.score-table td{padding:11px 12px;vertical-align:middle}.score-table .lead{font-weight:700;text-align:center}.score-table .historico_cliente{margin:3px 0 0}
         @media(max-width:800px){.score-search{grid-template-columns:1fr 1fr}.score-search button{width:100%}}@media(max-width:520px){.suite-toolbar span{display:none}.score-search{grid-template-columns:1fr;margin-inline:8px}.score-table-wrap{margin-inline:8px;overflow-x:auto}}
     </style>
-    <nav class="suite-toolbar no_print" aria-label="Navegação do score">
+    <nav class="suite-toolbar no_print mka-suite-content-start" aria-label="Navegação do score">
         <li class="nav-item">
             <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
