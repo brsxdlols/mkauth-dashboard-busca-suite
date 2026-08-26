@@ -44,6 +44,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
         $columns = array(
             'popup_clientes_sessao' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
             'popup_clientes_sessao_duracao' => "INT NOT NULL DEFAULT 2",
+            'suite_top_spacing' => "INT NOT NULL DEFAULT 16",
             'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
         );
 
@@ -55,6 +56,51 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
         }
 
         @mysqli_query($conn, "INSERT IGNORE INTO dashboard_am_sis_cfg (id, suite_layout_mode) VALUES (1, 'novo')");
+    }
+}
+
+if (!function_exists('mka_suite_normalize_top_spacing')) {
+    function mka_suite_normalize_top_spacing($spacing)
+    {
+        return max(0, min(120, (int) $spacing));
+    }
+}
+
+if (!function_exists('mka_suite_get_top_spacing')) {
+    function mka_suite_get_top_spacing($conn = null)
+    {
+        if (!($conn instanceof mysqli)) {
+            $conn = mka_suite_connect_db();
+        }
+        if (!($conn instanceof mysqli)) {
+            return 16;
+        }
+        mka_suite_ensure_layout_column($conn);
+        $query = @mysqli_query($conn, "SELECT suite_top_spacing FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        if ($query && ($row = mysqli_fetch_assoc($query))) {
+            return mka_suite_normalize_top_spacing(isset($row['suite_top_spacing']) ? $row['suite_top_spacing'] : 16);
+        }
+        return 16;
+    }
+}
+
+if (!function_exists('mka_suite_set_top_spacing')) {
+    function mka_suite_set_top_spacing($conn, $spacing)
+    {
+        if (!($conn instanceof mysqli)) {
+            return false;
+        }
+        mka_suite_ensure_layout_column($conn);
+        $spacing = mka_suite_normalize_top_spacing($spacing);
+        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET suite_top_spacing = " . $spacing . " WHERE id = 1");
+    }
+}
+
+if (!function_exists('mka_suite_render_top_spacing_style')) {
+    function mka_suite_render_top_spacing_style($conn = null)
+    {
+        $spacing = mka_suite_get_top_spacing($conn);
+        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-top-spacing:' . $spacing . 'px}.mka-suite-content-start{margin-top:var(--mka-suite-top-spacing)!important}</style>';
     }
 }
 
