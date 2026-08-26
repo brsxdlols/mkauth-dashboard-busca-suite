@@ -443,16 +443,20 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cadastro
             ";
 
+    $audit_join = "
+        LEFT JOIN dashboard_am_client_update_audit cua
+        ON c.uuid_cliente = cua.uuid_cliente
+        AND c.last_update <> cua.previous_last_update
+        AND c.last_update BETWEEN DATE_SUB(cua.captured_at, INTERVAL 5 SECOND) AND DATE_ADD(cua.captured_at, INTERVAL 5 MINUTE)
+    ";
+
     $query_default = "
             $query_base     
             FROM sis_cliente c
 
         LEFT JOIN sis_adicional c2
         ON c.login = c2.login
-        LEFT JOIN dashboard_am_client_update_audit cua
-        ON c.uuid_cliente = cua.uuid_cliente
-        AND c.last_update <> cua.previous_last_update
-        AND c.last_update BETWEEN DATE_SUB(cua.captured_at, INTERVAL 5 SECOND) AND DATE_ADD(cua.captured_at, INTERVAL 5 MINUTE)
+        $audit_join
         WHERE $filtro $grupos";
 
     // echo $query_default ."<br>";
@@ -621,7 +625,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             LEFT JOIN sis_adicional c2
             ON c.login = c2.login
             LEFT JOIN sis_lanc l
-            ON l.login = c.login  
+            ON l.login = c.login
+            $audit_join
         WHERE 
         c.cli_ativado LIKE 's' AND
         c.observacao LIKE 'nao' AND 
@@ -639,7 +644,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             LEFT JOIN sis_adicional c2
             ON c.login = c2.login
             LEFT JOIN sis_lanc l
-            ON l.login = c.login  
+            ON l.login = c.login
+            $audit_join
         WHERE 
         c.cli_ativado LIKE 's' AND
         l.status NOT LIKE 'pago' AND l.deltitulo = 0 AND l.datavenc <= '$now'
