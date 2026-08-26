@@ -80,7 +80,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     $contabilizar_bloq_offline = isset($_POST['contabilizar_bloq_offline']) ? $_POST['contabilizar_bloq_offline'] : $contabilizar_bloq_offline;
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
     $suite_layout_mode = mka_suite_normalize_layout_mode($suite_layout_mode);
-    $suite_top_spacing = isset($_POST['suite_top_spacing']) ? mka_suite_normalize_top_spacing($_POST['suite_top_spacing']) : mka_suite_get_top_spacing($link);
+    $suite_header_spacing = isset($_POST['suite_header_spacing']) ? mka_suite_normalize_header_spacing($_POST['suite_header_spacing']) : mka_suite_get_header_spacing($link);
 
 
     // Score Clientes
@@ -151,7 +151,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
                         </tr>
 
                         <tr>
-                            <td>Espaço após o topo (px) <input type="number" name="suite_top_spacing" min="0" max="120" step="1" value="<?php echo (int) $suite_top_spacing; ?>"></td>
+                            <td>Ajuste menu → informações (px) <input type="number" name="suite_header_spacing" min="-20" max="60" step="1" value="<?php echo (int) $suite_header_spacing; ?>"></td>
                         </tr>
 
                         <tr>
@@ -349,7 +349,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         }
 
         mka_suite_set_layout_mode($link, $suite_layout_mode);
-        mka_suite_set_top_spacing($link, $suite_top_spacing);
+        mka_suite_set_header_spacing($link, $suite_header_spacing);
     }
 
     $update_table_score_cliente_cfg = mysqli_query($link, "UPDATE score_cliente_cfg 
