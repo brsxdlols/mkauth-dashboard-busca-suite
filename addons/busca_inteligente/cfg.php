@@ -6,6 +6,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 <body class="">
 
     <?php include('../../topo.php'); ?>
+    <?php mka_suite_render_top_spacing_style($link); ?>
 
     <style>
         .suite-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 15px 18px;padding:10px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.06)}.suite-toolbar a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:11px;color:#36506c;text-decoration:none;font-size:13px;font-weight:700;transition:.18s}.suite-toolbar a:hover{background:#edf5ff;color:#1268db}.suite-toolbar a.is-active{background:#1268db;color:#fff}.suite-toolbar i{font-size:16px}
@@ -13,7 +14,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 15px 20px}.config-card{padding:18px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.config-card legend{width:auto;margin:0 0 14px;font-size:18px;font-weight:750;color:#27364a}.config-card table{margin:0}.config-card td{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 0!important;border-color:#edf2f7}.config-card input,.config-card select{width:min(210px,48%);height:40px;padding:0 10px;border:1px solid #cbd8e6;border-radius:9px;background:#fff}.config-card input:focus,.config-card select:focus{outline:0;border-color:#1268db;box-shadow:0 0 0 3px rgba(18,104,219,.12)}.config-save{display:inline-flex!important;width:auto!important;height:42px!important;padding:0 20px!important;border:0!important;border-radius:10px!important;background:#1268db!important;color:#fff!important;font-weight:700}.command-box{margin-bottom:18px;padding:14px;border-radius:12px;background:#f5f8fc;color:#475569}.command-box strong{display:block;margin-bottom:6px;color:#27364a}
         @media(max-width:900px){.config-grid{grid-template-columns:1fr}}@media(max-width:520px){.suite-toolbar span{display:none}.config-grid{margin-inline:8px}.config-card td{align-items:flex-start;flex-direction:column}.config-card input,.config-card select{width:100%}}
     </style>
-    <nav class="suite-toolbar no_print" aria-label="Navegação das configurações">
+    <nav class="suite-toolbar no_print mka-suite-content-start" aria-label="Navegação das configurações">
         <li class="nav-item">
             <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
@@ -79,6 +80,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     $contabilizar_bloq_offline = isset($_POST['contabilizar_bloq_offline']) ? $_POST['contabilizar_bloq_offline'] : $contabilizar_bloq_offline;
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
     $suite_layout_mode = mka_suite_normalize_layout_mode($suite_layout_mode);
+    $suite_top_spacing = isset($_POST['suite_top_spacing']) ? mka_suite_normalize_top_spacing($_POST['suite_top_spacing']) : mka_suite_get_top_spacing($link);
 
 
     // Score Clientes
@@ -146,6 +148,10 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
                                 </select>
                             </td>
+                        </tr>
+
+                        <tr>
+                            <td>Espaço após o topo (px) <input type="number" name="suite_top_spacing" min="0" max="120" step="1" value="<?php echo (int) $suite_top_spacing; ?>"></td>
                         </tr>
 
                         <tr>
@@ -343,6 +349,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         }
 
         mka_suite_set_layout_mode($link, $suite_layout_mode);
+        mka_suite_set_top_spacing($link, $suite_top_spacing);
     }
 
     $update_table_score_cliente_cfg = mysqli_query($link, "UPDATE score_cliente_cfg 
