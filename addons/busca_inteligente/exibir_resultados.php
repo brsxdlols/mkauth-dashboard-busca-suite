@@ -442,12 +442,16 @@
     }
 
     .client-head {
-        margin: 4px 8px 6px;
+        margin: 4px 0 6px;
         padding: 10px 8px;
         border-radius: 14px;
         background: #29313a;
         color: #ffffff;
         box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+    }
+
+    .client-head .client-check-col {
+        text-align: left;
     }
 
     .client-head a,
