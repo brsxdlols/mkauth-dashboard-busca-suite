@@ -816,12 +816,13 @@ if (isset($_SESSION['MM_Usuario'])) {
     <?php if (!defined('ADMIN2URL')) define('ADMIN2URL', '/admin/'); ?>
     <?php include('../../topo.php'); ?>
     <?php include('mkauth_dashboard_top.php'); ?>
+    <?php mka_suite_render_top_spacing_style($conn); ?>
 
     <script src="js/highcharts.js"></script>
     <script src="js/exporting.js"></script>
 
 
-    <div class='container-fluid'>
+    <div class='container-fluid mka-suite-content-start'>
         <?php
 
         $query_cria_tabelas = mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_sis_cfg (
