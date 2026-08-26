@@ -45,6 +45,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'popup_clientes_sessao' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
             'popup_clientes_sessao_duracao' => "INT NOT NULL DEFAULT 2",
             'suite_top_spacing' => "INT NOT NULL DEFAULT 16",
+            'suite_header_spacing' => "INT NOT NULL DEFAULT 0",
             'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
         );
 
@@ -99,8 +100,45 @@ if (!function_exists('mka_suite_set_top_spacing')) {
 if (!function_exists('mka_suite_render_top_spacing_style')) {
     function mka_suite_render_top_spacing_style($conn = null)
     {
-        $spacing = mka_suite_get_top_spacing($conn);
-        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-top-spacing:' . $spacing . 'px}.mka-suite-content-start{margin-top:var(--mka-suite-top-spacing)!important}.mka-suite-dashboard-start{margin-top:max(0px,calc(var(--mka-suite-top-spacing) - 16px))!important}</style>';
+        $spacing = mka_suite_get_header_spacing($conn);
+        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px}#systopo{position:relative;top:var(--mka-suite-header-spacing)}body.mka-suite-dashboard-page #systopo{top:calc(var(--mka-suite-header-spacing) - 8px)}</style>';
+    }
+}
+
+if (!function_exists('mka_suite_normalize_header_spacing')) {
+    function mka_suite_normalize_header_spacing($spacing)
+    {
+        return max(-20, min(60, (int) $spacing));
+    }
+}
+
+if (!function_exists('mka_suite_get_header_spacing')) {
+    function mka_suite_get_header_spacing($conn = null)
+    {
+        if (!($conn instanceof mysqli)) {
+            $conn = mka_suite_connect_db();
+        }
+        if (!($conn instanceof mysqli)) {
+            return 0;
+        }
+        mka_suite_ensure_layout_column($conn);
+        $query = @mysqli_query($conn, "SELECT suite_header_spacing FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        if ($query && ($row = mysqli_fetch_assoc($query))) {
+            return mka_suite_normalize_header_spacing(isset($row['suite_header_spacing']) ? $row['suite_header_spacing'] : 0);
+        }
+        return 0;
+    }
+}
+
+if (!function_exists('mka_suite_set_header_spacing')) {
+    function mka_suite_set_header_spacing($conn, $spacing)
+    {
+        if (!($conn instanceof mysqli)) {
+            return false;
+        }
+        mka_suite_ensure_layout_column($conn);
+        $spacing = mka_suite_normalize_header_spacing($spacing);
+        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET suite_header_spacing = " . $spacing . " WHERE id = 1");
     }
 }
 
