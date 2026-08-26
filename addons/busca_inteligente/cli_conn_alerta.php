@@ -3,6 +3,7 @@
 <body class="">
 
     <?php include('../../topo.php'); ?>
+    <?php require_once __DIR__ . '/../shared/layout_mode.php'; mka_suite_render_top_spacing_style($link); ?>
 
     <style>
         .alert-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 15px 18px;padding:10px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.06)}.alert-toolbar a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:11px;color:#36506c;text-decoration:none;font-size:13px;font-weight:700;transition:.18s}.alert-toolbar a:hover{background:#edf5ff;color:#1268db}.alert-toolbar a.is-active{background:#1268db;color:#fff}.alert-toolbar i{font-size:16px}
@@ -11,7 +12,7 @@
         .alert-count{margin:0 15px 10px;font-weight:700;color:#334155}.alert-table-wrap{margin:0 15px 18px;border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.alert-table{margin:0!important}.alert-table thead th{padding:13px 12px;background:#27313d;color:#fff;border:0}.alert-table td{padding:11px 12px;vertical-align:middle}.alert-table a{color:#193755;text-decoration:none;font-weight:700}.alert-table a:hover{color:#1268db;text-decoration:underline}
         @media(max-width:1100px){.alert-search{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.alert-search{grid-template-columns:1fr 1fr}.alert-table-wrap{overflow-x:auto}}@media(max-width:520px){.alert-toolbar span{display:none}.alert-search{grid-template-columns:1fr;margin-inline:8px}.alert-count,.alert-table-wrap{margin-inline:8px}}
     </style>
-    <nav class="alert-toolbar no_print" aria-label="Navegação de alertas">
+    <nav class="alert-toolbar no_print mka-suite-content-start" aria-label="Navegação de alertas">
         <li class="nav-item">
             <a href="#" onClick="window.history.back();return false;"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
