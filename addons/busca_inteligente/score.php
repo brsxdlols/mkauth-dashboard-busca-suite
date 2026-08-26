@@ -4,42 +4,43 @@
 
     <?php include('../../topo.php'); ?>
 
-    <ul class="nav nav-tabs justify-content-center py-2">
+    <style>
+        .suite-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 15px 18px;padding:10px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.06)}
+        .suite-toolbar a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:11px;color:#36506c;text-decoration:none;font-size:13px;font-weight:700;transition:.18s}.suite-toolbar a:hover{background:#edf5ff;color:#1268db}.suite-toolbar a.is-active{background:#1268db;color:#fff}.suite-toolbar i{font-size:16px}
+        .score-search{display:grid;grid-template-columns:minmax(260px,1fr) 210px 120px auto;gap:8px;align-items:end;margin:0 15px 16px;padding:12px;border:1px solid #dbe5f0;border-radius:16px;background:#fff}.score-field{display:flex;flex-direction:column;gap:5px}.score-field label{font-size:12px;color:#64748b}.score-field input,.score-field select{height:44px;padding:0 12px;border:1px solid #cbd8e6;border-radius:10px;background:#fff}.score-search button{height:44px;padding:0 22px;border:0;border-radius:11px;background:#1268db;color:#fff;font-weight:700}
+        .score-table-wrap{margin:0 15px;border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.score-table{margin:0!important}.score-table thead th{padding:13px 12px;background:#27313d;color:#fff;border:0}.score-table td{padding:11px 12px;vertical-align:middle}.score-table .lead{font-weight:700;text-align:center}.score-table .historico_cliente{margin:3px 0 0}
+        @media(max-width:800px){.score-search{grid-template-columns:1fr 1fr}.score-search button{width:100%}}@media(max-width:520px){.suite-toolbar span{display:none}.score-search{grid-template-columns:1fr;margin-inline:8px}.score-table-wrap{margin-inline:8px;overflow-x:auto}}
+    </style>
+    <nav class="suite-toolbar no_print" aria-label="Navegação do score">
         <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.history.back()">
-            <i class="fa-solid fa-circle-chevron-left fs-4"></i>
+            <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="index.php" class="nav-link" aria-current="page"><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a>
+            <a href="index.php"><i class="fa-solid fa-house"></i><span><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></span></a>
         </li>
         <li class="nav-item">
-            <a href="chamados_abertos.php" class="nav-link">
-            <i class="fa-solid fa-headset fs-4"></i>
+            <a href="chamados_abertos.php"><i class="fa-solid fa-headset"></i><span>Chamados</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="score.php" class="nav-link active">
-            <i class="fa-solid fa-ranking-star fs-4"></i>
+            <a href="score.php" class="is-active"><i class="fa-solid fa-ranking-star"></i><span>Score</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="relcontratos.php" class="nav-link">
-            <i class="fa-solid fa-file-signature fs-4"></i>
+            <a href="relcontratos.php"><i class="fa-solid fa-file-signature"></i><span>Contratos</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="cfg.php" class="nav-link">
-            <i class="fa-solid fa-gear fs-4"></i>
+            <a href="cfg.php"><i class="fa-solid fa-gear"></i><span>Configurações</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.print()" >
-            <i class="fa-solid fa-print fs-4"></i>
+            <a href="#" onClick="window.print()"><i class="fa-solid fa-print"></i><span>Imprimir</span>
             </a>
         </li>
 
-    </ul>
+    </nav>
 
         <?php
 
@@ -70,50 +71,30 @@
             ?>
         </datalist>
 
-        <form action="" method="get" id="form_pesquisa" class="no_print">
-            <table id="buscar">
-                <tr>
-                <td class="input_pesquisar">Digite o que procura:</td>
-                <td><b>Organizar por:</b></td>
-                <td><b>Itens:</b></td>
-                <td></td>
-                </tr>
-                <tr>
-                <td><input type="search" class="input_pesquisar" name="busca" 
-                placeholder="Busque por nome ou login" value="<?php echo $busca; ?>" list="sugestoes">
-                </input>
-                </td>
-                <td>            
-                <select name="organizar" class="select_organizar">
+        <form action="" method="get" id="form_pesquisa" class="no_print score-search">
+            <div class="score-field"><label>Digite o que procura</label><input type="search" name="busca" placeholder="Busque por nome ou login" value="<?php echo htmlspecialchars($busca, ENT_QUOTES, 'UTF-8'); ?>" list="sugestoes"></div>
+            <div class="score-field"><label>Organizar por</label><select name="organizar">
                 <?php
                     foreach ($lista_organizar as $key => $value) {
                         $selected = ($organizar == $key) ? "selected=\"selected\"" : null;
                         echo "<option value=\"$key\" $selected >$value</option>";
                 }
                 ?>
-                </select>
-                </td>
-                <td>
-                <select name="num_registros" id="num_registros">
+                </select></div>
+            <div class="score-field"><label>Itens</label><select name="num_registros" id="num_registros">
                 <?php
                     for($i=100;$i<=1000;$i+=100){
                         $selected = ($i == $registros_por_pagina) ? "selected=\"selected\"" : null;
                         echo "<option value='$i' $selected>$i</option>";
                     }
                 ?>
-                </select>
-                </td>
-                <input type="hidden" name="pagina" value="1"></input>
-                <td><input type="submit" name="submit" value="Buscar" id="btn_buscar" /></td>
-                </tr>
-                </table>
+                </select></div>
+            <input type="hidden" name="pagina" value="1">
+            <button type="submit" name="submit" value="Buscar"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
         </form>
 
-        <table class="table table-sm table-hover table-striped small">
-
-        <tr class="table-dark">
-            <td>Nome Completo</td><td>Plano / Valor</td><td>Login</td><td>Score</td>
-        </tr>
+        <div class="score-table-wrap"><table class="table table-sm table-hover table-striped small score-table">
+        <thead><tr><th>Nome Completo</th><th>Plano / Valor</th><th>Login</th><th>Score</th></tr></thead><tbody>
 		<?php 
 		//INICIO PERMISSAO
 		if ($acesso_permitido){
@@ -392,7 +373,7 @@
     
 
 
-    </table>
+    </tbody></table></div>
 
     <script src="js/highcharts.js"></script>
     <script src="js/exporting.js"></script>
