@@ -5,6 +5,7 @@
 <nav class="contract-toolbar" aria-label="Navegação de contratos">
     <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
     <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= mka_contract_escape($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}); ?></span></a>
+    <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
     <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
     <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
     <a href="relcontratos.php" class="is-active"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
