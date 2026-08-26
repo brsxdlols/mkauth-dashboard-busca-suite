@@ -14,42 +14,29 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     <?php include('../../topo.php'); ?>
 
-    <ul class="nav nav-tabs justify-content-center py-2">
-        <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.history.back()">
-            <i class="fa-solid fa-circle-chevron-left fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="index.php" class="nav-link active" aria-current="page"><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a>
-        </li>
-        <li class="nav-item">
-            <a href="chamados_abertos.php" class="nav-link">
-            <i class="fa-solid fa-headset fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="score.php" class="nav-link">
-            <i class="fa-solid fa-ranking-star fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="relcontratos.php" class="nav-link">
-            <i class="fa-solid fa-file-signature fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="cfg.php" class="nav-link">
-            <i class="fa-solid fa-gear fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.print()" >
-            <i class="fa-solid fa-print fs-4"></i>
-            </a>
-        </li>
+    <style>
+        .smart-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
+        .smart-toolbar a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border-radius:11px; color:#36506c; text-decoration:none; font-size:13px; font-weight:700; transition:background .18s ease,color .18s ease,transform .18s ease; }
+        .smart-toolbar a:hover { background:#edf5ff; color:#1268db; transform:translateY(-1px); }
+        .smart-toolbar a.is-active { background:#1268db; color:#fff; }
+        .smart-toolbar i { font-size:16px; }
+        .smart-search-form { margin:0 15px 8px; padding:12px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.04); }
+        .smart-search-form .form-control,
+        .smart-search-form .form-select { border-color:#cbd8e8; border-radius:10px; }
+        .smart-search-form .smart-search-button { border:0; border-radius:11px; background:#1268db; color:#fff; font-weight:700; box-shadow:none; }
+        .smart-search-form .smart-search-button:hover { background:#0f5fc8; }
+        @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } }
+    </style>
 
-    </ul>
+    <nav class="smart-toolbar no_print" aria-label="Navegação da Busca Inteligente">
+        <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
+        <a href="index.php" class="is-active"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
+        <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
+        <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
+        <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
+        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
+        <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
+    </nav>
 
    
     <?php
@@ -335,7 +322,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             ?>
     </datalist>
 
-    <form action="" method="get" id="" class="no_print">
+    <form action="" method="get" class="no_print smart-search-form">
         <div class="row g-1">
             <div class="col-8 col-sm-6">
                 <div class="form-floating">
@@ -388,7 +375,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             <div class="col-4 col-sm-1">
                 <div class="form-floating d-grid h-100">
                     <input type="hidden" name="pagina" value="1" />
-                    <input type="submit" name="submit" value="Buscar" class="btn btn-primary btn-lg text-center" />
+                    <button type="submit" name="submit" value="Buscar" class="btn btn-lg text-center smart-search-button"><i class="bi bi-search"></i> Buscar</button>
                 </div>
             </div>
 
