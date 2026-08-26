@@ -7,47 +7,45 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
     <?php include('../../topo.php'); ?>
 
-    <ul class="nav nav-tabs justify-content-center py-2">
+    <style>
+        .suite-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 15px 18px;padding:10px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.06)}.suite-toolbar a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:11px;color:#36506c;text-decoration:none;font-size:13px;font-weight:700;transition:.18s}.suite-toolbar a:hover{background:#edf5ff;color:#1268db}.suite-toolbar a.is-active{background:#1268db;color:#fff}.suite-toolbar i{font-size:16px}
+        .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 15px 20px}.config-card{padding:18px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.config-card legend{width:auto;margin:0 0 14px;font-size:18px;font-weight:750;color:#27364a}.config-card table{margin:0}.config-card td{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 0!important;border-color:#edf2f7}.config-card input,.config-card select{width:min(210px,48%);height:40px;padding:0 10px;border:1px solid #cbd8e6;border-radius:9px;background:#fff}.config-card input:focus,.config-card select:focus{outline:0;border-color:#1268db;box-shadow:0 0 0 3px rgba(18,104,219,.12)}.config-save{display:inline-flex!important;width:auto!important;height:42px!important;padding:0 20px!important;border:0!important;border-radius:10px!important;background:#1268db!important;color:#fff!important;font-weight:700}.command-box{margin-bottom:18px;padding:14px;border-radius:12px;background:#f5f8fc;color:#475569}.command-box strong{display:block;margin-bottom:6px;color:#27364a}
+        @media(max-width:900px){.config-grid{grid-template-columns:1fr}}@media(max-width:520px){.suite-toolbar span{display:none}.config-grid{margin-inline:8px}.config-card td{align-items:flex-start;flex-direction:column}.config-card input,.config-card select{width:100%}}
+    </style>
+    <nav class="suite-toolbar no_print" aria-label="Navegação das configurações">
         <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.history.back()">
-            <i class="fa-solid fa-circle-chevron-left fs-4"></i>
+            <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="index.php" class="nav-link" aria-current="page"><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a>
+            <a href="index.php"><i class="fa-solid fa-house"></i><span><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></span></a>
         </li>
         <li class="nav-item">
-            <a href="cli_conn_alerta.php" class="nav-link">
-            <i class="fa-solid fa-circle-exclamation fs-4 text-warning"></i>
+            <a href="cli_conn_alerta.php"><i class="fa-solid fa-circle-exclamation"></i><span>Alertas</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="chamados_abertos.php" class="nav-link">
-            <i class="fa-solid fa-headset fs-4"></i>
+            <a href="chamados_abertos.php"><i class="fa-solid fa-headset"></i><span>Chamados</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="score.php" class="nav-link">
-            <i class="fa-solid fa-ranking-star fs-4"></i>
+            <a href="score.php"><i class="fa-solid fa-ranking-star"></i><span>Score</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="relcontratos.php" class="nav-link">
-            <i class="fa-solid fa-file-signature fs-4"></i>
+            <a href="relcontratos.php"><i class="fa-solid fa-file-signature"></i><span>Contratos</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="cfg.php" class="nav-link active">
-            <i class="fa-solid fa-gear fs-4"></i>
+            <a href="cfg.php" class="is-active"><i class="fa-solid fa-gear"></i><span>Configurações</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.print()" >
-            <i class="fa-solid fa-print fs-4"></i>
+            <a href="#" onClick="window.print()"><i class="fa-solid fa-print"></i><span>Imprimir</span>
             </a>
         </li>
 
-    </ul>
+    </nav>
 
     <?php
 
@@ -121,8 +119,8 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
     <!-- Busca Inteligente -->
 
-    <div class="row g-1">
-        <div class="col-12 col-md-6">
+    <div class="config-grid">
+        <div class="config-card">
             <form action="" method="post" id="">
 
                 <legend class="lead text-center">Configurações do Busca Inteligente</legend>
@@ -231,7 +229,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
                         </tr>
 
                         <tr>
-                            <td colspan="2"><input type="submit" name="OK" class="btn btn-primary" value="OK" onClick="configUpdate()"></td>
+                            <td colspan="2"><input type="submit" name="OK" class="config-save" value="Salvar configurações" onClick="configUpdate()"></td>
 
                         </tr>
 
@@ -242,17 +240,12 @@ require_once __DIR__ . '/../shared/layout_mode.php';
             </form>
 
         </div>
-        <div class="col-12 col-md-6">
+        <div class="config-card">
             <!-- Score Clientes -->
             <form action="" method="post" id="">
+                <div class="command-box"><strong>Comandos da busca</strong>sem carne, sem título, venc+5, atrasado<br>on, off, bloqueado, desativado, observação (obs)</div>
+                <legend>Configurações do Score de Clientes</legend>
                 <table class="table table-sm small">
-                <legend>Comandos do Busca</legend>
-            <td>&nbsp; sem carne, sem titulo, venc+5, atrasado</td>
-        <tr>
-           <td>&nbsp; on, off, bloqueado, desativado, observacao (obs)</td>
-
-            <table>
-            <legend>Configurações do Score de Clientes</legend>
                     <tr>
                         <td class="">Score Base
                             <input type="number" name="score_base" class="" value="<?php echo $score_base; ?>" min="100">
@@ -312,18 +305,13 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
                     </tr>
                     <tr>
-                        <td><input type="submit" name="OK" class="btn btn-primary" value="OK" onClick="configUpdate()"></td>
+                        <td><input type="submit" name="OK" class="config-save" value="Salvar score" onClick="configUpdate()"></td>
 
                     </tr>
 
 
         
        
-        </tr>
-    </table>
-</fieldset>
-
-
                 </table>
 
             </form>
