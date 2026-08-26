@@ -4,56 +4,60 @@
 
     <?php include('../../topo.php'); ?>
 
-    <ul class="nav nav-tabs justify-content-center py-2">
-        <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.history.back()">
-            <i class="fa-solid fa-circle-chevron-left fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="index.php" class="nav-link" aria-current="page"><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></a>
-        </li>
-        <li class="nav-item">
-            <a href="cli_conn_alerta.php" class="nav-link">
-            <i class="fa-solid fa-circle-exclamation fs-4 text-warning"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="chamados_abertos.php" class="nav-link active">
-            <i class="fa-solid fa-headset fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="score.php" class="nav-link">
-            <i class="fa-solid fa-ranking-star fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="relcontratos.php" class="nav-link">
-            <i class="fa-solid fa-file-signature fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="cfg.php" class="nav-link">
-            <i class="fa-solid fa-gear fs-4"></i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link" onClick="window.print()" >
-            <i class="fa-solid fa-print fs-4"></i>
-            </a>
-        </li>
+    <style>
+        .ticket-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
+        .ticket-toolbar a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border-radius:11px; color:#36506c; text-decoration:none; font-size:13px; font-weight:700; transition:background .18s ease,color .18s ease,transform .18s ease; }
+        .ticket-toolbar a:hover { background:#edf5ff; color:#1268db; transform:translateY(-1px); }
+        .ticket-toolbar a.is-active { background:#1268db; color:#fff; }
+        .ticket-toolbar i { font-size:16px; }
+        .ticket-search { display:grid; grid-template-columns:minmax(260px,2fr) minmax(170px,1fr) minmax(170px,1fr) minmax(170px,.8fr) auto; gap:10px; margin:0 15px 12px; padding:14px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.04); }
+        .ticket-search label { margin:0; color:#334155; font-size:12px; font-weight:700; }
+        .ticket-search input,.ticket-search select { display:block; width:100%; height:42px; margin-top:6px; padding:8px 11px; border:1px solid #cbd8e8; border-radius:10px; background:#fff; box-sizing:border-box; }
+        .ticket-search button { align-self:end; height:42px; padding:0 20px; border:0; border-radius:11px; background:#1268db; color:#fff; font-weight:700; cursor:pointer; }
+        .ticket-count { margin:0 15px 10px; color:#334155; font-weight:700; }
+        .ticket-list { display:grid; gap:10px; margin:0 15px 18px; }
+        .ticket-item { border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.05); overflow:hidden; }
+        .ticket-item summary { display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(260px,1.8fr) minmax(180px,1fr) minmax(150px,.8fr) 26px; gap:14px; align-items:center; padding:15px 18px; cursor:pointer; list-style:none; }
+        .ticket-item summary::-webkit-details-marker { display:none; }
+        .ticket-item summary:hover { background:#f5f9ff; }
+        .ticket-summary-cell { min-width:0; }
+        .ticket-summary-cell small { display:block; margin-bottom:4px; color:#718096; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
+        .ticket-summary-cell strong,.ticket-summary-cell span { display:block; overflow:hidden; color:#23364d; text-overflow:ellipsis; white-space:nowrap; }
+        .ticket-client { color:#1268db !important; text-decoration:none; }
+        .ticket-chevron { color:#1268db; transition:transform .2s ease; }
+        .ticket-item[open] .ticket-chevron { transform:rotate(180deg); }
+        .ticket-details { padding:0 18px 18px; border-top:1px solid #e6edf5; }
+        .ticket-detail-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; padding:14px 0; }
+        .ticket-detail { padding:12px; border:1px solid #e1e9f3; border-radius:12px; background:#f8fafc; }
+        .ticket-detail small { display:block; margin-bottom:5px; color:#718096; font-size:10px; font-weight:800; text-transform:uppercase; }
+        .ticket-reports { padding:14px; border-radius:12px; background:#f4f6f9; }
+        .ticket-report { margin:8px 0 0; padding-top:8px; border-top:1px solid #dce3ec; line-height:1.45; }
+        .ticket-signature { margin-top:10px; padding:12px 14px; border-radius:12px; background:#eef9fb; }
+        .ticket-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:12px; }
+        .ticket-close { display:inline-flex; align-items:center; gap:7px; padding:10px 14px; border-radius:11px; background:#dc3545; color:#fff; text-decoration:none; font-weight:700; }
+        @media(max-width:1100px) { .ticket-search { grid-template-columns:repeat(2,minmax(0,1fr)); } .ticket-search button { width:100%; } .ticket-item summary { grid-template-columns:1fr 1fr 26px; } .ticket-summary-date { display:none; } .ticket-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:600px) { .ticket-toolbar span { display:none; } .ticket-search { grid-template-columns:1fr; margin-inline:8px; } .ticket-list,.ticket-count { margin-inline:8px; } .ticket-item summary { grid-template-columns:1fr 26px; } .ticket-summary-address,.ticket-summary-tech { display:none; } .ticket-detail-grid { grid-template-columns:1fr; } }
+    </style>
 
-    </ul>
+    <nav class="ticket-toolbar no_print" aria-label="Navegação de chamados">
+        <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
+        <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
+        <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
+        <a href="chamados_abertos.php" class="is-active"><i class="bi bi-headset"></i><span>Chamados</span></a>
+        <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
+        <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
+        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
+        <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
+    </nav>
 
     <?php
 
-    $busca = isset($_GET['busca']) == '' ? '' : $_GET['busca'];
+    $busca = isset($_GET['busca']) ? $_GET['busca'] : '';
 
     $busca=trim($busca);		
     $busca = str_replace(" ","%", $busca);	
 
-    $organizar = isset($_GET['organizar']) == '' ? 'endereco' : $_GET['organizar'];
+    $organizar = isset($_GET['organizar']) ? $_GET['organizar'] : 'endereco';
 
     $lista_organizar = array(
             "endereco"  => "endereco A-Z",
@@ -61,6 +65,9 @@
             "nome" => "nome A-Z",
             "nome DESC" => "nome Z-A"
     );
+    if (!isset($lista_organizar[$organizar])) {
+        $organizar = 'endereco';
+    }
 
     
     $query_motivo_chamado = mysqli_query($link, "SELECT DISTINCT assunto FROM sis_suporte ORDER BY assunto");
@@ -69,10 +76,11 @@
         $motivo_chamado[$row2['assunto']] = $row2['assunto'];
     }
 
-    if ($_GET['assunto'] == "TODOS" || $_GET['assunto'] == ""){
+    $assunto_get = isset($_GET['assunto']) ? $_GET['assunto'] : '';
+    if ($assunto_get == "TODOS" || $assunto_get == ""){
         $assunto = "%";
     }else{
-        $assunto = $_GET['assunto'];
+        $assunto = $assunto_get;
     }
 
     $query_tecnico_chamado = mysqli_query($link, "SELECT id, nome FROM sis_func ORDER BY nome");
@@ -81,64 +89,49 @@
         $tecnico_chamado[$row3['id']] = $row3['nome'];
     }
 
-    if ($_GET['tecnico'] == "TODOS" || $_GET['tecnico'] == ""){
+    $tecnico_get = isset($_GET['tecnico']) ? $_GET['tecnico'] : '';
+    if ($tecnico_get == "TODOS" || $tecnico_get == ""){
         $tecnico = "%";
     }else{
-        $tecnico = $_GET['tecnico'];
+        $tecnico = $tecnico_get;
     }
 
     ?>
 
-    <form action="" method="get" id="form_pesquisa" class="no_print">
-        <table id="buscar">
-            <tr>
-            <td class="input_pesquisar">Digite o que procura:</td>
-            <td class="input_pesquisar"><b>Assunto:</b></td>
-            <td class="input_pesquisar"><b>Técnico:</b></td>
-            <td><b>Organizar por:</b></td>
-            <td></td>
-            </tr>
-            <tr>
-            <td><input type="search" class="input_pesquisar" name="busca" 
-            placeholder="Busque por nome ou endereco" value="<?php echo $busca; ?>">
-            </input>
-            </td>
-
-            <td>
-                <select name="assunto" class="select_organizar">
+    <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
+            <label>Pesquisar
+                <input type="search" name="busca" placeholder="Busque por nome ou endereço" value="<?php echo htmlspecialchars(str_replace('%', ' ', $busca), ENT_QUOTES, 'UTF-8'); ?>">
+            </label>
+            <label>Assunto
+                <select name="assunto">
                     <?php
                         foreach ($motivo_chamado as $key => $value) {
                             $selected = ($assunto == $key) ? "selected=\"selected\"" : null;
                             echo "<option value=\"$key\" $selected >$value</option>";
                     }
                     ?>
-                    </select>
-            </td>
-
-            <td>
-                <select name="tecnico" class="select_organizar">
+                </select>
+            </label>
+            <label>Técnico
+                <select name="tecnico">
                     <?php
                         foreach ($tecnico_chamado as $key => $value) {
                             $selected = ($tecnico == $key) ? "selected=\"selected\"" : null;
                             echo "<option value=\"$key\" $selected >$value</option>";
                     }
                     ?>
-                    </select>
-            </td>
-
-            <td>            
-            <select name="organizar" class="select_organizar">
+                </select>
+            </label>
+            <label>Organizar por
+            <select name="organizar">
             <?php
                 foreach ($lista_organizar as $key => $value) {
                     $selected = ($organizar == $key) ? "selected=\"selected\"" : null;
                     echo "<option value=\"$key\" $selected >$value</option>";
             }
             ?>
-            </select>
-            </td>
-            <td><input type="submit" name="submit" value="Buscar" id="btn_buscar" /></td>
-            </tr>
-            </table>
+            </select></label>
+            <button type="submit" name="submit" value="Buscar"><i class="bi bi-search"></i> Buscar</button>
     </form>
 
 
@@ -176,134 +169,106 @@
             return $mascara;
         }
 
+        $busca_sql = mysqli_real_escape_string($link, $busca);
+        $assunto_sql = mysqli_real_escape_string($link, $assunto);
+        $tecnico_sql = mysqli_real_escape_string($link, $tecnico);
         $lista_chamados = mysqli_query($link, "
-    SELECT c.endereco, c.numero, c.bairro, c.cidade, c.complemento, c.estado, 
-           c.plano, c.login, c.senha, c.celular, c.celular2, 
-           sup.nome, sup.assunto, sup.abertura, sup.chamado, sup.visita 
-    FROM sis_cliente c 
-    LEFT JOIN sis_suporte sup ON c.login = sup.login 
-    WHERE c.cli_ativado = 's' 
-      AND (c.nome LIKE '%$busca%' 
-           OR c.endereco LIKE '%$busca%' 
-           OR c.bairro LIKE '%$busca%' 
-           OR c.cidade LIKE '%$busca%') 
-      AND sup.status = 'aberto' 
-      AND sup.assunto LIKE '$assunto' 
-      AND (sup.tecnico LIKE '$tecnico' OR sup.tecnico IS NULL) 
-    ORDER BY $organizar
-");
+            SELECT c.endereco, c.numero, c.bairro, c.cidade, c.complemento, c.estado,
+                   c.plano, c.login, c.senha, c.celular, c.celular2,
+                   sup.nome, sup.assunto, sup.abertura, sup.chamado, sup.visita, sup.tecnico,
+                   func.nome AS tecnico_nome
+            FROM sis_cliente c
+            LEFT JOIN sis_suporte sup ON c.login = sup.login
+            LEFT JOIN sis_func func ON func.id = sup.tecnico
+            WHERE c.cli_ativado = 's'
+              AND (c.nome LIKE '%$busca_sql%'
+                   OR c.endereco LIKE '%$busca_sql%'
+                   OR c.bairro LIKE '%$busca_sql%'
+                   OR c.cidade LIKE '%$busca_sql%')
+              AND sup.status = 'aberto'
+              AND sup.assunto LIKE '$assunto_sql'
+              AND (sup.tecnico LIKE '$tecnico_sql' OR sup.tecnico IS NULL)
+            ORDER BY $organizar
+        ");
 
-
-        /*if(!$lista_chamados){
-            echo mysqli_error();
-        }*/
-        
-        $tot_chamados_abertos = mysqli_num_rows($lista_chamados);
-        echo "<span class='no_print'><b>Total Chamados = $tot_chamados_abertos</b></span>";
-        
-        while($row_cli = mysqli_fetch_array($lista_chamados)){
-            $login = $row_cli['login'];
-            $pass_cli = $row_cli['senha'];
-            $plano_cli = $row_cli['plano'];
-            $end_cli = "{$row_cli['endereco']} nº {$row_cli['numero']}";
-            $bairro_cli = $row_cli['bairro'];
-            $cidade_uf_cli = $row_cli['cidade'].' / '.$row['estado'];
-            $complemento_cli = $row_cli['complemento'];
-            $fone_cli = $row_cli['celular'];
-            if($fone_cli != ""){
-                $fone_cli = mascara("(###) ####-####", $fone_cli);
-            }
-            $fone2_cli = $row_cli['celular2'];
-            if($fone2_cli != ""){
-                $fone2_cli = mascara("(###) ####-####", $fone_cli2);
-            }
-        
-            $assunto_ticket = $row_cli['assunto'];
-            $abertura = $row_cli['abertura'];
-            $abertura = date('d/m/Y h:i', strtotime($abertura));
-            $chamado = $row_cli['chamado'];
-        
-            $nome = $row_cli['nome'];
-            $visita = $row_cli['visita'];
-            $visita = date('d/m/Y h:i', strtotime($visita));
-        
-            $query_texto_chamado = mysqli_query($link, "SELECT msg, msg_data FROM sis_msg WHERE chamado = '$chamado' ORDER BY msg_data");
-        
-            echo "
-            <div class='card mb-3'>
-                <div class='card-body'>
-                    <table class='table table-bordered'>
-                        <tr class='table-primary'>
-                            <td class='col-3'>
-                                <strong>Cliente:</strong>
-                                <br><a href='index.php?busca=$nome' title='Ver Cliente' class='text-primary'>$nome</a>
-                            </td>
-                            <td class='col-3'>
-                                <strong>Endereço:</strong>
-                                <br>$end_cli $complemento_cli
-                            </td>
-                            <td>
-                                <strong>Chamado / Assunto:</strong>
-                                <br>$chamado / $assunto_ticket
-                            </td>
-                            <td>
-                                <strong>Data Registro:</strong>
-                                <br>$abertura
-                            </td>
-                        </tr>
-                        <tr class='table-light'>
-                            <td class='col-3'>
-                                <strong>Data Visita:</strong>
-                                <br>$visita
-                            </td>
-                            <td>
-                                <strong>Login / Senha:</strong>
-                                <br>$login / $pass_cli
-                            </td>
-                            <td>
-                                <strong>Contato:</strong>
-                                <br> $fone_cli / $fone2_cli
-                            </td>
-                            <td>
-                                <strong>Plano:</strong>
-                                <br>$plano_cli
-                            </td>
-                        </tr>
-                        <tr class='table-secondary'>
-                            <td colspan='4'>
-                                <strong>Relatos: </strong><br>";
-        
-                                while($row_msg = mysqli_fetch_array($query_texto_chamado)){
-                                    $texto_chamado = $row_msg['msg'];
-                                    $data_msg = $row_msg['msg_data'];
-                                    if($data_msg != ""){
-                                        $data_msg = date('d/m/Y h:i', strtotime($data_msg));
-                                    }
-                                    echo "<strong>Data:</strong> $data_msg - $texto_chamado<br>";
-                                }
-            echo "
-                            </td>
-                        </tr>
-                        <tr class='table-info'>
-                            <td colspan='3'>
-                                <strong>Assinatura:</strong> ____________________________________________________________
-                            </td>
-                        </tr>
-                        <tr class='table-warning'>
-                            <td colspan='4' class='no_print'>
-                                <a href='../../suporte_fechar.$links_ext?&chamado=$chamado' target='_blank'>
-                                    <button class='btn btn-danger btn-lg font-weight-bold'>
-                                        <strong>Fechar Chamado: </strong> $chamado
-                                    </button>
-                                </a>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>";
+        $tot_chamados_abertos = $lista_chamados ? mysqli_num_rows($lista_chamados) : 0;
+        ?>
+        <div class="ticket-count no_print">Total de chamados: <?= $tot_chamados_abertos; ?></div>
+        <div class="ticket-list">
+        <?php
+        if (!$lista_chamados) {
+            echo '<div class="alert alert-danger">Não foi possível carregar os chamados.</div>';
         }
-        
-        mysqli_close($link); // Finaliza a conexao com o Banco de Dados
+
+        while ($lista_chamados && ($row_cli = mysqli_fetch_assoc($lista_chamados))) {
+            $login = (string) $row_cli['login'];
+            $pass_cli = (string) $row_cli['senha'];
+            $plano_cli = (string) $row_cli['plano'];
+            $end_cli = trim((string) $row_cli['endereco'] . ' nº ' . (string) $row_cli['numero'] . ' ' . (string) $row_cli['complemento']);
+            $local_cli = trim((string) $row_cli['bairro'] . ' - ' . (string) $row_cli['cidade'] . ' / ' . (string) $row_cli['estado'], ' -/');
+            $fone_cli = trim((string) $row_cli['celular']);
+            $fone2_cli = trim((string) $row_cli['celular2']);
+            $assunto_ticket = (string) $row_cli['assunto'];
+            $chamado = (string) $row_cli['chamado'];
+            $nome = (string) $row_cli['nome'];
+            $tecnico_nome = trim((string) $row_cli['tecnico_nome']);
+            if ($tecnico_nome === '') {
+                $tecnico_nome = empty($row_cli['tecnico']) ? 'Não definido' : 'Técnico #' . $row_cli['tecnico'];
+            }
+            $abertura = !empty($row_cli['abertura']) ? date('d/m/Y H:i', strtotime($row_cli['abertura'])) : '--';
+            $visita = !empty($row_cli['visita']) ? date('d/m/Y H:i', strtotime($row_cli['visita'])) : 'Não agendada';
+            $chamado_sql = mysqli_real_escape_string($link, $chamado);
+            $query_texto_chamado = mysqli_query($link, "SELECT msg, msg_data FROM sis_msg WHERE chamado = '$chamado_sql' ORDER BY msg_data");
+            ?>
+            <details class="ticket-item">
+                <summary>
+                    <div class="ticket-summary-cell">
+                        <small>Cliente</small>
+                        <a class="ticket-client" href="index.php?busca=<?= urlencode($nome); ?>" onclick="event.stopPropagation();"><?= htmlspecialchars($nome, ENT_QUOTES, 'UTF-8'); ?></a>
+                    </div>
+                    <div class="ticket-summary-cell ticket-summary-address">
+                        <small>Chamado / assunto</small>
+                        <strong>#<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars($assunto_ticket, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    </div>
+                    <div class="ticket-summary-cell ticket-summary-tech">
+                        <small>Técnico</small>
+                        <span><?= htmlspecialchars($tecnico_nome, ENT_QUOTES, 'UTF-8'); ?></span>
+                    </div>
+                    <div class="ticket-summary-cell ticket-summary-date">
+                        <small>Visita</small>
+                        <span><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span>
+                    </div>
+                    <i class="bi bi-chevron-down ticket-chevron" aria-hidden="true"></i>
+                </summary>
+                <div class="ticket-details">
+                    <div class="ticket-detail-grid">
+                        <div class="ticket-detail"><small>Endereço</small><span><?= htmlspecialchars($end_cli, ENT_QUOTES, 'UTF-8'); ?><br><?= htmlspecialchars($local_cli, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                        <div class="ticket-detail"><small>Registro / visita</small><span><?= htmlspecialchars($abertura, ENT_QUOTES, 'UTF-8'); ?><br><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                        <div class="ticket-detail"><small>Login / senha</small><span><?= htmlspecialchars($login, ENT_QUOTES, 'UTF-8'); ?> / <?= htmlspecialchars($pass_cli, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                        <div class="ticket-detail"><small>Contato / plano</small><span><?= htmlspecialchars(trim($fone_cli . ' ' . $fone2_cli), ENT_QUOTES, 'UTF-8'); ?><br><?= htmlspecialchars($plano_cli, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                    </div>
+                    <div class="ticket-reports">
+                        <strong>Relatos</strong>
+                        <?php if ($query_texto_chamado && mysqli_num_rows($query_texto_chamado) > 0) { ?>
+                            <?php while ($row_msg = mysqli_fetch_assoc($query_texto_chamado)) {
+                                $data_msg = !empty($row_msg['msg_data']) ? date('d/m/Y H:i', strtotime($row_msg['msg_data'])) : '--';
+                            ?>
+                                <div class="ticket-report"><strong><?= htmlspecialchars($data_msg, ENT_QUOTES, 'UTF-8'); ?></strong> — <?= nl2br(htmlspecialchars((string) $row_msg['msg'], ENT_QUOTES, 'UTF-8')); ?></div>
+                            <?php } ?>
+                        <?php } else { ?>
+                            <div class="ticket-report">Nenhum relato registrado.</div>
+                        <?php } ?>
+                    </div>
+                    <div class="ticket-signature"><strong>Assinatura:</strong> ______________________________________________</div>
+                    <div class="ticket-actions no_print">
+                        <a class="ticket-close" href="../../suporte_fechar.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>?chamado=<?= urlencode($chamado); ?>" target="_blank"><i class="bi bi-check-circle-fill"></i> Fechar chamado #<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?></a>
+                    </div>
+                </div>
+            </details>
+        <?php } ?>
+        </div>
+        <?php
+        mysqli_close($link);
         ?>
 
 
