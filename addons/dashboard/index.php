@@ -822,7 +822,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="js/exporting.js"></script>
 
 
-    <div class='container-fluid mka-suite-content-start'>
+    <div class='container-fluid mka-suite-dashboard-start'>
         <?php
 
         $query_cria_tabelas = mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_sis_cfg (
