@@ -84,10 +84,67 @@ if (!function_exists('mka_contract_get_latest')) {
     }
 }
 
+if (!function_exists('mka_contract_get_native_signed')) {
+    function mka_contract_get_native_signed($uuid_cliente, $contract_name = '', $base_dir = '/opt/mk-auth/admin/arquivos')
+    {
+        $uuid = trim((string) $uuid_cliente);
+        if ($uuid === '' || strpos($uuid, '..') !== false || preg_match('/[\\\\\/]/', $uuid)) {
+            return null;
+        }
+
+        $directory = rtrim($base_dir, '/\\\\') . DIRECTORY_SEPARATOR . $uuid;
+        $files = glob($directory . DIRECTORY_SEPARATOR . 'contrato_*.pdf');
+        if (!$files) {
+            return null;
+        }
+
+        usort($files, function ($left, $right) {
+            return (int) @filemtime($right) - (int) @filemtime($left);
+        });
+
+        $file = $files[0];
+        $timestamp = (int) @filemtime($file);
+        if ($timestamp <= 0) {
+            return null;
+        }
+
+        $start_date = date('Y-m-d', $timestamp);
+        $has_fidelity = stripos((string) $contract_name, 'fidelidade') !== false;
+
+        return array(
+            'status' => 'active',
+            'duration_months' => $has_fidelity ? 12 : 0,
+            'start_date' => $start_date,
+            'end_date' => $has_fidelity ? date('Y-m-d', strtotime('+12 months', $timestamp)) : '',
+            'activated_at' => date('Y-m-d H:i:s', $timestamp),
+            'activated_by' => 'assinatura digital',
+            'notes' => 'Contrato reconhecido pelo PDF assinado existente.',
+            'native_signed' => 1,
+            'pdf_path' => $file,
+            'pdf_url' => '/admin/arquivos/' . rawurlencode($uuid) . '/' . rawurlencode(basename($file)),
+        );
+    }
+}
+
 if (!function_exists('mka_contract_build_status')) {
     function mka_contract_build_status($contract_row, $today = null)
     {
         $today = $today ?: date('Y-m-d');
+
+        if ($contract_row && !empty($contract_row['native_signed']) && empty($contract_row['end_date'])) {
+            return array(
+                'status' => 'active',
+                'label' => 'Contrato assinado',
+                'days' => null,
+                'class' => 'contract-active',
+                'icon' => 'fa-solid fa-file-shield',
+                'start_date' => isset($contract_row['start_date']) ? $contract_row['start_date'] : '',
+                'end_date' => '',
+                'duration_months' => 0,
+                'pdf_url' => isset($contract_row['pdf_url']) ? $contract_row['pdf_url'] : '',
+                'source' => 'native',
+            );
+        }
 
         if (!$contract_row || empty($contract_row['end_date'])) {
             return array(
@@ -138,6 +195,8 @@ if (!function_exists('mka_contract_build_status')) {
             'start_date' => $contract_row['start_date'],
             'end_date' => $contract_row['end_date'],
             'duration_months' => isset($contract_row['duration_months']) ? (int) $contract_row['duration_months'] : 0,
+            'pdf_url' => isset($contract_row['pdf_url']) ? $contract_row['pdf_url'] : '',
+            'source' => !empty($contract_row['native_signed']) ? 'native' : 'history',
         );
     }
 }
