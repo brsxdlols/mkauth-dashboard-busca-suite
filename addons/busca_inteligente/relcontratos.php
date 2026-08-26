@@ -173,5 +173,9 @@ if ($result) {
     </tbody>
 </table>
 </div>
+
+<?php include('../../baixo.php'); ?>
+<script src="../../menu.js.php"></script>
+<?php include('../../rodape.php'); ?>
 </body>
 </html>
