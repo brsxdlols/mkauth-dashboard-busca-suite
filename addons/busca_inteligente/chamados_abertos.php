@@ -17,13 +17,15 @@
         .ticket-count { margin:0 15px 10px; color:#334155; font-weight:700; }
         .ticket-list { display:grid; gap:10px; margin:0 15px 18px; }
         .ticket-item { border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.05); overflow:hidden; }
-        .ticket-item summary { display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(260px,1.8fr) minmax(180px,1fr) minmax(150px,.8fr) 26px; gap:14px; align-items:center; padding:15px 18px; cursor:pointer; list-style:none; }
+        .ticket-item summary { display:grid; grid-template-columns:minmax(190px,1.1fr) minmax(240px,1.6fr) minmax(150px,.8fr) minmax(145px,.75fr) minmax(145px,.75fr) 26px; gap:14px; align-items:center; padding:15px 18px; cursor:pointer; list-style:none; }
         .ticket-item summary::-webkit-details-marker { display:none; }
         .ticket-item summary:hover { background:#f5f9ff; }
         .ticket-summary-cell { min-width:0; }
         .ticket-summary-cell small { display:block; margin-bottom:4px; color:#718096; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
         .ticket-summary-cell strong,.ticket-summary-cell span { display:block; overflow:hidden; color:#23364d; text-overflow:ellipsis; white-space:nowrap; }
         .ticket-client { color:#1268db !important; text-decoration:none; }
+        .ticket-sla { display:inline-flex!important; width:max-content; max-width:100%; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; }
+        .ticket-sla.is-green { background:#e7f7ee; color:#16794a; }.ticket-sla.is-orange { background:#fff1d6; color:#a85c00; }.ticket-sla.is-red { background:#fde7ea; color:#b42336; }.ticket-sla.is-neutral { background:#edf2f7; color:#64748b; }
         .ticket-chevron { color:#1268db; transition:transform .2s ease; }
         .ticket-item[open] .ticket-chevron { transform:rotate(180deg); }
         .ticket-details { padding:0 18px 18px; border-top:1px solid #e6edf5; }
@@ -35,7 +37,7 @@
         .ticket-signature { margin-top:10px; padding:12px 14px; border-radius:12px; background:#eef9fb; }
         .ticket-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:12px; }
         .ticket-close { display:inline-flex; align-items:center; gap:7px; padding:10px 14px; border-radius:11px; background:#dc3545; color:#fff; text-decoration:none; font-weight:700; }
-        @media(max-width:1100px) { .ticket-search { grid-template-columns:repeat(2,minmax(0,1fr)); } .ticket-search button { width:100%; } .ticket-item summary { grid-template-columns:1fr 1fr 26px; } .ticket-summary-date { display:none; } .ticket-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:1100px) { .ticket-search { grid-template-columns:repeat(2,minmax(0,1fr)); } .ticket-search button { width:100%; } .ticket-item summary { grid-template-columns:1fr 1fr 1fr 26px; } .ticket-summary-date { display:none; } .ticket-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media(max-width:600px) { .ticket-toolbar span { display:none; } .ticket-search { grid-template-columns:1fr; margin-inline:8px; } .ticket-list,.ticket-count { margin-inline:8px; } .ticket-item summary { grid-template-columns:1fr 26px; } .ticket-summary-address,.ticket-summary-tech { display:none; } .ticket-detail-grid { grid-template-columns:1fr; } }
     </style>
 
@@ -217,6 +219,30 @@
             }
             $abertura = !empty($row_cli['abertura']) ? date('d/m/Y H:i', strtotime($row_cli['abertura'])) : '--';
             $visita = !empty($row_cli['visita']) ? date('d/m/Y H:i', strtotime($row_cli['visita'])) : 'Não agendada';
+            $sla_class = 'is-neutral';
+            $sla_text = 'Sem agendamento';
+            if (!empty($row_cli['visita'])) {
+                $visita_ts = strtotime($row_cli['visita']);
+                $agora_ts = time();
+                $diferenca = $visita_ts - $agora_ts;
+                $horas = (int) floor(abs($diferenca) / 3600);
+                $dias = (int) floor($horas / 24);
+                $horas_restantes = $horas % 24;
+                $tempo_sla = ($dias > 0 ? $dias . 'd ' : '') . $horas_restantes . 'h';
+                if ($diferenca < -86400) {
+                    $sla_class = 'is-red';
+                    $sla_text = 'Atrasado há ' . $tempo_sla;
+                } elseif ($diferenca < 0) {
+                    $sla_class = 'is-orange';
+                    $sla_text = 'Atrasado há ' . $tempo_sla;
+                } elseif ($diferenca <= 86400) {
+                    $sla_class = 'is-orange';
+                    $sla_text = 'Visita em ' . $tempo_sla;
+                } else {
+                    $sla_class = 'is-green';
+                    $sla_text = 'Em dia · ' . $tempo_sla;
+                }
+            }
             $chamado_sql = mysqli_real_escape_string($link, $chamado);
             $query_texto_chamado = mysqli_query($link, "SELECT msg, msg_data FROM sis_msg WHERE chamado = '$chamado_sql' ORDER BY msg_data");
             ?>
@@ -238,6 +264,7 @@
                         <small>Visita</small>
                         <span><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
+                    <div class="ticket-summary-cell ticket-summary-sla"><small>SLA da visita</small><span class="ticket-sla <?= $sla_class; ?>"><?= htmlspecialchars($sla_text, ENT_QUOTES, 'UTF-8'); ?></span></div>
                     <i class="bi bi-chevron-down ticket-chevron" aria-hidden="true"></i>
                 </summary>
                 <div class="ticket-details">
