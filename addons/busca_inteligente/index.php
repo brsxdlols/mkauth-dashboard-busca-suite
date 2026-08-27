@@ -132,6 +132,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     }
 
     $cond_offline = "";
+    $suite_live_search = mka_suite_get_live_search($link);
     // Carrega as configuracoes do banco
     $ler_busca_inteligente_cfg = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg");
     while ($cfg = mysqli_fetch_array($ler_busca_inteligente_cfg)) {
@@ -450,6 +451,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     // echo $query_default ."<br>";
     
     $group = "GROUP BY c.login";
+
+    echo '<div id="mka-live-results">';
 
     if (startsWith($partes[0], 'adiciona')) {
         $query_ok = "$query_default
@@ -780,6 +783,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         include('exibir_resultados.php');
     }
 
+    echo '</div>';
+
     mysqli_close($link);
 
     ?>
@@ -787,6 +792,51 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
 
     <?php include('../../baixo.php'); ?>
+
+    <?php if ($suite_live_search === 's') { ?>
+        <script>
+            (function () {
+                var input = document.getElementById('busca');
+                var form = input ? input.closest('form') : null;
+                var results = document.getElementById('mka-live-results');
+                if (!input || !form || !results || typeof window.fetch !== 'function') return;
+
+                var timer = null;
+                var controller = null;
+
+                function refreshResults() {
+                    var params = new URLSearchParams(new FormData(form));
+                    params.set('pagina', '1');
+
+                    if (controller) controller.abort();
+                    controller = typeof AbortController === 'function' ? new AbortController() : null;
+
+                    fetch(window.location.pathname + '?' + params.toString(), {
+                        credentials: 'same-origin',
+                        signal: controller ? controller.signal : undefined,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(function (response) {
+                            if (!response.ok) throw new Error('Falha ao atualizar a busca');
+                            return response.text();
+                        })
+                        .then(function (html) {
+                            var page = new DOMParser().parseFromString(html, 'text/html');
+                            var updated = page.getElementById('mka-live-results');
+                            if (updated) results.innerHTML = updated.innerHTML;
+                        })
+                        .catch(function (error) {
+                            if (error && error.name !== 'AbortError') console.error(error);
+                        });
+                }
+
+                input.addEventListener('input', function () {
+                    window.clearTimeout(timer);
+                    timer = window.setTimeout(refreshResults, 320);
+                });
+            }());
+        </script>
+    <?php } ?>
 
     <script src="../../menu.js.<?= $links_ext; ?>"></script>
 
