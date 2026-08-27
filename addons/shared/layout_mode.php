@@ -46,6 +46,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'popup_clientes_sessao_duracao' => "INT NOT NULL DEFAULT 2",
             'suite_top_spacing' => "INT NOT NULL DEFAULT 16",
             'suite_header_spacing' => "INT NOT NULL DEFAULT 0",
+            'suite_live_search' => "VARCHAR(1) NOT NULL DEFAULT 's'",
             'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
         );
 
@@ -57,6 +58,49 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
         }
 
         @mysqli_query($conn, "INSERT IGNORE INTO dashboard_am_sis_cfg (id, suite_layout_mode) VALUES (1, 'novo')");
+    }
+}
+
+if (!function_exists('mka_suite_normalize_live_search')) {
+    function mka_suite_normalize_live_search($value)
+    {
+        return strtolower(trim((string) $value)) === 'n' ? 'n' : 's';
+    }
+}
+
+if (!function_exists('mka_suite_get_live_search')) {
+    function mka_suite_get_live_search($conn = null)
+    {
+        if (!($conn instanceof mysqli)) {
+            $conn = mka_suite_connect_db();
+        }
+        if (!($conn instanceof mysqli)) {
+            return 's';
+        }
+
+        mka_suite_ensure_layout_column($conn);
+        $query = @mysqli_query($conn, "SELECT suite_live_search FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        if ($query && ($row = mysqli_fetch_assoc($query))) {
+            return mka_suite_normalize_live_search(isset($row['suite_live_search']) ? $row['suite_live_search'] : 's');
+        }
+
+        return 's';
+    }
+}
+
+if (!function_exists('mka_suite_set_live_search')) {
+    function mka_suite_set_live_search($conn, $value)
+    {
+        if (!($conn instanceof mysqli)) {
+            return false;
+        }
+
+        mka_suite_ensure_layout_column($conn);
+        $value = mka_suite_normalize_live_search($value);
+        return (bool) @mysqli_query(
+            $conn,
+            "UPDATE dashboard_am_sis_cfg SET suite_live_search = '" . mysqli_real_escape_string($conn, $value) . "' WHERE id = 1"
+        );
     }
 }
 
