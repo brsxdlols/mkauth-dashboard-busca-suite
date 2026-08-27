@@ -115,7 +115,7 @@ if ($result) {
 
 <form action="" method="get" class="contract-search">
     <label>Busca integrada
-        <input type="search" name="busca" placeholder="Pesquisar nome, login, plano, tecnologia, telefone, tags ou cadastro" value="<?= mka_contract_escape($busca); ?>" />
+        <input type="search" id="contract-live-search" name="busca" autocomplete="off" placeholder="Pesquisar nome, login, plano, tecnologia, telefone, tags ou cadastro" value="<?= mka_contract_escape($busca); ?>" />
     </label>
     <button type="submit"><i class="bi bi-search"></i> Pesquisar</button>
 </form>
@@ -174,6 +174,31 @@ if ($result) {
     </tbody>
 </table>
 </div>
+
+<script>
+(function () {
+    var input = document.getElementById('contract-live-search');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.contract-table tbody tr'));
+    if (!input || !rows.length) return;
+
+    function normalize(value) {
+        value = String(value || '').toLowerCase();
+        return typeof value.normalize === 'function'
+            ? value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            : value;
+    }
+
+    function filterContracts() {
+        var term = normalize(input.value.trim());
+        rows.forEach(function (row) {
+            row.style.display = !term || normalize(row.textContent).indexOf(term) !== -1 ? '' : 'none';
+        });
+    }
+
+    input.addEventListener('input', filterContracts);
+    filterContracts();
+})();
+</script>
 
 <?php include('../../baixo.php'); ?>
 <script src="../../menu.js.php"></script>
