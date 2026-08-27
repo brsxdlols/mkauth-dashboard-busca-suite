@@ -27,7 +27,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$native_contract_name = '';
+$uuid_sql = mysqli_real_escape_string($link, $uuid_cliente);
+$login_sql = mysqli_real_escape_string($link, $login_cliente);
+$native_result = @mysqli_query($link, "
+    SELECT sc.nome AS contrato_nome
+    FROM sis_cliente c
+    LEFT JOIN sis_contrato sc ON c.contrato = sc.codigo
+    WHERE c.uuid_cliente = '{$uuid_sql}' OR c.login = '{$login_sql}'
+    ORDER BY (c.uuid_cliente = '{$uuid_sql}') DESC
+    LIMIT 1
+");
+if ($native_result && ($native_row = mysqli_fetch_assoc($native_result))) {
+    $native_contract_name = isset($native_row['contrato_nome']) ? trim((string) $native_row['contrato_nome']) : '';
+}
+
 $latest_contract = mka_contract_get_latest($link, $uuid_cliente, $login_cliente);
+if (!$latest_contract) {
+    $latest_contract = mka_contract_get_native_signed($uuid_cliente, $native_contract_name);
+}
 $status_info = mka_contract_build_status($latest_contract);
 $durations = mka_contract_allowed_durations();
 ?>
@@ -123,7 +141,7 @@ $durations = mka_contract_allowed_durations();
 
                     <div class="actions">
                         <button type="button" class="btn btn-secondary" onclick="window.close()">Fechar</button>
-                        <button type="submit" class="btn btn-primary">Ativar contrato</button>
+                        <button type="submit" class="btn btn-primary"><?= $status_info['status'] === 'missing' ? 'Ativar contrato' : 'Renovar contrato'; ?></button>
                     </div>
                 </form>
             </div>
