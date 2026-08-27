@@ -53,6 +53,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
     mka_suite_ensure_layout_column($link);
     $suite_layout_mode = mka_suite_get_layout_mode($link);
+    $suite_live_search = mka_suite_get_live_search($link);
 
     // Busca Inteligente
     $query_atual_cfg = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg ORDER BY id DESC LIMIT 1");
@@ -80,6 +81,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     $contabilizar_bloq_offline = isset($_POST['contabilizar_bloq_offline']) ? $_POST['contabilizar_bloq_offline'] : $contabilizar_bloq_offline;
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
     $suite_layout_mode = mka_suite_normalize_layout_mode($suite_layout_mode);
+    $suite_live_search = isset($_POST['suite_live_search']) ? mka_suite_normalize_live_search($_POST['suite_live_search']) : $suite_live_search;
     $suite_top_spacing = isset($_POST['suite_top_spacing']) ? mka_suite_normalize_top_spacing($_POST['suite_top_spacing']) : mka_suite_get_top_spacing($link);
     $suite_header_spacing = isset($_POST['suite_header_spacing']) ? mka_suite_normalize_header_spacing($_POST['suite_header_spacing']) : mka_suite_get_header_spacing($link);
 
@@ -147,6 +149,15 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
                                     ?>
 
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="">Filtro instantâneo na lista
+                                <select class="" name="suite_live_search">
+                                    <option value="s" <?php echo $suite_live_search === 's' ? 'selected' : ''; ?>>Sim</option>
+                                    <option value="n" <?php echo $suite_live_search === 'n' ? 'selected' : ''; ?>>Não</option>
                                 </select>
                             </td>
                         </tr>
@@ -354,6 +365,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         }
 
         mka_suite_set_layout_mode($link, $suite_layout_mode);
+        mka_suite_set_live_search($link, $suite_live_search);
         mka_suite_set_top_spacing($link, $suite_top_spacing);
         mka_suite_set_header_spacing($link, $suite_header_spacing);
     }
