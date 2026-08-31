@@ -26,7 +26,107 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="../../scripts/mk-auth.js"></script>
 
     <link href="css/estilo.css" rel="stylesheet" type="text/css" />
-     
+    <style>
+        :root {
+            --cfg-primary: #1769e8;
+            --cfg-primary-soft: #edf5ff;
+            --cfg-border: #dce6f2;
+            --cfg-text: #17324f;
+            --cfg-muted: #6f8195;
+            --cfg-bg: #f5f8fc;
+        }
+        body { background: var(--cfg-bg); }
+        .cfg-shell { max-width: 1640px; margin: 0 auto; padding: 24px 18px 42px; }
+        .cfg-form { color: var(--cfg-text); }
+        .cfg-hero {
+            display: flex; align-items: center; justify-content: space-between; gap: 18px;
+            margin-bottom: 18px; padding: 22px 24px; border: 1px solid var(--cfg-border);
+            border-radius: 18px; background: linear-gradient(135deg, #fff 0%, #f3f8ff 100%);
+            box-shadow: 0 10px 30px rgba(29, 67, 111, .07);
+        }
+        .cfg-hero-icon {
+            display: flex; align-items: center; justify-content: center; flex: 0 0 50px;
+            width: 50px; height: 50px; border-radius: 14px; color: #fff;
+            background: linear-gradient(135deg, #1769e8, #3194ff); font-size: 22px;
+        }
+        .cfg-hero-copy { flex: 1; }
+        .cfg-hero h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
+        .cfg-hero p { margin: 0; color: var(--cfg-muted); font-size: 14px; }
+        .cfg-badge {
+            padding: 7px 12px; border-radius: 999px; background: #e6f7ee;
+            color: #17804c; font-size: 12px; font-weight: 700; white-space: nowrap;
+        }
+        .cfg-card {
+            margin-bottom: 18px; padding: 22px; border: 1px solid var(--cfg-border);
+            border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(29, 67, 111, .055);
+        }
+        .cfg-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .cfg-card-head > i {
+            display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;
+            border-radius: 11px; background: var(--cfg-primary-soft); color: var(--cfg-primary); font-size: 16px;
+        }
+        .cfg-card-head h2 { margin: 0 0 2px; font-size: 17px; font-weight: 700; }
+        .cfg-card-head p { margin: 0; color: var(--cfg-muted); font-size: 12px; }
+        .cfg-settings-grid { margin: 0 -5px; }
+        .cfg-settings-grid > [class*="col-"] { padding: 5px; margin: 0 !important; }
+        .cfg-form .form-control, .cfg-form .form-select {
+            min-height: 56px; border-color: var(--cfg-border); border-radius: 11px;
+            background-color: #fbfdff; box-shadow: none;
+        }
+        .cfg-form .form-control:focus, .cfg-form .form-select:focus {
+            border-color: #75adf8; box-shadow: 0 0 0 3px rgba(23, 105, 232, .1); background: #fff;
+        }
+        .cfg-form .form-floating > label { color: var(--cfg-muted); }
+        .cfg-diagnostic { margin: 0; }
+        .cfg-diagnostic .btn {
+            min-height: 48px; border-radius: 11px; border: 0; color: #fff;
+            background: linear-gradient(135deg, #1769e8, #2485f5);
+            box-shadow: 0 7px 16px rgba(23, 105, 232, .18);
+        }
+        .cfg-diagnostic .btn:hover { color: #fff; transform: translateY(-1px); }
+        .cfg-shortcuts { counter-reset: shortcut; }
+        .cfg-shortcut-row {
+            counter-increment: shortcut; display: grid !important;
+            grid-template-columns: 46px 76px minmax(220px, 1.35fr) 92px minmax(180px, .65fr);
+            gap: 0; margin-bottom: 8px !important; padding: 0 !important;
+            border: 1px solid var(--cfg-border); border-radius: 11px; overflow: hidden; background: #fbfdff;
+        }
+        .cfg-shortcut-row:before {
+            content: counter(shortcut, decimal-leading-zero); display: flex; align-items: center;
+            justify-content: center; color: var(--cfg-primary); background: var(--cfg-primary-soft); font-weight: 700;
+        }
+        .cfg-shortcut-row .input-group-text, .cfg-shortcut-row .form-control {
+            min-height: 44px; border: 0; border-left: 1px solid var(--cfg-border); border-radius: 0; background: transparent;
+        }
+        .cfg-shortcut-row .input-group-text { color: var(--cfg-muted); font-size: 11px; font-weight: 700; }
+        .cfg-shortcut-row .form-control { font-size: 13px; }
+        .cfg-actions {
+            position: sticky; bottom: 10px; z-index: 20; display: flex; justify-content: flex-end;
+            gap: 10px; margin: 20px 0; padding: 12px; border: 1px solid var(--cfg-border);
+            border-radius: 15px; background: rgba(255, 255, 255, .94); box-shadow: 0 12px 35px rgba(20, 51, 85, .14);
+            backdrop-filter: blur(8px);
+        }
+        .cfg-actions .btn { width: auto; min-width: 170px; min-height: 44px; border-radius: 10px; font-weight: 700; }
+        @media (max-width: 991px) {
+            .cfg-settings-grid > [class*="col-"] { width: 50%; }
+            .cfg-shortcut-row { grid-template-columns: 42px 68px minmax(160px, 1fr); }
+            .cfg-shortcut-row .input-group-text:nth-of-type(3), .cfg-shortcut-row .form-control:last-child { grid-column: auto; }
+        }
+        @media (max-width: 680px) {
+            .cfg-shell { padding: 14px 10px 30px; }
+            .cfg-hero { align-items: flex-start; padding: 18px; }
+            .cfg-badge { display: none; }
+            .cfg-card { padding: 15px; border-radius: 14px; }
+            .cfg-settings-grid > [class*="col-"] { width: 100%; }
+            .cfg-shortcut-row { display: flex !important; flex-wrap: wrap; padding: 8px !important; border-radius: 10px; }
+            .cfg-shortcut-row:before { width: 38px; min-height: 42px; border-radius: 8px; }
+            .cfg-shortcut-row .input-group-text { display: none; }
+            .cfg-shortcut-row .form-control { flex: 1 1 calc(100% - 42px); border-left: 0; }
+            .cfg-shortcut-row .form-control:last-child { flex-basis: 100%; border-top: 1px solid var(--cfg-border); }
+            .cfg-actions { position: static; flex-direction: column-reverse; }
+            .cfg-actions .btn { width: 100%; }
+        }
+    </style>
 
 
 
@@ -134,12 +234,25 @@ if (isset($_SESSION['MM_Usuario'])) {
 
     ?>
 
-    <div class='container-fluid'>
+    <div class='container-fluid cfg-shell'>
         <?php if (permissao('perm_config')) { ?>
 
-            <form action="" method="POST" name="cfg_dashboard">
-                <div class='row'>
-                <p class="lead text-center">Configurações Dashboard - Sistemas</p>
+            <form action="" method="POST" name="cfg_dashboard" class="cfg-form">
+                <div class="cfg-hero">
+                    <div class="cfg-hero-icon"><i class="fa fa-sliders"></i></div>
+                    <div class="cfg-hero-copy">
+                        <h1>Configurações do Dashboard</h1>
+                        <p>Personalize os indicadores, alertas e recursos exibidos no sistema.</p>
+                    </div>
+                    <span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span>
+                </div>
+
+                <section class="cfg-card">
+                    <div class="cfg-card-head">
+                        <i class="fa fa-th-large"></i>
+                        <div><h2>Visualização e comportamento</h2><p>Escolha o que será exibido no Dashboard e como os dados serão apresentados.</p></div>
+                    </div>
+                <div class='row cfg-settings-grid'>
 
                     <div class="col-4 form-floating mb-2 g-1">
                         <select class="form-select" name="suite_layout_mode" id="suite_layout_mode" aria-label="">
@@ -425,17 +538,25 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <label for="limite_ticket">Valor Máximo de Mensalidade para Considerar no Ticket Médio R$</label>
                     </div>
                 </div>
+                </section>
 
-                <div class="row mb-3">
-                    <div class="col-12">
-                        <p class="lead text-center">Diagnóstico dos Ramais / NAS</p>
+                <section class="cfg-card cfg-diagnostic">
+                    <div class="cfg-card-head">
+                        <i class="fa fa-plug"></i>
+                        <div><h2>Diagnóstico dos Ramais / NAS</h2><p>Valide conectividade, porta e autenticação de todos os concentradores cadastrados.</p></div>
+                    </div>
+                    <div>
                         <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections" onclick="return testRadiusConnections(this);"><i class="fa fa-plug"></i> Testar conexões de todos os ramais</button>
                         <div id="radius-test-result" class="mt-2" aria-live="polite"></div>
                     </div>
-                </div>
+                </section>
 
-                <div class="row">
-                    <p class="lead text-center">Acesso Rápido</p>
+                <section class="cfg-card cfg-shortcuts">
+                    <div class="cfg-card-head">
+                        <i class="fa fa-bolt"></i>
+                        <div><h2>Acesso Rápido</h2><p>Organize os atalhos que ficarão disponíveis na tela principal.</p></div>
+                    </div>
+                    <div class="row">
                     <div class="col-12 form-floating mb-2 g-1">
                         <input type="number" name="tot_acesso_rapido" class="form-control" id="tot_acesso_rapido" placeholder="" min="15" max="50" step="5" value="<?php echo $tot_acesso_rapido; ?>">
                         <label for="tot_acesso_rapido">Total de Atalhos no Acesso Rapido</label>
@@ -444,7 +565,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                     //debug($links);
                     for ($pos = 0; $pos <= $tot_acesso_rapido-1; $pos++) {
                     ?>
-                        <div class="col-12 input-group input-group-sm mb-1">
+                        <div class="col-12 input-group input-group-sm mb-1 cfg-shortcut-row">
                             <span class="input-group-text">LINK</span>
                             <span class="input-group-text">
                             <?php
@@ -474,13 +595,14 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <input type="text" name="texto" class="form-control" id="texto" placeholder="texto" value="<?php echo $texto; ?>">
                         <label for="texto">TEXTO (Separe com Virgula (,))</label>
                     </div>-->
-                </div>
+                    </div>
+                </section>
 
-                <div class="row">
+                <div class="cfg-actions">
 
-                    <button type="button" name="retorn" onclick="window.location.href = ('index.php');" class="col-6 btn btn-secondary">Voltar</button>
+                    <button type="button" name="retorn" onclick="window.location.href = ('index.php');" class="btn btn-light"><i class="fa fa-arrow-left"></i> Voltar</button>
 
-                    <button type="submit" name="OK" onclick="window.alert('Configurações Salvas');" class="col-6 btn btn-primary">Enviar Configurações</button>
+                    <button type="submit" name="OK" onclick="window.alert('Configurações Salvas');" class="btn btn-primary"><i class="fa fa-save"></i> Salvar configurações</button>
                 </div>
                 <!-- Rodapé -->
 <?php include_once('../../baixo.php'); ?>
