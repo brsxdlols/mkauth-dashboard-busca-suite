@@ -27,10 +27,10 @@ if (isset($_SESSION['MM_Usuario'])) {
 
     <title>MK - AUTH :: <?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'};  ?></title>
 
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
     <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css">
     <link href="../../estilos/mk-auth.css" rel="stylesheet" type="text/css" />
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css" />
-    <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
     
 
     <script src="../../scripts/jquery.js"></script>
