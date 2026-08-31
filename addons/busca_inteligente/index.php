@@ -26,6 +26,15 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .smart-search-form .form-select { border-color:#cbd8e8; border-radius:10px; }
         .smart-search-form .smart-search-button { border:0; border-radius:11px; background:#1268db; color:#fff; font-weight:700; box-shadow:none; }
         .smart-search-form .smart-search-button:hover { background:#0f5fc8; }
+        .client-score { display:inline-flex; align-items:center; gap:5px; min-width:34px; padding:2px 7px 2px 6px; border:1px solid #d8e2ed; border-radius:999px; background:rgba(255,255,255,.72); color:#24364a; font-size:11px; font-weight:700; line-height:1.35; vertical-align:middle; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+        .client-score::before { content:""; width:6px; height:6px; flex:0 0 6px; border-radius:50%; background:#94a3b8; }
+        .client-score.is-critical::before { background:#e5484d; }
+        .client-score.is-low::before { background:#f06a35; }
+        .client-score.is-attention::before { background:#e9a400; }
+        .client-score.is-regular::before { background:#d1a400; }
+        .client-score.is-good::before { background:#20a66a; }
+        .client-score.is-excellent::before { background:#07834f; }
+        .client-score-trophy { color:#c69214; font-size:10px; }
         @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } }
     </style>
 
