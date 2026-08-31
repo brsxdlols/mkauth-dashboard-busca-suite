@@ -39,6 +39,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <?php
     mka_suite_ensure_layout_column($conn);
     $suite_layout_mode = mka_suite_get_layout_mode($conn);
+    $radius_alert_enabled = mka_suite_get_radius_alert_enabled($conn);
 
     $query_atual_cfg = mysqli_query($conn, "SELECT * FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
     while ($cfg = mysqli_fetch_array($query_atual_cfg)) {
@@ -89,6 +90,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     $popup_clientes_sessao = isset($_POST['popup_clientes_sessao']) ? $_POST['popup_clientes_sessao'] : $popup_clientes_sessao;
     $popup_clientes_sessao_duracao = isset($_POST['popup_clientes_sessao_duracao']) ? $_POST['popup_clientes_sessao_duracao'] : $popup_clientes_sessao_duracao;
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
+    $radius_alert_enabled = isset($_POST['radius_alert_enabled']) ? ($_POST['radius_alert_enabled'] === 'n' ? 'n' : 's') : $radius_alert_enabled;
 
     $qtd_meses_graficos = isset($_POST['qtd_meses_graficos']) ? $_POST['qtd_meses_graficos'] : $qtd_meses_graficos;
 
@@ -397,6 +399,13 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <input type="number" name="popup_clientes_sessao_duracao" class="form-control" id="popup_clientes_sessao_duracao" placeholder="2" min="1" max="15" step="1" value="<?php echo (int) $popup_clientes_sessao_duracao; ?>">
                         <label for="popup_clientes_sessao_duracao">Tempo do Popup (s)</label>
                     </div>
+                    <div class="col-4 form-floating mb-2 g-1">
+                        <select class="form-select" name="radius_alert_enabled" id="radius_alert_enabled">
+                            <option value="s" <?php echo $radius_alert_enabled === 's' ? 'selected' : ''; ?>>Sim</option>
+                            <option value="n" <?php echo $radius_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
+                        </select>
+                        <label for="radius_alert_enabled">Exibir alerta de integração Radius?</label>
+                    </div>
                     <div class="col-6 form-floating mb-2 g-1">
                         <select class="form-select" name="qtd_meses_graficos" id="floatingSelect" aria-label="">
                             <?php
@@ -414,6 +423,14 @@ if (isset($_SESSION['MM_Usuario'])) {
                     <div class="col-6 form-floating mb-2 g-1">
                         <input type="number" name="limite_ticket" class="form-control" id="limite_ticket" placeholder="Ticket" min="50" max="10000" step="50" value="<?php echo $limite_ticket; ?>">
                         <label for="limite_ticket">Valor Máximo de Mensalidade para Considerar no Ticket Médio R$</label>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <p class="lead text-center">Diagnóstico dos Ramais / NAS</p>
+                        <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections"><i class="fa fa-plug"></i> Testar conexões de todos os ramais</button>
+                        <div id="radius-test-result" class="mt-2" aria-live="polite"></div>
                     </div>
                 </div>
 
@@ -513,6 +530,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 }
 
                 mka_suite_set_layout_mode($conn, $suite_layout_mode);
+                mka_suite_set_radius_alert_enabled($conn, $radius_alert_enabled);
             }
             if (isset($conn) && $conn instanceof mysqli) {
                 mysqli_close($conn);
@@ -526,6 +544,24 @@ if (isset($_SESSION['MM_Usuario'])) {
 
     <script>
         //$('#systopo').hide();
+        $('#test-radius-connections').on('click', function () {
+            var button = $(this);
+            var result = $('#radius-test-result');
+            button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Testando todos os ramais...');
+            result.html('<div class="alert alert-info">Executando ping, porta e autenticação da API.</div>');
+            $.ajax({url: 'radius_test.php', method: 'POST', dataType: 'json'})
+                .done(function (response) {
+                    var rows = (response.routers || []).map(function (router) {
+                        var state = router.ok ? '<span class="text-success"><b>OK</b></span>' : '<span class="text-danger"><b>Falha</b></span>';
+                        return '<tr><td>' + $('<div>').text(router.name || '-').html() + '</td><td>' + $('<div>').text(router.router || '-').html() + '</td><td>' + state + '</td><td>' + $('<div>').text(router.reason || '').html() + '</td></tr>';
+                    }).join('');
+                    var level = response.ok ? 'success' : (response.executed ? 'warning' : 'danger');
+                    result.html('<div class="alert alert-' + level + '">' + $('<div>').text(response.message || '').html() + '</div>' +
+                        '<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Ramal</th><th>IP</th><th>Status</th><th>Diagnóstico</th></tr></thead><tbody>' + rows + '</tbody></table></div>');
+                })
+                .fail(function () { result.html('<div class="alert alert-danger">Não foi possível executar o teste de conexões.</div>'); })
+                .always(function () { button.prop('disabled', false).html('<i class="fa fa-plug"></i> Testar conexões de todos os ramais'); });
+        });
     </script>
 </body>
 
