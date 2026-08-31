@@ -731,8 +731,24 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-session-toast-actions {
             display: flex;
             justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
             margin-top: 10px;
         }
+
+        .dashboard-radius-retest {
+            border: 0;
+            border-radius: 9px;
+            background: #2563eb;
+            color: #fff;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .dashboard-radius-retest:disabled { opacity: .65; cursor: wait; }
+        .dashboard-radius-result { font-size: 11px; color: #61708d; }
 
         .dashboard-session-toast-close {
             position: absolute;
@@ -1225,8 +1241,9 @@ if (isset($_SESSION['MM_Usuario'])) {
             $radius_state_file = '/var/lib/mkauth_radius_ppp_reconcile/status.json';
             $radius_alert_items = array();
             $radius_alert_generated_at = '';
+            $radius_alert_enabled = mka_suite_get_radius_alert_enabled($conn) === 's';
 
-            if (@is_file($radius_state_file) && @is_readable($radius_state_file)) {
+            if ($radius_alert_enabled && @is_file($radius_state_file) && @is_readable($radius_state_file)) {
                 $radius_state_raw = @file_get_contents($radius_state_file);
                 $radius_state = json_decode((string) $radius_state_raw, true);
 
@@ -1242,7 +1259,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                             if ($router_name === '' && $router_ip === '') {
                                 continue;
                             }
-                            $radius_alert_items[] = trim($router_name . ' - ' . $router_ip, ' -');
+                            $router_reason = trim((string) ($failed_router['reason'] ?? ''));
+                            $radius_alert_items[] = trim($router_name . ' - ' . $router_ip, ' -') . ($router_reason !== '' ? ': ' . $router_reason : '');
                         }
                     }
                 }
@@ -2104,6 +2122,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var contractStatus = eventData.contract_status ? eventData.contract_status : (isRadiusAlert ? 'inactive' : 'active');
                     var contractIcon = eventData.contract_icon ? eventData.contract_icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : 'bi bi-shield-check');
                     var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Falha de integração' : 'Contrato ativo');
+                    var radiusAction = isRadiusAlert ? '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-radius-retest" data-radius-retest="1">Executar novamente</button><span class="dashboard-radius-result"></span></div>' : '';
 
                     item.innerHTML =
                         '<button type="button" class="dashboard-session-toast-close" data-close-session-toast="1" aria-label="Fechar">&times;</button>' +
@@ -2116,7 +2135,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         concentratorHtml +
                         '<span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span>' +
                         '</div>' +
-                        (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') +
+                        (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') + radiusAction +
                         '</div>';
 
                     list.prepend(item);
@@ -2236,6 +2255,30 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     if (list && list.children.length === 0) {
                         jQuery('#dashboard-session-toast-stack').remove();
                     }
+                });
+
+                jQuery(document).on('click', '[data-radius-retest="1"]', function(event) {
+                    event.preventDefault();
+                    var button = jQuery(this);
+                    var toast = button.closest('.dashboard-session-toast');
+                    var result = toast.find('.dashboard-radius-result');
+                    button.prop('disabled', true).text('Testando...');
+                    result.text('Verificando todos os ramais');
+                    jQuery.ajax({url: 'radius_test.php', method: 'POST', dataType: 'json'})
+                        .done(function(response) {
+                            result.text(response.message || 'Teste concluído.');
+                            if (response.ok) {
+                                toast.find('.dashboard-session-toast-status').removeClass('is-inactive').addClass('is-active').html('<i class="bi bi-check-circle-fill"></i><span>Integração normalizada</span>');
+                                button.remove();
+                                window.setTimeout(function () { toast.remove(); }, 3500);
+                            } else {
+                                button.prop('disabled', false).text('Executar novamente');
+                            }
+                        })
+                        .fail(function () {
+                            result.text('Não foi possível executar o teste.');
+                            button.prop('disabled', false).text('Executar novamente');
+                        });
                 });
 
                 jQuery(document).on('click', '[data-minimize-session-popups="1"]', function(event) {
