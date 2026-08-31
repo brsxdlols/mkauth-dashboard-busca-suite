@@ -47,6 +47,9 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'suite_top_spacing' => "INT NOT NULL DEFAULT 16",
             'suite_header_spacing' => "INT NOT NULL DEFAULT 0",
             'suite_live_search' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'trust_unlock_mode' => "VARCHAR(12) NOT NULL DEFAULT 'date'",
+            'trust_unlock_fixed_days' => "INT NOT NULL DEFAULT 1",
+            'radius_alert_enabled' => "VARCHAR(1) NOT NULL DEFAULT 's'",
             'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
         );
 
@@ -58,6 +61,63 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
         }
 
         @mysqli_query($conn, "INSERT IGNORE INTO dashboard_am_sis_cfg (id, suite_layout_mode) VALUES (1, 'novo')");
+    }
+}
+
+if (!function_exists('mka_suite_normalize_trust_unlock_mode')) {
+    function mka_suite_normalize_trust_unlock_mode($mode)
+    {
+        $mode = strtolower(trim((string) $mode));
+        return in_array($mode, array('days', 'date', 'fixed', 'all'), true) ? $mode : 'date';
+    }
+}
+
+if (!function_exists('mka_suite_get_trust_unlock_settings')) {
+    function mka_suite_get_trust_unlock_settings($conn = null)
+    {
+        if (!($conn instanceof mysqli)) $conn = mka_suite_connect_db();
+        $settings = array('mode' => 'date', 'fixed_days' => 1);
+        if (!($conn instanceof mysqli)) return $settings;
+        mka_suite_ensure_layout_column($conn);
+        $query = @mysqli_query($conn, "SELECT trust_unlock_mode, trust_unlock_fixed_days FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        if ($query && ($row = mysqli_fetch_assoc($query))) {
+            $settings['mode'] = mka_suite_normalize_trust_unlock_mode(isset($row['trust_unlock_mode']) ? $row['trust_unlock_mode'] : 'date');
+            $settings['fixed_days'] = max(1, min(10, (int) (isset($row['trust_unlock_fixed_days']) ? $row['trust_unlock_fixed_days'] : 1)));
+        }
+        return $settings;
+    }
+}
+
+if (!function_exists('mka_suite_set_trust_unlock_settings')) {
+    function mka_suite_set_trust_unlock_settings($conn, $mode, $fixedDays)
+    {
+        if (!($conn instanceof mysqli)) return false;
+        mka_suite_ensure_layout_column($conn);
+        $mode = mka_suite_normalize_trust_unlock_mode($mode);
+        $fixedDays = max(1, min(10, (int) $fixedDays));
+        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET trust_unlock_mode = '" . mysqli_real_escape_string($conn, $mode) . "', trust_unlock_fixed_days = " . $fixedDays . " WHERE id = 1");
+    }
+}
+
+if (!function_exists('mka_suite_get_radius_alert_enabled')) {
+    function mka_suite_get_radius_alert_enabled($conn = null)
+    {
+        if (!($conn instanceof mysqli)) $conn = mka_suite_connect_db();
+        if (!($conn instanceof mysqli)) return 's';
+        mka_suite_ensure_layout_column($conn);
+        $query = @mysqli_query($conn, "SELECT radius_alert_enabled FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        if ($query && ($row = mysqli_fetch_assoc($query))) return strtolower((string) $row['radius_alert_enabled']) === 'n' ? 'n' : 's';
+        return 's';
+    }
+}
+
+if (!function_exists('mka_suite_set_radius_alert_enabled')) {
+    function mka_suite_set_radius_alert_enabled($conn, $enabled)
+    {
+        if (!($conn instanceof mysqli)) return false;
+        mka_suite_ensure_layout_column($conn);
+        $enabled = strtolower((string) $enabled) === 'n' ? 'n' : 's';
+        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET radius_alert_enabled = '" . $enabled . "' WHERE id = 1");
     }
 }
 
