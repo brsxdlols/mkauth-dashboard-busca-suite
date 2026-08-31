@@ -47,8 +47,9 @@ $dashTopMenuAliases = [
     'branco' => 'light',
     'claro' => 'light',
     'light' => 'light',
-    'azul' => 'primary',
+    'verde' => 'primary',
     'primary' => 'primary',
+    'azul' => 'info',
     'ciano' => 'info',
     'info' => 'info',
     'amarelo' => 'warning',
@@ -108,8 +109,8 @@ nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
 }
 /* Mantem a cor escolhida no tema mesmo quando o CSS do MK-Auth a sobrescreve. */
 #mkauth-dashboard-navbar.is-black { background-color: #0b0b0c !important; color: #fff !important; }
-#mkauth-dashboard-navbar.is-primary { background-color: #1677e8 !important; color: #fff !important; }
-#mkauth-dashboard-navbar.is-info { background-color: #1592b8 !important; color: #fff !important; }
+#mkauth-dashboard-navbar.is-primary { background-color: #00d1b2 !important; color: #fff !important; }
+#mkauth-dashboard-navbar.is-info { background-color: #1677e8 !important; color: #fff !important; }
 #mkauth-dashboard-navbar.is-warning { background-color: #ffd95a !important; color: #3d3210 !important; }
 #mkauth-dashboard-navbar.is-danger { background-color: #ff3860 !important; color: #fff !important; }
 #mkauth-dashboard-navbar.is-light { background-color: #f8fafc !important; color: #1f2937 !important; }
