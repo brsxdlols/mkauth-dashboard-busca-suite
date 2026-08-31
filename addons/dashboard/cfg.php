@@ -100,6 +100,10 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
         .cfg-shortcut-row .input-group-text { color: var(--cfg-muted); font-size: 11px; font-weight: 700; }
         .cfg-shortcut-row .form-control { font-size: 13px; }
+        .cfg-shortcut-row > .form-control {
+            width: 100% !important;
+            min-width: 0 !important;
+        }
         .cfg-actions {
             position: sticky; bottom: 10px; z-index: 20; display: flex; justify-content: flex-end;
             gap: 10px; margin: 20px 0; padding: 12px; border: 1px solid var(--cfg-border);
