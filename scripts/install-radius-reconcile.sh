@@ -3,6 +3,8 @@ set -eu
 
 SCRIPT_DIR="/opt/mk-auth/scripts"
 SCRIPT_FILE="$SCRIPT_DIR/mkauth_radius_ppp_reconcile.php"
+TEST_WRAPPER="/usr/local/sbin/mkauth-radius-test"
+TEST_SUDOERS="/etc/sudoers.d/mkauth-radius-test"
 CRON_FILE="/etc/cron.d/mkauth-radius-ppp-reconcile"
 LEGACY_CRON_FILE="/etc/cron.d/sistel-radius-ppp-reconcile"
 LEGACY_SCRIPT_FILE="$SCRIPT_DIR/sistel_radius_ppp_reconcile.php"
@@ -282,9 +284,25 @@ foreach ($nasRows as $nas) {
     $api = new RouterosMiniApi($cfg['timeout']);
 
     if (!$api->connect($router, $cfg['api_user'], $password, $cfg['api_port'])) {
+        $pingOutput = array();
+        $pingCode = 1;
+        @exec('ping -c 1 -W 1 ' . escapeshellarg($router) . ' 2>&1', $pingOutput, $pingCode);
+        if ($pingCode !== 0) {
+            $reason = 'Sem ping até o IP';
+        } else {
+            $socketError = 0;
+            $socketMessage = '';
+            $socket = @fsockopen($router, (int)$cfg['api_port'], $socketError, $socketMessage, 2);
+            if (!is_resource($socket)) {
+                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indisponível';
+            } else {
+                fclose($socket);
+                $reason = 'Usuário ou senha da API inválidos';
+            }
+        }
         $stats['routers_fail']++;
-        $failedRouters[] = array('router' => $router, 'name' => $routerName);
-        log_line("ROUTER_FAIL router=$router name=\"$routerName\"");
+        $failedRouters[] = array('router' => $router, 'name' => $routerName, 'reason' => $reason);
+        log_line("ROUTER_FAIL router=$router name=\"$routerName\" reason=\"$reason\"");
         continue;
     }
 
@@ -390,6 +408,24 @@ PHP
 
 chmod 755 "$SCRIPT_FILE"
 php -l "$SCRIPT_FILE"
+
+PHP_BIN="$(command -v php)"
+cat > "$TEST_WRAPPER" <<EOF
+#!/bin/sh
+exec "$PHP_BIN" "$SCRIPT_FILE" --apply
+EOF
+chmod 755 "$TEST_WRAPPER"
+
+: > "$TEST_SUDOERS"
+for web_user in www-data apache; do
+  if id "$web_user" >/dev/null 2>&1; then
+    echo "$web_user ALL=(root) NOPASSWD: $TEST_WRAPPER" >> "$TEST_SUDOERS"
+  fi
+done
+chmod 440 "$TEST_SUDOERS"
+if command -v visudo >/dev/null 2>&1; then
+  visudo -cf "$TEST_SUDOERS"
+fi
 
 cat > "$DASHBOARD_STATUS" <<'PHP'
 <?php
