@@ -547,6 +547,51 @@
         gap: 8px;
     }
 
+    .contract-inline-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 27px;
+        padding: 5px 10px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none !important;
+        white-space: nowrap;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    a.contract-inline-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(22, 101, 52, .16);
+    }
+
+    .contract-inline-badge.contract-active {
+        color: #087443;
+        background: #e5f8ee;
+        border-color: #aee7c8;
+    }
+
+    .contract-inline-badge.contract-warning {
+        color: #8a5a00;
+        background: #fff5d8;
+        border-color: #f5d889;
+    }
+
+    .contract-inline-badge.contract-expired {
+        color: #b42318;
+        background: #fdebec;
+        border-color: #f4b9bd;
+    }
+
+    .contract-inline-badge.contract-missing {
+        color: #586b7f;
+        background: #edf2f7;
+        border-color: #d9e2ec;
+    }
+
     .client-address-col .map-link-btn {
         margin-top: 4px;
     }
