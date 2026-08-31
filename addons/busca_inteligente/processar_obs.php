@@ -1,10 +1,26 @@
 <?php
 require_once('database/db_connect.php');
+require_once __DIR__ . '/../shared/layout_mode.php';
 
 // Verifica se os dados foram enviados via POST.
-if (isset($_POST['login']) && isset($_POST['data_desbloqueio'])) {
+if (isset($_POST['login'])) {
     $login = mysqli_real_escape_string($conn, $_POST['login']);
-    $dataDesbloqueio = $_POST['data_desbloqueio']; // A data será passada como string no formato 'YYYY-MM-DD'
+    $trustSettings = mka_suite_get_trust_unlock_settings($conn);
+    $configuredMode = $trustSettings['mode'];
+    $requestedMode = $configuredMode === 'all' ? (isset($_POST['unlock_choice']) ? $_POST['unlock_choice'] : 'days') : $configuredMode;
+
+    if ($configuredMode === 'fixed') {
+        $days = $trustSettings['fixed_days'];
+        $dataDesbloqueio = date('Y-m-d', strtotime('+' . $days . ' days'));
+    } elseif ($requestedMode === 'days') {
+        $days = isset($_POST['dias_desbloqueio']) ? (int) $_POST['dias_desbloqueio'] : 0;
+        if ($days < 1 || $days > 10) die('O período deve estar entre 1 e 10 dias.');
+        $dataDesbloqueio = date('Y-m-d', strtotime('+' . $days . ' days'));
+    } else {
+        $dataDesbloqueio = isset($_POST['data_desbloqueio']) ? $_POST['data_desbloqueio'] : '';
+        $validDate = DateTime::createFromFormat('Y-m-d', $dataDesbloqueio);
+        if (!$validDate || $validDate->format('Y-m-d') !== $dataDesbloqueio) die('Data de desbloqueio inválida.');
+    }
 
     // Valida se a data é válida.
     $dataAtual = date('Y-m-d');
