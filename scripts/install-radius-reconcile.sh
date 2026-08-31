@@ -3,8 +3,6 @@ set -eu
 
 SCRIPT_DIR="/opt/mk-auth/scripts"
 SCRIPT_FILE="$SCRIPT_DIR/mkauth_radius_ppp_reconcile.php"
-TEST_WRAPPER="/usr/local/sbin/mkauth-radius-test"
-TEST_SUDOERS="/etc/sudoers.d/mkauth-radius-test"
 CRON_FILE="/etc/cron.d/mkauth-radius-ppp-reconcile"
 LEGACY_CRON_FILE="/etc/cron.d/sistel-radius-ppp-reconcile"
 LEGACY_SCRIPT_FILE="$SCRIPT_DIR/sistel_radius_ppp_reconcile.php"
@@ -27,9 +25,8 @@ FALLBACK_API_PASS="${FALLBACK_API_PASS:-123456}"
 PPP_SERVICES="${PPP_SERVICES:-pppoe}"
 CRON_INTERVAL="${CRON_INTERVAL:-*/2 * * * *}"
 
-mkdir -p "$SCRIPT_DIR" "$BACKUP_DIR" "$STATE_DIR" "$DASHBOARD_DIR" /etc/sudoers.d
+mkdir -p "$SCRIPT_DIR" "$BACKUP_DIR" "$STATE_DIR" "$DASHBOARD_DIR"
 chmod 755 "$STATE_DIR"
-chmod 755 /etc/sudoers.d
 
 if [ -f "$SCRIPT_FILE" ]; then
   cp -a "$SCRIPT_FILE" "$BACKUP_DIR/$(basename "$SCRIPT_FILE").bak"
@@ -409,24 +406,6 @@ PHP
 
 chmod 755 "$SCRIPT_FILE"
 php -l "$SCRIPT_FILE"
-
-PHP_BIN="$(command -v php)"
-cat > "$TEST_WRAPPER" <<EOF
-#!/bin/sh
-exec "$PHP_BIN" "$SCRIPT_FILE" --apply
-EOF
-chmod 755 "$TEST_WRAPPER"
-
-: > "$TEST_SUDOERS"
-for web_user in www-data apache; do
-  if id "$web_user" >/dev/null 2>&1; then
-    echo "$web_user ALL=(root) NOPASSWD: $TEST_WRAPPER" >> "$TEST_SUDOERS"
-  fi
-done
-chmod 440 "$TEST_SUDOERS"
-if command -v visudo >/dev/null 2>&1; then
-  visudo -cf "$TEST_SUDOERS"
-fi
 
 cat > "$DASHBOARD_STATUS" <<'PHP'
 <?php
