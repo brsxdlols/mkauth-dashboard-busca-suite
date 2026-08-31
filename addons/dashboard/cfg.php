@@ -495,8 +495,10 @@ if (isset($_SESSION['MM_Usuario'])) {
 
             //debug($_POST['link']);
             //debug($_POST['texto']);
-            $links_db = implode(',', $_POST['link']);
-            $textos_db = implode(',', $_POST['texto']);
+            $posted_links = isset($_POST['link']) && is_array($_POST['link']) ? $_POST['link'] : $links;
+            $posted_textos = isset($_POST['texto']) && is_array($_POST['texto']) ? $_POST['texto'] : $textos;
+            $links_db = implode(',', $posted_links);
+            $textos_db = implode(',', $posted_textos);
 
 
             //debug($links_db);
