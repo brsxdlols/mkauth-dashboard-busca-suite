@@ -1078,19 +1078,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         // echo $score;
 
         if ($score < ($max_score / 3)) {
-            $showScore = "<span class='alert_red'>$score</span>";
+            $showScore = "<span class='client-score is-critical' title='Score crítico'>$score</span>";
         } else if ($score >= ($max_score / 3) && $score < ($max_score / 2.5)) {
-            $showScore = "<span class='alert_orange_red'>$score</span>";
+            $showScore = "<span class='client-score is-low' title='Score baixo'>$score</span>";
         } else if ($score >= ($max_score / 2.5) && $score < ($max_score / 2)) {
-            $showScore = "<span class='alert_orange'>$score</span>";
+            $showScore = "<span class='client-score is-attention' title='Score em atenção'>$score</span>";
         } else if ($score >= ($max_score / 2) && $score < ($max_score / 1.4)) {
-            $showScore = "<span class='alert_yellow'>$score</span>";
+            $showScore = "<span class='client-score is-regular' title='Score regular'>$score</span>";
         } else if ($score >= ($max_score / 1.4) && $score < ($max_score / 1.05)) {
-            $showScore = "<span class='alert_green'>$score</span>";
+            $showScore = "<span class='client-score is-good' title='Score bom'>$score</span>";
         } else {
-            $showScore = "<span class='alert_green2'>$score
-        <img src='img/icon_trofeu_2.png' title='Melhores Clientes' class='icon'/>
-        </span>";
+            $showScore = "<span class='client-score is-excellent' title='Score excelente'>$score <i class='bi bi-award-fill client-score-trophy' aria-hidden='true'></i></span>";
         }
 
 
