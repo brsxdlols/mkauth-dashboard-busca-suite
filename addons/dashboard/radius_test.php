@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-require_once __DIR__ . '/../busca_inteligente/api/routeros_api.class.php';
+require_once __DIR__ . '/../shared/routeros_mini_api.php';
 
 // Alguns MK-AUTH encerram ou substituem a conexão durante os includes do painel.
 // O diagnóstico usa uma conexão própria para funcionar da mesma forma em PHP 7 e PHP 8.
@@ -49,11 +49,7 @@ if ($query) {
                 break;
             }
         }
-        $api = new RouterosAPI();
-        $api->debug = false;
-        $api->timeout = 3;
-        $api->attempts = 1;
-        $api->delay = 0;
+        $api = new MkaRouterosMiniApi(3);
         $connected = @$api->connect($ip, $apiUser, $apiPassword);
         if ($connected) {
             $api->disconnect();
