@@ -12,10 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/../busca_inteligente/api/routeros_api.class.php';
 
+// Alguns MK-AUTH encerram ou substituem a conexão durante os includes do painel.
+// O diagnóstico usa uma conexão própria para funcionar da mesma forma em PHP 7 e PHP 8.
+if (!isset($conn) || !($conn instanceof mysqli) || !@mysqli_ping($conn)) {
+    $conn = @mysqli_connect('127.0.0.1', 'root', 'vertrigo', 'mkradius');
+}
+
 $routers = array();
 $routersOk = 0;
 $routersFail = 0;
-$query = @mysqli_query($conn, "SELECT * FROM nas WHERE nasname IS NOT NULL AND nasname <> '' ORDER BY nasname");
+$query = $conn ? @mysqli_query($conn, "SELECT * FROM nas WHERE nasname IS NOT NULL AND nasname <> '' ORDER BY nasname") : false;
+$queryError = (!$query && $conn) ? trim((string) mysqli_error($conn)) : '';
 if ($query) {
     while ($row = mysqli_fetch_assoc($query)) {
         $ip = trim((string) $row['nasname']);
@@ -82,7 +89,9 @@ $queryOk = $query !== false;
 echo json_encode(array(
     'ok' => $queryOk && $routersFail === 0,
     'executed' => $queryOk,
-    'message' => !$queryOk ? 'Não foi possível consultar os ramais cadastrados.' : ($routersFail === 0 ? 'Todas as conexões de ramais estão corretas.' : $routersFail . ' conexão(ões) precisam de correção.'),
+    'message' => !$queryOk
+        ? 'Não foi possível consultar os ramais cadastrados.' . ($queryError !== '' ? ' Detalhe: ' . $queryError : ' Verifique a conexão com o banco mkradius.')
+        : ($routersFail === 0 ? 'Todas as conexões de ramais estão corretas.' : $routersFail . ' conexão(ões) precisam de correção.'),
     'generated_at' => date('Y-m-d H:i:s'),
     'stats' => array('routers_ok' => $routersOk, 'routers_fail' => $routersFail),
     'routers' => $routers
