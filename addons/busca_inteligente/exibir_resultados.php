@@ -935,6 +935,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $sem_carne = $parcelas_validas && $num_parcelas === 0;
 
         $contract_row = mka_contract_get_latest($link, $uuid_cliente, $login_cliente);
+        if (!$contract_row) {
+            // Usa a mesma origem da tela de Contratos: PDFs assinados pelo MK-AUTH.
+            $contract_row = mka_contract_get_native_signed($uuid_cliente);
+        }
         $contract_status = mka_contract_build_status($contract_row);
         $contract_inline = mka_contract_render_inline($contract_status);
 
