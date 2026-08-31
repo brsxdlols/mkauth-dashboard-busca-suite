@@ -87,26 +87,41 @@ if (!function_exists('mka_contract_get_latest')) {
 if (!function_exists('mka_contract_get_native_signed')) {
     function mka_contract_get_native_signed($uuid_cliente, $contract_name = '', $base_dir = '/opt/mk-auth/admin/arquivos')
     {
+        static $signed_files_by_base = array();
+
         $uuid = trim((string) $uuid_cliente);
         if ($uuid === '' || strpos($uuid, '..') !== false || preg_match('/[\\\\\/]/', $uuid)) {
             return null;
         }
 
-        $directory = rtrim($base_dir, '/\\\\') . DIRECTORY_SEPARATOR . $uuid;
-        $files = glob($directory . DIRECTORY_SEPARATOR . 'contrato_*.pdf');
-        if (!$files) {
+        $normalized_base = rtrim($base_dir, '/\\\\');
+        if (!isset($signed_files_by_base[$normalized_base])) {
+            $signed_files_by_base[$normalized_base] = array();
+            $all_files = glob($normalized_base . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'contrato_*.pdf');
+            if (is_array($all_files)) {
+                foreach ($all_files as $candidate) {
+                    $candidate_uuid = basename(dirname($candidate));
+                    $candidate_time = (int) @filemtime($candidate);
+                    if ($candidate_time <= 0) {
+                        continue;
+                    }
+                    if (!isset($signed_files_by_base[$normalized_base][$candidate_uuid])
+                        || $candidate_time > $signed_files_by_base[$normalized_base][$candidate_uuid]['timestamp']) {
+                        $signed_files_by_base[$normalized_base][$candidate_uuid] = array(
+                            'file' => $candidate,
+                            'timestamp' => $candidate_time,
+                        );
+                    }
+                }
+            }
+        }
+
+        if (!isset($signed_files_by_base[$normalized_base][$uuid])) {
             return null;
         }
 
-        usort($files, function ($left, $right) {
-            return (int) @filemtime($right) - (int) @filemtime($left);
-        });
-
-        $file = $files[0];
-        $timestamp = (int) @filemtime($file);
-        if ($timestamp <= 0) {
-            return null;
-        }
+        $file = $signed_files_by_base[$normalized_base][$uuid]['file'];
+        $timestamp = $signed_files_by_base[$normalized_base][$uuid]['timestamp'];
 
         $start_date = date('Y-m-d', $timestamp);
         $has_fidelity = stripos((string) $contract_name, 'fidelidade') !== false;
@@ -222,7 +237,18 @@ if (!function_exists('mka_contract_render_inline')) {
             $label .= ' até ' . $end_date;
         }
 
-        return "<b>Contrato:</b> <span class=\"{$status_info['class']}\">" . mka_contract_escape($label) . "</span>";
+        $status_class = isset($status_info['class']) ? $status_info['class'] : 'contract-missing';
+        $pdf_url = isset($status_info['pdf_url']) ? trim((string) $status_info['pdf_url']) : '';
+        $content = '<i class="fa fa-file-text-o" aria-hidden="true"></i><span>' . mka_contract_escape($label) . '</span>';
+
+        if ($pdf_url !== '') {
+            return '<a class="contract-inline-badge ' . mka_contract_escape($status_class)
+                . '" href="' . mka_contract_escape($pdf_url)
+                . '" target="_blank" rel="noopener" title="Abrir contrato assinado">'
+                . $content . '<i class="fa fa-external-link" aria-hidden="true"></i></a>';
+        }
+
+        return '<span class="contract-inline-badge ' . mka_contract_escape($status_class) . '">' . $content . '</span>';
     }
 }
 
