@@ -27,8 +27,9 @@ FALLBACK_API_PASS="${FALLBACK_API_PASS:-123456}"
 PPP_SERVICES="${PPP_SERVICES:-pppoe}"
 CRON_INTERVAL="${CRON_INTERVAL:-*/2 * * * *}"
 
-mkdir -p "$SCRIPT_DIR" "$BACKUP_DIR" "$STATE_DIR" "$DASHBOARD_DIR"
+mkdir -p "$SCRIPT_DIR" "$BACKUP_DIR" "$STATE_DIR" "$DASHBOARD_DIR" /etc/sudoers.d
 chmod 755 "$STATE_DIR"
+chmod 755 /etc/sudoers.d
 
 if [ -f "$SCRIPT_FILE" ]; then
   cp -a "$SCRIPT_FILE" "$BACKUP_DIR/$(basename "$SCRIPT_FILE").bak"
