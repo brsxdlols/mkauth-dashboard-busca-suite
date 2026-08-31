@@ -54,6 +54,9 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     mka_suite_ensure_layout_column($link);
     $suite_layout_mode = mka_suite_get_layout_mode($link);
     $suite_live_search = mka_suite_get_live_search($link);
+    $trust_unlock_settings = mka_suite_get_trust_unlock_settings($link);
+    $trust_unlock_mode = $trust_unlock_settings['mode'];
+    $trust_unlock_fixed_days = $trust_unlock_settings['fixed_days'];
 
     // Busca Inteligente
     $query_atual_cfg = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg ORDER BY id DESC LIMIT 1");
@@ -82,6 +85,8 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
     $suite_layout_mode = mka_suite_normalize_layout_mode($suite_layout_mode);
     $suite_live_search = isset($_POST['suite_live_search']) ? mka_suite_normalize_live_search($_POST['suite_live_search']) : $suite_live_search;
+    $trust_unlock_mode = isset($_POST['trust_unlock_mode']) ? mka_suite_normalize_trust_unlock_mode($_POST['trust_unlock_mode']) : $trust_unlock_mode;
+    $trust_unlock_fixed_days = isset($_POST['trust_unlock_fixed_days']) ? max(1, min(10, (int) $_POST['trust_unlock_fixed_days'])) : $trust_unlock_fixed_days;
     $suite_top_spacing = isset($_POST['suite_top_spacing']) ? mka_suite_normalize_top_spacing($_POST['suite_top_spacing']) : mka_suite_get_top_spacing($link);
     $suite_header_spacing = isset($_POST['suite_header_spacing']) ? mka_suite_normalize_header_spacing($_POST['suite_header_spacing']) : mka_suite_get_header_spacing($link);
 
@@ -164,6 +169,27 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
                         <tr>
                             <td>Espaço antes dos menus da Busca (px) <input type="number" name="suite_top_spacing" min="0" max="120" step="1" value="<?php echo (int) $suite_top_spacing; ?>"></td>
+                        </tr>
+
+                        <tr>
+                            <td class="">Desbloqueio de confiança
+                                <select class="" name="trust_unlock_mode" id="trust_unlock_mode">
+                                    <option value="days" <?php echo $trust_unlock_mode === 'days' ? 'selected' : ''; ?>>Listagem de dias (1 a 10)</option>
+                                    <option value="date" <?php echo $trust_unlock_mode === 'date' ? 'selected' : ''; ?>>Data personalizada</option>
+                                    <option value="fixed" <?php echo $trust_unlock_mode === 'fixed' ? 'selected' : ''; ?>>Dia fixo definido</option>
+                                    <option value="all" <?php echo $trust_unlock_mode === 'all' ? 'selected' : ''; ?>>Todas as opções</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr id="trust_unlock_fixed_row">
+                            <td class="">Dias fixos para o desbloqueio
+                                <select class="" name="trust_unlock_fixed_days">
+                                    <?php for ($day = 1; $day <= 10; $day++) { ?>
+                                        <option value="<?php echo $day; ?>" <?php echo $trust_unlock_fixed_days === $day ? 'selected' : ''; ?>><?php echo $day . ($day === 1 ? ' dia' : ' dias'); ?></option>
+                                    <?php } ?>
+                                </select>
+                            </td>
                         </tr>
 
                         <tr>
@@ -366,6 +392,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
         mka_suite_set_layout_mode($link, $suite_layout_mode);
         mka_suite_set_live_search($link, $suite_live_search);
+        mka_suite_set_trust_unlock_settings($link, $trust_unlock_mode, $trust_unlock_fixed_days);
         mka_suite_set_top_spacing($link, $suite_top_spacing);
         mka_suite_set_header_spacing($link, $suite_header_spacing);
     }
@@ -404,6 +431,18 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
     <script src="../../menu.js.php"></script>
 <?php include('../../rodape.php'); ?>
+<script>
+    (function () {
+        var mode = document.getElementById('trust_unlock_mode');
+        var fixedRow = document.getElementById('trust_unlock_fixed_row');
+        if (!mode || !fixedRow) return;
+        function refreshFixedDays() {
+            fixedRow.style.display = mode.value === 'fixed' ? '' : 'none';
+        }
+        mode.addEventListener('change', refreshFixedDays);
+        refreshFixedDays();
+    })();
+</script>
 </body>
 
 </html>
