@@ -87,7 +87,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         .cfg-shortcuts { counter-reset: shortcut; }
         .cfg-shortcut-row {
             counter-increment: shortcut; display: grid !important;
-            grid-template-columns: 46px 76px minmax(220px, 1.35fr) 92px minmax(180px, .65fr);
+            grid-template-columns: 46px 58px 76px minmax(220px, 1.35fr) 82px minmax(180px, .65fr);
             gap: 0; margin-bottom: 8px !important; padding: 0 !important;
             border: 1px solid var(--cfg-border); border-radius: 11px; overflow: hidden; background: #fbfdff;
         }
@@ -113,8 +113,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         .cfg-actions .btn { width: auto; min-width: 170px; min-height: 44px; border-radius: 10px; font-weight: 700; }
         @media (max-width: 991px) {
             .cfg-settings-grid > [class*="col-"] { width: 50%; }
-            .cfg-shortcut-row { grid-template-columns: 42px 68px minmax(160px, 1fr); }
-            .cfg-shortcut-row .input-group-text:nth-of-type(3), .cfg-shortcut-row .form-control:last-child { grid-column: auto; }
+            .cfg-shortcut-row { grid-template-columns: 42px 48px 64px minmax(150px, 1.2fr) 70px minmax(130px, .8fr); }
         }
         @media (max-width: 680px) {
             .cfg-shell { padding: 14px 10px 30px; }
