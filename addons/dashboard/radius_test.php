@@ -15,12 +15,33 @@ require_once __DIR__ . '/../busca_inteligente/api/routeros_api.class.php';
 $routers = array();
 $routersOk = 0;
 $routersFail = 0;
-$query = @mysqli_query($conn, "SELECT nasname, shortname, userapi, senha FROM nas WHERE nasname IS NOT NULL AND nasname <> '' ORDER BY shortname, nasname");
+$query = @mysqli_query($conn, "SELECT * FROM nas WHERE nasname IS NOT NULL AND nasname <> '' ORDER BY nasname");
 if ($query) {
     while ($row = mysqli_fetch_assoc($query)) {
         $ip = trim((string) $row['nasname']);
-        $apiUser = trim((string) $row['userapi']) !== '' ? trim((string) $row['userapi']) : 'mkauth';
-        $apiPassword = trim((string) $row['senha']) !== '' ? trim((string) $row['senha']) : '123456';
+        $routerName = '';
+        foreach (array('shortname', 'descricao', 'nome') as $nameField) {
+            if (isset($row[$nameField]) && trim((string) $row[$nameField]) !== '') {
+                $routerName = trim((string) $row[$nameField]);
+                break;
+            }
+        }
+        if ($routerName === '') $routerName = $ip;
+
+        $apiUser = 'mkauth';
+        foreach (array('userapi', 'usuario', 'user', 'login') as $userField) {
+            if (isset($row[$userField]) && trim((string) $row[$userField]) !== '') {
+                $apiUser = trim((string) $row[$userField]);
+                break;
+            }
+        }
+        $apiPassword = '123456';
+        foreach (array('senha', 'password', 'pass', 'secret') as $passwordField) {
+            if (isset($row[$passwordField]) && trim((string) $row[$passwordField]) !== '') {
+                $apiPassword = trim((string) $row[$passwordField]);
+                break;
+            }
+        }
         $api = new RouterosAPI();
         $api->debug = false;
         $api->timeout = 3;
@@ -53,7 +74,7 @@ if ($query) {
                 $reason = 'Usuário ou senha da API inválidos';
             }
         }
-        $routers[] = array('router' => $ip, 'name' => trim((string) $row['shortname']), 'ok' => $connected, 'reason' => $reason);
+        $routers[] = array('router' => $ip, 'name' => $routerName, 'ok' => $connected, 'reason' => $reason);
     }
 }
 
