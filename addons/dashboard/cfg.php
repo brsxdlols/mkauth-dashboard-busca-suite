@@ -429,7 +429,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 <div class="row mb-3">
                     <div class="col-12">
                         <p class="lead text-center">Diagnóstico dos Ramais / NAS</p>
-                        <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections"><i class="fa fa-plug"></i> Testar conexões de todos os ramais</button>
+                        <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections" onclick="return testRadiusConnections(this);"><i class="fa fa-plug"></i> Testar conexões de todos os ramais</button>
                         <div id="radius-test-result" class="mt-2" aria-live="polite"></div>
                     </div>
                 </div>
@@ -544,24 +544,53 @@ if (isset($_SESSION['MM_Usuario'])) {
 
     <script>
         //$('#systopo').hide();
-        $('#test-radius-connections').on('click', function () {
-            var button = $(this);
-            var result = $('#radius-test-result');
-            button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Testando todos os ramais...');
-            result.html('<div class="alert alert-info">Executando ping, porta e autenticação da API.</div>');
-            $.ajax({url: 'radius_test.php', method: 'POST', dataType: 'json'})
-                .done(function (response) {
-                    var rows = (response.routers || []).map(function (router) {
+        function radiusEscape(value) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(value == null ? '' : String(value)));
+            return div.innerHTML;
+        }
+
+        function testRadiusConnections(button) {
+            var result = document.getElementById('radius-test-result');
+            button.disabled = true;
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testando todos os ramais...';
+            result.innerHTML = '<div class="alert alert-info">Executando ping, porta e autenticação da API. Aguarde...</div>';
+
+            var request = new XMLHttpRequest();
+            request.open('POST', 'radius_test.php', true);
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            request.onreadystatechange = function () {
+                if (request.readyState !== 4) return;
+                button.disabled = false;
+                button.innerHTML = '<i class="fa fa-plug"></i> Testar conexões de todos os ramais';
+                if (request.status < 200 || request.status >= 300) {
+                    result.innerHTML = '<div class="alert alert-danger">Falha HTTP ' + request.status + '. Não foi possível executar o teste.</div>';
+                    return;
+                }
+                try {
+                    var response = JSON.parse(request.responseText);
+                    var rows = '';
+                    var routers = response.routers || [];
+                    for (var i = 0; i < routers.length; i++) {
+                        var router = routers[i];
                         var state = router.ok ? '<span class="text-success"><b>OK</b></span>' : '<span class="text-danger"><b>Falha</b></span>';
-                        return '<tr><td>' + $('<div>').text(router.name || '-').html() + '</td><td>' + $('<div>').text(router.router || '-').html() + '</td><td>' + state + '</td><td>' + $('<div>').text(router.reason || '').html() + '</td></tr>';
-                    }).join('');
+                        rows += '<tr><td>' + radiusEscape(router.name || '-') + '</td><td>' + radiusEscape(router.router || '-') + '</td><td>' + state + '</td><td>' + radiusEscape(router.reason || '') + '</td></tr>';
+                    }
                     var level = response.ok ? 'success' : (response.executed ? 'warning' : 'danger');
-                    result.html('<div class="alert alert-' + level + '">' + $('<div>').text(response.message || '').html() + '</div>' +
-                        '<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Ramal</th><th>IP</th><th>Status</th><th>Diagnóstico</th></tr></thead><tbody>' + rows + '</tbody></table></div>');
-                })
-                .fail(function () { result.html('<div class="alert alert-danger">Não foi possível executar o teste de conexões.</div>'); })
-                .always(function () { button.prop('disabled', false).html('<i class="fa fa-plug"></i> Testar conexões de todos os ramais'); });
-        });
+                    result.innerHTML = '<div class="alert alert-' + level + '">' + radiusEscape(response.message || '') + '</div>' +
+                        '<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Ramal</th><th>IP</th><th>Status</th><th>Diagnóstico</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+                } catch (error) {
+                    result.innerHTML = '<div class="alert alert-danger">O servidor retornou uma resposta inválida. Atualize a página e tente novamente.</div>';
+                }
+            };
+            request.onerror = function () {
+                button.disabled = false;
+                button.innerHTML = '<i class="fa fa-plug"></i> Testar conexões de todos os ramais';
+                result.innerHTML = '<div class="alert alert-danger">Falha de comunicação com o servidor.</div>';
+            };
+            request.send('action=test');
+            return false;
+        }
     </script>
 </body>
 
