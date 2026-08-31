@@ -32,6 +32,20 @@ install_client_audit_hook() {
   printf '%s\n' "${hook_line}" >> "${target}"
 }
 
+install_branding() {
+  local footer="${TARGET_ADMIN_DIR}/rodape.php"
+
+  if [ -f "${footer}" ]; then
+    sed -i "s#REDECLOUD &copy; <?= date('Y') ?> - Desenvolvido por redecloud.net.br\.#VPSCLOUD - BRUNO FONTES NETWORK CONSULTING \&copy; <?= date('Y') ?> -#g" "${footer}"
+    sed -i 's/REDECLOUD/VPSCLOUD - BRUNO FONTES NETWORK CONSULTING/g; s/redecloud\.net\.br/VPSCLOUD - BRUNO FONTES NETWORK CONSULTING/g' "${footer}"
+  fi
+
+  if [ -d "${TARGET_ADDONS_DIR}" ]; then
+    find "${TARGET_ADDONS_DIR}" -type f -name manifest.json -exec \
+      sed -i 's/"author": "REDECLOUD"/"author": "VPSCLOUD - BRUNO FONTES NETWORK CONSULTING"/g' {} +
+  fi
+}
+
 install_reconcile() {
   echo "[5/5] Instalando reconcile de Radius"
   local reconcile_installer="${SCRIPT_DIR}/scripts/install-radius-reconcile.sh"
@@ -58,6 +72,9 @@ fi
 if [ -f "${TARGET_ADMIN_DIR}/scripts/mk-auth.js" ]; then
   mkdir -p "${BACKUP_DIR}/admin/scripts"
   cp -a "${TARGET_ADMIN_DIR}/scripts/mk-auth.js" "${BACKUP_DIR}/admin/scripts/mk-auth.js"
+fi
+if [ -f "${TARGET_ADMIN_DIR}/rodape.php" ]; then
+  cp -a "${TARGET_ADMIN_DIR}/rodape.php" "${BACKUP_DIR}/admin/rodape.php"
 fi
 if [ -d "${TARGET_ADDONS_DIR}/dashboard" ]; then
   cp -a "${TARGET_ADDONS_DIR}/dashboard" "${BACKUP_DIR}/addons/dashboard"
@@ -89,6 +106,7 @@ cp -a "${SCRIPT_DIR}/addons/busca_inteligente-legado" "${TARGET_ADDONS_DIR}/busc
 rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 install_client_audit_hook
+install_branding
 
 echo "[4/4] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
