@@ -1512,7 +1512,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                     <div class="dashboard-ramal-panel">
                                         <div class="dashboard-ramal-title"><?= $nomeRamal; ?></div>
                                         <div class="dashboard-ramal-stats">
-                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=ramal%2B' . $key; ?>" class="dashboard-stat-card is-dark text-light">
+                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=ramal%2B' . $key; ?>" class="dashboard-stat-card is-primary text-light">
                                                 <div class="dashboard-stat-head">Total</div>
                                                 <div class="dashboard-stat-value"><?= $totGeral; ?></div>
                                                 <div class="dashboard-stat-foot"><?= $percTotalRamal; ?></div>
@@ -1522,7 +1522,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                 <div class="dashboard-stat-value"><?= $totOnline; ?></div>
                                                 <div class="dashboard-stat-foot"><?= $percOnlineRamal; ?></div>
                                             </a>
-                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=off%2B' . $key; ?>" class="dashboard-stat-card is-danger text-light">
+                                            <a href="<?= '/admin/addons/busca_inteligente/index.php?busca=off%2B' . $key; ?>" class="dashboard-stat-card is-dark text-light">
                                                 <div class="dashboard-stat-head">Offline</div>
                                                 <div class="dashboard-stat-value"><?= $totOffline; ?></div>
                                                 <div class="dashboard-stat-foot"><?= $percOfflineRamal; ?></div>
