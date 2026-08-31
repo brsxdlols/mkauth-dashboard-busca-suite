@@ -1770,6 +1770,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                             <a href="/admin/cliente_ins<?php echo $ext_mk; ?>?new_install=<?php echo $inst_uuid; ?>" class="btn-link text-decoration-none" target="_blank">Incluir Cliente</a>
 
+                                            <a href="#" class="btn-link text-danger text-decoration-none delete-installation-request" data-solic="<?php echo htmlspecialchars($inst_uuid, ENT_QUOTES, 'UTF-8'); ?>" title="Excluir esta solicitação"><i class="bi bi-trash3"></i> Excluir</a>
+
                                         </strong>
                                     </td>
                                     <td class=''><?php echo $inst_disponivel; ?></td>
@@ -1921,10 +1923,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
             });
             // abre link excluir
-            jQuery(document).on('click', '#link_excluir', function() {
+            jQuery(document).on('click', '#link_excluir, .delete-installation-request', function() {
                 var uuid_solic = jQuery(this).attr("data-solic");
                 if (confirm('Realmente deseja excluir esta solicitacao?')) {
-                    mka_link('../../executar_mka.hhvm?acao=delsolic&uuid=' + uuid_solic);
+                    mka_link('../../executar_mka.hhvm?acao=delsolic&uuid=' + encodeURIComponent(uuid_solic));
                     return false;
                 }
             });
