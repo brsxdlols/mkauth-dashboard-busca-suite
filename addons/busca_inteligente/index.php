@@ -26,7 +26,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .smart-search-form .form-select { border-color:#cbd8e8; border-radius:10px; }
         .smart-search-form .smart-search-button { border:0; border-radius:11px; background:#1268db; color:#fff; font-weight:700; box-shadow:none; }
         .smart-search-form .smart-search-button:hover { background:#0f5fc8; }
-        .client-score { display:inline-flex; align-items:center; gap:5px; min-width:34px; padding:2px 7px 2px 6px; border:1px solid #d8e2ed; border-radius:999px; background:rgba(255,255,255,.72); color:#24364a; font-size:11px; font-weight:700; line-height:1.35; vertical-align:middle; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+        .client-score { display:inline-flex; align-items:center; gap:5px; min-width:70px; padding:3px 9px 3px 7px; border:1px solid #d8e2ed; border-radius:999px; background:rgba(255,255,255,.82); color:#24364a; font:inherit; font-size:11px; font-weight:700; line-height:1.35; vertical-align:middle; box-shadow:0 1px 2px rgba(15,23,42,.04); cursor:pointer; }
+        .client-score:hover { border-color:#9bb5d1; background:#fff; box-shadow:0 3px 9px rgba(15,23,42,.09); }
         .client-score::before { content:""; width:6px; height:6px; flex:0 0 6px; border-radius:50%; background:#94a3b8; }
         .client-score.is-critical::before { background:#e5484d; }
         .client-score.is-low::before { background:#f06a35; }
@@ -35,6 +36,22 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .client-score.is-good::before { background:#20a66a; }
         .client-score.is-excellent::before { background:#07834f; }
         .client-score-trophy { color:#c69214; font-size:10px; }
+        .score-modal { position:fixed; inset:0; z-index:1090; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.36); backdrop-filter:blur(3px); }
+        .score-modal[hidden] { display:none; }
+        .score-modal-card { width:min(460px,100%); overflow:hidden; border:1px solid #d8e3ef; border-radius:18px; background:#fff; box-shadow:0 24px 70px rgba(15,23,42,.23); }
+        .score-modal-head { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid #e7edf4; }
+        .score-modal-head h2 { margin:0; color:#20364f; font-size:16px; font-weight:750; }
+        .score-modal-close { border:0; border-radius:8px; background:#f1f5f9; color:#52667c; font-size:20px; line-height:28px; width:32px; height:32px; }
+        .score-modal-body { padding:20px; }
+        .score-modal-value { display:flex; align-items:baseline; justify-content:center; gap:7px; margin-bottom:18px; color:#20364f; }
+        .score-modal-value strong { font-size:34px; line-height:1; }
+        .score-history-label { margin-bottom:9px; color:#687b90; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+        .score-history-dots { display:flex; flex-wrap:wrap; gap:7px; min-height:14px; padding:14px; border:1px solid #e3eaf2; border-radius:12px; background:#f8fafc; }
+        .score-history-dot { width:11px; height:11px; border-radius:50%; box-shadow:0 0 0 2px #fff; }
+        .score-history-dot.is-late { background:#e5484d; }.score-history-dot.is-ontime { background:#94a3b8; }.score-history-dot.is-early { background:#20c963; }
+        .score-history-empty { color:#8494a7; font-size:12px; }
+        .score-history-legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; color:#607286; font-size:11px; }
+        .score-history-legend span { display:inline-flex; align-items:center; gap:5px; }.score-history-legend i { width:8px; height:8px; border-radius:50%; }
         @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } }
     </style>
 
@@ -47,6 +64,42 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
         <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
     </nav>
+
+    <div class="score-modal no_print" id="clientScoreModal" hidden role="dialog" aria-modal="true" aria-labelledby="clientScoreModalTitle">
+        <div class="score-modal-card">
+            <div class="score-modal-head"><h2 id="clientScoreModalTitle">Detalhes do Score</h2><button type="button" class="score-modal-close" aria-label="Fechar">&times;</button></div>
+            <div class="score-modal-body">
+                <div class="score-modal-value"><span>Score</span><strong id="clientScoreModalValue">0</strong></div>
+                <div class="score-history-label">Histórico dos últimos pagamentos</div>
+                <div class="score-history-dots" id="clientScoreHistory"></div>
+                <div class="score-history-legend"><span><i style="background:#e5484d"></i>Em atraso</span><span><i style="background:#94a3b8"></i>No vencimento</span><span><i style="background:#20c963"></i>Antecipado</span></div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function () {
+        var modal = document.getElementById('clientScoreModal');
+        var value = document.getElementById('clientScoreModalValue');
+        var history = document.getElementById('clientScoreHistory');
+        function addDots(total, cssClass, title) {
+            for (var i = 0; i < total; i++) { var dot = document.createElement('span'); dot.className = 'score-history-dot ' + cssClass; dot.title = title; history.appendChild(dot); }
+        }
+        function closeModal() { modal.hidden = true; document.body.style.overflow = ''; }
+        document.addEventListener('click', function (event) {
+            var trigger = event.target.closest('.client-score');
+            if (trigger) {
+                event.preventDefault(); history.innerHTML = ''; value.textContent = trigger.getAttribute('data-score') || '0';
+                addDots(parseInt(trigger.getAttribute('data-late') || '0', 10), 'is-late', 'Título pago em atraso');
+                addDots(parseInt(trigger.getAttribute('data-ontime') || '0', 10), 'is-ontime', 'Título pago no vencimento');
+                addDots(parseInt(trigger.getAttribute('data-early') || '0', 10), 'is-early', 'Título pago antecipadamente');
+                if (!history.children.length) history.innerHTML = '<span class="score-history-empty">Ainda não há pagamentos no histórico.</span>';
+                modal.hidden = false; document.body.style.overflow = 'hidden'; return;
+            }
+            if (event.target === modal || event.target.closest('.score-modal-close')) closeModal();
+        });
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
+    }());
+    </script>
 
    
     <?php
