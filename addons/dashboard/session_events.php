@@ -121,6 +121,95 @@ if ($query_events) {
     }
 }
 
+// Eventos automáticos de bloqueio/desbloqueio registrados pelo MK-BOT.
+// Além do motivo, informa se o cliente estava conectado e foi derrubado.
+$query_client_state_events = mysqli_query($conn, "
+    SELECT id, registro, data
+    FROM sis_logs
+    WHERE login = 'mk-bot'
+      AND (registro LIKE '%bloqueio do cliente%' OR registro LIKE '%desbloqueio do cliente%')
+    ORDER BY id DESC
+    LIMIT 12
+");
+
+if ($query_client_state_events) {
+    while ($state_event = mysqli_fetch_assoc($query_client_state_events)) {
+        $event_time = DateTime::createFromFormat('d/m/Y H:i:s', trim((string) $state_event['data']));
+        if (!$event_time || $event_time->getTimestamp() < (time() - 600)) {
+            continue;
+        }
+
+        $record = trim((string) $state_event['registro']);
+        if (!preg_match('/cliente(?:\s+em\s+observacao)?\s+([a-z0-9_.-]+)/i', $record, $login_match)) {
+            continue;
+        }
+
+        $client_login = trim($login_match[1]);
+        if ($client_login === '' || strtolower($client_login) === 'em') {
+            continue;
+        }
+
+        $safe_login = mysqli_real_escape_string($conn, $client_login);
+        $client_name = $client_login;
+        if ($client_query = mysqli_query($conn, "SELECT nome, login FROM sis_cliente WHERE LOWER(login) = LOWER('$safe_login') LIMIT 1")) {
+            if ($client_row = mysqli_fetch_assoc($client_query)) {
+                $client_name = trim((string) $client_row['nome']) !== '' ? trim((string) $client_row['nome']) : $client_login;
+                $client_login = trim((string) $client_row['login']);
+                $safe_login = mysqli_real_escape_string($conn, $client_login);
+            }
+        }
+
+        $mysql_event_time = $event_time->format('Y-m-d H:i:s');
+        $is_online = false;
+        $was_disconnected = false;
+        $connection_query = mysqli_query($conn, "
+            SELECT
+                EXISTS(SELECT 1 FROM radacct WHERE username = '$safe_login' AND acctstoptime IS NULL LIMIT 1) AS is_online,
+                EXISTS(SELECT 1 FROM radacct WHERE username = '$safe_login' AND acctstoptime BETWEEN DATE_SUB('$mysql_event_time', INTERVAL 15 SECOND) AND DATE_ADD('$mysql_event_time', INTERVAL 2 MINUTE) LIMIT 1) AS was_disconnected
+        ");
+        if ($connection_query && ($connection_row = mysqli_fetch_assoc($connection_query))) {
+            $is_online = (int) $connection_row['is_online'] === 1;
+            $was_disconnected = (int) $connection_row['was_disconnected'] === 1;
+        }
+
+        $is_unlock = stripos($record, 'desbloqueio') !== false;
+        $is_trust = stripos($record, 'observacao') !== false;
+        $label = $is_unlock ? ($is_trust ? 'Desbloqueio de confiança' : 'Desbloqueio por pagamento') : 'Cliente bloqueado';
+        $icon = $is_unlock ? 'bi bi-unlock-fill' : 'bi bi-lock-fill';
+        $connection_state = 'offline';
+        $connection_label = 'Cliente já estava offline';
+
+        if ($is_online) {
+            $connection_state = 'online';
+            $connection_label = $is_unlock ? 'Cliente conectado' : 'Estava online — desconexão em andamento';
+        } elseif ($was_disconnected) {
+            $connection_state = 'disconnected';
+            $connection_label = 'Estava online — conexão derrubada';
+        }
+
+        $events[] = array(
+            'id' => 'client-state-' . (int) $state_event['id'],
+            'type' => 'client-state',
+            'name' => $client_name,
+            'login' => $client_login,
+            'concentrator' => '',
+            'datetime' => $mysql_event_time,
+            'formatted_time' => $event_time->format('d/m H:i:s'),
+            'label' => $label,
+            'icon' => $icon,
+            'description' => $is_trust ? 'Liberação temporária registrada pelo sistema' : ($is_unlock ? 'Pagamento identificado pelo sistema' : 'Bloqueio financeiro aplicado'),
+            'connection_state' => $connection_state,
+            'connection_label' => $connection_label,
+            'show_contract' => false,
+        );
+    }
+}
+
+usort($events, function ($a, $b) {
+    return strcmp((string) $b['datetime'], (string) $a['datetime']);
+});
+$events = array_slice($events, 0, 12);
+
 json_response_dashboard(array(
     'enabled' => true,
     'events' => $events,
