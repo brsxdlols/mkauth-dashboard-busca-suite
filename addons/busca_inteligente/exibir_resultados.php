@@ -1025,6 +1025,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $query_titulos = mysqli_query($link, "SELECT datapag, datavenc FROM sis_lanc WHERE login LIKE '$login_cliente' AND deltitulo = '0' AND datapag IS NOT NULL ORDER BY id DESC LIMIT 12");
 
         $scorePay = 0;
+        $scoreHistoryLate = 0;
+        $scoreHistoryOnTime = 0;
+        $scoreHistoryEarly = 0;
 
         while ($row2 = mysqli_fetch_assoc($query_titulos)) {
 
@@ -1039,10 +1042,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
             if ($data_vencimento < $data_pagamento) {
                 $scorePay += $tit_apos_venc;
+                $scoreHistoryLate++;
             } else if ($data_vencimento > $data_pagamento) {
                 $scorePay += $tit_antes_venc;
+                $scoreHistoryEarly++;
             } else {
                 $scorePay += $tit_dia_venc;
+                $scoreHistoryOnTime++;
             }
         }
 
@@ -1078,18 +1084,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         // echo $score;
 
         if ($score < ($max_score / 3)) {
-            $showScore = "<span class='client-score is-critical' title='Score crítico'>$score</span>";
+            $scoreClass = 'is-critical'; $scoreTitle = 'Score crítico';
         } else if ($score >= ($max_score / 3) && $score < ($max_score / 2.5)) {
-            $showScore = "<span class='client-score is-low' title='Score baixo'>$score</span>";
+            $scoreClass = 'is-low'; $scoreTitle = 'Score baixo';
         } else if ($score >= ($max_score / 2.5) && $score < ($max_score / 2)) {
-            $showScore = "<span class='client-score is-attention' title='Score em atenção'>$score</span>";
+            $scoreClass = 'is-attention'; $scoreTitle = 'Score em atenção';
         } else if ($score >= ($max_score / 2) && $score < ($max_score / 1.4)) {
-            $showScore = "<span class='client-score is-regular' title='Score regular'>$score</span>";
+            $scoreClass = 'is-regular'; $scoreTitle = 'Score regular';
         } else if ($score >= ($max_score / 1.4) && $score < ($max_score / 1.05)) {
-            $showScore = "<span class='client-score is-good' title='Score bom'>$score</span>";
+            $scoreClass = 'is-good'; $scoreTitle = 'Score bom';
         } else {
-            $showScore = "<span class='client-score is-excellent' title='Score excelente'>$score <i class='bi bi-award-fill client-score-trophy' aria-hidden='true'></i></span>";
+            $scoreClass = 'is-excellent'; $scoreTitle = 'Score excelente';
         }
+        $scoreTrophy = $scoreClass === 'is-excellent' ? " <i class='bi bi-award-fill client-score-trophy' aria-hidden='true'></i>" : '';
+        $showScore = "<button type='button' class='client-score {$scoreClass}' title='{$scoreTitle} — clique para ver o histórico' data-score='{$score}' data-late='{$scoreHistoryLate}' data-ontime='{$scoreHistoryOnTime}' data-early='{$scoreHistoryEarly}'><span>Score</span><strong>{$score}</strong>{$scoreTrophy}</button>";
 
 
         // The end implementation for Score
@@ -1351,7 +1359,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 <p class='info_add'><b>E-mail:</b> <?= $email_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
                                                                 <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
-                                                                <p class='info_add'><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
+                                                                <p class='info_add'><?= $showScore; ?> <b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
@@ -1455,7 +1463,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <span class='no_print'><?= $cidade_cliente; ?> / <?= $uf_cliente; ?></span><br>
 
                                                                         <?php
-                                                                        echo "<span class='client-contract-line'><span><b>Score:</b> {$showScore}</span><span>{$contract_inline}</span></span>";
+                                                                        echo "<span class='client-contract-line'><span>{$contract_inline}</span></span>";
 
                                                                         $loc_cliente_limpo = trim((string) $loc_cliente);
                                                                         $mapa_link = '';
