@@ -1521,12 +1521,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 $queryRamalStats = mysqli_query($conn, "
                                     SELECT c.ramal,
                                            COUNT(*) AS total_clientes,
-                                           SUM(EXISTS(
-                                               SELECT 1 FROM radacct r
-                                               WHERE r.username = c.login AND r.acctstoptime IS NULL
-                                               LIMIT 1
-                                           )) AS total_online
+                                           COUNT(active.username) AS total_online
                                     FROM sis_cliente c
+                                    LEFT JOIN (
+                                        SELECT DISTINCT username
+                                        FROM radacct FORCE INDEX (acctstoptime)
+                                        WHERE acctstoptime IS NULL
+                                    ) active ON active.username = c.login
                                     WHERE c.cli_ativado LIKE 's'
                                     GROUP BY c.ramal
                                 ");
