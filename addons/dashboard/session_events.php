@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($cfg_id > 0) {
             mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET popup_clientes_sessao = 'n' WHERE id = {$cfg_id} LIMIT 1");
         }
+        @unlink(sys_get_temp_dir() . '/mkauth_dashboard_session_events.json');
 
         json_response_dashboard(array(
             'success' => true,
@@ -121,6 +122,15 @@ if ($query_events) {
     }
 }
 
+$events_cache_file = sys_get_temp_dir() . '/mkauth_dashboard_session_events.json';
+if (@is_file($events_cache_file) && @filemtime($events_cache_file) >= (time() - 8)) {
+    $cached_events = @file_get_contents($events_cache_file);
+    if (is_string($cached_events) && $cached_events !== '') {
+        echo $cached_events;
+        exit;
+    }
+}
+
 // Eventos automáticos de bloqueio/desbloqueio registrados pelo MK-BOT.
 // Além do motivo, informa se o cliente estava conectado e foi derrubado.
 $query_client_state_events = mysqli_query($conn, "
@@ -210,7 +220,17 @@ usort($events, function ($a, $b) {
 });
 $events = array_slice($events, 0, 12);
 
-json_response_dashboard(array(
+$events_response = array(
     'enabled' => true,
     'events' => $events,
-));
+);
+$events_json = json_encode($events_response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if (is_string($events_json)) {
+    $cache_tmp = $events_cache_file . '.' . getmypid() . '.tmp';
+    if (@file_put_contents($cache_tmp, $events_json, LOCK_EX) !== false) {
+        @rename($cache_tmp, $events_cache_file);
+    }
+    echo $events_json;
+    exit;
+}
+json_response_dashboard($events_response);
