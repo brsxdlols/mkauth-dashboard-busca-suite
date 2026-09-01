@@ -634,6 +634,21 @@ if (isset($_SESSION['MM_Usuario'])) {
             border-left: 5px solid #f05d5e;
         }
 
+        .dashboard-client-state-toast-stack {
+            position: fixed;
+            top: 72px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1075;
+            width: min(430px, calc(100vw - 28px));
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .dashboard-client-state-toast-stack .dashboard-session-toast { pointer-events: auto; }
+
         .dashboard-session-toast.is-client-state {
             border-left: 5px solid #2563eb;
             background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(244,249,255,.98));
@@ -1502,23 +1517,33 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <div class="dashboard-ramal-grid">
 
                                 <?php
+                                $dashboardRamalStats = array();
+                                $queryRamalStats = mysqli_query($conn, "
+                                    SELECT c.ramal,
+                                           COUNT(*) AS total_clientes,
+                                           SUM(EXISTS(
+                                               SELECT 1 FROM radacct r
+                                               WHERE r.username = c.login AND r.acctstoptime IS NULL
+                                               LIMIT 1
+                                           )) AS total_online
+                                    FROM sis_cliente c
+                                    WHERE c.cli_ativado LIKE 's'
+                                    GROUP BY c.ramal
+                                ");
+                                if ($queryRamalStats) {
+                                    while ($ramalStat = mysqli_fetch_assoc($queryRamalStats)) {
+                                        $dashboardRamalStats[(string) $ramalStat['ramal']] = array(
+                                            'total' => (int) $ramalStat['total_clientes'],
+                                            'online' => (int) $ramalStat['total_online'],
+                                        );
+                                    }
+                                }
+
                                 foreach ($ramal_cliente as $key => $value) {
                                     $nomeRamal = $value;
-
-                                    $queryClientes = mysqli_query($conn, "SELECT login FROM sis_cliente WHERE ramal LIKE '$key' AND cli_ativado LIKE 's' ");
-
-                                    // Os cards levam à lista de clientes principais. Portanto, a contagem
-                                    // precisa usar a mesma população da busca e não somar acessos adicionais.
-                                    $totGeral = mysqli_num_rows($queryClientes);
-
-                                    $queryOnline = mysqli_query($conn, "SELECT DISTINCT c.login FROM sis_cliente c INNER JOIN radacct r FORCE INDEX (acctstoptime) ON r.username = c.login WHERE c.ramal LIKE '$key' AND c.cli_ativado LIKE 's' AND r.acctstoptime IS NULL");
-
-
-                                    /*if(!$queryClientes || !$queryOnline){
-                                    echo mysqli_error($conn);
-                                }*/
-
-                                    $totOnline = mysqli_num_rows($queryOnline);
+                                    $ramalStat = isset($dashboardRamalStats[(string) $key]) ? $dashboardRamalStats[(string) $key] : array('total' => 0, 'online' => 0);
+                                    $totGeral = $ramalStat['total'];
+                                    $totOnline = $ramalStat['online'];
 
                                     $totOffline = $totGeral - $totOnline;
 
@@ -2018,6 +2043,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     return stack;
                 }
 
+                function ensureClientStateToastStack() {
+                    var stack = document.getElementById('dashboard-client-state-toast-stack');
+                    if (!stack) {
+                        stack = document.createElement('div');
+                        stack.id = 'dashboard-client-state-toast-stack';
+                        stack.className = 'dashboard-client-state-toast-stack';
+                        document.body.appendChild(stack);
+                    }
+                    return stack;
+                }
+
                 function ensureToastToolbar(stack) {
                     var toolbar = document.getElementById('dashboard-session-toast-toolbar');
                     if (!toolbar) {
@@ -2120,13 +2156,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
 
                 function createSessionToast(eventData) {
-                    var stack = ensureToastStack();
-                    var list = ensureToastList(stack);
-                    ensureToastToolbar(stack);
-                    var item = document.createElement('div');
                     var isLogin = eventData.type === 'login';
                     var isRadiusAlert = eventData.type === 'radius';
                     var isClientState = eventData.type === 'client-state';
+                    var stack = isClientState ? ensureClientStateToastStack() : ensureToastStack();
+                    var list = isClientState ? stack : ensureToastList(stack);
+                    if (!isClientState) ensureToastToolbar(stack);
+                    var item = document.createElement('div');
 
                     item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isRadiusAlert ? 'is-guide' : (isClientState ? 'is-client-state' : (isLogin ? 'is-login' : 'is-logout'))));
                     item.setAttribute('data-event-id', eventData.id);
@@ -2340,7 +2376,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 if (sessionStorage.getItem('dashboard-session-popups-minimized') === '1') {
                     setToastStackMinimized(true);
                 }
-                window.setInterval(fetchSessionToasts, 5000);
+                window.setInterval(fetchSessionToasts, 10000);
             });
         </script>
 </body>
