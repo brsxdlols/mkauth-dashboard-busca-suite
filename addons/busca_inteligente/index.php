@@ -52,7 +52,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .score-history-empty { color:#8494a7; font-size:12px; }
         .score-history-legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; color:#607286; font-size:11px; }
         .score-history-legend span { display:inline-flex; align-items:center; gap:5px; }.score-history-legend i { width:8px; height:8px; border-radius:50%; }
-        .smart-state-toast-stack { position:fixed; top:72px; right:18px; z-index:1085; width:min(390px,calc(100vw - 28px)); display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+        .smart-state-toast-stack { position:fixed; top:72px; left:50%; transform:translateX(-50%); z-index:1085; width:min(430px,calc(100vw - 28px)); display:flex; flex-direction:column; gap:10px; pointer-events:none; }
         .smart-state-toast { position:relative; display:flex; gap:12px; padding:14px 38px 14px 14px; border:1px solid #dce7f3; border-left:5px solid #2563eb; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(244,249,255,.98)); box-shadow:0 16px 38px rgba(26,41,64,.18); color:#243041; pointer-events:auto; animation:smartStateToastIn .25s ease both; }
         .smart-state-toast-icon { display:flex; align-items:center; justify-content:center; width:40px; height:40px; flex:0 0 40px; border-radius:13px; background:linear-gradient(135deg,#3b8df5,#1769e8); color:#fff; font-size:17px; }
         .smart-state-toast-content { min-width:0; flex:1; }.smart-state-toast-label { color:#718198; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }.smart-state-toast-title { margin:2px 0; color:#22324d; font-size:14px; font-weight:750; }.smart-state-toast-description { margin:0 0 7px; color:#728298; font-size:11px; }
@@ -60,7 +60,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .smart-state-connection { display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:5px 9px; border-radius:999px; font-size:10px; font-weight:750; text-transform:uppercase; }.smart-state-connection.is-online { background:#e8f8f0;color:#18794a; }.smart-state-connection.is-offline { background:#eef2f6;color:#475569; }.smart-state-connection.is-disconnected { background:#fff3d6;color:#946000; }
         .smart-state-toast-close { position:absolute; top:7px; right:8px; width:27px; height:27px; border:0; border-radius:8px; background:transparent; color:#8290a4; font-size:18px; }.smart-state-toast-close:hover { background:#edf2f7;color:#334155; }
         @keyframes smartStateToastIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
-        @media(max-width:575.98px){.smart-state-toast-stack{top:58px;right:10px;width:calc(100vw - 20px)}}
+        @media(max-width:575.98px){.smart-state-toast-stack{top:58px;width:calc(100vw - 20px)}}
         @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } }
     </style>
 
@@ -144,7 +144,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             items.forEach(function(item){var message=(item.textContent||'').replace(/\s+/g,' ').trim();if(/login\s+\S+\s+(?:des)?bloqueado\s+por/i.test(message))item.style.display='none';});
         }
         hideLegacyNotice(document.body); new MutationObserver(function(records){records.forEach(function(record){Array.prototype.forEach.call(record.addedNodes||[],hideLegacyNotice);});}).observe(document.body,{childList:true,subtree:true});
-        fetchStateEvents(); window.setInterval(fetchStateEvents,5000);
+        fetchStateEvents(); window.setInterval(fetchStateEvents,10000);
     }());
     </script>
 
