@@ -634,6 +634,11 @@ if (isset($_SESSION['MM_Usuario'])) {
             border-left: 5px solid #f05d5e;
         }
 
+        .dashboard-session-toast.is-client-state {
+            border-left: 5px solid #2563eb;
+            background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(244,249,255,.98));
+        }
+
         .dashboard-session-toast.is-fading {
             animation: dashboardToastOut 0.55s ease forwards;
         }
@@ -659,6 +664,10 @@ if (isset($_SESSION['MM_Usuario'])) {
             background: linear-gradient(135deg, #ff7b7d 0%, #e04143 100%);
         }
 
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-icon {
+            background: linear-gradient(135deg, #3b8df5 0%, #1769e8 100%);
+        }
+
         .dashboard-session-toast-content {
             min-width: 0;
             flex: 1 1 auto;
@@ -682,6 +691,13 @@ if (isset($_SESSION['MM_Usuario'])) {
             font-weight: 700;
             line-height: 1.28;
             color: #22324d;
+        }
+
+        .dashboard-session-toast-description {
+            margin: 3px 0 0;
+            color: #728298;
+            font-size: 11px;
+            line-height: 1.35;
         }
 
         .dashboard-session-toast-meta {
@@ -727,6 +743,10 @@ if (isset($_SESSION['MM_Usuario'])) {
             background: rgba(245, 158, 11, 0.14);
             color: #9a6700;
         }
+
+        .dashboard-session-toast-status.is-online { background: rgba(31,143,78,.10); color:#18794a; }
+        .dashboard-session-toast-status.is-offline { background:#eef2f6; color:#475569; }
+        .dashboard-session-toast-status.is-disconnected { background:#fff3d6; color:#946000; }
 
         .dashboard-session-toast-actions {
             display: flex;
@@ -1487,20 +1507,18 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                     $queryClientes = mysqli_query($conn, "SELECT login FROM sis_cliente WHERE ramal LIKE '$key' AND cli_ativado LIKE 's' ");
 
-                                    $queryAdicionais = mysqli_query($conn, "SELECT cli_add.login as login_add FROM sis_adicional cli_add LEFT JOIN sis_cliente c ON cli_add.login = c.login WHERE cli_add.ramal LIKE '$key' AND c.cli_ativado LIKE 's'");
+                                    // Os cards levam à lista de clientes principais. Portanto, a contagem
+                                    // precisa usar a mesma população da busca e não somar acessos adicionais.
+                                    $totGeral = mysqli_num_rows($queryClientes);
 
-                                    $totGeral = mysqli_num_rows($queryClientes) + mysqli_num_rows($queryAdicionais);
-
-                                    $queryOnline = mysqli_query($conn, "SELECT username FROM radacct r FORCE INDEX (acctstoptime) LEFT JOIN sis_cliente c ON r.username = c.login WHERE c.ramal LIKE '$key' AND c.cli_ativado LIKE 's' AND r.acctstoptime IS NULL");
-
-                                    $queryAdicionaisOnline = mysqli_query($conn, "SELECT r.username FROM radacct r FORCE INDEX (acctstoptime) LEFT JOIN sis_adicional cli_add ON r.username = cli_add.username LEFT JOIN sis_cliente c ON cli_add.login = c.login WHERE cli_add.ramal LIKE '$key' AND c.cli_ativado LIKE 's' AND r.acctstoptime IS NULL");
+                                    $queryOnline = mysqli_query($conn, "SELECT DISTINCT c.login FROM sis_cliente c INNER JOIN radacct r FORCE INDEX (acctstoptime) ON r.username = c.login WHERE c.ramal LIKE '$key' AND c.cli_ativado LIKE 's' AND r.acctstoptime IS NULL");
 
 
                                     /*if(!$queryClientes || !$queryOnline){
                                     echo mysqli_error($conn);
                                 }*/
 
-                                    $totOnline = mysqli_num_rows($queryOnline) + mysqli_num_rows($queryAdicionaisOnline);
+                                    $totOnline = mysqli_num_rows($queryOnline);
 
                                     $totOffline = $totGeral - $totOnline;
 
@@ -2108,8 +2126,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var item = document.createElement('div');
                     var isLogin = eventData.type === 'login';
                     var isRadiusAlert = eventData.type === 'radius';
+                    var isClientState = eventData.type === 'client-state';
 
-                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isRadiusAlert ? 'is-guide' : (isLogin ? 'is-login' : 'is-logout')));
+                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isRadiusAlert ? 'is-guide' : (isClientState ? 'is-client-state' : (isLogin ? 'is-login' : 'is-logout'))));
                     item.setAttribute('data-event-id', eventData.id);
                     if (eventData.persistent) {
                         item.setAttribute('data-persistent', '1');
@@ -2125,6 +2144,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var contractIcon = eventData.contract_icon ? eventData.contract_icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : 'bi bi-shield-check');
                     var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Falha de integração' : 'Contrato ativo');
                     var radiusAction = isRadiusAlert ? '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-radius-retest" data-radius-retest="1">Executar novamente</button><span class="dashboard-radius-result"></span></div>' : '';
+                    var descriptionHtml = eventData.description ? '<p class="dashboard-session-toast-description">' + eventData.description + '</p>' : '';
+                    var connectionIcon = eventData.connection_state === 'online' ? 'bi-wifi' : (eventData.connection_state === 'disconnected' ? 'bi-wifi-off' : 'bi-circle-fill');
+                    var connectionHtml = eventData.connection_label ? '<div class="dashboard-session-toast-status is-' + (eventData.connection_state || 'offline') + '"><i class="bi ' + connectionIcon + '"></i><span>' + eventData.connection_label + '</span></div>' : '';
 
                     item.innerHTML =
                         '<button type="button" class="dashboard-session-toast-close" data-close-session-toast="1" aria-label="Fechar">&times;</button>' +
@@ -2132,12 +2154,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         '<div class="dashboard-session-toast-content">' +
                         '<span class="dashboard-session-toast-label">' + label + '</span>' +
                         '<p class="dashboard-session-toast-title">' + eventData.name + '</p>' +
+                        descriptionHtml +
                         '<div class="dashboard-session-toast-meta">' +
                         '<span><i class="bi bi-person-badge"></i>' + eventData.login + '</span>' +
                         concentratorHtml +
                         '<span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span>' +
                         '</div>' +
-                        (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') + radiusAction +
+                        connectionHtml + (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') + radiusAction +
                         '</div>';
 
                     list.prepend(item);
@@ -2295,6 +2318,25 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
 
                 hydrateExistingSessionToasts();
+                // Remove apenas a faixa azul legada deste mesmo evento para não duplicar o aviso.
+                function hideLegacyClientStateNotice(root) {
+                    if (!root || root.nodeType !== 1) return;
+                    var selector = '.notification, .toast, .toastify, .snackbar, .alert-info, [id*="snackbar"]';
+                    var candidates = [];
+                    if (root.matches && root.matches(selector)) candidates.push(root);
+                    if (root.querySelectorAll) candidates = candidates.concat(Array.prototype.slice.call(root.querySelectorAll(selector)));
+                    candidates.forEach(function(candidate) {
+                        if (candidate.closest && candidate.closest('#dashboard-session-toast-stack')) return;
+                        var message = (candidate.textContent || '').replace(/\s+/g, ' ').trim();
+                        if (/login\s+\S+\s+(?:des)?bloqueado\s+por/i.test(message)) candidate.style.display = 'none';
+                    });
+                }
+                hideLegacyClientStateNotice(document.body);
+                new MutationObserver(function(records) {
+                    records.forEach(function(record) {
+                        Array.prototype.forEach.call(record.addedNodes || [], hideLegacyClientStateNotice);
+                    });
+                }).observe(document.body, {childList: true, subtree: true});
                 if (sessionStorage.getItem('dashboard-session-popups-minimized') === '1') {
                     setToastStackMinimized(true);
                 }
