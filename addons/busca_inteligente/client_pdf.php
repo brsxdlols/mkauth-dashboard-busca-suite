@@ -10,10 +10,9 @@ $uuidSql = mysqli_real_escape_string($link, $uuid);
 $result = @mysqli_query($link, "SELECT nome FROM sis_cliente WHERE uuid_cliente='{$uuidSql}' LIMIT 1");
 if (!$result || !($client = mysqli_fetch_assoc($result))) { http_response_code(404); exit('Cliente não encontrado.'); }
 
-$extension = file_exists(__DIR__ . '/../../cliente_info.hhvm') ? 'hhvm' : 'php';
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = isset($_SERVER['HTTP_HOST']) ? preg_replace('/[^A-Za-z0-9.:-]/', '', $_SERVER['HTTP_HOST']) : '127.0.0.1';
-$url = $scheme . '://' . $host . '/admin/cliente_info.' . $extension . '?cliente=' . rawurlencode($uuid);
+$url = $scheme . '://' . $host . '/admin/addons/busca_inteligente/client_report.php?uuid=' . rawurlencode($uuid);
 $tempDirectory = __DIR__ . '/tmp';
 if (!is_dir($tempDirectory)) @mkdir($tempDirectory, 0770, true);
 $temp = tempnam($tempDirectory, 'mka_client_');

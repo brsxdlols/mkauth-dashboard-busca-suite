@@ -1534,7 +1534,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 <i class="fa-solid fa-lock-open"></i>
                                                             </a>
                                                             <?php } ?>
-                                                            <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('../../cliente_info.<?= $links_ext; ?>?cliente=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Detalhes do cliente — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('client_report.php?uuid=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Detalhes do cliente — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-circle-info"></i>
                                                             </a>
                                                             <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('contrato_popup.php?embed=1&uuid=<?= urlencode($uuid_cliente); ?>&login=<?= urlencode($login_cliente); ?>&nome=<?= urlencode($nome_cliente); ?>', 'Ativar ou renovar contrato');" title="Ativar ou renovar contrato">
