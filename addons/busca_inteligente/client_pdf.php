@@ -32,9 +32,10 @@ if (!isset($_COOKIE[session_name()]) && session_id() !== '') {
 // Release PHP's session file lock first, otherwise both requests wait forever.
 if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
 $timeoutBinary = is_executable('/usr/bin/timeout') ? '/usr/bin/timeout 45s ' : '';
-$command = $timeoutBinary . '/usr/bin/wkhtmltopdf --quiet --enable-local-file-access --javascript-delay 500 --load-error-handling ignore --page-size A4 --margin-top 10mm --margin-right 8mm --margin-bottom 10mm --margin-left 8mm' . $cookieArguments . ' ' . escapeshellarg($url) . ' ' . escapeshellarg($pdf) . ' 2>&1';
+$styleSheet = __DIR__ . '/client_pdf.css';
+$command = $timeoutBinary . '/usr/bin/wkhtmltopdf --quiet --enable-local-file-access --javascript-delay 500 --load-error-handling ignore --page-size A4 --margin-top 10mm --margin-right 9mm --margin-bottom 10mm --margin-left 9mm --zoom 0.88 --user-style-sheet ' . escapeshellarg($styleSheet) . $cookieArguments . ' ' . escapeshellarg($url) . ' ' . escapeshellarg($pdf) . ' 2>&1';
 exec($command, $output, $code);
-if ($code !== 0 || !is_file($pdf) || filesize($pdf) < 500) { @unlink($pdf); http_response_code(500); exit('Não foi possível gerar o PDF. Tente novamente ou use o botão Imprimir.'); }
+if ($code !== 0 || !is_file($pdf) || filesize($pdf) < 500) { @error_log('MK-AUTH client PDF: ' . implode(' | ', $output)); @unlink($pdf); http_response_code(500); exit('Não foi possível gerar o PDF. Tente novamente ou use o botão Imprimir.'); }
 $asciiName = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $client['nome']);
 $safeName = preg_replace('/[^A-Za-z0-9_-]+/', '_', $asciiName ? $asciiName : 'cliente');
 header('Content-Type: application/pdf');
