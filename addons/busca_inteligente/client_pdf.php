@@ -20,7 +20,15 @@ $temp = tempnam($tempDirectory, 'mka_client_');
 if ($temp === false) { http_response_code(500); exit('Não foi possível preparar o PDF.'); }
 $pdf = $temp . '.pdf';
 @unlink($temp);
-$command = '/usr/bin/wkhtmltopdf --quiet --enable-local-file-access --page-size A4 --margin-top 10mm --margin-right 8mm --margin-bottom 10mm --margin-left 8mm --cookie ' . escapeshellarg(session_name()) . ' ' . escapeshellarg(session_id()) . ' ' . escapeshellarg($url) . ' ' . escapeshellarg($pdf) . ' 2>&1';
+$cookieArguments = '';
+foreach ($_COOKIE as $cookieName => $cookieValue) {
+    if (!preg_match('/^[A-Za-z0-9_.-]+$/', (string) $cookieName) || !is_scalar($cookieValue)) continue;
+    $cookieArguments .= ' --cookie ' . escapeshellarg((string) $cookieName) . ' ' . escapeshellarg((string) $cookieValue);
+}
+if (!isset($_COOKIE[session_name()]) && session_id() !== '') {
+    $cookieArguments .= ' --cookie ' . escapeshellarg(session_name()) . ' ' . escapeshellarg(session_id());
+}
+$command = '/usr/bin/wkhtmltopdf --quiet --enable-local-file-access --page-size A4 --margin-top 10mm --margin-right 8mm --margin-bottom 10mm --margin-left 8mm' . $cookieArguments . ' ' . escapeshellarg($url) . ' ' . escapeshellarg($pdf) . ' 2>&1';
 exec($command, $output, $code);
 if ($code !== 0 || !is_file($pdf) || filesize($pdf) < 500) { @unlink($pdf); http_response_code(500); exit('Não foi possível gerar o PDF. Tente novamente ou use o botão Imprimir.'); }
 $asciiName = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $client['nome']);
