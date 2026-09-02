@@ -673,20 +673,99 @@
     }
 
     @media (max-width: 991.98px) {
-        .client-row {
-            padding: 10px 6px;
+        .client-head {
+            display: flex;
+            align-items: center;
+            min-height: 48px;
+            padding: 10px 14px;
         }
 
-        .client-check-col,
-        .client-status-col {
-            width: auto;
+        .client-head::after {
+            content: 'Clientes encontrados';
+            flex: 1;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+
+        .client-head .client-status-col,
+        .client-head .client-name-col,
+        .client-head .client-address-col,
+        .client-head .client-contact-col,
+        .client-head .client-data-col {
+            display: none;
+        }
+
+        .client-row {
+            display: grid;
+            grid-template-columns: 28px 42px minmax(0, 1fr);
+            column-gap: 8px;
+            padding: 14px 12px;
+        }
+
+        .client-row > * {
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0;
+        }
+
+        .client-row .client-check-col {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .client-row .client-status-col {
+            grid-column: 2;
+            grid-row: 1;
+            padding: 0;
+        }
+
+        .client-row .client-name-col {
+            grid-column: 3;
+            grid-row: 1;
+            padding: 0 0 10px;
+        }
+
+        .client-row .client-address-col,
+        .client-row .client-contact-col,
+        .client-row .client-data-col {
+            grid-column: 1 / -1;
+            padding: 12px 4px 4px;
+            border-top: 1px solid rgba(148, 163, 184, .20);
+            text-align: left;
+        }
+
+        .client-row .client-address-col {
+            margin-top: 2px;
+        }
+
+        .client-row .client-contact-col p,
+        .client-row .client-contact-col a {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .client-row .client-contract-line {
+            justify-content: flex-start;
+        }
+
+        .client-row .map-link-btn {
+            margin-top: 6px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .client-row {
+            margin-bottom: 10px;
+            border: 1px solid rgba(148, 163, 184, .18);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, .05);
         }
 
         .client-name-col,
         .client-address-col,
         .client-contact-col,
         .client-data-col {
-            padding: 6px 2px;
+            font-size: 13px;
         }
     }
 </style>
