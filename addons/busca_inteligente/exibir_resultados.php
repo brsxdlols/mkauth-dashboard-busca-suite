@@ -634,7 +634,7 @@
             left: 0;
             right: 0;
             height: 6px;
-            background: linear-gradient(90deg, #2f6fdd, #67a2f3);
+            background: #29313a;
         }
 
         .client-head > *,
@@ -803,7 +803,7 @@
             left: 0;
             right: 0;
             height: 6px;
-            background: linear-gradient(90deg, #2f6fdd, #67a2f3);
+            background: #29313a;
         }
 
         .client-row .client-name-col {
