@@ -769,10 +769,23 @@
         }
 
         .client-row {
-            margin-bottom: 8px;
-            padding: 11px 10px;
+            position: relative;
+            margin-bottom: 14px;
+            padding: 16px 10px 11px;
             border: 1px solid rgba(148, 163, 184, .18);
+            border-top: 0;
             box-shadow: 0 8px 20px rgba(15, 23, 42, .05);
+            overflow: hidden;
+        }
+
+        .client-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #2f6fdd, #67a2f3);
         }
 
         .client-row .client-name-col {
