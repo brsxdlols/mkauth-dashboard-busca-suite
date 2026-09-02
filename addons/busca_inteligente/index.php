@@ -62,8 +62,13 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .content-view-modal { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.48); backdrop-filter:blur(4px); }
         .content-view-modal[hidden] { display:none; }
         .content-view-card { display:flex; flex-direction:column; width:min(920px,100%); height:min(820px,calc(100vh - 36px)); overflow:hidden; border:1px solid #d8e3ef; border-radius:18px; background:#fff; box-shadow:0 28px 80px rgba(15,23,42,.30); }
-        .content-view-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid #e7edf4; background:#fff; }
+        .content-view-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-bottom:1px solid #e7edf4; background:#fff; }
         .content-view-head strong { color:#20364f; font-size:15px; }
+        .content-view-head-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-left:auto; }
+        .content-view-action { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 11px; border:1px solid #cbd8e8; border-radius:9px; background:#f8fafc; color:#29445f; font-size:12px; font-weight:700; cursor:pointer; }
+        .content-view-action:hover { border-color:#8fb5e2; background:#edf5ff; color:#1268db; }
+        .content-view-action.is-primary { border-color:#1268db; background:#1268db; color:#fff; }
+        .content-view-action[hidden] { display:none; }
         .content-view-close { width:34px; height:34px; border:0; border-radius:9px; background:#f1f5f9; color:#52667c; font-size:21px; line-height:30px; cursor:pointer; }
         .content-view-frame { display:block; width:100%; flex:1; min-height:0; border:0; background:#eef3f8; }
         .smart-state-toast-stack { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:1085; width:min(900px,calc(100vw - 28px)); display:flex; flex-direction:column; gap:10px; pointer-events:none; }
@@ -85,7 +90,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .smart-state-toast-close { position:absolute; top:7px; right:8px; width:27px; height:27px; border:0; border-radius:8px; background:transparent; color:#8290a4; font-size:18px; }.smart-state-toast-close:hover { background:#edf2f7;color:#334155; }
         @keyframes smartStateToastIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
         @media(max-width:760px){.smart-state-toast-stack{bottom:12px;width:calc(100vw - 20px)}.smart-state-toast{border-radius:18px;align-items:flex-start}.smart-state-toast-content{display:flex;align-items:flex-start;flex-wrap:wrap;justify-content:flex-start;gap:6px 10px}.smart-state-identity{width:100%}.smart-state-context{flex-wrap:wrap}.smart-state-toast-description{white-space:normal;width:100%}}
-        @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } .content-view-modal{padding:8px}.content-view-card{height:calc(100vh - 16px);border-radius:14px} }
+        @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } .content-view-modal{padding:8px}.content-view-card{height:calc(100vh - 16px);border-radius:14px}.content-view-head{padding:9px 10px;gap:6px}.content-view-head strong{max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.content-view-action{width:34px;padding:0;justify-content:center}.content-view-action span{display:none}.content-view-head-actions{gap:5px} }
     </style>
 
     <nav class="smart-toolbar no_print mka-suite-content-start" aria-label="Navegação da Busca Inteligente">
@@ -117,7 +122,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     </div>
     <div class="content-view-modal no_print" id="contentViewModal" hidden role="dialog" aria-modal="true" aria-labelledby="contentViewModalTitle">
         <div class="content-view-card">
-            <div class="content-view-head"><strong id="contentViewModalTitle">Detalhes do cliente</strong><button type="button" class="content-view-close" aria-label="Fechar">&times;</button></div>
+            <div class="content-view-head"><strong id="contentViewModalTitle">Detalhes do cliente</strong><div class="content-view-head-actions"><button type="button" class="content-view-action" id="contentViewPhoto" hidden><i class="bi bi-camera-fill"></i><span>Trocar foto</span></button><button type="button" class="content-view-action" id="contentViewPrint" hidden><i class="bi bi-printer-fill"></i><span>Imprimir</span></button><button type="button" class="content-view-action is-primary" id="contentViewPdf" hidden><i class="bi bi-file-earmark-pdf-fill"></i><span>Baixar PDF</span></button><button type="button" class="content-view-close" aria-label="Fechar">&times;</button><input type="file" id="contentViewPhotoFile" accept="image/jpeg,image/png,image/webp" hidden></div></div>
             <iframe class="content-view-frame" id="contentViewFrame" title="Conteúdo do cliente"></iframe>
         </div>
     </div>
@@ -163,8 +168,15 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     <script>
     (function () {
         var modal=document.getElementById('contentViewModal'), frame=document.getElementById('contentViewFrame'), title=document.getElementById('contentViewModalTitle');
-        function closeModal(){modal.hidden=true;frame.removeAttribute('src');document.body.style.overflow='';}
-        window.mkaOpenContentModal=function(url,modalTitle){title.textContent=modalTitle||'Detalhes';frame.src=url;modal.hidden=false;document.body.style.overflow='hidden';return false;};
+        var photoBtn=document.getElementById('contentViewPhoto'), printBtn=document.getElementById('contentViewPrint'), pdfBtn=document.getElementById('contentViewPdf'), photoFile=document.getElementById('contentViewPhotoFile'), clientUuid='';
+        function closeModal(){modal.hidden=true;frame.removeAttribute('src');clientUuid='';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=true;document.body.style.overflow='';}
+        function applyProviderLogo(){try{var doc=frame.contentDocument;if(!doc)return;Array.prototype.forEach.call(doc.images,function(img){if(/img_nao_disp\.gif(?:\?|$)/i.test(img.src||'')){img.src='../mkfiles/logo.jpg';img.alt='Logo do provedor';img.style.objectFit='contain';}});}catch(e){}}
+        window.mkaOpenContentModal=function(url,modalTitle){var match=String(url||'').match(/[?&]cliente=([^&#]+)/);clientUuid=match?decodeURIComponent(match[1]):'';var isClient=clientUuid!=='';title.textContent=modalTitle||'Detalhes';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=!isClient;frame.src=url;modal.hidden=false;document.body.style.overflow='hidden';return false;};
+        frame.addEventListener('load',applyProviderLogo);
+        printBtn.addEventListener('click',function(){try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){window.alert('Não foi possível abrir a impressão.');}});
+        pdfBtn.addEventListener('click',function(){if(clientUuid)window.location.href='client_pdf.php?uuid='+encodeURIComponent(clientUuid);});
+        photoBtn.addEventListener('click',function(){photoFile.value='';photoFile.click();});
+        photoFile.addEventListener('change',function(){if(!clientUuid||!photoFile.files||!photoFile.files[0])return;var data=new FormData();data.append('uuid',clientUuid);data.append('foto',photoFile.files[0]);photoBtn.disabled=true;fetch('client_photo.php',{method:'POST',credentials:'same-origin',body:data}).then(function(r){return r.json();}).then(function(result){if(!result.ok)throw new Error(result.message||'Falha ao trocar a foto.');frame.contentWindow.location.reload();}).catch(function(error){window.alert(error.message||'Falha ao trocar a foto.');}).then(function(){photoBtn.disabled=false;});});
         modal.querySelector('.content-view-close').addEventListener('click',closeModal);
         modal.addEventListener('click',function(event){if(event.target===modal)closeModal();});
         window.addEventListener('message',function(event){
