@@ -49,6 +49,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'suite_live_search' => "VARCHAR(1) NOT NULL DEFAULT 's'",
             'trust_unlock_mode' => "VARCHAR(12) NOT NULL DEFAULT 'date'",
             'trust_unlock_fixed_days' => "INT NOT NULL DEFAULT 1",
+            'trust_unlock_recent_days' => "INT NOT NULL DEFAULT 7",
             'radius_alert_enabled' => "VARCHAR(1) NOT NULL DEFAULT 's'",
             'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
         );
@@ -76,26 +77,63 @@ if (!function_exists('mka_suite_get_trust_unlock_settings')) {
     function mka_suite_get_trust_unlock_settings($conn = null)
     {
         if (!($conn instanceof mysqli)) $conn = mka_suite_connect_db();
-        $settings = array('mode' => 'date', 'fixed_days' => 1);
+        $settings = array('mode' => 'date', 'fixed_days' => 1, 'recent_days' => 7);
         if (!($conn instanceof mysqli)) return $settings;
         mka_suite_ensure_layout_column($conn);
-        $query = @mysqli_query($conn, "SELECT trust_unlock_mode, trust_unlock_fixed_days FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        $query = @mysqli_query($conn, "SELECT trust_unlock_mode, trust_unlock_fixed_days, trust_unlock_recent_days FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
         if ($query && ($row = mysqli_fetch_assoc($query))) {
             $settings['mode'] = mka_suite_normalize_trust_unlock_mode(isset($row['trust_unlock_mode']) ? $row['trust_unlock_mode'] : 'date');
             $settings['fixed_days'] = max(1, min(10, (int) (isset($row['trust_unlock_fixed_days']) ? $row['trust_unlock_fixed_days'] : 1)));
+            $recentDays = (int) (isset($row['trust_unlock_recent_days']) ? $row['trust_unlock_recent_days'] : 7);
+            $settings['recent_days'] = in_array($recentDays, array(3, 7, 15), true) ? $recentDays : 7;
         }
         return $settings;
     }
 }
 
 if (!function_exists('mka_suite_set_trust_unlock_settings')) {
-    function mka_suite_set_trust_unlock_settings($conn, $mode, $fixedDays)
+    function mka_suite_set_trust_unlock_settings($conn, $mode, $fixedDays, $recentDays = 7)
     {
         if (!($conn instanceof mysqli)) return false;
         mka_suite_ensure_layout_column($conn);
         $mode = mka_suite_normalize_trust_unlock_mode($mode);
         $fixedDays = max(1, min(10, (int) $fixedDays));
-        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET trust_unlock_mode = '" . mysqli_real_escape_string($conn, $mode) . "', trust_unlock_fixed_days = " . $fixedDays . " WHERE id = 1");
+        $recentDays = in_array((int) $recentDays, array(3, 7, 15), true) ? (int) $recentDays : 7;
+        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET trust_unlock_mode = '" . mysqli_real_escape_string($conn, $mode) . "', trust_unlock_fixed_days = " . $fixedDays . ", trust_unlock_recent_days = " . $recentDays . " WHERE id = 1");
+    }
+}
+
+if (!function_exists('mka_suite_ensure_trust_unlock_audit')) {
+    function mka_suite_ensure_trust_unlock_audit($conn)
+    {
+        if (!($conn instanceof mysqli)) return false;
+        return (bool) @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_trust_unlock_audit (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            client_id INT NULL,
+            client_login VARCHAR(191) NOT NULL,
+            client_name VARCHAR(255) NULL,
+            unlocked_until DATE NOT NULL,
+            performed_by VARCHAR(191) NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_trust_login_created (client_login, created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+    }
+}
+
+if (!function_exists('mka_suite_get_recent_trust_unlock')) {
+    function mka_suite_get_recent_trust_unlock($conn, $login, $recentDays)
+    {
+        if (!($conn instanceof mysqli)) return null;
+        mka_suite_ensure_trust_unlock_audit($conn);
+        $loginSql = mysqli_real_escape_string($conn, trim((string) $login));
+        $recentDays = in_array((int) $recentDays, array(3, 7, 15), true) ? (int) $recentDays : 7;
+        $query = @mysqli_query($conn, "SELECT * FROM dashboard_am_trust_unlock_audit
+            WHERE client_login = '" . $loginSql . "'
+              AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+              AND created_at >= DATE_SUB(NOW(), INTERVAL " . $recentDays . " DAY)
+            ORDER BY created_at DESC LIMIT 1");
+        return $query && ($row = mysqli_fetch_assoc($query)) ? $row : null;
     }
 }
 

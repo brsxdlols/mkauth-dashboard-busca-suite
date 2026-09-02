@@ -9,6 +9,9 @@ $login_cliente = $_GET['login'];
 $trust_settings = mka_suite_get_trust_unlock_settings($conn);
 $unlock_mode = $trust_settings['mode'];
 $fixed_days = $trust_settings['fixed_days'];
+$recent_days = $trust_settings['recent_days'];
+$recent_unlock = mka_suite_get_recent_trust_unlock($conn, $login_cliente, $recent_days);
+$is_embed = isset($_GET['embed']) && $_GET['embed'] === '1';
 ?>
 
 <!DOCTYPE html>
@@ -38,6 +41,8 @@ $fixed_days = $trust_settings['fixed_days'];
             background: linear-gradient(180deg, #f6f9fc 0%, #edf3f9 100%);
             color: #17324a;
         }
+        body.is-embed { min-height: 0; padding: 0; background: transparent; }
+        body.is-embed .unlock-card { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
 
         .unlock-card {
             width: min(100%, 460px);
@@ -134,9 +139,15 @@ $fixed_days = $trust_settings['fixed_days'];
         .unlock-fixed { padding: 13px 14px; border-radius: 12px; background: #eef5ff; color: #244867; font-weight: 600; }
         .unlock-choice { display: flex; gap: 16px; margin: 4px 0 12px; }
         .unlock-choice label { display: inline-flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; }
+        .unlock-warning { margin: 0 0 16px; padding: 14px; border: 1px solid #f0cf77; border-radius: 13px; background: #fff8df; color: #6f4b00; }
+        .unlock-warning strong { display: block; margin-bottom: 5px; color: #7b4e00; }
+        .unlock-warning p { margin: 0; font-size: 13px; line-height: 1.45; }
+        .unlock-actions { gap: 10px; }
+        .unlock-cancel { background: #eef2f6; color: #46586d; box-shadow: none; }
+        .unlock-cancel:hover { background: #e1e7ee; }
     </style>
 </head>
-<body>
+<body class="<?= $is_embed ? 'is-embed' : ''; ?>">
     <div class="unlock-card">
         <div class="unlock-head">
             <p class="unlock-eyebrow">Busca Inteligente</p>
@@ -145,8 +156,16 @@ $fixed_days = $trust_settings['fixed_days'];
         <div class="unlock-body">
             <p class="unlock-copy">Defina por quanto tempo este cliente ficará liberado em confiança. A observação será removida automaticamente ao final do período.</p>
             <p class="unlock-login">Login do cliente: <strong><?= htmlspecialchars($login_cliente); ?></strong></p>
+            <?php if ($recent_unlock) { ?>
+                <div class="unlock-warning" role="alert">
+                    <strong>Este cliente já recebeu um desbloqueio de confiança recente.</strong>
+                    <p>Último desbloqueio por <b><?= htmlspecialchars($recent_unlock['performed_by'], ENT_QUOTES, 'UTF-8'); ?></b> em <b><?= date('d/m/Y H:i', strtotime($recent_unlock['created_at'])); ?></b>. Deseja prosseguir com um novo desbloqueio?</p>
+                </div>
+            <?php } ?>
             <form action="processar_obs.php" method="POST">
                 <input type="hidden" name="login" value="<?= htmlspecialchars($login_cliente); ?>">
+                <input type="hidden" name="embed" value="<?= $is_embed ? '1' : '0'; ?>">
+                <input type="hidden" name="confirm_recent" value="<?= $recent_unlock ? '1' : '0'; ?>">
                 <?php if ($unlock_mode === 'days') { ?>
                     <label for="dias_desbloqueio">Período do desbloqueio</label>
                     <select id="dias_desbloqueio" name="dias_desbloqueio" required>
@@ -179,7 +198,8 @@ $fixed_days = $trust_settings['fixed_days'];
                     <input type="date" id="data_desbloqueio" name="data_desbloqueio" value="<?= date('Y-m-d', strtotime('+1 day')); ?>" min="<?= date('Y-m-d'); ?>" required>
                 <?php } ?>
                 <div class="unlock-actions">
-                    <button type="submit">Confirmar desbloqueio</button>
+                    <?php if ($recent_unlock) { ?><button type="button" class="unlock-cancel" onclick="if(window.parent!==window){window.parent.postMessage({type:'mka-trust-unlock-close'},'*')}else{window.close()}">Cancelar</button><?php } ?>
+                    <button type="submit"><?= $recent_unlock ? 'Prosseguir com novo desbloqueio' : 'Confirmar desbloqueio'; ?></button>
                 </div>
             </form>
         </div>

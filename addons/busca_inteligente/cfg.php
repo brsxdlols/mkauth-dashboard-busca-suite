@@ -57,6 +57,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     $trust_unlock_settings = mka_suite_get_trust_unlock_settings($link);
     $trust_unlock_mode = $trust_unlock_settings['mode'];
     $trust_unlock_fixed_days = $trust_unlock_settings['fixed_days'];
+    $trust_unlock_recent_days = $trust_unlock_settings['recent_days'];
 
     // Busca Inteligente
     $query_atual_cfg = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg ORDER BY id DESC LIMIT 1");
@@ -87,6 +88,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
     $suite_live_search = isset($_POST['suite_live_search']) ? mka_suite_normalize_live_search($_POST['suite_live_search']) : $suite_live_search;
     $trust_unlock_mode = isset($_POST['trust_unlock_mode']) ? mka_suite_normalize_trust_unlock_mode($_POST['trust_unlock_mode']) : $trust_unlock_mode;
     $trust_unlock_fixed_days = isset($_POST['trust_unlock_fixed_days']) ? max(1, min(10, (int) $_POST['trust_unlock_fixed_days'])) : $trust_unlock_fixed_days;
+    $trust_unlock_recent_days = isset($_POST['trust_unlock_recent_days']) && in_array((int) $_POST['trust_unlock_recent_days'], array(3, 7, 15), true) ? (int) $_POST['trust_unlock_recent_days'] : $trust_unlock_recent_days;
     $suite_top_spacing = isset($_POST['suite_top_spacing']) ? mka_suite_normalize_top_spacing($_POST['suite_top_spacing']) : mka_suite_get_top_spacing($link);
     $suite_header_spacing = isset($_POST['suite_header_spacing']) ? mka_suite_normalize_header_spacing($_POST['suite_header_spacing']) : mka_suite_get_header_spacing($link);
 
@@ -187,6 +189,16 @@ require_once __DIR__ . '/../shared/layout_mode.php';
                                 <select class="" name="trust_unlock_fixed_days">
                                     <?php for ($day = 1; $day <= 10; $day++) { ?>
                                         <option value="<?php echo $day; ?>" <?php echo $trust_unlock_fixed_days === $day ? 'selected' : ''; ?>><?php echo $day . ($day === 1 ? ' dia' : ' dias'); ?></option>
+                                    <?php } ?>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="">Alertar novo desbloqueio recente
+                                <select class="" name="trust_unlock_recent_days">
+                                    <?php foreach (array(3, 7, 15) as $recentDay) { ?>
+                                        <option value="<?php echo $recentDay; ?>" <?php echo $trust_unlock_recent_days === $recentDay ? 'selected' : ''; ?>>Últimos <?php echo $recentDay; ?> dias</option>
                                     <?php } ?>
                                 </select>
                             </td>
@@ -392,7 +404,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
         mka_suite_set_layout_mode($link, $suite_layout_mode);
         mka_suite_set_live_search($link, $suite_live_search);
-        mka_suite_set_trust_unlock_settings($link, $trust_unlock_mode, $trust_unlock_fixed_days);
+        mka_suite_set_trust_unlock_settings($link, $trust_unlock_mode, $trust_unlock_fixed_days, $trust_unlock_recent_days);
         mka_suite_set_top_spacing($link, $suite_top_spacing);
         mka_suite_set_header_spacing($link, $suite_header_spacing);
     }

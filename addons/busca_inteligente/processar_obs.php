@@ -1,13 +1,28 @@
 <?php
 require_once('database/db_connect.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
 // Verifica se os dados foram enviados via POST.
 if (isset($_POST['login'])) {
-    $login = mysqli_real_escape_string($conn, $_POST['login']);
+    $loginRaw = trim((string) $_POST['login']);
+    $login = mysqli_real_escape_string($conn, $loginRaw);
+    $isEmbed = isset($_POST['embed']) && $_POST['embed'] === '1';
     $trustSettings = mka_suite_get_trust_unlock_settings($conn);
     $configuredMode = $trustSettings['mode'];
     $requestedMode = $configuredMode === 'all' ? (isset($_POST['unlock_choice']) ? $_POST['unlock_choice'] : 'days') : $configuredMode;
+    $recentUnlock = mka_suite_get_recent_trust_unlock($conn, $loginRaw, $trustSettings['recent_days']);
+    if ($recentUnlock && (!isset($_POST['confirm_recent']) || $_POST['confirm_recent'] !== '1')) {
+        http_response_code(409);
+        die('Este cliente recebeu outro desbloqueio de confiança recentemente. Feche e abra o aviso novamente para confirmar.');
+    }
+    $performedBy = 'sistema';
+    foreach (array('MKA_Usuario', 'MM_Usuario', 'usuario', 'login') as $sessionKey) {
+        if (isset($_SESSION[$sessionKey]) && trim((string) $_SESSION[$sessionKey]) !== '') {
+            $performedBy = trim((string) $_SESSION[$sessionKey]);
+            break;
+        }
+    }
 
     if ($configuredMode === 'fixed') {
         $days = $trustSettings['fixed_days'];
@@ -64,8 +79,17 @@ if (isset($_POST['login'])) {
         $sql = "UPDATE sis_cliente SET rem_obs = '{$dataDesbloqueio}', observacao = 'sim' WHERE id = '{$id}'";
 
         if (mysqli_query($conn, $sql)) {
+            mka_suite_ensure_trust_unlock_audit($conn);
+            $nomeSql = mysqli_real_escape_string($conn, $nome);
+            $usuarioSql = mysqli_real_escape_string($conn, $performedBy);
+            mysqli_query($conn, "INSERT INTO dashboard_am_trust_unlock_audit
+                (client_id, client_login, client_name, unlocked_until, performed_by, created_at)
+                VALUES (" . (int) $id . ", '" . $login . "', '" . $nomeSql . "', '" . $dataDesbloqueio . "', '" . $usuarioSql . "', NOW())");
             echo "Desbloqueio confirmado com sucesso!<br>";
             echo "Cliente <strong>{$nome}</strong> estará desbloqueado até <strong>{$dataBr}</strong>.<br>";
+            if ($isEmbed) {
+                echo "<script>if(window.parent!==window){window.parent.postMessage({type:'mka-trust-unlock-success',login:" . json_encode($loginRaw) . "},'*');}</script>";
+            }
         } else {
             echo "Erro ao atualizar o desbloqueio: " . mysqli_error($conn);
         }

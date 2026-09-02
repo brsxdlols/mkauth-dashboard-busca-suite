@@ -52,6 +52,13 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .score-history-empty { color:#8494a7; font-size:12px; }
         .score-history-legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; color:#607286; font-size:11px; }
         .score-history-legend span { display:inline-flex; align-items:center; gap:5px; }.score-history-legend i { width:8px; height:8px; border-radius:50%; }
+        .trust-unlock-modal { position:fixed; inset:0; z-index:1095; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.42); backdrop-filter:blur(4px); }
+        .trust-unlock-modal[hidden] { display:none; }
+        .trust-unlock-card { width:min(520px,100%); overflow:hidden; border:1px solid #d8e3ef; border-radius:18px; background:#fff; box-shadow:0 24px 70px rgba(15,23,42,.26); }
+        .trust-unlock-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #e7edf4; }
+        .trust-unlock-head strong { color:#20364f; font-size:15px; }
+        .trust-unlock-close { width:32px; height:32px; border:0; border-radius:8px; background:#f1f5f9; color:#52667c; font-size:20px; line-height:28px; }
+        .trust-unlock-frame { display:block; width:100%; height:560px; border:0; background:#fff; }
         .smart-state-toast-stack { position:fixed; top:72px; left:50%; transform:translateX(-50%); z-index:1085; width:min(430px,calc(100vw - 28px)); display:flex; flex-direction:column; gap:10px; pointer-events:none; }
         .smart-state-toast { position:relative; display:flex; gap:12px; padding:14px 38px 14px 14px; border:1px solid #dce7f3; border-left:5px solid #2563eb; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(244,249,255,.98)); box-shadow:0 16px 38px rgba(26,41,64,.18); color:#243041; pointer-events:auto; animation:smartStateToastIn .25s ease both; }
         .smart-state-toast-icon { display:flex; align-items:center; justify-content:center; width:40px; height:40px; flex:0 0 40px; border-radius:13px; background:linear-gradient(135deg,#3b8df5,#1769e8); color:#fff; font-size:17px; }
@@ -85,6 +92,12 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             </div>
         </div>
     </div>
+    <div class="trust-unlock-modal no_print" id="trustUnlockModal" hidden role="dialog" aria-modal="true" aria-labelledby="trustUnlockModalTitle">
+        <div class="trust-unlock-card">
+            <div class="trust-unlock-head"><strong id="trustUnlockModalTitle">Desbloqueio de Confiança</strong><button type="button" class="trust-unlock-close" aria-label="Fechar">&times;</button></div>
+            <iframe class="trust-unlock-frame" id="trustUnlockFrame" title="Desbloqueio de Confiança"></iframe>
+        </div>
+    </div>
     <script>
     (function () {
         var modal = document.getElementById('clientScoreModal');
@@ -107,6 +120,21 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             if (event.target === modal || event.target.closest('.score-modal-close')) closeModal();
         });
         document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
+    }());
+    </script>
+    <script>
+    (function () {
+        var modal=document.getElementById('trustUnlockModal'), frame=document.getElementById('trustUnlockFrame');
+        function closeModal(){modal.hidden=true;frame.removeAttribute('src');document.body.style.overflow='';}
+        window.mkaOpenTrustUnlock=function(login){frame.src='teste_obs.php?embed=1&login='+encodeURIComponent(login||'');modal.hidden=false;document.body.style.overflow='hidden';return false;};
+        modal.querySelector('.trust-unlock-close').addEventListener('click',closeModal);
+        modal.addEventListener('click',function(event){if(event.target===modal)closeModal();});
+        window.addEventListener('message',function(event){
+            if(!event.data||typeof event.data!=='object')return;
+            if(event.data.type==='mka-trust-unlock-close')closeModal();
+            if(event.data.type==='mka-trust-unlock-success'){closeModal();window.setTimeout(function(){window.location.reload();},350);}
+        });
+        document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!modal.hidden)closeModal();});
     }());
     </script>
 

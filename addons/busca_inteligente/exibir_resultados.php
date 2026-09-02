@@ -1390,7 +1390,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 <i class="fa-solid fa-headset"></i>
                                                             </a>
 <?php if ($bloqueado == "sim") { ?>
-                                                            <a class="client-action-btn is-warning" href='#' onclick="abrirJanela('teste_obs.php?login=<?= $login_cliente; ?>', 560, 640); return false;" title="Desbloqueio de Confianca x dias">
+                                                            <a class="client-action-btn is-warning" href='#' onclick="return mkaOpenTrustUnlock(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Desbloqueio de Confiança">
                                                                 <i class="fa-solid fa-lock-open"></i>
                                                             </a>
                                                             <?php } ?>
