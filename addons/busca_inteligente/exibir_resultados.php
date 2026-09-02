@@ -717,15 +717,28 @@ document.addEventListener('click', function (event) {
 $caracters_remove = array("-", "(", ")");
 
 $count_adicional = 0;
+$logins_resultado = array();
 while ($get_login = mysqli_fetch_assoc($result)) {
-    $login_[] = $get_login['login'];
+    $login_atual = trim((string) $get_login['login']);
+    if ($login_atual !== '') {
+        $logins_resultado[$login_atual] = true;
+    }
 }
 
-foreach ($login_ as $res) {
-    $query_count_adicional = mysqli_query($link, "SELECT username FROM sis_adicional WHERE login LIKE '$res' ORDER BY username");
-
-    if (mysqli_num_rows($query_count_adicional) != 0)
-        $count_adicional += mysqli_num_rows($query_count_adicional);
+// Conta os adicionais de todos os resultados em uma unica consulta. A versao
+// anterior executava uma consulta por cliente (mais de 900 no card Online).
+if (!empty($logins_resultado)) {
+    $logins_sql = array();
+    foreach (array_keys($logins_resultado) as $login_resultado) {
+        $logins_sql[] = "'" . mysqli_real_escape_string($link, $login_resultado) . "'";
+    }
+    $query_count_adicional = mysqli_query(
+        $link,
+        "SELECT COUNT(*) AS total FROM sis_adicional WHERE login IN (" . implode(',', $logins_sql) . ")"
+    );
+    if ($query_count_adicional && ($row_count_adicional = mysqli_fetch_assoc($query_count_adicional))) {
+        $count_adicional = (int) $row_count_adicional['total'];
+    }
 }
 
 $tot_resultados = mysqli_num_rows($result);

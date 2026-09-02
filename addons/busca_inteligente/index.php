@@ -579,8 +579,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $query_ok = "$query_default
             c.cli_ativado LIKE 's' AND 
             c.ramal LIKE '$partes[1]' AND 
-            c.login LIKE 
-            (SELECT LOWER(TRIM(username)) FROM radacct WHERE username = c.login AND acctstoptime IS NULL LIMIT 1)  
+            EXISTS (SELECT 1 FROM radacct WHERE username = c.login AND acctstoptime IS NULL)
             $group ORDER BY $organizar";
 
         $result = mysqli_query($link, "$query_ok");
@@ -829,8 +828,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     } else if (strtolower($partes[0]) == 'on' || strtolower($partes[0]) == 'online') {
         $query_ok = "$query_default
             c.cli_ativado LIKE 's' AND 
-            c.login LIKE 
-            (SELECT LOWER(TRIM(username)) FROM radacct WHERE username = c.login AND acctstoptime IS NULL LIMIT 1)    
+            EXISTS (SELECT 1 FROM radacct WHERE username = c.login AND acctstoptime IS NULL)
             $group ORDER BY $organizar";
 
         $result = mysqli_query($link, "$query_ok");
