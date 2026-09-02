@@ -197,6 +197,19 @@ if ($query_client_state_events) {
             $connection_label = 'Estava online — conexão derrubada';
         }
 
+        // Marcadores exclusivos para testes visuais. Eles apenas simulam o
+        // estado exibido no aviso e não alteram cliente, Radius ou conexão.
+        if (stripos($record, 'teste_status_online') !== false) {
+            $connection_state = 'online';
+            $connection_label = 'Cliente conectado';
+        } elseif (stripos($record, 'teste_status_desconectado') !== false) {
+            $connection_state = 'disconnected';
+            $connection_label = 'Estava online — conexão derrubada';
+        } elseif (stripos($record, 'teste_status_offline') !== false) {
+            $connection_state = 'offline';
+            $connection_label = 'Cliente já estava offline';
+        }
+
         $events[] = array(
             'id' => 'client-state-' . (int) $state_event['id'],
             'type' => 'client-state',
