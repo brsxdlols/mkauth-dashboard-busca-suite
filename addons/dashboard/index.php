@@ -671,9 +671,11 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { width:34px; height:34px; border-radius:50%; font-size:15px; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(240px,1fr) auto; align-items:center; gap:10px 20px; }
-        .dashboard-client-state-identity { min-width:0; }
-        .dashboard-client-state-context { display:flex; align-items:center; gap:12px; min-width:0; }
-        .dashboard-client-state-context .dashboard-session-toast-meta { flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
+        .dashboard-client-state-identity { min-width:0; overflow:hidden; }
+        .dashboard-client-state-identity .dashboard-session-toast-title { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+        .dashboard-client-state-context { display:flex; align-items:center; gap:12px; min-width:0; overflow:hidden; }
+        .dashboard-client-state-context .dashboard-session-toast-meta { width:100%; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; overflow:hidden; }
+        .dashboard-client-state-context .dashboard-session-toast-meta span { display:block; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-label,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-title,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
