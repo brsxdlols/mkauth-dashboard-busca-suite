@@ -545,6 +545,7 @@
         justify-content: center;
         align-items: center;
         gap: 8px;
+        margin-top: 4px;
     }
 
     .contract-inline-badge {

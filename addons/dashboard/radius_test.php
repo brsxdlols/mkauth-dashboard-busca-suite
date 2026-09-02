@@ -82,13 +82,37 @@ if ($query) {
 }
 
 $queryOk = $query !== false;
+$generatedAt = date('Y-m-d H:i:s');
+$failedRouters = array();
+foreach ($routers as $routerResult) {
+    if (empty($routerResult['ok'])) {
+        $failedRouters[] = $routerResult;
+    }
+}
+
+// O teste manual precisa substituir o diagnóstico exibido pela dashboard.
+// O status principal é gravado pelo reconciliador como root; por isso o
+// resultado web mais recente fica em um arquivo temporário próprio.
+$manualStateFile = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'mkauth_dashboard_radius_test_status.json';
+$manualState = array(
+    'generated_at' => $generatedAt,
+    'source' => 'manual',
+    'stats' => array('routers_ok' => $routersOk, 'routers_fail' => $routersFail),
+    'failed_routers' => $failedRouters
+);
+@file_put_contents(
+    $manualStateFile,
+    json_encode($manualState, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+    LOCK_EX
+);
+
 echo json_encode(array(
     'ok' => $queryOk && $routersFail === 0,
     'executed' => $queryOk,
     'message' => !$queryOk
         ? 'Não foi possível consultar os ramais cadastrados.' . ($queryError !== '' ? ' Detalhe: ' . $queryError : ' Verifique a conexão com o banco mkradius.')
         : ($routersFail === 0 ? 'Todas as conexões de ramais estão corretas.' : $routersFail . ' conexão(ões) precisam de correção.'),
-    'generated_at' => date('Y-m-d H:i:s'),
+    'generated_at' => $generatedAt,
     'stats' => array('routers_ok' => $routersOk, 'routers_fail' => $routersFail),
     'routers' => $routers
 ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

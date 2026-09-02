@@ -833,6 +833,34 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-radius-retest:disabled { opacity: .65; cursor: wait; }
         .dashboard-radius-result { font-size: 11px; color: #61708d; }
 
+        .dashboard-radius-failures { margin-top:8px; border:1px solid #dbe4f0; border-radius:10px; overflow:hidden; background:#f8fbff; }
+        .dashboard-radius-failures summary { padding:8px 10px; cursor:pointer; font-size:11px; font-weight:800; color:#31527c; list-style:none; }
+        .dashboard-radius-failures summary::-webkit-details-marker { display:none; }
+        .dashboard-radius-failures summary::after { content:'+'; float:right; font-size:15px; line-height:12px; }
+        .dashboard-radius-failures[open] summary::after { content:'−'; }
+        .dashboard-radius-failure-list { margin:0; padding:0 10px 8px; list-style:none; }
+        .dashboard-radius-failure-list li { padding:7px 0; border-top:1px solid #e5edf6; font-size:11px; line-height:1.35; color:#52657d; }
+        .dashboard-radius-failure-list strong { display:block; color:#22324d; }
+
+        .dashboard-radius-modal { position:fixed; inset:0; z-index:10050; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.55); backdrop-filter:blur(3px); }
+        .dashboard-radius-modal.is-open { display:flex; }
+        .dashboard-radius-dialog { width:min(620px, 100%); max-height:min(720px, calc(100vh - 36px)); overflow:auto; border-radius:18px; background:#fff; box-shadow:0 28px 75px rgba(15,23,42,.30); }
+        .dashboard-radius-modal-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:17px 20px; border-bottom:1px solid #e5edf6; }
+        .dashboard-radius-modal-head h3 { margin:0; font-size:17px; color:#1f3150; }
+        .dashboard-radius-modal-close { border:0; background:#eef3f8; color:#52657d; width:32px; height:32px; border-radius:9px; font-size:20px; cursor:pointer; }
+        .dashboard-radius-modal-body { padding:20px; }
+        .dashboard-radius-progress { display:flex; align-items:center; gap:10px; padding:13px 14px; border-radius:11px; background:#eef5ff; color:#2458a6; font-size:13px; font-weight:700; }
+        .dashboard-radius-progress.is-success { background:#e9f8ef; color:#18794a; }
+        .dashboard-radius-progress.is-error { background:#fff3e2; color:#9a5b00; }
+        .dashboard-radius-modal-list { margin:14px 0 0; padding:0; list-style:none; display:grid; gap:9px; }
+        .dashboard-radius-modal-list li { display:grid; grid-template-columns:minmax(130px,.8fr) minmax(120px,.65fr) minmax(180px,1.4fr); gap:10px; padding:11px 12px; border:1px solid #e1e9f2; border-radius:11px; background:#fafcff; font-size:12px; color:#52657d; }
+        .dashboard-radius-modal-list strong { color:#22324d; }
+        .dashboard-radius-modal-actions { display:flex; justify-content:flex-end; gap:9px; padding:0 20px 20px; }
+        .dashboard-radius-modal-actions button { border:0; border-radius:10px; padding:9px 14px; font-size:12px; font-weight:800; cursor:pointer; }
+        .dashboard-radius-modal-repeat { background:#2563eb; color:#fff; }
+        .dashboard-radius-modal-dismiss { background:#e9eef5; color:#33465f; }
+        @media(max-width:575.98px){ .dashboard-radius-modal-list li{grid-template-columns:1fr;gap:3px}.dashboard-radius-modal-actions{flex-direction:column-reverse}.dashboard-radius-modal-actions button{width:100%} }
+
         .dashboard-session-toast-close {
             position: absolute;
             top: 8px;
@@ -1322,9 +1350,21 @@ if (isset($_SESSION['MM_Usuario'])) {
 
             <?php
             $radius_state_file = '/var/lib/mkauth_radius_ppp_reconcile/status.json';
+            $radius_manual_state_file = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'mkauth_dashboard_radius_test_status.json';
             $radius_alert_items = array();
+            $radius_alert_routers = array();
             $radius_alert_generated_at = '';
             $radius_alert_enabled = mka_suite_get_radius_alert_enabled($conn) === 's';
+
+            // O resultado manual mais recente substitui o estado anterior do
+            // reconciliador, evitando manter no aviso um ramal já corrigido.
+            if (@is_file($radius_manual_state_file) && @is_readable($radius_manual_state_file)) {
+                $manual_mtime = (int) @filemtime($radius_manual_state_file);
+                $state_mtime = @is_file($radius_state_file) ? (int) @filemtime($radius_state_file) : 0;
+                if ($manual_mtime >= $state_mtime) {
+                    $radius_state_file = $radius_manual_state_file;
+                }
+            }
 
             if ($radius_alert_enabled && @is_file($radius_state_file) && @is_readable($radius_state_file)) {
                 $radius_state_raw = @file_get_contents($radius_state_file);
@@ -1344,6 +1384,11 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             $router_reason = trim((string) ($failed_router['reason'] ?? ''));
                             $radius_alert_items[] = trim($router_name . ' - ' . $router_ip, ' -') . ($router_reason !== '' ? ': ' . $router_reason : '');
+                            $radius_alert_routers[] = array(
+                                'name' => $router_name !== '' ? $router_name : $router_ip,
+                                'router' => $router_ip,
+                                'reason' => $router_reason
+                            );
                         }
                     }
                 }
@@ -1356,7 +1401,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                     'type' => 'radius',
                     'name' => 'Alerta de integração Radius',
                     'login' => 'Verifique usuário `mkauth`, senha do ramal, porta `8728` ou rota VPN.',
-                    'concentrator' => implode(' | ', $radius_alert_items),
+                    'concentrator' => count($radius_alert_items) . ' concentrador(es) com falha',
+                    'routers' => $radius_alert_routers,
                     'formatted_time' => $radius_alert_generated_at !== '' ? $radius_alert_generated_at : date('d/m/Y H:i:s'),
                     'contract_status' => 'inactive',
                     'contract_label' => 'Falha de integração',
@@ -2204,6 +2250,25 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     window.setTimeout(beginToastRemoval, visibleDuration);
                 }
 
+                function dashboardRadiusEscape(value) {
+                    return String(value == null ? '' : value)
+                        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                }
+
+                function radiusFailureDetails(routers, expanded) {
+                    var failures = Array.isArray(routers) ? routers.filter(function(router) { return router && router.ok !== true; }) : [];
+                    if (!failures.length) return '';
+                    var rows = failures.map(function(router) {
+                        var name = router.name || router.router || 'Concentrador';
+                        var ip = router.router || '-';
+                        var reason = router.reason || 'Falha não identificada';
+                        return '<li><strong>' + dashboardRadiusEscape(name) + ' — ' + dashboardRadiusEscape(ip) + '</strong>' + dashboardRadiusEscape(reason) + '</li>';
+                    }).join('');
+                    return '<details class="dashboard-radius-failures"' + (expanded ? ' open' : '') + '><summary>Ver concentradores com falha (' + failures.length + ')</summary><ul class="dashboard-radius-failure-list">' + rows + '</ul></details>';
+                }
+
                 function createSessionToast(eventData) {
                     var isLogin = eventData.type === 'login';
                     var isRadiusAlert = eventData.type === 'radius';
@@ -2223,12 +2288,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var label = eventData.label ? eventData.label : (isRadiusAlert ? 'Alerta Radius' : (isLogin ? 'Cliente conectou' : 'Cliente desconectou'));
                     var concentratorHtml = '';
                     if (eventData.concentrator && eventData.concentrator !== '-') {
-                        concentratorHtml = '<span><i class="bi bi-hdd-network"></i>' + eventData.concentrator + '</span>';
+                        concentratorHtml = '<span class="' + (isRadiusAlert ? 'dashboard-radius-concentrator' : '') + '"><i class="bi bi-hdd-network"></i>' + dashboardRadiusEscape(eventData.concentrator) + '</span>';
                     }
                     var contractStatus = eventData.contract_status ? eventData.contract_status : (isRadiusAlert ? 'inactive' : 'active');
                     var contractIcon = eventData.contract_icon ? eventData.contract_icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : 'bi bi-shield-check');
                     var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Falha de integração' : 'Contrato ativo');
                     var radiusAction = isRadiusAlert ? '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-radius-retest" data-radius-retest="1">Executar novamente</button><span class="dashboard-radius-result"></span></div>' : '';
+                    var radiusFailures = isRadiusAlert ? radiusFailureDetails(eventData.routers || [], false) : '';
                     var descriptionHtml = eventData.description ? '<p class="dashboard-session-toast-description">' + eventData.description + '</p>' : '';
                     var connectionIcon = eventData.connection_state === 'online' ? 'bi-wifi' : (eventData.connection_state === 'disconnected' ? 'bi-wifi-off' : 'bi-circle-fill');
                     var connectionHtml = eventData.connection_label ? '<div class="dashboard-session-toast-status is-' + (eventData.connection_state || 'offline') + '"><i class="bi ' + connectionIcon + '"></i><span>' + eventData.connection_label + '</span></div>' : '';
@@ -2254,7 +2320,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         concentratorHtml +
                         '<span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span>' +
                         '</div>' +
-                        connectionHtml + (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') + radiusAction +
+                        connectionHtml + (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') + radiusFailures + radiusAction +
                         '</div>';
 
                     list.prepend(item);
@@ -2376,28 +2442,92 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     }
                 });
 
-                jQuery(document).on('click', '[data-radius-retest="1"]', function(event) {
-                    event.preventDefault();
-                    var button = jQuery(this);
-                    var toast = button.closest('.dashboard-session-toast');
-                    var result = toast.find('.dashboard-radius-result');
-                    button.prop('disabled', true).text('Testando...');
-                    result.text('Verificando todos os ramais');
+                function ensureRadiusTestModal() {
+                    var modal = document.getElementById('dashboard-radius-modal');
+                    if (modal) return modal;
+                    modal = document.createElement('div');
+                    modal.id = 'dashboard-radius-modal';
+                    modal.className = 'dashboard-radius-modal';
+                    modal.innerHTML = '<div class="dashboard-radius-dialog" role="dialog" aria-modal="true" aria-labelledby="dashboard-radius-modal-title">' +
+                        '<div class="dashboard-radius-modal-head"><h3 id="dashboard-radius-modal-title">Teste de integração Radius</h3><button type="button" class="dashboard-radius-modal-close" data-radius-modal-close="1" aria-label="Fechar">&times;</button></div>' +
+                        '<div class="dashboard-radius-modal-body"><div class="dashboard-radius-progress"><i class="bi bi-arrow-repeat"></i><span>Aguardando execução do teste.</span></div><ul class="dashboard-radius-modal-list"></ul></div>' +
+                        '<div class="dashboard-radius-modal-actions"><button type="button" class="dashboard-radius-modal-dismiss" data-radius-modal-close="1">Fechar</button><button type="button" class="dashboard-radius-modal-repeat" data-radius-modal-repeat="1">Repetir teste</button></div></div>';
+                    document.body.appendChild(modal);
+                    return modal;
+                }
+
+                function updateRadiusToast(toast, response) {
+                    if (!toast || !toast.length) return;
+                    var routers = Array.isArray(response.routers) ? response.routers : [];
+                    var failures = routers.filter(function(router) { return router && router.ok !== true; });
+                    toast.find('.dashboard-radius-failures').remove();
+                    toast.find('.dashboard-radius-result').text(response.message || 'Teste concluído.');
+                    if (!failures.length && response.ok) {
+                        toast.attr('data-radius-normalized', '1');
+                        toast.find('.dashboard-radius-concentrator').html('<i class="bi bi-hdd-network"></i>Nenhum concentrador com falha');
+                        toast.find('.dashboard-session-toast-status').removeClass('is-inactive').addClass('is-active').html('<i class="bi bi-check-circle-fill"></i><span>Integração normalizada</span>');
+                    } else {
+                        toast.removeAttr('data-radius-normalized');
+                        toast.find('.dashboard-radius-concentrator').html('<i class="bi bi-hdd-network"></i>' + failures.length + ' concentrador(es) com falha');
+                        var details = radiusFailureDetails(failures, false);
+                        toast.find('.dashboard-session-toast-actions').before(details);
+                    }
+                }
+
+                function runRadiusTest(modal, toast) {
+                    var root = jQuery(modal);
+                    var progress = root.find('.dashboard-radius-progress');
+                    var list = root.find('.dashboard-radius-modal-list');
+                    var repeat = root.find('[data-radius-modal-repeat="1"]');
+                    repeat.prop('disabled', true).text('Testando...');
+                    progress.removeClass('is-success is-error').html('<i class="bi bi-arrow-repeat"></i><span>Testando todos os concentradores cadastrados...</span>');
+                    list.empty();
                     jQuery.ajax({url: 'radius_test.php', method: 'POST', dataType: 'json'})
                         .done(function(response) {
-                            result.text(response.message || 'Teste concluído.');
-                            if (response.ok) {
-                                toast.find('.dashboard-session-toast-status').removeClass('is-inactive').addClass('is-active').html('<i class="bi bi-check-circle-fill"></i><span>Integração normalizada</span>');
-                                button.remove();
-                                window.setTimeout(function () { toast.remove(); }, 3500);
-                            } else {
-                                button.prop('disabled', false).text('Executar novamente');
-                            }
+                            var routers = Array.isArray(response.routers) ? response.routers : [];
+                            var rows = routers.map(function(router) {
+                                var ok = router && router.ok === true;
+                                return '<li><strong>' + dashboardRadiusEscape(router.name || router.router || 'Concentrador') + '</strong><span>' + dashboardRadiusEscape(router.router || '-') + '</span><span style="color:' + (ok ? '#18794a' : '#b42318') + ';font-weight:700">' + dashboardRadiusEscape(router.reason || (ok ? 'Conexão realizada com sucesso' : 'Falha')) + '</span></li>';
+                            }).join('');
+                            list.html(rows || '<li><strong>Nenhum concentrador encontrado.</strong></li>');
+                            progress.addClass(response.ok ? 'is-success' : 'is-error').html('<i class="bi ' + (response.ok ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + '"></i><span>' + dashboardRadiusEscape(response.message || 'Teste concluído.') + '</span>');
+                            updateRadiusToast(toast, response);
                         })
-                        .fail(function () {
-                            result.text('Não foi possível executar o teste.');
-                            button.prop('disabled', false).text('Executar novamente');
+                        .fail(function() {
+                            progress.addClass('is-error').html('<i class="bi bi-exclamation-triangle-fill"></i><span>Não foi possível executar o teste. Tente novamente.</span>');
+                        })
+                        .always(function() {
+                            repeat.prop('disabled', false).text('Repetir teste');
                         });
+                }
+
+                jQuery(document).on('click', '[data-radius-retest="1"]', function(event) {
+                    event.preventDefault();
+                    var toast = jQuery(this).closest('.dashboard-session-toast');
+                    var modal = ensureRadiusTestModal();
+                    jQuery(modal).data('radius-toast', toast).addClass('is-open');
+                    runRadiusTest(modal, toast);
+                });
+
+                jQuery(document).on('click', '[data-radius-modal-repeat="1"]', function(event) {
+                    event.preventDefault();
+                    var modal = ensureRadiusTestModal();
+                    runRadiusTest(modal, jQuery(modal).data('radius-toast'));
+                });
+
+                jQuery(document).on('click', '[data-radius-modal-close="1"]', function(event) {
+                    event.preventDefault();
+                    var modal = ensureRadiusTestModal();
+                    var toast = jQuery(modal).data('radius-toast');
+                    jQuery(modal).removeClass('is-open');
+                    if (toast && toast.attr('data-radius-normalized') === '1') {
+                        toast.remove();
+                        toggleToastToolbar();
+                    }
+                });
+
+                jQuery(document).on('click', '#dashboard-radius-modal', function(event) {
+                    if (event.target === this) jQuery(this).find('[data-radius-modal-close="1"]').first().trigger('click');
                 });
 
                 jQuery(document).on('click', '[data-minimize-session-popups="1"]', function(event) {
