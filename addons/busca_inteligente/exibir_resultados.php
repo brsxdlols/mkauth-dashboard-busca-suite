@@ -619,6 +619,24 @@
             column-gap: 12px;
         }
 
+        .client-row {
+            position: relative;
+            margin-bottom: 12px;
+            padding-top: 16px;
+            border: 1px solid rgba(148, 163, 184, .18);
+            overflow: hidden;
+        }
+
+        .client-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #2f6fdd, #67a2f3);
+        }
+
         .client-head > *,
         .client-row > * {
             width: auto !important;
