@@ -640,7 +640,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             left: 50%;
             transform: translateX(-50%);
             z-index: 1075;
-            width: min(820px, calc(100vw - 28px));
+            width: min(900px, calc(100vw - 28px));
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -664,6 +664,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(240px,1fr) auto; align-items:center; gap:10px 20px; }
         .dashboard-client-state-identity { min-width:0; }
         .dashboard-client-state-context { display:flex; align-items:center; gap:12px; min-width:0; }
+        .dashboard-client-state-context .dashboard-session-toast-meta { flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-label,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-title,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
@@ -676,9 +677,9 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-session-toast.is-client-state .dashboard-session-toast-label { color:rgba(255,255,255,.78); }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { background:rgba(255,255,255,.18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-status { background:rgba(255,255,255,.94); color:#174a83; }
-        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-online { background:#dcfce7; color:#166534; }
-        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-offline { background:#e2e8f0; color:#334155; }
-        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-disconnected { background:#fff1c2; color:#8a5700; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-online { background:#16a34a; color:#fff; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-offline { background:#475569; color:#fff; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-disconnected { background:#f59e0b; color:#fff; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-close { color:rgba(255,255,255,.82); }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-close:hover { color:#fff; }
 
