@@ -219,6 +219,7 @@ if ($query_client_state_events) {
             'datetime' => $mysql_event_time,
             'formatted_time' => $event_time->format('d/m H:i:s'),
             'label' => $label,
+            'action_style' => $is_trust ? 'trust' : ($is_unlock ? 'unlocked' : 'blocked'),
             'icon' => $icon,
             'description' => $is_trust ? 'Liberação temporária registrada pelo sistema' : ($is_unlock ? 'Pagamento identificado pelo sistema' : 'Bloqueio financeiro aplicado'),
             'connection_state' => $connection_state,

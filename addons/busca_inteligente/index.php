@@ -61,6 +61,12 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .trust-unlock-frame { display:block; width:100%; height:560px; border:0; background:#fff; }
         .smart-state-toast-stack { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:1085; width:min(900px,calc(100vw - 28px)); display:flex; flex-direction:column; gap:10px; pointer-events:none; }
         .smart-state-toast { position:relative; display:flex; align-items:center; gap:10px; padding:10px 44px 10px 12px; border:1px solid #0f5dcc; border-left:5px solid #0b4fae; border-radius:999px; background:linear-gradient(135deg,#2478e9 0%,#1264d6 100%); box-shadow:0 16px 38px rgba(18,100,214,.30); color:#fff; pointer-events:auto; animation:smartStateToastIn .25s ease both; }
+        .smart-state-toast.is-action-blocked { border-color:#b91c1c; border-left-color:#7f1d1d; background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%); box-shadow:0 16px 38px rgba(220,38,38,.30); }
+        .smart-state-toast.is-action-unlocked { border-color:#15803d; border-left-color:#14532d; background:linear-gradient(135deg,#22a95b 0%,#168447 100%); box-shadow:0 16px 38px rgba(22,132,71,.30); }
+        .smart-state-toast.is-action-trust { border-color:#d69e00; border-left-color:#a16207; background:linear-gradient(135deg,#facc15 0%,#eab308 100%); box-shadow:0 16px 38px rgba(234,179,8,.30); color:#3f3000; }
+        .smart-state-toast.is-action-trust .smart-state-toast-label,.smart-state-toast.is-action-trust .smart-state-toast-title,.smart-state-toast.is-action-trust .smart-state-toast-meta { color:#3f3000; }
+        .smart-state-toast.is-action-trust .smart-state-toast-label { color:rgba(63,48,0,.72); }
+        .smart-state-toast.is-action-trust .smart-state-toast-icon { color:#3f3000; background:rgba(255,255,255,.30); }
         .smart-state-toast-icon { display:flex; align-items:center; justify-content:center; width:34px; height:34px; flex:0 0 34px; border-radius:50%; background:rgba(255,255,255,.18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); color:#fff; font-size:15px; }
         .smart-state-toast-content { min-width:0; flex:1; display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(240px,1fr) auto; align-items:center; gap:10px 20px; }.smart-state-identity{min-width:0}.smart-state-context{display:flex;align-items:center;gap:12px;min-width:0}.smart-state-toast-label { color:rgba(255,255,255,.78); font-size:9px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; }.smart-state-toast-title { margin:0; color:#fff; font-size:13px; font-weight:750; white-space:nowrap; }.smart-state-toast-description { margin:0; color:#fff; font-size:10px; white-space:nowrap; }
         .smart-state-toast-meta { display:flex; flex-direction:column; align-items:flex-start; flex-wrap:nowrap; gap:2px; color:#fff; font-size:10px; white-space:nowrap; }.smart-state-toast-meta span { display:inline-flex; align-items:center; gap:4px; }
@@ -153,7 +159,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             sessionStorage.setItem(storageKey,'1');
             var state=data.connection_state || 'offline';
             var icon=state==='online'?'bi-wifi':(state==='disconnected'?'bi-wifi-off':'bi-circle-fill');
-            var item=document.createElement('div'); item.className='smart-state-toast';
+            var item=document.createElement('div'); item.className='smart-state-toast is-action-'+clean(data.action_style || 'unlocked');
             item.innerHTML='<button type="button" class="smart-state-toast-close" aria-label="Fechar">&times;</button>'+
                 '<span class="smart-state-toast-icon"><i class="'+clean(data.icon || 'bi bi-info-circle-fill')+'"></i></span><div class="smart-state-toast-content">'+
                 '<div class="smart-state-identity"><span class="smart-state-toast-label">'+clean(data.label)+'</span><p class="smart-state-toast-title">'+clean(data.name)+'</p></div>'+

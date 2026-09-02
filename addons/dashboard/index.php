@@ -659,6 +659,15 @@ if (isset($_SESSION['MM_Usuario'])) {
             color: #fff;
             box-shadow: 0 16px 38px rgba(18,100,214,.30);
         }
+        .dashboard-session-toast.is-client-state.is-client-state-blocked { border-color:#b91c1c; border-left-color:#7f1d1d; background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%); box-shadow:0 16px 38px rgba(220,38,38,.30); }
+        .dashboard-session-toast.is-client-state.is-client-state-unlocked { border-color:#15803d; border-left-color:#14532d; background:linear-gradient(135deg,#22a95b 0%,#168447 100%); box-shadow:0 16px 38px rgba(22,132,71,.30); }
+        .dashboard-session-toast.is-client-state.is-client-state-trust { border-color:#d69e00; border-left-color:#a16207; background:linear-gradient(135deg,#facc15 0%,#eab308 100%); box-shadow:0 16px 38px rgba(234,179,8,.30); color:#3f3000; }
+        .dashboard-session-toast.is-client-state.is-client-state-trust .dashboard-session-toast-label,
+        .dashboard-session-toast.is-client-state.is-client-state-trust .dashboard-session-toast-title,
+        .dashboard-session-toast.is-client-state.is-client-state-trust .dashboard-session-toast-meta { color:#3f3000; }
+        .dashboard-session-toast.is-client-state.is-client-state-trust .dashboard-session-toast-label { color:rgba(63,48,0,.72); }
+        .dashboard-session-toast.is-client-state.is-client-state-trust .dashboard-session-toast-icon { color:#3f3000; background:rgba(255,255,255,.30); }
+        .dashboard-session-toast.is-client-state.is-client-state-trust .dashboard-session-toast-close { color:rgba(63,48,0,.72); }
 
         .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { width:34px; height:34px; border-radius:50%; font-size:15px; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(240px,1fr) auto; align-items:center; gap:10px 20px; }
@@ -2201,7 +2210,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     if (!isClientState) ensureToastToolbar(stack);
                     var item = document.createElement('div');
 
-                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isRadiusAlert ? 'is-guide' : (isClientState ? 'is-client-state' : (isLogin ? 'is-login' : 'is-logout'))));
+                    item.className = 'dashboard-session-toast ' + (eventData.guide ? 'is-guide' : (isRadiusAlert ? 'is-guide' : (isClientState ? 'is-client-state is-client-state-' + (eventData.action_style || 'unlocked') : (isLogin ? 'is-login' : 'is-logout'))));
                     item.setAttribute('data-event-id', eventData.id);
                     if (eventData.persistent) {
                         item.setAttribute('data-persistent', '1');
