@@ -636,11 +636,11 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-client-state-toast-stack {
             position: fixed;
-            top: 72px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1075;
-            width: min(430px, calc(100vw - 28px));
+            width: min(820px, calc(100vw - 28px));
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -651,7 +651,25 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-session-toast.is-client-state {
             border-left: 5px solid #2563eb;
+            border-radius: 999px;
+            padding: 10px 44px 10px 12px;
+            align-items: center;
             background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(244,249,255,.98));
+        }
+
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { width:34px; height:34px; border-radius:50%; font-size:15px; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:flex; align-items:center; justify-content:center; gap:12px; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-label,
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-title,
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-meta { margin:0; white-space:nowrap; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status { margin:0; white-space:nowrap; }
+
+        @media (max-width:760px) {
+            .dashboard-client-state-toast-stack { bottom:12px; width:calc(100vw - 20px); }
+            .dashboard-session-toast.is-client-state { border-radius:18px; align-items:flex-start; }
+            .dashboard-session-toast.is-client-state .dashboard-session-toast-content { align-items:flex-start; justify-content:flex-start; flex-wrap:wrap; gap:6px 10px; }
+            .dashboard-session-toast.is-client-state .dashboard-session-toast-description { width:100%; white-space:normal; }
         }
 
         .dashboard-session-toast.is-fading {
