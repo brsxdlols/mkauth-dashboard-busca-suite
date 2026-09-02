@@ -635,7 +635,7 @@
             left: 0;
             right: 0;
             height: 6px;
-            background: #29313a;
+            background: #29313a !important;
         }
 
         .client-head > *,
@@ -822,7 +822,7 @@
             left: 0;
             right: 0;
             height: 6px;
-            background: #29313a;
+            background: #29313a !important;
         }
 
         .client-row .client-name-col {
