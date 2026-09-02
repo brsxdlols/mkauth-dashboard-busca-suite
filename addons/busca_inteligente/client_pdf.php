@@ -14,7 +14,9 @@ $extension = file_exists(__DIR__ . '/../../cliente_info.hhvm') ? 'hhvm' : 'php';
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = isset($_SERVER['HTTP_HOST']) ? preg_replace('/[^A-Za-z0-9.:-]/', '', $_SERVER['HTTP_HOST']) : '127.0.0.1';
 $url = $scheme . '://' . $host . '/admin/cliente_info.' . $extension . '?cliente=' . rawurlencode($uuid);
-$temp = tempnam(sys_get_temp_dir(), 'mka_client_');
+$tempDirectory = __DIR__ . '/tmp';
+if (!is_dir($tempDirectory)) @mkdir($tempDirectory, 0770, true);
+$temp = tempnam($tempDirectory, 'mka_client_');
 if ($temp === false) { http_response_code(500); exit('Não foi possível preparar o PDF.'); }
 $pdf = $temp . '.pdf';
 @unlink($temp);

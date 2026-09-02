@@ -99,6 +99,13 @@ rm -rf "${TARGET_ADDONS_DIR}/dashboard"
 cp -a "${SCRIPT_DIR}/addons/dashboard" "${TARGET_ADDONS_DIR}/dashboard"
 rm -rf "${TARGET_ADDONS_DIR}/busca_inteligente"
 cp -a "${SCRIPT_DIR}/addons/busca_inteligente" "${TARGET_ADDONS_DIR}/busca_inteligente"
+mkdir -p "${TARGET_ADDONS_DIR}/busca_inteligente/tmp"
+chmod 0770 "${TARGET_ADDONS_DIR}/busca_inteligente/tmp"
+if id www-data >/dev/null 2>&1; then
+  chown www-data:www-data "${TARGET_ADDONS_DIR}/busca_inteligente/tmp"
+elif id apache >/dev/null 2>&1; then
+  chown apache:apache "${TARGET_ADDONS_DIR}/busca_inteligente/tmp"
+fi
 rm -rf "${TARGET_ADDONS_DIR}/dashboard-legado"
 cp -a "${SCRIPT_DIR}/addons/dashboard-legado" "${TARGET_ADDONS_DIR}/dashboard-legado"
 rm -rf "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
