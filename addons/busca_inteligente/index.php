@@ -85,7 +85,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <div class="score-modal-card">
             <div class="score-modal-head"><h2 id="clientScoreModalTitle">Detalhes do Score</h2><button type="button" class="score-modal-close" aria-label="Fechar">&times;</button></div>
             <div class="score-modal-body">
-                <div class="score-modal-value"><span>Score</span><strong id="clientScoreModalValue">0</strong></div>
+                <div class="score-modal-value"><strong id="clientScoreModalValue">0</strong></div>
                 <div class="score-history-label">Histórico dos últimos pagamentos</div>
                 <div class="score-history-dots" id="clientScoreHistory"></div>
                 <div class="score-history-legend"><span><i style="background:#e5484d"></i>Em atraso</span><span><i style="background:#94a3b8"></i>No vencimento</span><span><i style="background:#20c963"></i>Antecipado</span></div>
