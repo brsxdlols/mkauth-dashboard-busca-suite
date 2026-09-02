@@ -615,16 +615,17 @@
         .client-head,
         .client-row {
             display: grid;
-            grid-template-columns: 28px 42px minmax(280px, 1.45fr) minmax(360px, 1.95fr) minmax(120px, 0.7fr) minmax(320px, 1.35fr);
+            grid-template-columns: 28px 42px minmax(300px, 1.35fr) minmax(330px, 1.45fr) minmax(170px, .75fr) minmax(330px, 1.25fr);
             column-gap: 12px;
         }
 
         .client-row {
             position: relative;
             margin-bottom: 12px;
-            padding-top: 16px;
+            padding: 16px 10px 10px;
             border: 1px solid rgba(148, 163, 184, .18);
             overflow: hidden;
+            align-items: stretch;
         }
 
         .client-row::before {
@@ -667,8 +668,26 @@
         .client-address-col,
         .client-contact-col,
         .client-data-col {
-            padding-left: 0;
-            padding-right: 0;
+            height: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(148, 163, 184, .18);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .58);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65);
+        }
+
+        .client-row.bg-light .client-name-col,
+        .client-row.bg-light .client-address-col,
+        .client-row.bg-light .client-contact-col,
+        .client-row.bg-light .client-data-col {
+            background: #f8fafc;
+        }
+
+        .client-row.bg-body-secondary .client-name-col,
+        .client-row.bg-body-secondary .client-address-col,
+        .client-row.bg-body-secondary .client-contact-col,
+        .client-row.bg-body-secondary .client-data-col {
+            background: rgba(255, 255, 255, .52);
         }
 
         .client-address-col {
