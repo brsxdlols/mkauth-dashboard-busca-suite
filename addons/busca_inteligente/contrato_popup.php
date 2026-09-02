@@ -140,16 +140,27 @@ $durations = mka_contract_allowed_durations();
                     </div>
 
                     <div class="actions">
-                        <button type="button" class="btn btn-secondary" onclick="window.close()">Fechar</button>
+                        <button type="button" class="btn btn-secondary" onclick="mkaCloseContractView()">Fechar</button>
                         <button type="submit" class="btn btn-primary"><?= $status_info['status'] === 'missing' ? 'Ativar contrato' : 'Renovar contrato'; ?></button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+        function mkaCloseContractView() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({type: 'mka-content-modal-close'}, window.location.origin);
+                return;
+            }
+            window.close();
+        }
+    </script>
     <?php if ($message !== '' && $message_class === 'success') { ?>
     <script>
-        if (window.opener && !window.opener.closed) {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({type: 'mka-content-modal-refresh'}, window.location.origin);
+        } else if (window.opener && !window.opener.closed) {
             try { window.opener.location.reload(); } catch (error) {}
         }
     </script>
