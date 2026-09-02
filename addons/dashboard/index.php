@@ -650,11 +650,14 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-client-state-toast-stack .dashboard-session-toast { pointer-events: auto; }
 
         .dashboard-session-toast.is-client-state {
-            border-left: 5px solid #2563eb;
+            border: 1px solid #0f5dcc;
+            border-left: 5px solid #0b4fae;
             border-radius: 999px;
             padding: 10px 44px 10px 12px;
             align-items: center;
-            background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(244,249,255,.98));
+            background: linear-gradient(135deg, #2478e9 0%, #1264d6 100%);
+            color: #fff;
+            box-shadow: 0 16px 38px rgba(18,100,214,.30);
         }
 
         .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { width:34px; height:34px; border-radius:50%; font-size:15px; }
@@ -666,6 +669,15 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-meta { margin:0; white-space:nowrap; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-status { margin:0; white-space:nowrap; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-label,
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-title,
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-meta { color:#fff; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-label { color:rgba(255,255,255,.78); }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { background:rgba(255,255,255,.18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status { background:rgba(255,255,255,.94); color:#174a83; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-close { color:rgba(255,255,255,.82); }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-close:hover { color:#fff; }
 
         @media (max-width:760px) {
             .dashboard-client-state-toast-stack { bottom:12px; width:calc(100vw - 20px); }
@@ -701,9 +713,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             background: linear-gradient(135deg, #ff7b7d 0%, #e04143 100%);
         }
 
-        .dashboard-session-toast.is-client-state .dashboard-session-toast-icon {
-            background: linear-gradient(135deg, #3b8df5 0%, #1769e8 100%);
-        }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { background:rgba(255,255,255,.18); }
 
         .dashboard-session-toast-content {
             min-width: 0;
