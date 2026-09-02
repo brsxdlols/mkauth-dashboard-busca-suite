@@ -755,10 +755,54 @@
     }
 
     @media (max-width: 575.98px) {
+        .client-results-count {
+            display: block;
+            margin: 12px 5px 8px;
+            font-size: 14px;
+            line-height: 1.35;
+        }
+
+        .client-head {
+            min-height: 44px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+        }
+
         .client-row {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            padding: 11px 10px;
             border: 1px solid rgba(148, 163, 184, .18);
             box-shadow: 0 8px 20px rgba(15, 23, 42, .05);
+        }
+
+        .client-row .client-name-col {
+            padding-bottom: 7px;
+        }
+
+        .client-row .client-address-col,
+        .client-row .client-contact-col,
+        .client-row .client-data-col {
+            padding: 8px 4px 2px;
+        }
+
+        .client-row .client-name-col p,
+        .client-row .client-address-col p,
+        .client-row .client-contact-col p,
+        .client-row .client-data-col p {
+            margin-bottom: 4px;
+        }
+
+        .client-row .client-meta-stack {
+            gap: 2px;
+            margin: 4px 0 6px;
+        }
+
+        .client-row .client-action-toolbar {
+            gap: 5px;
+        }
+
+        .client-row .map-link-btn {
+            margin-top: 4px;
         }
 
         .client-name-col,
@@ -842,7 +886,7 @@ $tot_clientes = $tot_resultados + $count_adicional;
 
 if ($acesso_permitido) {
 ?>
-    <b>Resultados Encontrados = <?= $tot_clientes; ?></b>
+    <b class="client-results-count">Resultados Encontrados = <?= $tot_clientes; ?></b>
 
 <?php
 }
