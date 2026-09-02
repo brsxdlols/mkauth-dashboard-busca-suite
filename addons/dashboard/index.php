@@ -658,7 +658,9 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { width:34px; height:34px; border-radius:50%; font-size:15px; }
-        .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:flex; align-items:center; justify-content:center; gap:12px; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:grid; grid-template-columns:minmax(210px,1.2fr) minmax(240px,1fr) auto; align-items:center; gap:10px 20px; }
+        .dashboard-client-state-identity { min-width:0; }
+        .dashboard-client-state-context { display:flex; align-items:center; gap:12px; min-width:0; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-label,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-title,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
@@ -668,7 +670,9 @@ if (isset($_SESSION['MM_Usuario'])) {
         @media (max-width:760px) {
             .dashboard-client-state-toast-stack { bottom:12px; width:calc(100vw - 20px); }
             .dashboard-session-toast.is-client-state { border-radius:18px; align-items:flex-start; }
-            .dashboard-session-toast.is-client-state .dashboard-session-toast-content { align-items:flex-start; justify-content:flex-start; flex-wrap:wrap; gap:6px 10px; }
+            .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:flex; align-items:flex-start; justify-content:flex-start; flex-wrap:wrap; gap:6px 10px; }
+            .dashboard-client-state-identity { width:100%; }
+            .dashboard-client-state-context { flex-wrap:wrap; }
             .dashboard-session-toast.is-client-state .dashboard-session-toast-description { width:100%; white-space:normal; }
         }
 
@@ -2203,7 +2207,16 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var connectionIcon = eventData.connection_state === 'online' ? 'bi-wifi' : (eventData.connection_state === 'disconnected' ? 'bi-wifi-off' : 'bi-circle-fill');
                     var connectionHtml = eventData.connection_label ? '<div class="dashboard-session-toast-status is-' + (eventData.connection_state || 'offline') + '"><i class="bi ' + connectionIcon + '"></i><span>' + eventData.connection_label + '</span></div>' : '';
 
-                    item.innerHTML =
+                    if (isClientState) {
+                        item.innerHTML =
+                            '<button type="button" class="dashboard-session-toast-close" data-close-session-toast="1" aria-label="Fechar">&times;</button>' +
+                            '<span class="dashboard-session-toast-icon"><i class="' + iconClass + '"></i></span>' +
+                            '<div class="dashboard-session-toast-content">' +
+                            '<div class="dashboard-client-state-identity"><span class="dashboard-session-toast-label">' + label + '</span><p class="dashboard-session-toast-title">' + eventData.name + '</p></div>' +
+                            '<div class="dashboard-client-state-context">' +
+                            '<div class="dashboard-session-toast-meta"><span><i class="bi bi-person-badge"></i>' + eventData.login + '</span><span><i class="bi bi-clock"></i>' + eventData.formatted_time + '</span></div>' +
+                            '</div>' + connectionHtml + '</div>';
+                    } else item.innerHTML =
                         '<button type="button" class="dashboard-session-toast-close" data-close-session-toast="1" aria-label="Fechar">&times;</button>' +
                         '<span class="dashboard-session-toast-icon"><i class="' + iconClass + '"></i></span>' +
                         '<div class="dashboard-session-toast-content">' +
