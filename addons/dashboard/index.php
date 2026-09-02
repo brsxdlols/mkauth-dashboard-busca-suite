@@ -675,7 +675,8 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-client-state-identity .dashboard-session-toast-title { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
         .dashboard-client-state-context { display:flex; align-items:center; gap:12px; min-width:0; overflow:hidden; }
         .dashboard-client-state-context .dashboard-session-toast-meta { width:100%; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; overflow:hidden; }
-        .dashboard-client-state-context .dashboard-session-toast-meta span { display:block; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .dashboard-client-state-context .dashboard-session-toast-meta span { display:flex; align-items:center; gap:6px; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .dashboard-client-state-context .dashboard-session-toast-meta span i { flex:0 0 auto; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-label,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-title,
         .dashboard-session-toast.is-client-state .dashboard-session-toast-description,
