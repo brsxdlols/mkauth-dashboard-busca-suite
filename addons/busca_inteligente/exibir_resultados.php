@@ -950,46 +950,12 @@ if ($acesso_permitido) {
     </div>
     <div class='col-auto client-status-col'> </div>
     <div class='col-12 col-md-3 client-name-col'>
-
-        <?php
-        if ($organizar == 'nome') {
-        ?>
-            <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=nome DESC&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right" class='center'>Nome Completo</p>
-            </a>
-        <?php
-        } else {
-
-        ?>
-            <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=nome&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p style="text-align:right" class='center'>Nome Completo</p>
-            </a>
-        <?php
-        }
-
-        ?>
-
+        <p class='center'>Nome Completo</p>
     </div>
 
     <div class='col-12 col-md-4 client-address-col'>
-        <?php
-        if ($organizar == 'endereco') {
-        ?>
-            <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco DESC&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p class='center'>Endereço</p>
-            </a>
-        <?php
-        } else {
-        ?>
-            <a class="link-light" href='?busca=<?= $busca2; ?>&organizar=endereco&num_registros=<?= $registros_por_pagina; ?>&pagina=<?= $pc; ?>'>
-            <p class='center'>Endereço</p>
-            </a>
-        <?php
-        }
-        ?>
-
-
-</div>
+        <p class='center'>Endereço</p>
+    </div>
     <div class='col-12 col-md-2 client-contact-col'>
         <p class='center'>Contato</p>
     </div>
