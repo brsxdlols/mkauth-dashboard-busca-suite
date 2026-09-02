@@ -664,10 +664,10 @@
             padding-left: 0;
         }
 
-        .client-name-col,
-        .client-address-col,
-        .client-contact-col,
-        .client-data-col {
+        .client-row .client-name-col,
+        .client-row .client-address-col,
+        .client-row .client-contact-col,
+        .client-row .client-data-col {
             height: 100%;
             padding: 10px 12px;
             border: 1px solid rgba(148, 163, 184, .18);
