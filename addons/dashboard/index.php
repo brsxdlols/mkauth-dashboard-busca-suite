@@ -676,6 +676,9 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-session-toast.is-client-state .dashboard-session-toast-label { color:rgba(255,255,255,.78); }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-icon { background:rgba(255,255,255,.18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-status { background:rgba(255,255,255,.94); color:#174a83; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-online { background:#dcfce7; color:#166534; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-offline { background:#e2e8f0; color:#334155; }
+        .dashboard-session-toast.is-client-state .dashboard-session-toast-status.is-disconnected { background:#fff1c2; color:#8a5700; }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-close { color:rgba(255,255,255,.82); }
         .dashboard-session-toast.is-client-state .dashboard-session-toast-close:hover { color:#fff; }
 
