@@ -17,6 +17,6 @@ a { color:#174f9b!important; text-decoration:none!important; }
 .mka-last-connections thead th { background:#edf4f7!important; color:#172033!important; }
 .mka-last-connections th, .mka-last-connections td { border:1px solid #ccd6dd!important; text-align:left!important; }
 @media screen {
-  .mka-connections-title { font-size:22px!important; padding:10px 12px!important; }
-  .mka-last-connections th, .mka-last-connections td { font-size:21.6px!important; padding:9px 12px!important; }
+  .mka-connections-title { font-size:1.2rem!important; padding:.55rem .7rem!important; }
+  .mka-last-connections th, .mka-last-connections td { font-size:1rem!important; padding:.45rem .65rem!important; }
 }
