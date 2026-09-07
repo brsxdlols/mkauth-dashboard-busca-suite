@@ -18,16 +18,17 @@ fetch() {
   local url="$1"
   local output="$2"
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$url" -o "$output"
+    curl -fsSL -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "$url" -o "$output"
   elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$output" "$url"
+    wget --no-cache -qO "$output" "$url"
   else
     echo "Erro: curl ou wget e obrigatorio para baixar o pacote." >&2
     exit 1
   fi
 }
 
-ARCHIVE_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${REPO_REF}.tar.gz"
+CACHE_BUSTER="$(date +%s)"
+ARCHIVE_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${REPO_REF}.tar.gz?cache=${CACHE_BUSTER}"
 echo "[1/4] Baixando pacote ${REPO_OWNER}/${REPO_NAME}@${REPO_REF}"
 fetch "${ARCHIVE_URL}" "${ARCHIVE_PATH}"
 
