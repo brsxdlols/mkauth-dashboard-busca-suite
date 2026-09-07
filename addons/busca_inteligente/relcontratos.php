@@ -86,7 +86,10 @@ if ($result) {
     .contract-search input { display:block; width:100%; margin-top:6px; padding:11px 13px; border:1px solid #cbd8e8; border-radius:10px; box-sizing:border-box; font-size:14px; }
     .contract-search button { flex:0 0 auto; min-height:42px; padding:0 20px; border:0; border-radius:10px; background:#1268db; color:#fff; font-weight:700; cursor:pointer; }
     .contract-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:12px 0 18px; }
-    .contract-summary-card { background:#fff; border:1px solid #dbe5f0; border-radius:18px; padding:16px; box-shadow:0 12px 30px rgba(15,23,42,.06); }
+    .contract-summary-card { width:100%; appearance:none; text-align:left; cursor:pointer; background:#fff; border:1px solid #dbe5f0; border-radius:18px; padding:16px; box-shadow:0 12px 30px rgba(15,23,42,.06); transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease; }
+    .contract-summary-card:hover { transform:translateY(-2px); border-color:#9fb9d6; box-shadow:0 16px 34px rgba(15,23,42,.12); }
+    .contract-summary-card:focus-visible { outline:3px solid rgba(18,104,219,.28); outline-offset:2px; }
+    .contract-summary-card.is-selected { border-color:#1268db; box-shadow:0 0 0 3px rgba(18,104,219,.16),0 16px 34px rgba(15,23,42,.12); }
     .contract-summary-card h3 { margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:#64748b; }
     .contract-summary-card strong { display:block; font-size:34px; line-height:1; }
     .contract-summary-card p { margin:8px 0 0; color:#475569; font-weight:700; }
@@ -121,10 +124,10 @@ if ($result) {
 </form>
 
 <div class="contract-summary-grid">
-    <div class="contract-summary-card is-active"><h3>Contrato ativo</h3><strong><?= $totals['active']; ?></strong><p>vigência em dia</p></div>
-    <div class="contract-summary-card is-warning"><h3>A vencer</h3><strong><?= $totals['warning']; ?></strong><p>renovar logo</p></div>
-    <div class="contract-summary-card is-expired"><h3>Expirado</h3><strong><?= $totals['expired']; ?></strong><p>pedindo renovação</p></div>
-    <div class="contract-summary-card is-missing"><h3>Sem contrato</h3><strong><?= $totals['missing']; ?></strong><p>aguarda ativação</p></div>
+    <button type="button" class="contract-summary-card is-active" data-status-filter="active" aria-pressed="false"><h3>Contrato ativo</h3><strong><?= $totals['active']; ?></strong><p>vigência em dia</p></button>
+    <button type="button" class="contract-summary-card is-warning" data-status-filter="warning" aria-pressed="false"><h3>A vencer</h3><strong><?= $totals['warning']; ?></strong><p>prestes a expirar</p></button>
+    <button type="button" class="contract-summary-card is-expired" data-status-filter="expired" aria-pressed="false"><h3>Expirado</h3><strong><?= $totals['expired']; ?></strong><p>pedindo renovação</p></button>
+    <button type="button" class="contract-summary-card is-missing" data-status-filter="missing" aria-pressed="false"><h3>Sem contrato</h3><strong><?= $totals['missing']; ?></strong><p>aguarda ativação</p></button>
 </div>
 
 <div class="contract-table-wrap">
@@ -147,12 +150,12 @@ if ($result) {
         $end = $status['end_date'] ? date('d/m/Y', strtotime($status['end_date'])) : '--';
         $label = $status['label'];
         if ($status['status'] === 'expired' && $status['days'] !== null) {
-            $label .= ' há ' . abs((int) $status['days']) . ' dias';
+            $label = 'Expirado há ' . abs((int) $status['days']) . ' dias';
         } elseif ($status['status'] === 'warning' && $status['days'] !== null) {
-            $label .= ' em ' . abs((int) $status['days']) . ' dias';
+            $label = 'Prestes a expirar em ' . abs((int) $status['days']) . ' dias';
         }
     ?>
-    <tr>
+    <tr data-contract-status="<?= mka_contract_escape($status['status']); ?>">
         <td><?= $start; ?></td>
         <td><?= $end; ?></td>
         <td><a class="contract-client-link" href="../../cliente_alt<?= $ext_mk; ?>?uuid=<?= urlencode($row['uuid']); ?>" target="_blank"><?= mka_contract_escape($row['nome']); ?> <b>[<?= mka_contract_escape($row['login']); ?>]</b></a></td>
@@ -179,6 +182,8 @@ if ($result) {
 (function () {
     var input = document.getElementById('contract-live-search');
     var rows = Array.prototype.slice.call(document.querySelectorAll('.contract-table tbody tr'));
+    var cards = Array.prototype.slice.call(document.querySelectorAll('[data-status-filter]'));
+    var activeStatus = '';
     if (!input || !rows.length) return;
 
     function normalize(value) {
@@ -191,11 +196,25 @@ if ($result) {
     function filterContracts() {
         var term = normalize(input.value.trim());
         rows.forEach(function (row) {
-            row.style.display = !term || normalize(row.textContent).indexOf(term) !== -1 ? '' : 'none';
+            var matchesTerm = !term || normalize(row.textContent).indexOf(term) !== -1;
+            var matchesStatus = !activeStatus || row.getAttribute('data-contract-status') === activeStatus;
+            row.style.display = matchesTerm && matchesStatus ? '' : 'none';
         });
     }
 
     input.addEventListener('input', filterContracts);
+    cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            var selected = card.getAttribute('data-status-filter');
+            activeStatus = activeStatus === selected ? '' : selected;
+            cards.forEach(function (item) {
+                var pressed = item.getAttribute('data-status-filter') === activeStatus;
+                item.classList.toggle('is-selected', pressed);
+                item.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+            });
+            filterContracts();
+        });
+    });
     filterContracts();
 })();
 </script>
