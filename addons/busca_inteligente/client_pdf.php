@@ -1,5 +1,5 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) { session_name('mka'); session_start(); }
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 require_once __DIR__ . '/config.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit('Use o botão Baixar PDF dentro das informações do cliente.'); }
 if (empty($_SESSION['mka_logado']) && empty($_SESSION['MKA_Usuario']) && empty($_SESSION['MM_Usuario'])) { http_response_code(401); exit('Sessão expirada.'); }
