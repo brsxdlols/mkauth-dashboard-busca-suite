@@ -17,9 +17,11 @@ if (stripos($html, '<base ') === false) $html = preg_replace('/(<head[^>]*>)/i',
 $html = preg_replace('#<script\b[^>]*>.*?</script>#is', '', $html);
 $tempDirectory = __DIR__ . '/tmp';
 if (!is_dir($tempDirectory)) @mkdir($tempDirectory, 0770, true);
-$htmlFile = tempnam($tempDirectory, 'mka_html_');
+$htmlTemp = tempnam($tempDirectory, 'mka_html_');
 $pdfFile = tempnam($tempDirectory, 'mka_pdf_');
-if ($htmlFile === false || $pdfFile === false) { http_response_code(500); exit('Não foi possível preparar o PDF.'); }
+if ($htmlTemp === false || $pdfFile === false) { http_response_code(500); exit('Não foi possível preparar o PDF.'); }
+$htmlFile = $htmlTemp . '.html';
+if (!@rename($htmlTemp, $htmlFile)) { @unlink($htmlTemp); @unlink($pdfFile); http_response_code(500); exit('Não foi possível preparar o PDF.'); }
 @unlink($pdfFile); $pdfFile .= '.pdf';
 $providerLogo = @file_get_contents('/opt/mk-auth/mkfiles/logo.jpg');
 if ($providerLogo !== false) {
