@@ -126,7 +126,7 @@ if ($result) {
 </form>
 
 <div class="contract-summary-grid">
-    <button type="button" class="contract-summary-card is-all" data-status-filter="all" aria-pressed="false"><h3>Todos</h3><strong><?= count($rows); ?></strong><p>todos os contratos</p></button>
+    <button type="button" class="contract-summary-card is-all is-selected" data-status-filter="all" aria-pressed="true"><h3>Todos</h3><strong><?= count($rows); ?></strong><p>todos os contratos</p></button>
     <button type="button" class="contract-summary-card is-active" data-status-filter="active" aria-pressed="false"><h3>Contrato ativo</h3><strong><?= $totals['active']; ?></strong><p>vigência em dia</p></button>
     <button type="button" class="contract-summary-card is-warning" data-status-filter="warning" aria-pressed="false"><h3>A vencer</h3><strong><?= $totals['warning']; ?></strong><p>prestes a expirar</p></button>
     <button type="button" class="contract-summary-card is-expired" data-status-filter="expired" aria-pressed="false"><h3>Expirado</h3><strong><?= $totals['expired']; ?></strong><p>pedindo renovação</p></button>
@@ -186,7 +186,7 @@ if ($result) {
     var input = document.getElementById('contract-live-search');
     var rows = Array.prototype.slice.call(document.querySelectorAll('.contract-table tbody tr'));
     var cards = Array.prototype.slice.call(document.querySelectorAll('[data-status-filter]'));
-    var activeStatus = '';
+    var activeStatus = 'all';
     if (!input || !rows.length) return;
 
     function normalize(value) {
