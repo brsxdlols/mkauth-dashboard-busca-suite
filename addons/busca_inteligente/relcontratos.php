@@ -85,7 +85,7 @@ if ($result) {
     .contract-search label { flex:1 1 auto; margin:0; color:#334155; font-size:13px; font-weight:700; }
     .contract-search input { display:block; width:100%; margin-top:6px; padding:11px 13px; border:1px solid #cbd8e8; border-radius:10px; box-sizing:border-box; font-size:14px; }
     .contract-search button { flex:0 0 auto; min-height:42px; padding:0 20px; border:0; border-radius:10px; background:#1268db; color:#fff; font-weight:700; cursor:pointer; }
-    .contract-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:12px 0 18px; }
+    .contract-summary-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:12px 0 18px; }
     .contract-summary-card { width:100%; appearance:none; text-align:left; cursor:pointer; background:#fff; border:1px solid #dbe5f0; border-radius:18px; padding:16px; box-shadow:0 12px 30px rgba(15,23,42,.06); transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease; }
     .contract-summary-card:hover { transform:translateY(-2px); border-color:#9fb9d6; box-shadow:0 16px 34px rgba(15,23,42,.12); }
     .contract-summary-card:focus-visible { outline:3px solid rgba(18,104,219,.28); outline-offset:2px; }
@@ -94,6 +94,7 @@ if ($result) {
     .contract-summary-card strong { display:block; font-size:34px; line-height:1; }
     .contract-summary-card p { margin:8px 0 0; color:#475569; font-weight:700; }
     .contract-summary-card.is-active strong { color:#15803d; }
+    .contract-summary-card.is-all strong { color:#1268db; }
     .contract-summary-card.is-warning strong { color:#b45309; }
     .contract-summary-card.is-expired strong { color:#dc2626; }
     .contract-summary-card.is-missing strong { color:#334155; }
@@ -112,6 +113,7 @@ if ($result) {
     .contract-table tbody tr:nth-child(even) { background:#f6f8fb; }
     .contract-client-link { color:#193755; text-decoration:none; }
     .contract-client-link:hover { color:#1268db; text-decoration:underline; }
+    @media (max-width: 1100px) { .contract-summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
     @media (max-width: 900px) { .contract-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width: 560px) { .contract-summary-grid { grid-template-columns:1fr; } .contract-search { align-items:stretch; flex-direction:column; } .contract-search button { width:100%; } .contract-toolbar span { display:none; } }
 </style>
@@ -124,6 +126,7 @@ if ($result) {
 </form>
 
 <div class="contract-summary-grid">
+    <button type="button" class="contract-summary-card is-all" data-status-filter="all" aria-pressed="false"><h3>Todos</h3><strong><?= count($rows); ?></strong><p>todos os contratos</p></button>
     <button type="button" class="contract-summary-card is-active" data-status-filter="active" aria-pressed="false"><h3>Contrato ativo</h3><strong><?= $totals['active']; ?></strong><p>vigência em dia</p></button>
     <button type="button" class="contract-summary-card is-warning" data-status-filter="warning" aria-pressed="false"><h3>A vencer</h3><strong><?= $totals['warning']; ?></strong><p>prestes a expirar</p></button>
     <button type="button" class="contract-summary-card is-expired" data-status-filter="expired" aria-pressed="false"><h3>Expirado</h3><strong><?= $totals['expired']; ?></strong><p>pedindo renovação</p></button>
@@ -197,7 +200,7 @@ if ($result) {
         var term = normalize(input.value.trim());
         rows.forEach(function (row) {
             var matchesTerm = !term || normalize(row.textContent).indexOf(term) !== -1;
-            var matchesStatus = !activeStatus || row.getAttribute('data-contract-status') === activeStatus;
+            var matchesStatus = !activeStatus || activeStatus === 'all' || row.getAttribute('data-contract-status') === activeStatus;
             row.style.display = matchesTerm && matchesStatus ? '' : 'none';
         });
     }
