@@ -27,13 +27,13 @@ install.sh
 ### Instalacao direta via curl
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-dashboard-busca-suite/main/install-from-github.sh)
+bash <(curl -fsSL -H 'Cache-Control: no-cache' "https://raw.githubusercontent.com/brsxdlols/mkauth-dashboard-busca-suite/main/install-from-github.sh?cache=$(date +%s)")
 ```
 
 Opcionalmente, informe outro caminho do MK Auth e outro diretorio de backup:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-dashboard-busca-suite/main/install-from-github.sh) /opt/mk-auth/admin /opt/mk-auth/backups/codex-install
+bash <(curl -fsSL -H 'Cache-Control: no-cache' "https://raw.githubusercontent.com/brsxdlols/mkauth-dashboard-busca-suite/main/install-from-github.sh?cache=$(date +%s)") /opt/mk-auth/admin /opt/mk-auth/backups/codex-install
 ```
 
 Esse bootstrap:
