@@ -34,6 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ));
     }
 
+    if ($action === 'disable_radius_alert') {
+        $updated = mka_suite_set_radius_alert_enabled($conn, 'n');
+        json_response_dashboard(array(
+            'success' => $updated,
+            'radius_alert_enabled' => false,
+        ));
+    }
+
     json_response_dashboard(array(
         'success' => false,
         'enabled' => ($cfg_popup === 's'),
