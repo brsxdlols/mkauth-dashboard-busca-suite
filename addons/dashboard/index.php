@@ -831,6 +831,18 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-radius-retest:disabled { opacity: .65; cursor: wait; }
+        .dashboard-radius-hide {
+            border: 1px solid #cbd7e6;
+            border-radius: 9px;
+            background: #fff;
+            color: #52657d;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .dashboard-radius-hide:hover { background:#f1f5f9; color:#263a55; }
+        .dashboard-radius-hide:disabled { opacity:.65; cursor:wait; }
         .dashboard-radius-result { font-size: 11px; color: #61708d; }
 
         .dashboard-radius-failures { margin-top:8px; border:1px solid #dbe4f0; border-radius:10px; overflow:hidden; background:#f8fbff; }
@@ -2293,7 +2305,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var contractStatus = eventData.contract_status ? eventData.contract_status : (isRadiusAlert ? 'inactive' : 'active');
                     var contractIcon = eventData.contract_icon ? eventData.contract_icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : 'bi bi-shield-check');
                     var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Falha de integração' : 'Contrato ativo');
-                    var radiusAction = isRadiusAlert ? '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-radius-retest" data-radius-retest="1">Executar novamente</button><span class="dashboard-radius-result"></span></div>' : '';
+                    var radiusAction = isRadiusAlert ? '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-radius-hide" data-disable-radius-alert="1">Não mostrar mais</button><button type="button" class="dashboard-radius-retest" data-radius-retest="1">Executar novamente</button><span class="dashboard-radius-result"></span></div>' : '';
                     var radiusFailures = isRadiusAlert ? radiusFailureDetails(eventData.routers || [], false) : '';
                     var descriptionHtml = eventData.description ? '<p class="dashboard-session-toast-description">' + eventData.description + '</p>' : '';
                     var connectionIcon = eventData.connection_state === 'online' ? 'bi-wifi' : (eventData.connection_state === 'disconnected' ? 'bi-wifi-off' : 'bi-circle-fill');
@@ -2429,6 +2441,33 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 jQuery(document).on('click', '[data-clear-session-popups="1"]', function(event) {
                     event.preventDefault();
                     clearVisibleSessionToasts();
+                });
+
+                jQuery(document).on('click', '[data-disable-radius-alert="1"]', function(event) {
+                    event.preventDefault();
+                    var button = jQuery(this);
+                    var toast = button.closest('.dashboard-session-toast');
+                    button.prop('disabled', true).text('Ocultando...');
+                    jQuery.ajax({
+                        url: 'session_events.php',
+                        method: 'POST',
+                        dataType: 'json',
+                        data: { action: 'disable_radius_alert' }
+                    }).done(function(response) {
+                        if (!response || response.success !== true) {
+                            button.prop('disabled', false).text('Não mostrar mais');
+                            window.alert('Não foi possível desativar o alerta Radius.');
+                            return;
+                        }
+                        toast.remove();
+                        toggleToastToolbar();
+                        var list = document.getElementById('dashboard-session-toast-list');
+                        if (list && list.children.length === 0) jQuery('#dashboard-session-toast-stack').remove();
+                        window.alert('Alerta Radius ocultado. Para mostrar novamente, acesse Configurações e ative “Exibir alerta de integração Radius?”.');
+                    }).fail(function() {
+                        button.prop('disabled', false).text('Não mostrar mais');
+                        window.alert('Não foi possível desativar o alerta Radius.');
+                    });
                 });
 
                 jQuery(document).on('click', '[data-close-session-toast="1"]', function(event) {
