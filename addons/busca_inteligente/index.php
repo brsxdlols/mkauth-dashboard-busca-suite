@@ -175,14 +175,10 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         function loadRecentConnections(doc){if(!clientUuid)return Promise.resolve();connectionsPromise=fetch('client_connections.php?uuid='+encodeURIComponent(clientUuid),{credentials:'same-origin',cache:'no-store'}).then(function(response){if(!response.ok)throw new Error('Falha ao consultar conexões.');return response.json();}).then(function(payload){if(payload.ok)injectConnections(doc,payload);}).catch(function(){injectConnections(doc,{items:[]});});return connectionsPromise;}
         function applyClientReportLayout(){try{var doc=frame.contentDocument;if(!doc)return;if(clientUuid&&!doc.getElementById('mka-client-report-layout')){var style=document.createElement('link');style.id='mka-client-report-layout';style.rel='stylesheet';style.href='/admin/addons/busca_inteligente/client_pdf.css?v=8';doc.head.appendChild(style);var zoom=document.createElement('style');zoom.id='mka-client-report-screen-zoom';zoom.textContent='@media screen{html,body{font-size:1.05rem!important;line-height:1.4!important}td,th{font-size:1rem!important;padding:.45rem .65rem!important}h1{font-size:2.15rem!important}h2{font-size:1.65rem!important}h3,h4{font-size:1.25rem!important}}';doc.head.appendChild(zoom);}Array.prototype.forEach.call(doc.images,function(img){if(/img_nao_disp\.gif(?:\?|$)/i.test(img.src||'')){img.src='/mkfiles/logo.jpg';img.alt='Logo do provedor';img.style.objectFit='contain';}});loadRecentConnections(doc);}catch(e){}}
         window.mkaOpenContentModal=function(url,modalTitle){var match=String(url||'').match(/[?&](?:cliente|uuid)=([^&#]+)/);clientUuid=match?decodeURIComponent(match[1]):'';var isClient=clientUuid!=='';title.textContent=modalTitle||'Detalhes';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=!isClient;frame.src=url;modal.hidden=false;document.body.style.overflow='hidden';return false;};
-        window.mkaOpenRepairDiagnostic=function(action,login,clientName){
-            if(!window.confirm('Executar o diagnóstico e reparo do cliente '+(clientName||login)+'?'))return false;
+        window.mkaOpenRepairDiagnostic=function(login,clientName){
             clientUuid='';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=true;
-            title.textContent='Diagnóstico e reparo — '+(clientName||login);
-            frame.name='mkaRepairDiagnosticFrame';frame.src='about:blank';modal.hidden=false;document.body.style.overflow='hidden';
-            var form=document.createElement('form');form.method='POST';form.action=action;form.target=frame.name;form.style.display='none';
-            var input=document.createElement('input');input.type='hidden';input.name='login[]';input.value=login||'';form.appendChild(input);
-            document.body.appendChild(form);form.submit();form.remove();return false;
+            title.textContent='Diagnóstico da conexão — '+(clientName||login);
+            frame.name='mkaRepairDiagnosticFrame';frame.src='client_diagnostic.php?login='+encodeURIComponent(login||'');modal.hidden=false;document.body.style.overflow='hidden';return false;
         };
         frame.addEventListener('load',applyClientReportLayout);
         printBtn.addEventListener('click',function(){try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){window.alert('Não foi possível abrir a impressão.');}});
