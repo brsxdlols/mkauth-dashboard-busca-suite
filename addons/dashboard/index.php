@@ -2074,9 +2074,31 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             });
             // abre link excluir
             jQuery(document).on('click', '#link_excluir, .delete-installation-request', function() {
-                var uuid_solic = jQuery(this).attr("data-solic");
+                var button = jQuery(this);
+                var uuid_solic = button.attr("data-solic");
                 if (confirm('Realmente deseja excluir esta solicitacao?')) {
-                    mka_link('../../executar_mka.hhvm?acao=delsolic&uuid=' + encodeURIComponent(uuid_solic));
+                    button.css('pointer-events', 'none').attr('aria-disabled', 'true').data('original-html', button.html()).html('<i class="bi bi-hourglass-split"></i> Excluindo...');
+                    jQuery.ajax({
+                        url: 'delete_installation_request.php',
+                        method: 'POST',
+                        dataType: 'json',
+                        data: { uuid: uuid_solic }
+                    }).done(function(response) {
+                        if (!response || response.success !== true) {
+                            button.css('pointer-events', '').removeAttr('aria-disabled').html(button.data('original-html'));
+                            window.alert(response && response.message ? response.message : 'Não foi possível excluir a solicitação.');
+                            return;
+                        }
+                        button.closest('tr').fadeOut(220, function() {
+                            window.location.hash = 'solicitacoes-instalacao';
+                            window.location.reload();
+                        });
+                    }).fail(function(xhr) {
+                        button.css('pointer-events', '').removeAttr('aria-disabled').html(button.data('original-html'));
+                        var message = 'Não foi possível excluir a solicitação.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON.message;
+                        window.alert(message);
+                    });
                     return false;
                 }
             });
