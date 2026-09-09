@@ -1799,7 +1799,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         ?>
 
                                                                     </p>
-                                                                    <a class="connection-diagnostic-btn no_print" href="#" onclick="return mkaOpenRepairDiagnostic('../../reparar.<?= $links_ext; ?>', <?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente">
+                                                                    <a class="connection-diagnostic-btn no_print" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente">
                                                                         <i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar
                                                                     </a>
                                                                 </div>
