@@ -2089,9 +2089,34 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             window.alert(response && response.message ? response.message : 'Não foi possível excluir a solicitação.');
                             return;
                         }
-                        button.closest('tr').fadeOut(220, function() {
-                            window.location.hash = 'solicitacoes-instalacao';
-                            window.location.reload();
+                        var deletedRow = button.closest('tr');
+                        deletedRow.fadeOut(220);
+                        jQuery('#mka-delete-undo-notice').remove();
+                        var notice = jQuery('<div id="mka-delete-undo-notice" role="status" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#17324d;color:#fff;padding:13px 16px;border-radius:9px;box-shadow:0 8px 28px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-weight:600">Solicitação excluída. <button type="button" style="border:0;border-radius:7px;padding:8px 13px;background:#fff;color:#0b66d4;font-weight:700;cursor:pointer">Desfazer</button><button type="button" aria-label="Fechar" style="border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer">&times;</button></div>');
+                        jQuery('body').append(notice);
+                        var closeTimer = window.setTimeout(function() { notice.fadeOut(180, function() { notice.remove(); }); }, 10000);
+                        notice.find('button').eq(1).on('click', function() { window.clearTimeout(closeTimer); notice.remove(); });
+                        notice.find('button').eq(0).on('click', function() {
+                            var undoButton = jQuery(this).prop('disabled', true).text('Restaurando...');
+                            jQuery.ajax({
+                                url: 'undo_delete_installation_request.php',
+                                method: 'POST',
+                                dataType: 'json',
+                                data: { undo_token: response.undo_token }
+                            }).done(function(undoResponse) {
+                                if (!undoResponse || undoResponse.success !== true) {
+                                    undoButton.prop('disabled', false).text('Desfazer');
+                                    window.alert(undoResponse && undoResponse.message ? undoResponse.message : 'Não foi possível restaurar a solicitação.');
+                                    return;
+                                }
+                                window.clearTimeout(closeTimer);
+                                notice.html('Solicitação restaurada com sucesso.').css('background', '#16834b');
+                                deletedRow.fadeIn(220);
+                                window.setTimeout(function() { notice.fadeOut(180, function() { notice.remove(); }); }, 2500);
+                            }).fail(function(xhr) {
+                                undoButton.prop('disabled', false).text('Desfazer');
+                                window.alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Não foi possível restaurar a solicitação.');
+                            });
                         });
                     }).fail(function(xhr) {
                         button.css('pointer-events', '').removeAttr('aria-disabled').html(button.data('original-html'));
