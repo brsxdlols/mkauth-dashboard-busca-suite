@@ -1,7 +1,5 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 require_once __DIR__ . '/config.php';
-if (empty($_SESSION['mka_logado']) && empty($_SESSION['MKA_Usuario']) && empty($_SESSION['MM_Usuario'])) { http_response_code(401); exit('Sessão expirada.'); }
 $uuid=isset($_REQUEST['id'])?trim((string)$_REQUEST['id']):'';
 if(!preg_match('/^[A-Za-z0-9-]{16,64}$/',$uuid)){http_response_code(422);exit('Cliente inválido.');}
 $safe=mysqli_real_escape_string($link,$uuid);$message='';$ok=false;
