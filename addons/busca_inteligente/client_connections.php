@@ -16,7 +16,7 @@ $clientResult = @mysqli_query($link, "SELECT login FROM sis_cliente WHERE uuid_c
 if (!$clientResult || !($client = mysqli_fetch_assoc($clientResult))) mka_connections_reply(array('ok' => false, 'message' => 'Cliente não encontrado.'), 404);
 $loginSql = mysqli_real_escape_string($link, $client['login']);
 $items = array();
-$result = @mysqli_query($link, "SELECT framedipaddress, acctstarttime, acctstoptime, callingstationid FROM radacct WHERE username='{$loginSql}' ORDER BY acctstarttime DESC LIMIT 5");
+$result = @mysqli_query($link, "SELECT framedipaddress, acctstarttime, acctstoptime, callingstationid FROM radacct WHERE username='{$loginSql}' ORDER BY acctstarttime DESC LIMIT 10");
 if ($result) while ($row = mysqli_fetch_assoc($result)) {
     $start = strtotime($row['acctstarttime']);
     $stop = $row['acctstoptime'] && $row['acctstoptime'] !== '0000-00-00 00:00:00' ? strtotime($row['acctstoptime']) : false;
