@@ -989,7 +989,13 @@ if ($acesso_permitido) {
 <?php
 if ($check_online == 'mkauth') {
     // INFO DE CLIENTES ONLINE COM MKAUTH
-    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress, delegatedipv6prefix, delegatedipv6address, delegatedipv6addressmk FROM radacct WHERE acctstoptime IS NULL");
+    $radius_ipv6_fields = array();
+    foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk') as $ipv6_field) {
+        $ipv6_column_query = @mysqli_query($link, "SHOW COLUMNS FROM radacct LIKE '" . $ipv6_field . "'");
+        if ($ipv6_column_query && mysqli_num_rows($ipv6_column_query) > 0) $radius_ipv6_fields[] = $ipv6_field;
+    }
+    $radius_ipv6_select = empty($radius_ipv6_fields) ? '' : ', ' . implode(', ', $radius_ipv6_fields);
+    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress{$radius_ipv6_select} FROM radacct WHERE acctstoptime IS NULL");
 
     while ($row2 = mysqli_fetch_assoc($query_cliente_on)) {
         $username_on[trim(strtolower($row2['username']))] = strtolower($row2['username']);
@@ -997,8 +1003,8 @@ if ($check_online == 'mkauth') {
         $nas_ip[trim(strtolower($row2['username']))] = $row2['nasipaddress'];
         $ip_conn[trim(strtolower($row2['username']))] = $row2['framedipaddress'];
         $ipv6_key = trim(strtolower($row2['username']));
-        foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk') as $ipv6_field) {
-            if (!empty($row2[$ipv6_field])) { $ipv6_delegated[$ipv6_key] = $row2[$ipv6_field]; break; }
+        foreach ($radius_ipv6_fields as $ipv6_field) {
+            if (isset($row2[$ipv6_field]) && !empty($row2[$ipv6_field])) { $ipv6_delegated[$ipv6_key] = $row2[$ipv6_field]; break; }
         }
     }
 
@@ -1060,6 +1066,15 @@ if ($check_online == 'mkauth') {
 // Titulos Vencidos
 // $now = date('Y-m-d');
 
+$billing_accounts = array();
+$billing_name_column = @mysqli_query($link, "SHOW COLUMNS FROM sis_boleto LIKE 'nome'");
+if ($billing_name_column && mysqli_num_rows($billing_name_column) > 0) {
+    $billing_accounts_query = @mysqli_query($link, "SELECT id, nome FROM sis_boleto");
+    if ($billing_accounts_query) while ($billing_account_row = mysqli_fetch_assoc($billing_accounts_query)) {
+        $billing_accounts[(string) $billing_account_row['id']] = trim((string) $billing_account_row['nome']);
+    }
+}
+
 $tit = array();
 $qTitulos = mysqli_query($link, "SELECT l.login FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login = c.login WHERE l.status NOT LIKE 'pago' AND l.deltitulo = 0 AND l.datavenc <= '$now' AND c.cli_ativado = 's'");
 while ($row = mysqli_fetch_assoc($qTitulos)) {
@@ -1105,7 +1120,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $complemento_cliente = isset($row['complemento']) == '' ? '' : $row['complemento'] . "<br>";
         $cidade_cliente = $row['cidade'];
         $cep_cliente = isset($row['cep']) ? trim((string) $row['cep']) : '';
-        $conta_cliente = isset($row['conta_nome']) ? trim((string) $row['conta_nome']) : '';
+        $conta_id_cliente = isset($row['conta']) ? trim((string) $row['conta']) : '';
+        $conta_cliente = isset($billing_accounts[$conta_id_cliente]) ? $billing_accounts[$conta_id_cliente] : $conta_id_cliente;
         $dias_corte_cliente = isset($row['dias_corte']) ? (int) $row['dias_corte'] : 0;
 
         $uf_cliente = $row['estado'];
