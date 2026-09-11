@@ -582,7 +582,17 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     <?php
 
-    $query_base = "SELECT 
+    // Optional fields differ between MK-AUTH releases. Build this part from the
+    // actual schema so one absent column never makes the whole client list fail.
+    $client_optional_select = '';
+    foreach (array('conta', 'dias_corte') as $optional_client_column) {
+        $optional_column_query = @mysqli_query($link, "SHOW COLUMNS FROM sis_cliente LIKE '" . $optional_client_column . "'");
+        if ($optional_column_query && mysqli_num_rows($optional_column_query) > 0) {
+            $client_optional_select .= ", c.`" . $optional_client_column . "`";
+        }
+    }
+
+    $query_base = "SELECT
             c.nome, 
             c.cpf_cnpj, 
             c.login, 
@@ -612,9 +622,6 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             cua.usuario AS last_update_user,
             cua.detalhes AS last_update_details,
             c.cep,
-            c.conta,
-            c.dias_corte,
-            (SELECT sb.nome FROM sis_boleto sb WHERE sb.id = c.conta LIMIT 1) AS conta_nome,
             c.uuid_cliente,
             c.switch,
             c.coordenadas,
@@ -627,6 +634,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.caixa_herm,
             c.porta_splitter,
             c.cadastro
+            $client_optional_select
             ";
 
     $audit_join = "
