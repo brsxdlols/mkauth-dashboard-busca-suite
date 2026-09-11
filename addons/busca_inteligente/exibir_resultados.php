@@ -1105,7 +1105,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $complemento_cliente = isset($row['complemento']) == '' ? '' : $row['complemento'] . "<br>";
         $cidade_cliente = $row['cidade'];
         $cep_cliente = isset($row['cep']) ? trim((string) $row['cep']) : '';
-        $conta_cliente = isset($row['conta']) ? trim((string) $row['conta']) : '';
+        $conta_cliente = isset($row['conta_nome']) ? trim((string) $row['conta_nome']) : '';
         $dias_corte_cliente = isset($row['dias_corte']) ? (int) $row['dias_corte'] : 0;
 
         $uf_cliente = $row['estado'];
@@ -1539,7 +1539,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
                                                                 <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
-                                                                <p class='info_add invoice-summary-line'><?= $showScore; ?> <span><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></span></p>
+                                                                <p class='info_add invoice-summary-line'><span><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></span> <?= $showScore; ?></p>
                                                                 <p class='info_add'><b>Conta bancária:</b> <?= htmlspecialchars($conta_cliente !== '' ? $conta_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></p>
                                                             </div>
 
