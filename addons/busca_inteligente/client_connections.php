@@ -1,5 +1,4 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 require_once __DIR__ . '/config.php';
 header('Content-Type: application/json; charset=utf-8');
 
@@ -8,7 +7,6 @@ function mka_connections_reply($payload, $status = 200) {
     echo json_encode($payload);
     exit;
 }
-if (empty($_SESSION['mka_logado']) && empty($_SESSION['MKA_Usuario']) && empty($_SESSION['MM_Usuario'])) mka_connections_reply(array('ok' => false, 'message' => 'Sessão expirada.'), 401);
 $uuid = isset($_GET['uuid']) ? trim((string) $_GET['uuid']) : '';
 if (!preg_match('/^[A-Za-z0-9-]{16,64}$/', $uuid)) mka_connections_reply(array('ok' => false, 'message' => 'Cliente inválido.'), 422);
 $uuidSql = mysqli_real_escape_string($link, $uuid);
