@@ -1,7 +1,5 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 require_once __DIR__ . '/config.php';
-if (empty($_SESSION['mka_logado']) && empty($_SESSION['MKA_Usuario']) && empty($_SESSION['MM_Usuario'])) { http_response_code(401); exit('Sessão expirada.'); }
 $login = isset($_GET['login']) ? trim((string) $_GET['login']) : '';
 if ($login === '' || strlen($login) > 128) { http_response_code(422); exit('Cliente inválido.'); }
 $safe = mysqli_real_escape_string($link, $login);
