@@ -574,6 +574,29 @@
         line-height: 1.5;
     }
 
+    .client-contact-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        margin: 0 !important;
+        line-height: 1.3;
+    }
+
+    .client-contact-email {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        margin-bottom: 3px;
+        overflow-wrap: anywhere;
+    }
+
+    .client-contact-phone {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
     .contract-inline-badge {
         display: inline-flex;
         align-items: center;
@@ -1696,15 +1719,14 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 <!-- <hr class="d-block d-sm-none"> -->
 
                                                                 <div class='col-12 col-md-2 client-contact-col'>
-                                                                    <p>
-                                                                        <span><b>E-mail:</b><br><?= htmlspecialchars($email_fmt, ENT_QUOTES, 'UTF-8'); ?></span><br><br>
+                                                                    <div class="client-contact-stack">
+                                                                        <span class="client-contact-email"><b>E-mail:</b><span><?= htmlspecialchars($email_fmt, ENT_QUOTES, 'UTF-8'); ?></span></span>
                                                                         <?php
                                                                         if ($fones_cliente != '') {
                                                                         ?>
-                                                                            <a href='<?= $link_whats . $fones_cliente; ?>' title='Whatsapp para <?= $fones_cliente; ?>' target='_blank'><?= $fones_cliente; ?>
+                                                                            <a class="client-contact-phone" href='<?= $link_whats . $fones_cliente; ?>' title='Whatsapp para <?= $fones_cliente; ?>' target='_blank'><?= $fones_cliente; ?>
                                                                                 <i class="fa-brands fa-square-whatsapp fs-5 text-success"></i>
                                                                             </a>
-                                                                            </br>
 
                                                                         <?php
                                                                         }
@@ -1713,10 +1735,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <?php
                                                                         if ($fones_cliente2 != '') {
                                                                         ?>
-                                                                            <a href='<?= $link_whats . $fones_cliente2; ?>' title='Whatsapp para <?= $fones_cliente2; ?>' target='_blank'><?= $fones_cliente2; ?>
+                                                                            <a class="client-contact-phone" href='<?= $link_whats . $fones_cliente2; ?>' title='Whatsapp para <?= $fones_cliente2; ?>' target='_blank'><?= $fones_cliente2; ?>
                                                                                 <i class="fa-brands fa-square-whatsapp fs-5 text-success"></i>
                                                                             </a>
-                                                                            </br>
 
                                                                         <?php
                                                                         }
@@ -1725,16 +1746,15 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <?php
                                                                         if ($fones_cliente3 != '') {
                                                                         ?>
-                                                                            <a href='<?= $link_whats . $fones_cliente3; ?>' title='Whatsapp para <?= $fones_cliente3; ?>' target='_blank'><?= $fones_cliente3; ?>
+                                                                            <a class="client-contact-phone" href='<?= $link_whats . $fones_cliente3; ?>' title='Whatsapp para <?= $fones_cliente3; ?>' target='_blank'><?= $fones_cliente3; ?>
                                                                                 <i class="fa-brands fa-square-whatsapp fs-5 text-success"></i>
                                                                             </a>
-                                                                            </br>
 
                                                                         <?php
                                                                         }
                                                                         ?>
 
-                                                                    </p>
+                                                                    </div>
                                                                 </div>
 
                                                                 <style>
