@@ -520,6 +520,11 @@
     }
     .connection-diagnostic-btn:hover { background: #dceeff; color: #0e477d; }
 
+    .connection-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:7px; }
+    .connection-actions .connection-diagnostic-btn { margin-top:0; }
+    .invoice-summary-line { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+    .cut-day-link { font-weight:700; color:#155c9f; text-decoration:underline dotted; text-underline-offset:2px; }
+
     .client-name-col p,
     .client-address-col p,
     .client-contact-col p,
@@ -984,13 +989,17 @@ if ($acesso_permitido) {
 <?php
 if ($check_online == 'mkauth') {
     // INFO DE CLIENTES ONLINE COM MKAUTH
-    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress FROM radacct WHERE acctstoptime IS NULL");
+    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress, delegatedipv6prefix, delegatedipv6address, delegatedipv6addressmk FROM radacct WHERE acctstoptime IS NULL");
 
     while ($row2 = mysqli_fetch_assoc($query_cliente_on)) {
         $username_on[trim(strtolower($row2['username']))] = strtolower($row2['username']);
 
         $nas_ip[trim(strtolower($row2['username']))] = $row2['nasipaddress'];
         $ip_conn[trim(strtolower($row2['username']))] = $row2['framedipaddress'];
+        $ipv6_key = trim(strtolower($row2['username']));
+        foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk') as $ipv6_field) {
+            if (!empty($row2[$ipv6_field])) { $ipv6_delegated[$ipv6_key] = $row2[$ipv6_field]; break; }
+        }
     }
 
     $query_nas_map = mysqli_query($link, "SELECT nasname, shortname FROM nas");
@@ -1095,6 +1104,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $bairro_cliente = $row['bairro'];
         $complemento_cliente = isset($row['complemento']) == '' ? '' : $row['complemento'] . "<br>";
         $cidade_cliente = $row['cidade'];
+        $cep_cliente = isset($row['cep']) ? trim((string) $row['cep']) : '';
+        $conta_cliente = isset($row['conta']) ? trim((string) $row['conta']) : '';
+        $dias_corte_cliente = isset($row['dias_corte']) ? (int) $row['dias_corte'] : 0;
 
         $uf_cliente = $row['estado'];
         $plano_cliente = $row['plano'];
@@ -1525,10 +1537,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                             <div class='client-meta-stack'>
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
-                                                                <p class='info_add'><b>E-mail:</b> <?= $email_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
                                                                 <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
-                                                                <p class='info_add'><?= $showScore; ?> <b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></p>
+                                                                <p class='info_add invoice-summary-line'><?= $showScore; ?> <span><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></span></p>
+                                                                <p class='info_add'><b>Conta bancária:</b> <?= htmlspecialchars($conta_cliente !== '' ? $conta_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></p>
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
@@ -1630,6 +1642,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <?= $bairro_cliente; ?>
                                                                         <?= $complemento_cliente; ?>
                                                                         <span class='no_print'><?= $cidade_cliente; ?> / <?= $uf_cliente; ?></span><br>
+                                                                        <span><b>CEP:</b> <?= htmlspecialchars($cep_cliente !== '' ? $cep_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></span><br>
 
                                                                         <?php
                                                                         echo "<span class='client-contract-line'><span>{$contract_inline}</span></span>";
@@ -1664,6 +1677,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                 <div class='col-12 col-md-2 client-contact-col'>
                                                                     <p>
+                                                                        <span><b>E-mail:</b><br><?= htmlspecialchars($email_fmt, ENT_QUOTES, 'UTF-8'); ?></span><br><br>
                                                                         <?php
                                                                         if ($fones_cliente != '') {
                                                                         ?>
@@ -1769,7 +1783,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     <p class='dados_cliente'>
 
                                                                         <b>Plano:</b> <?= $plano_cliente; ?>
-							                </p>                                                          
+							                </p>
+                                                                    <p class='dados_cliente'><b>Dias de corte:</b> <a class="cut-day-link no_print" href="#" onclick="return mkaOpenContentModal('client_cut_day.php?id=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Alterar dia de corte — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Consultar ou alterar os dias de corte"><?= $dias_corte_cliente; ?></a><span class="d-print-inline d-none"><?= $dias_corte_cliente; ?></span></p>
+
+                                                                    <p class='dados_cliente'><b>IPv6:</b> <?= htmlspecialchars(isset($ipv6_delegated[strtolower(trim($login_cliente))]) ? $ipv6_delegated[strtolower(trim($login_cliente))] : '-', ENT_QUOTES, 'UTF-8'); ?></p>
 
                                                                     <p class='dados_cliente'>
 
@@ -1799,9 +1816,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         ?>
 
                                                                     </p>
-                                                                    <a class="connection-diagnostic-btn no_print" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente">
-                                                                        <i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar
-                                                                    </a>
+                                                                    <div class="connection-actions no_print">
+                                                                        <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
+                                                                        <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>
+                                                                    </div>
                                                                 </div>
 
                                                             </div>
