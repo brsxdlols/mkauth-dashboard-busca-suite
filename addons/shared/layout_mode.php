@@ -42,6 +42,26 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
 
         // Additive migrations keep older MK-Auth installations compatible.
         $columns = array(
+            // Base dashboard columns must also be added here. On a clean install
+            // this helper can create the table before dashboard/index.php runs;
+            // CREATE TABLE IF NOT EXISTS does not add the remaining columns.
+            'exb_ticket_medio' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'exb_saldo_conta' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'exb_clientes_ramal' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
+            'exb_balanco_faturamento' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'exb_balanco_clientes' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'exb_balanco_chamados' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'exb_busca_inteligente' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'contabilizar_bloq_offline' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'exb_graficos_em_baixo' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
+            'tbl_logs_sistema' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'tbl_chamados_abertos' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'tbl_contas_pagar' => "VARCHAR(1) NOT NULL DEFAULT 's'",
+            'qtd_meses_graficos' => "INT NOT NULL DEFAULT 3",
+            'limite_ticket' => "INT NOT NULL DEFAULT 1000",
+            'link' => "TEXT NULL",
+            'texto' => "TEXT NULL",
+            'tot_acesso_rapido' => "INT NOT NULL DEFAULT 15",
             'popup_clientes_sessao' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
             'popup_clientes_sessao_duracao' => "INT NOT NULL DEFAULT 2",
             'suite_top_spacing' => "INT NOT NULL DEFAULT 16",
