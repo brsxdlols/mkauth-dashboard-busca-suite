@@ -566,7 +566,12 @@
         justify-content: center;
         align-items: center;
         gap: 8px;
-        margin-top: 4px;
+        margin-top: 8px;
+    }
+
+    .client-address-details {
+        margin: 0 !important;
+        line-height: 1.5;
     }
 
     .contract-inline-badge {
@@ -615,7 +620,7 @@
     }
 
     .client-address-col .map-link-btn {
-        margin-top: 4px;
+        margin-top: 8px;
     }
 
     .client-head .center {
@@ -1652,7 +1657,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 </div>
 
                                                                 <div class='col-12 col-md-4 client-address-col text-center'>
-                                                                    <p class=''>
+                                                                    <p class='client-address-details'>
                                                                         <?= $end_cliente; ?> <b>nº</b> <?= $numero_casa; ?>
 
                                                                         <?= $bairro_cliente; ?>
@@ -1661,8 +1666,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <span><b>CEP:</b> <?= htmlspecialchars($cep_cliente !== '' ? $cep_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></span><br>
 
                                                                         <?php
-                                                                        echo "<span class='client-contract-line'><span>{$contract_inline}</span></span>";
-
                                                                         $loc_cliente_limpo = trim((string) $loc_cliente);
                                                                         $mapa_link = '';
                                                                         if ($loc_cliente_limpo !== '' && preg_match('/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/', $loc_cliente_limpo)) {
@@ -1682,6 +1685,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                         ?>
                                                                     </p>
+                                                                    <div class="client-contract-line"><?= $contract_inline; ?></div>
                                                                     <?php if ($mapa_link != '') { ?>
                                                                         <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localização no Google Maps">
                                                                             <i class="fa-solid fa-location-dot"></i> Localização no mapa
