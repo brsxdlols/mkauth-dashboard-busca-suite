@@ -136,12 +136,12 @@ if (isset($_SESSION['MM_Usuario'])) {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 9px;
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
             background: rgba(255, 255, 255, 0.20);
             color: inherit;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .dashboard-stat-head {
