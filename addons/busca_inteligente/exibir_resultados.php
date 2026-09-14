@@ -519,6 +519,10 @@
         text-decoration: none;
     }
     .connection-diagnostic-btn:hover { background: #dceeff; color: #0e477d; }
+    .connection-diagnostic-btn.is-manual-block { border-color:#efb0b0; background:#fff4f4; color:#a92323; }
+    .connection-diagnostic-btn.is-manual-block:hover { border-color:#df7f7f; background:#fee2e2; color:#8f1d1d; }
+    .connection-diagnostic-btn.is-manual-unlock { border-color:#8fd7ae; background:#effcf4; color:#157347; }
+    .connection-diagnostic-btn.is-manual-unlock:hover { border-color:#5fc58a; background:#dcf8e7; color:#0d6038; }
 
     .connection-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:7px; }
     .connection-actions .connection-diagnostic-btn { margin-top:0; }
@@ -985,7 +989,18 @@ $busca2 = str_replace("+", "%2B", $busca2);
 $tot_clientes = $tot_resultados + $count_adicional;
 
 if ($acesso_permitido) {
+$manual_block_count = 0;
+$manual_block_column = @mysqli_query($link, "SHOW COLUMNS FROM sis_cliente LIKE 'tipobloq'");
+if ($manual_block_column && mysqli_num_rows($manual_block_column) > 0) {
+    $manual_block_result = @mysqli_query($link, "SELECT COUNT(*) AS total FROM sis_cliente WHERE cli_ativado='s' AND bloqueado='sim' AND tipobloq='man'");
+    if ($manual_block_result && ($manual_block_row = mysqli_fetch_assoc($manual_block_result))) $manual_block_count = (int) $manual_block_row['total'];
+}
 ?>
+    <div class="manual-block-summary no_print">
+        <a class="manual-block-card" href="?busca=bloqueado+manualmente" title="Listar clientes bloqueados manualmente">
+            <i class="fa-solid fa-user-lock"></i><span><strong><?= $manual_block_count; ?></strong><small>Bloqueados manualmente</small></span>
+        </a>
+    </div>
     <b class="client-results-count">Resultados Encontrados = <?= $tot_clientes; ?></b>
 
 <?php
@@ -1171,6 +1186,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $quantidade_titulos_vencidos = isset($tit[$titulo_login_key]) ? (int) $tit[$titulo_login_key] : 0;
         $tem_titulo_vencido = $quantidade_titulos_vencidos > 0;
         $bloqueado = $row['bloqueado'];
+        $tipo_bloqueio = isset($row['tipobloq']) ? strtolower(trim((string) $row['tipobloq'])) : '';
+        $bloqueio_manual = ($bloqueado === 'sim' && $tipo_bloqueio === 'man');
         $data_bloq = $row['data_bloq'];
         $observacao = $row['observacao'];
         $obs_data = $row['rem_obs'];
@@ -1859,6 +1876,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     <div class="connection-actions no_print">
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>
+                                                                        <?php if ($bloqueio_manual) { ?>
+                                                                        <a class="connection-diagnostic-btn is-manual-unlock" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'desbloqueio');" title="Remover bloqueio manual"><i class="fa-solid fa-lock-open"></i> Desbloquear</a>
+                                                                        <?php } else { ?>
+                                                                        <a class="connection-diagnostic-btn is-manual-block" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'bloqueio');" title="Bloquear este cliente manualmente"><i class="fa-solid fa-user-lock"></i> Bloquear</a>
+                                                                        <?php } ?>
                                                                     </div>
                                                                 </div>
 
