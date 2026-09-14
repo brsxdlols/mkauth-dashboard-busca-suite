@@ -650,6 +650,21 @@
         margin-top: 8px;
     }
 
+    .client-address-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+    }
+
+    .client-address-actions .client-contract-line,
+    .client-address-actions .map-link-btn {
+        justify-content: center !important;
+        margin-top: 0 !important;
+    }
+
     .client-head .center {
         margin: 0;
         text-align: left !important;
@@ -1706,12 +1721,14 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                         ?>
                                                                     </p>
-                                                                    <div class="client-contract-line"><?= $contract_inline; ?></div>
-                                                                    <?php if ($mapa_link != '') { ?>
-                                                                        <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localização no Google Maps">
-                                                                            <i class="fa-solid fa-location-dot"></i> Localização no mapa
-                                                                        </a>
-                                                                    <?php } ?>
+                                                                    <div class="client-address-actions">
+                                                                        <div class="client-contract-line"><?= $contract_inline; ?></div>
+                                                                        <?php if ($mapa_link != '') { ?>
+                                                                            <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localização no Google Maps">
+                                                                                <i class="fa-solid fa-location-dot"></i> Localização no mapa
+                                                                            </a>
+                                                                        <?php } ?>
+                                                                    </div>
                                                                 </div>
 
                                                                 <!-- <hr class="d-block d-sm-none"> -->
