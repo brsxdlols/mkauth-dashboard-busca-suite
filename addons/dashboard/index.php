@@ -87,7 +87,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-stat-grid {
             display: grid !important;
-            grid-template-columns: repeat(10, minmax(0, 1fr));
+            grid-template-columns: repeat(11, minmax(0, 1fr));
             gap: 10px;
         }
 
@@ -447,6 +447,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
             body.mka-suite-dashboard-page #pagina,
             body.mka-suite-dashboard-page #conteudo,
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start,
             body.mka-suite-dashboard-page .container,
             body.mka-suite-dashboard-page .container-fluid,
             body.mka-suite-dashboard-page .row,
@@ -467,7 +468,9 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
 
             .dashboard-stat-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                width: calc(100vw - 32px) !important;
+                max-width: calc(100vw - 32px) !important;
+                grid-template-columns: repeat(2, minmax(0, calc((100vw - 40px) / 2))) !important;
             }
 
             .dashboard-attendance-grid {
@@ -475,7 +478,9 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
 
             .dashboard-stat-card {
-                min-height: 138px;
+                width: 100% !important;
+                min-width: 0 !important;
+                min-height: 126px;
             }
 
             .dashboard-quick-links {
@@ -1006,10 +1011,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         @media (max-width: 767.98px) {
             .dashboard-session-toast-stack {
-                top: 68px;
-                right: 10px;
-                left: 10px;
-            width: auto;
+                display: none !important;
             }
         }
     </style>
@@ -1224,7 +1226,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         if ($exb_busca_inteligente == 's') {
         ?>
             <script>
-                window.dashboardSessionPopupEnabled = <?= ($popup_clientes_sessao === 's') ? 'true' : 'false'; ?>;
+                window.dashboardSessionPopupEnabled = <?= ($popup_clientes_sessao === 's') ? 'true' : 'false'; ?> && !window.matchMedia('(max-width: 767.98px)').matches;
                 window.dashboardSessionPopupDuration = <?= (int) $popup_clientes_sessao_duracao; ?>;
             </script>
 
@@ -1582,17 +1584,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $perc_clientes_manual = $cli_ > 0 ? number_format($cli_manual / $cli_ * 100, 2) : '0.00';
 
         $dashboard_stats = array(
-            array('label' => 'Total', 'value' => $tot_clientes, 'percent' => '100.00%', 'href' => '/admin/addons/busca_inteligente/index.php', 'theme' => 'is-primary', 'text' => 'text-light', 'icon' => 'fa-users'),
-            array('label' => 'Adicional', 'value' => $c_add, 'percent' => $perc_clientes_adicional . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=adicionais', 'theme' => 'is-light', 'text' => 'text-dark', 'icon' => 'fa-user-plus'),
-            array('label' => 'Livres', 'value' => $tot_clientes_livres, 'percent' => $perc_clientes_livres . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=', 'theme' => 'is-info', 'text' => 'text-dark', 'icon' => 'fa-user-check'),
-            array('label' => 'Observação', 'value' => $cli_obs, 'percent' => $perc_clientes_observacao . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=obs', 'theme' => 'is-observation', 'text' => 'text-dark', 'icon' => 'fa-eye'),
-            array('label' => 'Bloqueado', 'value' => $cli_bloq, 'percent' => $perc_clientes_bloqueado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloq', 'theme' => 'is-danger', 'text' => 'text-light', 'icon' => 'fa-user-lock'),
-            array('label' => 'Atraso', 'value' => $cli_atraso, 'percent' => $perc_clientes_atrasado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=atrasado', 'theme' => 'is-warning', 'text' => 'text-dark', 'icon' => 'fa-clock'),
-            array('label' => 'Online', 'value' => $cli_on, 'percent' => $perc_clientes_online . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=on', 'theme' => 'is-success', 'text' => 'text-light', 'icon' => 'fa-wifi'),
-            array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light', 'icon' => 'fa-plug-circle-xmark'),
-            array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'fa-file-circle-xmark'),
-            array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'fa-receipt'),
-            array('label' => 'Bloqueados manualmente', 'value' => $cli_manual, 'percent' => $perc_clientes_manual . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloqueado manualmente', 'theme' => 'is-manual', 'text' => 'text-light', 'icon' => 'fa-user-shield'),
+            array('label' => 'Total', 'value' => $tot_clientes, 'percent' => '100.00%', 'href' => '/admin/addons/busca_inteligente/index.php', 'theme' => 'is-primary', 'text' => 'text-light', 'icon' => 'bi-people-fill'),
+            array('label' => 'Adicional', 'value' => $c_add, 'percent' => $perc_clientes_adicional . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=adicionais', 'theme' => 'is-light', 'text' => 'text-dark', 'icon' => 'bi-person-plus-fill'),
+            array('label' => 'Livres', 'value' => $tot_clientes_livres, 'percent' => $perc_clientes_livres . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=', 'theme' => 'is-info', 'text' => 'text-dark', 'icon' => 'bi-person-check-fill'),
+            array('label' => 'Observação', 'value' => $cli_obs, 'percent' => $perc_clientes_observacao . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=obs', 'theme' => 'is-observation', 'text' => 'text-dark', 'icon' => 'bi-eye-fill'),
+            array('label' => 'Bloqueado', 'value' => $cli_bloq, 'percent' => $perc_clientes_bloqueado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloq', 'theme' => 'is-danger', 'text' => 'text-light', 'icon' => 'bi-person-fill-lock'),
+            array('label' => 'Atraso', 'value' => $cli_atraso, 'percent' => $perc_clientes_atrasado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=atrasado', 'theme' => 'is-warning', 'text' => 'text-dark', 'icon' => 'bi-clock-fill'),
+            array('label' => 'Online', 'value' => $cli_on, 'percent' => $perc_clientes_online . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=on', 'theme' => 'is-success', 'text' => 'text-light', 'icon' => 'bi-wifi'),
+            array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light', 'icon' => 'bi-plug-fill'),
+            array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'bi-file-earmark-x-fill'),
+            array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'bi-receipt'),
+            array('label' => 'Bloqueados manualmente', 'value' => $cli_manual, 'percent' => $perc_clientes_manual . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloqueado manualmente', 'theme' => 'is-manual', 'text' => 'text-light', 'icon' => 'bi-shield-lock-fill'),
         );
 
         ?>
@@ -1613,7 +1615,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <?php foreach ($dashboard_stats as $stat) { ?>
                                 <a href="<?= $stat['href']; ?>" class="dashboard-stat-card <?= $stat['theme']; ?> <?= $stat['text']; ?>">
                                     <div class="dashboard-stat-head"><?= $stat['label']; ?></div>
-                                    <span class="dashboard-stat-icon"><i class="fa-solid <?= $stat['icon']; ?>"></i></span>
+                                    <span class="dashboard-stat-icon"><i class="bi <?= $stat['icon']; ?>"></i></span>
                                     <?php
                                     $stat_value = permissao('perm_totais') ? (string) $stat['value'] : '';
                                     $stat_digits = strlen(preg_replace('/\D+/', '', $stat_value));
