@@ -587,6 +587,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             ?>
     </datalist>
 
+    <?php include __DIR__ . '/search_stats.php'; ?>
+
     <form action="" method="get" class="no_print smart-search-form">
         <div class="row g-1">
             <div class="col-8 col-sm-6">
