@@ -828,6 +828,46 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
         }
 
+        @media (min-width: 992px) {
+            .dashboard-summary-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 330px;
+                column-gap: 8px;
+                margin-right: 0;
+                margin-left: 0;
+            }
+
+            .dashboard-summary-row > .dashboard-clients-column,
+            .dashboard-summary-row > .dashboard-attendance-column {
+                width: 100%;
+                max-width: 100%;
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .dashboard-summary-row > [class*="col-"]:not(.dashboard-clients-column):not(.dashboard-attendance-column) {
+                grid-column: 1 / -1;
+                width: 100%;
+                max-width: 100%;
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .dashboard-summary-row .dashboard-stat-card {
+                height: 126px;
+                min-height: 126px;
+            }
+
+            .dashboard-attendance-grid {
+                gap: 7px;
+            }
+
+            .dashboard-attendance-grid .dashboard-stat-card {
+                padding-right: 7px;
+                padding-left: 7px;
+            }
+        }
+
         .dashboard-client-state-toast-stack {
             position: fixed;
             bottom: 24px;
@@ -1734,7 +1774,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         <?php include('cli_planos.php'); ?>
 
         <div class='row mb-2 dashboard-summary-row'>
-            <div class='col-12 col-md-12 col-lg-9 mb-2'>
+            <div class='col-12 col-md-12 col-lg-10 mb-2 dashboard-clients-column'>
                 <div class='dashboard-surface'>
                     <h2 class="dashboard-section-title">Clientes</h2>
                     <div class="dashboard-section-body">
@@ -1767,7 +1807,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             $tot_chamados = mysqli_num_rows($query_tot_chamados_abertos);*/
 
             ?>
-            <div class='col-12 col-md-12 col-lg-3 mb-2'>
+            <div class='col-12 col-md-12 col-lg-2 mb-2 dashboard-attendance-column'>
                 <div class='dashboard-surface'>
                     <h2 class="dashboard-section-title">Atendimentos</h2>
                     <div class="dashboard-section-body">
