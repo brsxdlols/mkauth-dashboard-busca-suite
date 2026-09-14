@@ -88,7 +88,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-stat-grid {
             display: grid !important;
             grid-template-columns: repeat(11, minmax(0, 1fr));
-            gap: 10px;
+            gap: 7px;
         }
 
         .dashboard-stat-card {
@@ -97,7 +97,8 @@ if (isset($_SESSION['MM_Usuario'])) {
             flex-direction: column;
             justify-content: space-between;
             min-height: 126px;
-            padding: 12px 14px 14px;
+            min-width: 0;
+            padding: 11px 9px 13px;
             border-radius: 16px;
             text-decoration: none !important;
             color: inherit !important;
@@ -144,11 +145,12 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-stat-head {
-            padding-right: 31px;
+            padding-right: 27px;
+            overflow-wrap: anywhere;
         }
 
         .dashboard-stat-head {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             line-height: 1.15;
         }
@@ -161,7 +163,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             align-items: center;
             justify-content: center;
             padding-inline: 2px;
-            font-size: clamp(2.45rem, 1.35vw + 1.35rem, 3.35rem);
+            font-size: clamp(2rem, 1.15vw + 1rem, 2.8rem);
             line-height: 0.9;
             font-weight: 300;
             letter-spacing: 0;
@@ -458,6 +460,16 @@ if (isset($_SESSION['MM_Usuario'])) {
                 box-sizing: border-box;
             }
 
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start {
+                width: calc(100vw - 16px) !important;
+                max-width: calc(100vw - 16px) !important;
+                margin-right: 8px !important;
+                margin-left: 8px !important;
+                padding-right: 8px !important;
+                padding-left: 8px !important;
+                overflow-x: hidden !important;
+            }
+
             body.mka-suite-dashboard-page .row {
                 margin-right: 0 !important;
                 margin-left: 0 !important;
@@ -468,9 +480,9 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
 
             .dashboard-stat-grid {
-                width: calc(100vw - 32px) !important;
-                max-width: calc(100vw - 32px) !important;
-                grid-template-columns: repeat(2, minmax(0, calc((100vw - 40px) / 2))) !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
 
             .dashboard-attendance-grid {
@@ -484,7 +496,43 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
 
             .dashboard-quick-links {
-                justify-content: flex-start;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                justify-content: stretch;
+                gap: 8px;
+                padding: 6px 4px 2px;
+            }
+
+            .dashboard-quick-link {
+                width: 100%;
+                min-width: 0;
+                padding: 8px 6px;
+                line-height: 1.2;
+                text-align: center;
+                white-space: normal;
+                box-sizing: border-box;
+            }
+
+            body.mka-suite-dashboard-page .highcharts-figure,
+            body.mka-suite-dashboard-page [id^="container-graf-"],
+            body.mka-suite-dashboard-page [id^="container-rel-"],
+            body.mka-suite-dashboard-page .highcharts-container,
+            body.mka-suite-dashboard-page .highcharts-root {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            body.mka-suite-dashboard-page .highcharts-figure,
+            body.mka-suite-dashboard-page .highcharts-container {
+                overflow: hidden !important;
+            }
+
+            body.mka-suite-dashboard-page img,
+            body.mka-suite-dashboard-page svg,
+            body.mka-suite-dashboard-page canvas {
+                max-width: 100% !important;
             }
 
             .dashboard-ramal-stats .dashboard-stat-card {
@@ -2730,6 +2778,32 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
                 window.setInterval(fetchSessionToasts, 10000);
             });
+        </script>
+        <script>
+            (function () {
+                var dashboardReflowTimer = null;
+
+                function reflowDashboardCharts() {
+                    if (!window.Highcharts || !Array.isArray(window.Highcharts.charts)) return;
+                    window.Highcharts.charts.forEach(function (chart) {
+                        if (chart && typeof chart.reflow === 'function') chart.reflow();
+                    });
+                }
+
+                function scheduleDashboardChartReflow() {
+                    window.clearTimeout(dashboardReflowTimer);
+                    dashboardReflowTimer = window.setTimeout(reflowDashboardCharts, 120);
+                }
+
+                window.addEventListener('load', function () {
+                    scheduleDashboardChartReflow();
+                    window.setTimeout(reflowDashboardCharts, 450);
+                });
+                window.addEventListener('resize', scheduleDashboardChartReflow);
+                window.addEventListener('orientationchange', function () {
+                    window.setTimeout(reflowDashboardCharts, 300);
+                });
+            })();
         </script>
 </body>
 
