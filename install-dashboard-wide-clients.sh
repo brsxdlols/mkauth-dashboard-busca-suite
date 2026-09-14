@@ -81,6 +81,14 @@ awk -v patch_start="${PATCH_START}" -v patch_end="${PATCH_END}" '
         print "                padding-right: 7px;"
         print "                padding-left: 7px;"
         print "            }"
+        print ""
+        print "            .dashboard-attendance-grid .dashboard-stat-head {"
+        print "                font-size: 10px;"
+        print "                letter-spacing: -0.2px;"
+        print "                overflow-wrap: normal;"
+        print "                word-break: normal;"
+        print "                white-space: nowrap;"
+        print "            }"
         print "        }"
         print "        " patch_end
         inserted = 1
