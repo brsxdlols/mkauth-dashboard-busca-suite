@@ -147,20 +147,14 @@ install_reconcile() {
   fi
 }
 
-install_manual_block_enforcer() {
-  echo "[7/8] Protegendo bloqueios manuais contra desbloqueio automatico"
-  local source="${SCRIPT_DIR}/scripts/manual-block-enforcer.php"
-  local target="/opt/mk-auth/scripts/manual-block-enforcer.php"
-  if [ ! -f "${source}" ]; then
-    echo "[aviso] verificador de bloqueio manual nao encontrado no pacote."
+install_manual_block_guard() {
+  echo "[7/8] Protegendo bloqueios manuais antes do desbloqueio financeiro"
+  local installer="${SCRIPT_DIR}/scripts/install-manual-block-guard.sh"
+  if [ ! -f "${installer}" ]; then
+    echo "[aviso] instalador da protecao de bloqueio manual nao encontrado."
     return 0
   fi
-  install -o root -g root -m 0750 "${source}" "${target}"
-  cat > /etc/cron.d/mkauth-manual-block-enforcer <<'CRON'
-* * * * * root /usr/bin/php /opt/mk-auth/scripts/manual-block-enforcer.php >/dev/null 2>&1
-CRON
-  chmod 0644 /etc/cron.d/mkauth-manual-block-enforcer
-  /usr/bin/php "${target}" || true
+  bash "${installer}"
 }
 
 echo "[1/8] Validando caminhos"
@@ -239,7 +233,7 @@ lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
 install_additional_block_patch
-install_manual_block_enforcer
+install_manual_block_guard
 install_reconcile
 
 echo "[8/8] Finalizado"
