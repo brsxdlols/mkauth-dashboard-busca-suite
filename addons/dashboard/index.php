@@ -96,9 +96,9 @@ if (isset($_SESSION['MM_Usuario'])) {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 126px;
+            min-height: 112px;
             min-width: 0;
-            padding: 11px 9px 13px;
+            padding: 9px 9px 10px;
             border-radius: 16px;
             text-decoration: none !important;
             color: inherit !important;
@@ -156,7 +156,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-stat-value {
-            margin: 12px 0 0;
+            margin: 8px 0 0;
             width: 100%;
             min-width: 0;
             display: flex;
@@ -183,8 +183,8 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-stat-foot {
-            margin-top: 12px;
-            padding-top: 9px;
+            margin-top: 8px;
+            padding-top: 7px;
             font-size: 1.12rem;
             font-weight: 600;
             line-height: 1.15;
@@ -535,6 +535,42 @@ if (isset($_SESSION['MM_Usuario'])) {
                 max-width: 100% !important;
             }
 
+            body.mka-suite-dashboard-page table.table {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+            }
+
+            body.mka-suite-dashboard-page table.table thead,
+            body.mka-suite-dashboard-page table.table tbody,
+            body.mka-suite-dashboard-page table.table tfoot {
+                width: max-content;
+                min-width: 100%;
+            }
+
+            body.mka-suite-dashboard-page table.table th,
+            body.mka-suite-dashboard-page table.table td {
+                min-width: 108px;
+                vertical-align: top;
+                overflow-wrap: anywhere;
+            }
+
+            body.mka-suite-dashboard-page table.table th:first-child,
+            body.mka-suite-dashboard-page table.table td:first-child {
+                min-width: 58px;
+            }
+
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row,
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row > [class*="col-"] {
+                max-width: 100% !important;
+                overflow-x: hidden !important;
+            }
+
             .dashboard-ramal-stats .dashboard-stat-card {
                 min-height: 154px;
                 padding: 10px 10px 14px;
@@ -747,6 +783,15 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-session-toast.is-logout {
             border-left: 5px solid #f05d5e;
+        }
+
+        .dashboard-summary-row > [class*="col-"] {
+            display: flex;
+        }
+
+        .dashboard-summary-row > [class*="col-"] > .dashboard-surface {
+            width: 100%;
+            height: 100%;
         }
 
         .dashboard-client-state-toast-stack {
@@ -1654,7 +1699,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
         <?php include('cli_planos.php'); ?>
 
-        <div class='row mb-2'>
+        <div class='row mb-2 dashboard-summary-row'>
             <div class='col-12 col-md-12 col-lg-9 mb-2'>
                 <div class='dashboard-surface'>
                     <h2 class="dashboard-section-title">Clientes</h2>
