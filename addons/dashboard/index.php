@@ -1693,13 +1693,15 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     <h2 class="dashboard-section-title">Atendimentos</h2>
                     <div class="dashboard-section-body">
                         <div class="dashboard-attendance-grid">
-                            <a href="/admin/suporte_aberto.hhvm" class="dashboard-stat-card is-light text-dark text-decoration-none">
+                            <a href="/admin/suporte_aberto.hhvm" class="dashboard-stat-card is-primary text-light text-decoration-none">
                                 <div class="dashboard-stat-head">Chamados</div>
+                                <span class="dashboard-stat-icon"><i class="bi bi-headset"></i></span>
                                 <div class="dashboard-stat-value" id="tot_chamados"></div>
                                 <div class="dashboard-stat-foot" id="perc_chamados">0.00</div>
                             </a>
-                            <a href="/admin/instalacoes_abertas.hhvm" class="dashboard-stat-card is-light text-dark text-decoration-none">
+                            <a href="/admin/instalacoes_abertas.hhvm" class="dashboard-stat-card is-warning text-dark text-decoration-none">
                                 <div class="dashboard-stat-head">Instalações</div>
+                                <span class="dashboard-stat-icon"><i class="bi bi-tools"></i></span>
                                 <div class="dashboard-stat-value" id="tot_instalacoes"></div>
                                 <div class="dashboard-stat-foot" id="perc_instalacoes">0.00</div>
                             </a>
@@ -1715,8 +1717,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             $result = mysqli_query($conn, $query);
                             $totAcessos = mysqli_num_rows($result);
                             ?>
-                            <a href="relAcessoCentral.php" class="dashboard-stat-card is-light text-dark text-decoration-none">
+                            <a href="relAcessoCentral.php" class="dashboard-stat-card is-observation text-dark text-decoration-none">
                                 <div class="dashboard-stat-head">Central</div>
+                                <span class="dashboard-stat-icon"><i class="bi bi-person-badge"></i></span>
                                 <div class="dashboard-stat-value"><?= $totAcessos; ?></div>
                                 <div class="dashboard-stat-foot">.</div>
                             </a>
