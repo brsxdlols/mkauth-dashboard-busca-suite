@@ -876,6 +876,7 @@
 
         .client-row {
             position: relative;
+            grid-template-columns: 28px minmax(0, 1fr);
             margin-bottom: 14px;
             padding: 16px 10px 11px;
             border: 1px solid rgba(148, 163, 184, .18);
@@ -895,7 +896,35 @@
         }
 
         .client-row .client-name-col {
-            padding-bottom: 7px;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            padding: 6px 4px 7px;
+            text-align: left;
+        }
+
+        .client-row .client-check-col {
+            grid-column: 1;
+            grid-row: 1;
+            align-self: center;
+        }
+
+        .client-row .client-status-col {
+            grid-column: 2;
+            grid-row: 1;
+            width: auto !important;
+            padding: 0 4px !important;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+        }
+
+        .client-row .client-status-col .billing-alert-stack {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
         }
 
         .client-row .client-address-col,
