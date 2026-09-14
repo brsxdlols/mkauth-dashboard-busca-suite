@@ -32,6 +32,20 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .manual-block-card i { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:#fee2e2; color:#c62828; }
         .manual-block-card span { display:flex; flex-direction:column; line-height:1.2; }
         .manual-block-card strong { font-size:18px; }.manual-block-card small { margin-top:2px; font-size:11px; font-weight:700; }
+        .manual-block-modal { position:fixed; inset:0; z-index:1120; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.48); backdrop-filter:blur(4px); }
+        .manual-block-modal[hidden] { display:none; }
+        .manual-block-dialog { width:min(560px,100%); overflow:hidden; border:1px solid #d8e3ef; border-radius:18px; background:#fff; box-shadow:0 28px 80px rgba(15,23,42,.30); }
+        .manual-block-head { display:flex; align-items:center; justify-content:space-between; padding:15px 18px; border-bottom:1px solid #e7edf4; color:#20364f; }
+        .manual-block-head strong { font-size:16px; }.manual-block-close { width:32px; height:32px; border:0; border-radius:8px; background:#f1f5f9; color:#52667c; font-size:20px; }
+        .manual-block-body { padding:18px; }.manual-block-client { margin:0 0 14px; color:#17324b; font-weight:750; }
+        .manual-block-history { margin-bottom:15px; padding:13px 14px; border:1px solid #d9e4ef; border-radius:10px; background:#f6f9fc; color:#334e68; font-size:12px; line-height:1.5; }
+        .manual-block-history[hidden] { display:none; }.manual-block-history strong { color:#17324b; }
+        .manual-block-label { display:block; margin-bottom:7px; color:#29445f; font-size:13px; font-weight:750; }
+        .manual-block-reason { width:100%; min-height:105px; resize:vertical; padding:11px 12px; border:1px solid #b9cadb; border-radius:9px; color:#17324b; font:inherit; }
+        .manual-block-note { margin:9px 0 0; color:#687b90; font-size:11px; line-height:1.4; }
+        .manual-block-actions { display:flex; justify-content:flex-end; gap:8px; padding:14px 18px; border-top:1px solid #e7edf4; background:#f8fafc; }
+        .manual-block-actions button { padding:9px 14px; border:1px solid #cbd8e8; border-radius:8px; background:#fff; color:#29445f; font-weight:700; }
+        .manual-block-actions .is-submit { border-color:#b42323; background:#b42323; color:#fff; }.manual-block-actions .is-submit.is-unlock { border-color:#15803d; background:#15803d; }
         .client-score { display:inline-flex; align-items:center; gap:5px; min-width:70px; padding:3px 9px 3px 7px; border:1px solid #d8e2ed; border-radius:999px; background:rgba(255,255,255,.82); color:#24364a; font:inherit; font-size:11px; font-weight:700; line-height:1.35; vertical-align:middle; box-shadow:0 1px 2px rgba(15,23,42,.04); cursor:pointer; }
         .client-score:hover { border-color:#9bb5d1; background:#fff; box-shadow:0 3px 9px rgba(15,23,42,.09); }
         .client-score::before { content:""; width:6px; height:6px; flex:0 0 6px; border-radius:50%; background:#94a3b8; }
@@ -132,25 +146,43 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             <iframe class="content-view-frame" id="contentViewFrame" title="Conteúdo do cliente"></iframe>
         </div>
     </div>
-    <iframe id="manualBlockActionFrame" name="manualBlockActionFrame" title="Ação de bloqueio manual" hidden></iframe>
+    <div class="manual-block-modal no_print" id="manualBlockModal" hidden role="dialog" aria-modal="true" aria-labelledby="manualBlockModalTitle">
+        <form class="manual-block-dialog" id="manualBlockForm">
+            <div class="manual-block-head"><strong id="manualBlockModalTitle">Bloqueio manual</strong><button type="button" class="manual-block-close" aria-label="Fechar">&times;</button></div>
+            <div class="manual-block-body">
+                <p class="manual-block-client" id="manualBlockClient"></p>
+                <div class="manual-block-history" id="manualBlockHistory" hidden></div>
+                <label class="manual-block-label" for="manualBlockReason" id="manualBlockReasonLabel">Motivo do bloqueio</label>
+                <textarea class="manual-block-reason" id="manualBlockReason" maxlength="2000" required placeholder="Descreva o motivo desta operação"></textarea>
+                <p class="manual-block-note" id="manualBlockNote">O acesso do cliente será interrompido e permanecerá bloqueado até um desbloqueio manual.</p>
+            </div>
+            <div class="manual-block-actions"><button type="button" class="manual-block-cancel">Cancelar</button><button type="submit" class="is-submit" id="manualBlockSubmit">Confirmar bloqueio</button></div>
+        </form>
+    </div>
     <script>
     (function () {
-        var frame = document.getElementById('manualBlockActionFrame'), waiting = false;
+        var modal=document.getElementById('manualBlockModal'), form=document.getElementById('manualBlockForm');
+        var title=document.getElementById('manualBlockModalTitle'), client=document.getElementById('manualBlockClient'), history=document.getElementById('manualBlockHistory');
+        var label=document.getElementById('manualBlockReasonLabel'), reason=document.getElementById('manualBlockReason'), note=document.getElementById('manualBlockNote'), submit=document.getElementById('manualBlockSubmit');
+        var waiting=false, current=null;
+        function escapeHtml(value){var node=document.createElement('div');node.textContent=value==null?'':String(value);return node.innerHTML;}
+        function closeModal(){modal.hidden=true;reason.value='';current=null;document.body.style.overflow='';}
         window.mkaRunManualBlock = function (uuid, name, action) {
             var isUnlock = action === 'desbloqueio';
-            var question = isUnlock
-                ? 'Desbloquear manualmente o cliente ' + name + '?'
-                : 'Bloquear manualmente o cliente ' + name + '?\n\nO acesso será interrompido e o bloqueio não será removido pela rotina financeira automática.';
-            if (!window.confirm(question)) return false;
-            waiting = true;
-            frame.src = '../../executar_bloqueio.hhvm?acao=' + encodeURIComponent(action) + '&uuid_cliente=' + encodeURIComponent(uuid);
+            current={uuid:uuid,name:name,action:action};submit.disabled=false;title.textContent=isUnlock?'Desbloqueio manual':'Bloqueio manual';client.textContent=name;
+            label.textContent=isUnlock?'Motivo do desbloqueio':'Motivo do bloqueio';submit.textContent=isUnlock?'Confirmar desbloqueio':'Confirmar bloqueio';submit.classList.toggle('is-unlock',isUnlock);
+            note.textContent=isUnlock?'O desbloqueio e seu motivo ficarão registrados no histórico.':'O acesso será interrompido e permanecerá bloqueado até um desbloqueio manual.';
+            history.hidden=true;history.innerHTML='';modal.hidden=false;document.body.style.overflow='hidden';reason.focus();
+            if(isUnlock){fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(uuid),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(data){if(!current||current.uuid!==uuid)return;if(data.ok&&data.block){history.innerHTML='<strong>Registro do bloqueio</strong><br><b>Motivo:</b> '+escapeHtml(data.block.motivo)+'<br><b>Data:</b> '+escapeHtml(data.block.criado_em)+'<br><b>Usuário:</b> '+escapeHtml(data.block.usuario);history.hidden=false;}else{history.innerHTML='<strong>Registro anterior não encontrado.</strong>';history.hidden=false;}}).catch(function(){history.innerHTML='<strong>Não foi possível consultar o registro anterior.</strong>';history.hidden=false;});}
             return false;
         };
-        frame.addEventListener('load', function () {
-            if (!waiting || !frame.getAttribute('src')) return;
-            waiting = false;
-            window.setTimeout(function () { window.location.reload(); }, 450);
+        form.addEventListener('submit',function(event){
+            event.preventDefault();if(!current||!reason.value.trim()||waiting)return;submit.disabled=true;waiting=true;current.reason=reason.value.trim();note.textContent='Processando a operação e registrando o histórico...';
+            var nativeUrl='../../executar_bloqueio.hhvm?acao='+encodeURIComponent(current.action)+'&uuid_cliente='+encodeURIComponent(current.uuid);
+            fetch(nativeUrl,{credentials:'same-origin',cache:'no-store'}).then(function(response){if(!response.ok)throw new Error('Falha ao executar a operação nativa.');var body=new URLSearchParams();body.set('uuid',current.uuid);body.set('action',current.action);body.set('reason',current.reason);return fetch('client_manual_block_audit.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:body.toString()});}).then(function(response){if(!response.ok)throw new Error('A operação foi executada, mas o histórico não pôde ser registrado.');return response.json();}).then(function(){window.location.reload();}).catch(function(error){waiting=false;submit.disabled=false;note.textContent=error.message||'Não foi possível concluir a operação.';});
         });
+        modal.querySelector('.manual-block-close').addEventListener('click',closeModal);modal.querySelector('.manual-block-cancel').addEventListener('click',closeModal);
+        modal.addEventListener('click',function(event){if(event.target===modal)closeModal();});document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!modal.hidden&&!waiting)closeModal();});
     }());
     </script>
     <script>
