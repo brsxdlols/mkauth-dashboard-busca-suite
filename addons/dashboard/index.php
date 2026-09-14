@@ -866,6 +866,14 @@ if (isset($_SESSION['MM_Usuario'])) {
                 padding-right: 7px;
                 padding-left: 7px;
             }
+
+            .dashboard-attendance-grid .dashboard-stat-head {
+                font-size: 10px;
+                letter-spacing: -0.2px;
+                overflow-wrap: normal;
+                word-break: normal;
+                white-space: nowrap;
+            }
         }
 
         .dashboard-client-state-toast-stack {
