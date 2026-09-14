@@ -26,6 +26,12 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .smart-search-form .form-select { border-color:#cbd8e8; border-radius:10px; }
         .smart-search-form .smart-search-button { border:0; border-radius:11px; background:#1268db; color:#fff; font-weight:700; box-shadow:none; }
         .smart-search-form .smart-search-button:hover { background:#0f5fc8; }
+        .manual-block-summary { display:flex; justify-content:flex-end; margin:0 15px 10px; }
+        .manual-block-card { display:inline-flex; align-items:center; gap:10px; min-width:220px; padding:10px 13px; border:1px solid #fecaca; border-radius:13px; background:#fff7f7; color:#8f1d1d; text-decoration:none; box-shadow:0 5px 14px rgba(127,29,29,.06); }
+        .manual-block-card:hover { border-color:#f59b9b; background:#fff1f1; color:#7f1d1d; }
+        .manual-block-card i { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:#fee2e2; color:#c62828; }
+        .manual-block-card span { display:flex; flex-direction:column; line-height:1.2; }
+        .manual-block-card strong { font-size:18px; }.manual-block-card small { margin-top:2px; font-size:11px; font-weight:700; }
         .client-score { display:inline-flex; align-items:center; gap:5px; min-width:70px; padding:3px 9px 3px 7px; border:1px solid #d8e2ed; border-radius:999px; background:rgba(255,255,255,.82); color:#24364a; font:inherit; font-size:11px; font-weight:700; line-height:1.35; vertical-align:middle; box-shadow:0 1px 2px rgba(15,23,42,.04); cursor:pointer; }
         .client-score:hover { border-color:#9bb5d1; background:#fff; box-shadow:0 3px 9px rgba(15,23,42,.09); }
         .client-score::before { content:""; width:6px; height:6px; flex:0 0 6px; border-radius:50%; background:#94a3b8; }
@@ -126,6 +132,27 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             <iframe class="content-view-frame" id="contentViewFrame" title="Conteúdo do cliente"></iframe>
         </div>
     </div>
+    <iframe id="manualBlockActionFrame" name="manualBlockActionFrame" title="Ação de bloqueio manual" hidden></iframe>
+    <script>
+    (function () {
+        var frame = document.getElementById('manualBlockActionFrame'), waiting = false;
+        window.mkaRunManualBlock = function (uuid, name, action) {
+            var isUnlock = action === 'desbloqueio';
+            var question = isUnlock
+                ? 'Desbloquear manualmente o cliente ' + name + '?'
+                : 'Bloquear manualmente o cliente ' + name + '?\n\nO acesso será interrompido e o bloqueio não será removido pela rotina financeira automática.';
+            if (!window.confirm(question)) return false;
+            waiting = true;
+            frame.src = '../../executar_bloqueio.hhvm?acao=' + encodeURIComponent(action) + '&uuid_cliente=' + encodeURIComponent(uuid);
+            return false;
+        };
+        frame.addEventListener('load', function () {
+            if (!waiting || !frame.getAttribute('src')) return;
+            waiting = false;
+            window.setTimeout(function () { window.location.reload(); }, 450);
+        });
+    }());
+    </script>
     <script>
     (function () {
         var modal = document.getElementById('clientScoreModal');
@@ -498,6 +525,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <option value="off">
         <option value="adicionais">
         <option value="bloqueado">
+        <option value="bloqueado manualmente">
         <option value="atrasado">
         <option value="observacao">
         <option value="desativado">
@@ -585,10 +613,12 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     // Optional fields differ between MK-AUTH releases. Build this part from the
     // actual schema so one absent column never makes the whole client list fail.
     $client_optional_select = '';
-    foreach (array('conta', 'dias_corte') as $optional_client_column) {
+    $has_tipobloq = false;
+    foreach (array('conta', 'dias_corte', 'tipobloq') as $optional_client_column) {
         $optional_column_query = @mysqli_query($link, "SHOW COLUMNS FROM sis_cliente LIKE '" . $optional_client_column . "'");
         if ($optional_column_query && mysqli_num_rows($optional_column_query) > 0) {
             $client_optional_select .= ", c.`" . $optional_client_column . "`";
+            if ($optional_client_column === 'tipobloq') $has_tipobloq = true;
         }
     }
 
@@ -764,6 +794,16 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         if (!$result) {
             echo mysqli_error($link);
         }
+        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        include('exibir_resultados.php');
+    } else if (startsWith(strtolower($busca), 'bloqueado manual') || startsWith(strtolower($busca), 'bloq manual')) {
+        $manual_block_filter = $has_tipobloq ? "c.bloqueado LIKE 'sim' AND c.tipobloq LIKE 'man'" : '1=0';
+        $query_ok = "$query_default
+            c.cli_ativado LIKE 's' AND
+            $manual_block_filter
+            $group ORDER BY $organizar";
+
+        $result = mysqli_query($link, "$query_ok");
         $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'bloq')) {
