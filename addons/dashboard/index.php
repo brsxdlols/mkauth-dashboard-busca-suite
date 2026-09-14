@@ -1721,7 +1721,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light', 'icon' => 'bi-plug-fill'),
             array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'bi-file-earmark-x-fill'),
             array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'bi-receipt'),
-            array('label' => 'Bloqueio manual', 'value' => $cli_manual, 'percent' => $perc_clientes_manual . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloqueado manualmente', 'theme' => 'is-manual', 'text' => 'text-light', 'icon' => 'bi-shield-lock-fill'),
+            array('label' => 'Bloq manual', 'value' => $cli_manual, 'percent' => $perc_clientes_manual . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloqueado manualmente', 'theme' => 'is-manual', 'text' => 'text-light', 'icon' => 'bi-shield-lock-fill'),
         );
 
         ?>
