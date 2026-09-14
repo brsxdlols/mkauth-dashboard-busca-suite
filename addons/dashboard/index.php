@@ -571,6 +571,30 @@ if (isset($_SESSION['MM_Usuario'])) {
                 overflow-x: hidden !important;
             }
 
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row > [class*="col-"] {
+                padding-right: 0 !important;
+                padding-left: 0 !important;
+            }
+
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start > .card {
+                width: calc(100% - 16px) !important;
+                max-width: calc(100% - 16px) !important;
+                margin-right: 8px !important;
+                margin-left: 8px !important;
+                box-sizing: border-box !important;
+            }
+
+            body.mka-suite-dashboard-page table.table thead,
+            body.mka-suite-dashboard-page table.table tbody,
+            body.mka-suite-dashboard-page table.table tfoot {
+                min-width: 760px;
+            }
+
+            body.mka-suite-dashboard-page table.table th {
+                white-space: nowrap;
+                overflow-wrap: normal;
+            }
+
             .dashboard-ramal-stats .dashboard-stat-card {
                 min-height: 154px;
                 padding: 10px 10px 14px;
