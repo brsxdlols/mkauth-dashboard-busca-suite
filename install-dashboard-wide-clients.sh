@@ -11,11 +11,6 @@ if [ ! -f "${TARGET_FILE}" ]; then
     exit 1
 fi
 
-if grep -Fq "${PATCH_START}" "${TARGET_FILE}"; then
-    echo "O ajuste de largura e altura ja esta instalado. Nenhuma alteracao necessaria."
-    exit 0
-fi
-
 if ! grep -Fq "dashboard-summary-row" "${TARGET_FILE}"; then
     echo "Erro: esta dashboard nao possui a estrutura compativel com o patch." >&2
     exit 1
@@ -30,18 +25,39 @@ TMP_FILE="$(mktemp)"
 trap 'rm -f "${TMP_FILE}"' EXIT
 
 awk -v patch_start="${PATCH_START}" -v patch_end="${PATCH_END}" '
-    BEGIN { inserted = 0 }
+    BEGIN { inserted = 0; skipping_old_patch = 0 }
+    index($0, patch_start) {
+        skipping_old_patch = 1
+        next
+    }
+    skipping_old_patch && index($0, patch_end) {
+        skipping_old_patch = 0
+        next
+    }
+    skipping_old_patch { next }
     !inserted && /<\/style>/ {
         print "        " patch_start
         print "        @media (min-width: 992px) {"
+        print "            .dashboard-summary-row {"
+        print "                display: grid;"
+        print "                grid-template-columns: minmax(0, 1fr) 330px;"
+        print "                column-gap: 8px;"
+        print "                margin-right: 0;"
+        print "                margin-left: 0;"
+        print "            }"
+        print ""
         print "            .dashboard-summary-row > .dashboard-clients-column {"
-        print "                flex: 0 0 83.333333%;"
-        print "                max-width: 83.333333%;"
+        print "                width: 100%;"
+        print "                max-width: 100%;"
+        print "                padding-right: 0;"
+        print "                padding-left: 0;"
         print "            }"
         print ""
         print "            .dashboard-summary-row > .dashboard-attendance-column {"
-        print "                flex: 0 0 16.666667%;"
-        print "                max-width: 16.666667%;"
+        print "                width: 100%;"
+        print "                max-width: 100%;"
+        print "                padding-right: 0;"
+        print "                padding-left: 0;"
         print "            }"
         print ""
         print "            .dashboard-summary-row .dashboard-stat-card {"
@@ -93,6 +109,6 @@ chmod --reference="${BACKUP_FILE}" "${TARGET_FILE}" 2>/dev/null || true
 
 echo "Ajuste instalado com sucesso."
 echo "Backup: ${BACKUP_FILE}"
-echo "Clientes: largura ampliada para 10/12."
-echo "Atendimentos: largura reduzida para 2/12."
+echo "Clientes: area ampla preservada."
+echo "Atendimentos: largura ajustada para 330px e espaco entre blocos reduzido."
 echo "Cards: altura alinhada em 126px no desktop."
