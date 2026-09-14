@@ -959,6 +959,10 @@
         .client-data-col {
             font-size: 13px;
         }
+
+        .client-contact-email > b {
+            display: none;
+        }
     }
 </style>
 <script>
