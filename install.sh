@@ -47,7 +47,7 @@ install_branding() {
 }
 
 apply_dashboard_online_additional_fix() {
-  echo "[4/7] Aplicando correcao de online para clientes adicionais"
+  echo "[4/8] Aplicando correcao de online para clientes adicionais"
 
   if ! command -v python3 >/dev/null 2>&1; then
     echo "[aviso] python3 nao encontrado; os arquivos empacotados ja possuem a correcao online."
@@ -102,7 +102,7 @@ PY
 }
 
 install_additional_block_patch() {
-  echo "[6/7] Instalando propagacao de bloqueio para adicionais"
+  echo "[6/8] Instalando propagacao de bloqueio para adicionais"
   local patch_ref="${MKAUTH_TOOLKIT_REF:-agent/additional-block-patch}"
   local patch_url="https://raw.githubusercontent.com/brsxdlols/mkauth-toolkit/${patch_ref}/installers/install-additional-block.sh"
   local patch_installer
@@ -134,7 +134,7 @@ install_additional_block_patch() {
 }
 
 install_reconcile() {
-  echo "[7/7] Instalando reconcile de Radius"
+  echo "[8/8] Instalando reconcile de Radius"
   local reconcile_installer="${SCRIPT_DIR}/scripts/install-radius-reconcile.sh"
 
   if [ ! -f "${reconcile_installer}" ]; then
@@ -147,11 +147,27 @@ install_reconcile() {
   fi
 }
 
-echo "[1/7] Validando caminhos"
+install_manual_block_enforcer() {
+  echo "[7/8] Protegendo bloqueios manuais contra desbloqueio automatico"
+  local source="${SCRIPT_DIR}/scripts/manual-block-enforcer.php"
+  local target="/opt/mk-auth/scripts/manual-block-enforcer.php"
+  if [ ! -f "${source}" ]; then
+    echo "[aviso] verificador de bloqueio manual nao encontrado no pacote."
+    return 0
+  fi
+  install -o root -g root -m 0750 "${source}" "${target}"
+  cat > /etc/cron.d/mkauth-manual-block-enforcer <<'CRON'
+* * * * * root /usr/bin/php /opt/mk-auth/scripts/manual-block-enforcer.php >/dev/null 2>&1
+CRON
+  chmod 0644 /etc/cron.d/mkauth-manual-block-enforcer
+  /usr/bin/php "${target}" || true
+}
+
+echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
 mkdir -p "${BACKUP_DIR}"
 
-echo "[2/7] Gerando backup"
+echo "[2/8] Gerando backup"
 mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
 if [ -f "${TARGET_ADMIN_DIR}/index.hhvm" ]; then
   cp -a "${TARGET_ADMIN_DIR}/index.hhvm" "${BACKUP_DIR}/admin/index.hhvm"
@@ -179,7 +195,7 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
   cp -a "${TARGET_ADDONS_DIR}/shared" "${BACKUP_DIR}/addons/shared"
 fi
 
-echo "[3/7] Instalando arquivos"
+echo "[3/8] Instalando arquivos"
 mkdir -p "${TARGET_ADDONS_DIR}"
 cp -a "${SCRIPT_DIR}/admin/index.hhvm" "${TARGET_ADMIN_DIR}/index.hhvm"
 rm -rf "${TARGET_ADDONS_DIR}/dashboard"
@@ -203,7 +219,7 @@ install_client_audit_hook
 install_branding
 apply_dashboard_online_additional_fix
 
-echo "[5/7] Validando instalacao"
+echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
@@ -223,8 +239,9 @@ lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
 install_additional_block_patch
+install_manual_block_enforcer
 install_reconcile
 
-echo "[7/7] Finalizado"
+echo "[8/8] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"
 echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
