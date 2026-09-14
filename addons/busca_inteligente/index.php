@@ -26,12 +26,14 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .smart-search-form .form-select { border-color:#cbd8e8; border-radius:10px; }
         .smart-search-form .smart-search-button { border:0; border-radius:11px; background:#1268db; color:#fff; font-weight:700; box-shadow:none; }
         .smart-search-form .smart-search-button:hover { background:#0f5fc8; }
-        .manual-block-summary { display:flex; justify-content:flex-end; margin:0 15px 10px; }
-        .manual-block-card { display:inline-flex; align-items:center; gap:10px; min-width:220px; padding:10px 13px; border:1px solid #fecaca; border-radius:13px; background:#fff7f7; color:#8f1d1d; text-decoration:none; box-shadow:0 5px 14px rgba(127,29,29,.06); }
-        .manual-block-card:hover { border-color:#f59b9b; background:#fff1f1; color:#7f1d1d; }
-        .manual-block-card i { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:#fee2e2; color:#c62828; }
-        .manual-block-card span { display:flex; flex-direction:column; line-height:1.2; }
-        .manual-block-card strong { font-size:18px; }.manual-block-card small { margin-top:2px; font-size:11px; font-weight:700; }
+        .search-stat-grid { display:grid; grid-template-columns:repeat(11,minmax(82px,1fr)); gap:8px; margin:0 15px 12px; padding:11px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.04); }
+        .search-stat-card { display:flex; min-height:84px; flex-direction:column; justify-content:space-between; padding:9px 10px; border:1px solid transparent; border-radius:12px; color:#fff; text-decoration:none; transition:transform .16s ease,box-shadow .16s ease; }
+        .search-stat-card:hover { color:inherit; transform:translateY(-2px); box-shadow:0 7px 16px rgba(15,23,42,.14); }
+        .search-stat-label { min-height:25px; font-size:10px; font-weight:800; line-height:1.15; text-transform:uppercase; }
+        .search-stat-value { font-size:24px; font-weight:500; line-height:1; }.search-stat-percent { padding-top:6px; border-top:1px solid rgba(255,255,255,.24); font-size:10px; font-weight:800; }
+        .search-stat-card.is-primary{background:linear-gradient(145deg,#297cf0,#1264d6)}.search-stat-card.is-light{border-color:#cfd9e6;background:#fff;color:#172033}.search-stat-card.is-info{background:linear-gradient(145deg,#52d3e8,#20b8d5);color:#102b35}.search-stat-card.is-observation{background:linear-gradient(145deg,#9cebbd,#72dca1);color:#153a29}.search-stat-card.is-danger{background:linear-gradient(145deg,#f14b64,#df304c)}.search-stat-card.is-warning{background:linear-gradient(145deg,#ffd34d,#ffbd08);color:#3d3000}.search-stat-card.is-success{background:linear-gradient(145deg,#39aa70,#178b52)}.search-stat-card.is-dark{background:linear-gradient(145deg,#3e4650,#202934)}.search-stat-card.is-outline-danger{border-color:#ff9aa6;background:#fff;color:#d5263f}.search-stat-card.is-manual{border-color:#e59b9b;background:#fff5f5;color:#8f1d1d}
+        .search-stat-card.is-light .search-stat-percent,.search-stat-card.is-info .search-stat-percent,.search-stat-card.is-observation .search-stat-percent,.search-stat-card.is-warning .search-stat-percent,.search-stat-card.is-outline-danger .search-stat-percent,.search-stat-card.is-manual .search-stat-percent{border-top-color:rgba(15,23,42,.13)}
+        @media(max-width:1100px){.search-stat-grid{grid-template-columns:repeat(6,minmax(90px,1fr))}}@media(max-width:700px){.search-stat-grid{grid-template-columns:repeat(3,minmax(86px,1fr));margin-inline:8px}}@media(max-width:420px){.search-stat-grid{grid-template-columns:repeat(2,minmax(90px,1fr))}}
         .manual-block-modal { position:fixed; inset:0; z-index:1120; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.48); backdrop-filter:blur(4px); }
         .manual-block-modal[hidden] { display:none; }
         .manual-block-dialog { width:min(560px,100%); overflow:hidden; border:1px solid #d8e3ef; border-radius:18px; background:#fff; box-shadow:0 28px 80px rgba(15,23,42,.30); }
