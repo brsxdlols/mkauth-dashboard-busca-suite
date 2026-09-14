@@ -794,6 +794,14 @@ if (isset($_SESSION['MM_Usuario'])) {
             height: 100%;
         }
 
+        @media (min-width: 768px) {
+            .dashboard-summary-row .dashboard-stat-card {
+                height: 112px;
+                min-height: 112px;
+                box-sizing: border-box;
+            }
+        }
+
         .dashboard-client-state-toast-stack {
             position: fixed;
             bottom: 24px;
