@@ -1431,13 +1431,13 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         // Card Clientes
         // echo $grupos;
-        $query_clientes_online = mysqli_query($conn, "SELECT r.username FROM radacct r FORCE INDEX (acctstoptime) LEFT JOIN sis_cliente c ON c.login = r.username WHERE $grupos r.acctstoptime IS NULL ");
+        $query_clientes_online = mysqli_query($conn, "SELECT r.username FROM radacct r FORCE INDEX (acctstoptime) WHERE r.acctstoptime IS NULL");
         while ($row3 = mysqli_fetch_array($query_clientes_online)) {
             $username_on[trim(strtolower($row3['username']))] = trim(strtolower($row3['username']));
         }
 
         $query_clientes_ativos = mysqli_query($conn, "SELECT c.login, c.bloqueado, c.tit_vencidos, c.observacao FROM sis_cliente c WHERE $grupos c.cli_ativado LIKE 's'");
-        $query_clientes_adicionais = mysqli_query($conn, "SELECT cli_add.login as login_add FROM sis_adicional cli_add LEFT JOIN sis_cliente c ON cli_add.login = c.login WHERE $grupos c.cli_ativado LIKE 's'");
+        $query_clientes_adicionais = mysqli_query($conn, "SELECT cli_add.username as login_add FROM sis_adicional cli_add LEFT JOIN sis_cliente c ON cli_add.login = c.login WHERE $grupos c.cli_ativado LIKE 's'");
 
         $cli_ = 0;
         $cli_bloq = 0;
