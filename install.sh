@@ -46,8 +46,95 @@ install_branding() {
   fi
 }
 
+apply_dashboard_online_additional_fix() {
+  echo "[4/7] Aplicando correcao de online para clientes adicionais"
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "[aviso] python3 nao encontrado; os arquivos empacotados ja possuem a correcao online."
+    return 0
+  fi
+
+  python3 - "${TARGET_ADDONS_DIR}/dashboard/index.php" "${TARGET_ADDONS_DIR}/dashboard/nav/index.php" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+old_additional = (
+    "SELECT cli_add.login as login_add FROM sis_adicional cli_add "
+    "LEFT JOIN sis_cliente c ON cli_add.login = c.login "
+    "WHERE $grupos c.cli_ativado LIKE 's'"
+)
+new_additional = (
+    "SELECT cli_add.username as login_add FROM sis_adicional cli_add "
+    "LEFT JOIN sis_cliente c ON cli_add.login = c.login "
+    "WHERE $grupos c.cli_ativado LIKE 's'"
+)
+online_pattern = re.compile(
+    r'\$query_clientes_online\s*=\s*mysqli_query\(\$conn,\s*"'
+    r'SELECT r\.username FROM radacct r(?: FORCE INDEX \(acctstoptime\))? '
+    r'LEFT JOIN sis_cliente c ON c\.login = r\.username '
+    r'WHERE \$grupos r\.acctstoptime IS NULL "\);'
+)
+new_online = (
+    '$query_clientes_online = mysqli_query($conn, '
+    '"SELECT r.username FROM radacct r FORCE INDEX (acctstoptime) '
+    'WHERE r.acctstoptime IS NULL");'
+)
+
+for value in sys.argv[1:]:
+    path = Path(value)
+    if not path.is_file():
+        print(f"[aviso] {path}: arquivo nao encontrado; ignorado")
+        continue
+    text = path.read_text(encoding="utf-8", errors="surrogateescape")
+    changes = text.count(old_additional)
+    text = text.replace(old_additional, new_additional)
+    text, online_changes = online_pattern.subn(new_online, text)
+    changes += online_changes
+    if changes:
+        path.write_text(text, encoding="utf-8", errors="surrogateescape")
+        print(f"[ok] {path}: {changes} correcao(oes) aplicada(s)")
+    elif new_additional in text or new_online in text:
+        print(f"[ok] {path}: correcao ja aplicada")
+    else:
+        print(f"[info] {path}: consultas alvo nao existem nesta versao")
+PY
+}
+
+install_additional_block_patch() {
+  echo "[6/7] Instalando propagacao de bloqueio para adicionais"
+  local patch_ref="${MKAUTH_TOOLKIT_REF:-agent/additional-block-patch}"
+  local patch_url="https://raw.githubusercontent.com/brsxdlols/mkauth-toolkit/${patch_ref}/installers/install-additional-block.sh"
+  local patch_installer
+  patch_installer="$(mktemp /tmp/install-additional-block.XXXXXX.sh)"
+
+  if command -v curl >/dev/null 2>&1; then
+    if ! curl -fsSL --retry 3 --connect-timeout 15 "${patch_url}" -o "${patch_installer}"; then
+      echo "[aviso] nao foi possivel baixar o patch de bloqueio dos adicionais."
+      rm -f -- "${patch_installer}"
+      return 0
+    fi
+  elif command -v wget >/dev/null 2>&1; then
+    if ! wget -q --timeout=15 --tries=3 -O "${patch_installer}" "${patch_url}"; then
+      echo "[aviso] nao foi possivel baixar o patch de bloqueio dos adicionais."
+      rm -f -- "${patch_installer}"
+      return 0
+    fi
+  else
+    echo "[aviso] curl/wget ausente; patch de bloqueio dos adicionais nao instalado."
+    rm -f -- "${patch_installer}"
+    return 0
+  fi
+
+  chmod 0750 "${patch_installer}"
+  if ! MKAUTH_TOOLKIT_REF="${patch_ref}" bash "${patch_installer}"; then
+    echo "[aviso] o patch de bloqueio dos adicionais nao e compativel com este esquema; dashboard e busca permanecem instaladas."
+  fi
+  rm -f -- "${patch_installer}"
+}
+
 install_reconcile() {
-  echo "[5/5] Instalando reconcile de Radius"
+  echo "[7/7] Instalando reconcile de Radius"
   local reconcile_installer="${SCRIPT_DIR}/scripts/install-radius-reconcile.sh"
 
   if [ ! -f "${reconcile_installer}" ]; then
@@ -60,11 +147,11 @@ install_reconcile() {
   fi
 }
 
-echo "[1/4] Validando caminhos"
+echo "[1/7] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
 mkdir -p "${BACKUP_DIR}"
 
-echo "[2/4] Gerando backup"
+echo "[2/7] Gerando backup"
 mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
 if [ -f "${TARGET_ADMIN_DIR}/index.hhvm" ]; then
   cp -a "${TARGET_ADMIN_DIR}/index.hhvm" "${BACKUP_DIR}/admin/index.hhvm"
@@ -92,7 +179,7 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
   cp -a "${TARGET_ADDONS_DIR}/shared" "${BACKUP_DIR}/addons/shared"
 fi
 
-echo "[3/4] Instalando arquivos"
+echo "[3/7] Instalando arquivos"
 mkdir -p "${TARGET_ADDONS_DIR}"
 cp -a "${SCRIPT_DIR}/admin/index.hhvm" "${TARGET_ADMIN_DIR}/index.hhvm"
 rm -rf "${TARGET_ADDONS_DIR}/dashboard"
@@ -114,14 +201,16 @@ rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 install_client_audit_hook
 install_branding
+apply_dashboard_online_additional_fix
 
-echo "[4/4] Validando instalacao"
+echo "[5/7] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/index.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/delete_installation_request.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/exibir_resultados.php"
@@ -131,8 +220,9 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_photo.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
+install_additional_block_patch
 install_reconcile
 
-echo "[5/5] Finalizado"
+echo "[7/7] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"
 echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
