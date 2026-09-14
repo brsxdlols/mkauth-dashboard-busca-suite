@@ -122,9 +122,29 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-stat-head,
         .dashboard-stat-foot,
-        .dashboard-stat-value {
+        .dashboard-stat-value,
+        .dashboard-stat-icon {
             position: relative;
             z-index: 1;
+        }
+
+        .dashboard-stat-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.20);
+            color: inherit;
+            font-size: 14px;
+        }
+
+        .dashboard-stat-head {
+            padding-right: 31px;
         }
 
         .dashboard-stat-head {
@@ -219,6 +239,19 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-stat-card.is-outline-danger .dashboard-stat-foot {
             border-top-color: rgba(248, 113, 113, 0.22);
+        }
+
+        .dashboard-stat-card.is-manual {
+            background: linear-gradient(180deg, #c83b3b 0%, #a91f1f 100%);
+            color: #ffffff !important;
+        }
+
+        .dashboard-stat-card.is-light .dashboard-stat-icon {
+            background: #edf2f7;
+        }
+
+        .dashboard-stat-card.is-outline-danger .dashboard-stat-icon {
+            background: #fff0f2;
         }
 
         .dashboard-attendance-grid {
@@ -404,6 +437,35 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         @media (max-width: 575.98px) {
+            html,
+            body.mka-suite-dashboard-page {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden !important;
+            }
+
+            body.mka-suite-dashboard-page #pagina,
+            body.mka-suite-dashboard-page #conteudo,
+            body.mka-suite-dashboard-page .container,
+            body.mka-suite-dashboard-page .container-fluid,
+            body.mka-suite-dashboard-page .row,
+            body.mka-suite-dashboard-page .dashboard-surface {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box;
+            }
+
+            body.mka-suite-dashboard-page .row {
+                margin-right: 0 !important;
+                margin-left: 0 !important;
+            }
+
+            body.mka-suite-dashboard-page .row > * {
+                min-width: 0 !important;
+            }
+
             .dashboard-stat-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
@@ -697,11 +759,15 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         @media (max-width:760px) {
             .dashboard-client-state-toast-stack { bottom:12px; width:calc(100vw - 20px); }
+            .dashboard-client-state-toast-stack,.dashboard-session-toast-stack { max-width:calc(100vw - 20px); box-sizing:border-box; }
+            .dashboard-session-toast-list { max-height:calc(100vh - 150px); overflow-y:auto; overflow-x:hidden; padding:3px; }
+            .dashboard-session-toast { width:100%; max-width:100%; box-sizing:border-box; }
             .dashboard-session-toast.is-client-state { border-radius:18px; align-items:flex-start; }
             .dashboard-session-toast.is-client-state .dashboard-session-toast-content { display:flex; align-items:flex-start; justify-content:flex-start; flex-wrap:wrap; gap:6px 10px; }
             .dashboard-client-state-identity { width:100%; }
-            .dashboard-client-state-context { flex-wrap:wrap; }
+            .dashboard-client-state-context { width:100%; flex-wrap:wrap; }
             .dashboard-session-toast.is-client-state .dashboard-session-toast-description { width:100%; white-space:normal; }
+            .dashboard-session-toast.is-client-state .dashboard-session-toast-title,.dashboard-session-toast.is-client-state .dashboard-session-toast-meta span { white-space:normal; overflow-wrap:anywhere; }
         }
 
         .dashboard-session-toast.is-fading {
@@ -1495,6 +1561,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $cli_sem_titulo = mysqli_query($conn, "SELECT login FROM sis_cliente c WHERE $grupos c.cli_ativado LIKE 's' AND c.tit_abertos LIKE '0' AND c.isento LIKE 'nao' AND c.tipo_cob LIKE 'titulo'");
         $tot_sem_titulo = mysqli_num_rows($cli_sem_titulo);
 
+        $cli_manual = 0;
+        $manual_block_column = @mysqli_query($conn, "SHOW COLUMNS FROM sis_cliente LIKE 'tipobloq'");
+        if ($manual_block_column && mysqli_num_rows($manual_block_column) > 0) {
+            $manual_block_query = @mysqli_query($conn, "SELECT COUNT(*) AS total FROM sis_cliente c WHERE $grupos c.cli_ativado LIKE 's' AND c.bloqueado='sim' AND c.tipobloq='man'");
+            if ($manual_block_query && ($manual_block_row = mysqli_fetch_assoc($manual_block_query))) $cli_manual = (int)$manual_block_row['total'];
+        }
+
         // Porcentagem dos Clientes
         $perc_clientes_livres = number_format($tot_clientes_livres / $cli_ * 100, 2);
         $perc_cliente_sem_adicionais = number_format($cli_ / $tot_clientes * 100, 2);
@@ -1506,18 +1579,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $perc_clientes_offline = number_format($cli_offline / $tot_clientes * 100, 2);
         $perc_clientes_sem_carne = number_format($tot_sem_carne / $tot_clientes * 100, 2);
         $perc_clientes_sem_titulo = number_format($tot_sem_titulo / $tot_clientes * 100, 2);
+        $perc_clientes_manual = $cli_ > 0 ? number_format($cli_manual / $cli_ * 100, 2) : '0.00';
 
         $dashboard_stats = array(
-            array('label' => 'Total', 'value' => $tot_clientes, 'percent' => '100.00%', 'href' => '/admin/addons/busca_inteligente/index.php', 'theme' => 'is-primary', 'text' => 'text-light'),
-            array('label' => 'Adicional', 'value' => $c_add, 'percent' => $perc_clientes_adicional . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=adicionais', 'theme' => 'is-light', 'text' => 'text-dark'),
-            array('label' => 'Livres', 'value' => $tot_clientes_livres, 'percent' => $perc_clientes_livres . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=', 'theme' => 'is-info', 'text' => 'text-dark'),
-            array('label' => 'Observação', 'value' => $cli_obs, 'percent' => $perc_clientes_observacao . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=obs', 'theme' => 'is-observation', 'text' => 'text-dark'),
-            array('label' => 'Bloqueado', 'value' => $cli_bloq, 'percent' => $perc_clientes_bloqueado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloq', 'theme' => 'is-danger', 'text' => 'text-light'),
-            array('label' => 'Atraso', 'value' => $cli_atraso, 'percent' => $perc_clientes_atrasado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=atrasado', 'theme' => 'is-warning', 'text' => 'text-dark'),
-            array('label' => 'Online', 'value' => $cli_on, 'percent' => $perc_clientes_online . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=on', 'theme' => 'is-success', 'text' => 'text-light'),
-            array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light'),
-            array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark'),
-            array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark'),
+            array('label' => 'Total', 'value' => $tot_clientes, 'percent' => '100.00%', 'href' => '/admin/addons/busca_inteligente/index.php', 'theme' => 'is-primary', 'text' => 'text-light', 'icon' => 'fa-users'),
+            array('label' => 'Adicional', 'value' => $c_add, 'percent' => $perc_clientes_adicional . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=adicionais', 'theme' => 'is-light', 'text' => 'text-dark', 'icon' => 'fa-user-plus'),
+            array('label' => 'Livres', 'value' => $tot_clientes_livres, 'percent' => $perc_clientes_livres . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=', 'theme' => 'is-info', 'text' => 'text-dark', 'icon' => 'fa-user-check'),
+            array('label' => 'Observação', 'value' => $cli_obs, 'percent' => $perc_clientes_observacao . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=obs', 'theme' => 'is-observation', 'text' => 'text-dark', 'icon' => 'fa-eye'),
+            array('label' => 'Bloqueado', 'value' => $cli_bloq, 'percent' => $perc_clientes_bloqueado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloq', 'theme' => 'is-danger', 'text' => 'text-light', 'icon' => 'fa-user-lock'),
+            array('label' => 'Atraso', 'value' => $cli_atraso, 'percent' => $perc_clientes_atrasado . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=atrasado', 'theme' => 'is-warning', 'text' => 'text-dark', 'icon' => 'fa-clock'),
+            array('label' => 'Online', 'value' => $cli_on, 'percent' => $perc_clientes_online . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=on', 'theme' => 'is-success', 'text' => 'text-light', 'icon' => 'fa-wifi'),
+            array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light', 'icon' => 'fa-plug-circle-xmark'),
+            array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'fa-file-circle-xmark'),
+            array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'fa-receipt'),
+            array('label' => 'Bloqueados manualmente', 'value' => $cli_manual, 'percent' => $perc_clientes_manual . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloqueado manualmente', 'theme' => 'is-manual', 'text' => 'text-light', 'icon' => 'fa-user-shield'),
         );
 
         ?>
@@ -1538,6 +1613,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             <?php foreach ($dashboard_stats as $stat) { ?>
                                 <a href="<?= $stat['href']; ?>" class="dashboard-stat-card <?= $stat['theme']; ?> <?= $stat['text']; ?>">
                                     <div class="dashboard-stat-head"><?= $stat['label']; ?></div>
+                                    <span class="dashboard-stat-icon"><i class="fa-solid <?= $stat['icon']; ?>"></i></span>
                                     <?php
                                     $stat_value = permissao('perm_totais') ? (string) $stat['value'] : '';
                                     $stat_digits = strlen(preg_replace('/\D+/', '', $stat_value));
