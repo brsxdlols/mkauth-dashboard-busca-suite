@@ -468,7 +468,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 padding-right: 8px !important;
                 padding-left: 8px !important;
                 position: relative;
-                left: -10px;
+                left: -15px;
                 overflow-x: hidden !important;
             }
 
