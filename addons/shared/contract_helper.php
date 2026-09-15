@@ -253,17 +253,23 @@ if (!function_exists('mka_contract_render_inline')) {
 }
 
 if (!function_exists('mka_contract_upsert')) {
-    function mka_contract_upsert($db, $uuid_cliente, $login_cliente, $duration_months, $activated_by, $start_date = null, $notes = '')
+    function mka_contract_upsert($db, $uuid_cliente, $login_cliente, $duration_months, $activated_by, $start_date = null, $notes = '', $explicit_end_date = null)
     {
         mka_contract_ensure_schema($db);
 
-        $duration = (int) $duration_months;
-        if (!in_array($duration, mka_contract_allowed_durations(), true)) {
-            $duration = 12;
-        }
-
         $start_date = $start_date ?: date('Y-m-d');
-        $end_date = date('Y-m-d', strtotime("+{$duration} month", strtotime($start_date)));
+        $duration = (int) $duration_months;
+        $end_date = '';
+
+        if ($explicit_end_date !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $explicit_end_date)) {
+            $end_date = (string) $explicit_end_date;
+            $duration = 0;
+        } else {
+            if (!in_array($duration, mka_contract_allowed_durations(), true)) {
+                $duration = 12;
+            }
+            $end_date = date('Y-m-d', strtotime("+{$duration} month", strtotime($start_date)));
+        }
 
         $uuid = mysqli_real_escape_string($db, (string) $uuid_cliente);
         $login = mysqli_real_escape_string($db, (string) $login_cliente);
