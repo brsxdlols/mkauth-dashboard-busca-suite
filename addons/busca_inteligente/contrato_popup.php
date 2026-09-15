@@ -51,7 +51,7 @@ $durations = mka_contract_allowed_durations();
 $embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"<?= $embedded_view ? ' class="is-embedded"' : ''; ?>>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,7 +84,8 @@ $embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
         .flash { margin-bottom: 16px; padding: 12px 14px; border-radius: 14px; font-weight: 700; }
         .flash.success { background: #e8f8ef; color: #157347; }
         .flash.error { background: #fde7ea; color: #b42318; }
-        body.is-embedded { overflow: hidden; }
+        html.is-embedded,
+        body.is-embedded { height: 100%; overflow: hidden; }
         body.is-embedded .wrap { min-height: 0; padding: 14px 18px 16px; align-items: flex-start; }
         body.is-embedded .card { max-width: none; border-radius: 18px; box-shadow: none; }
         body.is-embedded .head { padding: 16px 20px; }
