@@ -195,7 +195,7 @@ if ($result) {
             <strong id="contractModalTitle">Ativar vigência</strong>
             <button type="button" class="contract-modal-close" aria-label="Fechar">&times;</button>
         </div>
-        <iframe class="contract-modal-frame" id="contractModalFrame" title="Ativação da vigência do contrato"></iframe>
+        <iframe class="contract-modal-frame" id="contractModalFrame" title="Ativação da vigência do contrato" scrolling="no"></iframe>
     </div>
 </div>
 
