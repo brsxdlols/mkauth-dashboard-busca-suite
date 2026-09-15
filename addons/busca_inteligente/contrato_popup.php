@@ -16,11 +16,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login_cliente = isset($_POST['login']) ? trim((string) $_POST['login']) : $login_cliente;
     $nome_cliente = isset($_POST['nome']) ? trim((string) $_POST['nome']) : $nome_cliente;
     $duration_months = isset($_POST['duration_months']) ? (int) $_POST['duration_months'] : 12;
+    $duration_mode = isset($_POST['duration_mode']) ? trim((string) $_POST['duration_mode']) : 'months';
+    $custom_end_date = isset($_POST['custom_end_date']) ? trim((string) $_POST['custom_end_date']) : '';
     $start_date = isset($_POST['start_date']) ? trim((string) $_POST['start_date']) : date('Y-m-d');
 
     if ($uuid_cliente !== '' && $login_cliente !== '') {
-        mka_contract_upsert($link, $uuid_cliente, $login_cliente, $duration_months, $usuario_acao, $start_date);
-        $message = 'Contrato atualizado com sucesso.';
+        $explicit_end_date = null;
+        if ($duration_mode === 'custom') {
+            $start_timestamp = strtotime($start_date);
+            $end_timestamp = strtotime($custom_end_date);
+            if ($custom_end_date === '' || $start_timestamp === false || $end_timestamp === false || $end_timestamp < $start_timestamp) {
+                $message = 'Escolha uma data de vencimento igual ou posterior ao início da vigência.';
+                $message_class = 'error';
+            } else {
+                $explicit_end_date = $custom_end_date;
+            }
+        }
+
+        if ($message_class !== 'error') {
+            mka_contract_upsert($link, $uuid_cliente, $login_cliente, $duration_months, $usuario_acao, $start_date, '', $explicit_end_date);
+            $message = 'Contrato atualizado com sucesso.';
+        }
     } else {
         $message = 'Não foi possível identificar o cliente.';
         $message_class = 'error';
@@ -77,6 +93,8 @@ $embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
         .field small { display: block; margin-bottom: 6px; color: #67758f; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
         .field strong { font-size: 18px; }
         .field input, .field select { width: 100%; border: 1px solid #c8d5e6; border-radius: 12px; font-size: 16px; padding: 12px 14px; box-sizing: border-box; }
+        .field[hidden] { display: none !important; }
+        .custom-end-field { grid-column: 1 / -1; }
         .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
         .btn { border: 0; border-radius: 14px; font-size: 16px; font-weight: 700; padding: 12px 18px; cursor: pointer; }
         .btn-primary { background: #2563eb; color: #fff; }
@@ -145,11 +163,17 @@ $embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
                         </label>
                         <label class="field">
                             <small>Prazo do contrato</small>
-                            <select name="duration_months">
+                            <select name="duration_mode" id="durationMode">
                                 <?php foreach ($durations as $duration) { ?>
-                                    <option value="<?= $duration; ?>"><?= $duration; ?> <?= $duration === 1 ? 'mês' : 'meses'; ?></option>
+                                    <option value="months:<?= $duration; ?>"><?= $duration; ?> <?= $duration === 1 ? 'mês' : 'meses'; ?></option>
                                 <?php } ?>
+                                <option value="custom">Especificar data</option>
                             </select>
+                            <input type="hidden" name="duration_months" id="durationMonths" value="<?= isset($durations[0]) ? (int) $durations[0] : 12; ?>">
+                        </label>
+                        <label class="field custom-end-field" id="customEndField" hidden>
+                            <small>Vencimento final escolhido</small>
+                            <input type="date" name="custom_end_date" id="customEndDate" min="<?= date('Y-m-d'); ?>">
                         </label>
                     </div>
 
@@ -162,6 +186,31 @@ $embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
         </div>
     </div>
     <script>
+        (function () {
+            var mode = document.getElementById('durationMode');
+            var months = document.getElementById('durationMonths');
+            var customField = document.getElementById('customEndField');
+            var customDate = document.getElementById('customEndDate');
+            var startDate = document.querySelector('input[name="start_date"]');
+
+            function syncDurationMode() {
+                var isCustom = mode.value === 'custom';
+                customField.hidden = !isCustom;
+                customDate.required = isCustom;
+                if (!isCustom) months.value = mode.value.split(':')[1] || '12';
+            }
+
+            function syncMinimumDate() {
+                customDate.min = startDate.value || '<?= date('Y-m-d'); ?>';
+                if (customDate.value && customDate.value < customDate.min) customDate.value = customDate.min;
+            }
+
+            mode.addEventListener('change', syncDurationMode);
+            startDate.addEventListener('change', syncMinimumDate);
+            syncDurationMode();
+            syncMinimumDate();
+        }());
+
         function mkaCloseContractView() {
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage({type: 'mka-content-modal-close'}, window.location.origin);
