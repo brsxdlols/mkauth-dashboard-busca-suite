@@ -48,6 +48,7 @@ if (!$latest_contract) {
 }
 $status_info = mka_contract_build_status($latest_contract);
 $durations = mka_contract_allowed_durations();
+$embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -59,7 +60,7 @@ $durations = mka_contract_allowed_durations();
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css" />
     <style>
         body { margin: 0; background: #eef4fb; font-family: Arial, Helvetica, sans-serif; color: #17324d; }
-        .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
         .card { width: 100%; max-width: 560px; background: #fff; border-radius: 22px; box-shadow: 0 24px 60px rgba(18, 38, 63, .18); overflow: hidden; }
         .head { padding: 22px 26px; background: linear-gradient(135deg, #fff6cf 0%, #ffe996 100%); border-bottom: 1px solid rgba(188, 145, 0, .18); }
         .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #b07b00; font-weight: 700; }
@@ -83,6 +84,18 @@ $durations = mka_contract_allowed_durations();
         .flash { margin-bottom: 16px; padding: 12px 14px; border-radius: 14px; font-weight: 700; }
         .flash.success { background: #e8f8ef; color: #157347; }
         .flash.error { background: #fde7ea; color: #b42318; }
+        body.is-embedded { overflow: hidden; }
+        body.is-embedded .wrap { min-height: 0; padding: 14px 18px 16px; align-items: flex-start; }
+        body.is-embedded .card { max-width: none; border-radius: 18px; box-shadow: none; }
+        body.is-embedded .head { padding: 16px 20px; }
+        body.is-embedded .head h1 { margin: 7px 0 4px; font-size: 27px; }
+        body.is-embedded .body { padding: 18px 20px 20px; }
+        body.is-embedded .status { padding: 8px 12px; margin-bottom: 12px; }
+        body.is-embedded .grid { gap: 10px; margin-bottom: 12px; }
+        body.is-embedded .field { padding: 11px 14px; }
+        body.is-embedded .field input,
+        body.is-embedded .field select { padding: 10px 12px; }
+        body.is-embedded .actions { margin-top: 12px; }
         @media (max-width: 640px) {
             .head h1 { font-size: 26px; }
             .grid { grid-template-columns: 1fr; }
@@ -90,7 +103,7 @@ $durations = mka_contract_allowed_durations();
         }
     </style>
 </head>
-<body>
+<body<?= $embedded_view ? ' class="is-embedded"' : ''; ?>>
     <div class="wrap">
         <div class="card">
             <div class="head">
