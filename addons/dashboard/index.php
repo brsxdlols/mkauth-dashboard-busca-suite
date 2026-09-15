@@ -1855,7 +1855,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="dashboard-stat-head">Central</div>
                                 <span class="dashboard-stat-icon"><i class="bi bi-person-badge"></i></span>
                                 <div class="dashboard-stat-value"><?= $totAcessos; ?></div>
-                                <div class="dashboard-stat-foot">.</div>
+                                <div class="dashboard-stat-foot">0.00%</div>
                             </a>
                         </div>
                     </div>
@@ -2154,8 +2154,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             $tot_instalacoes = mysqli_num_rows($query_sis_instalacao);
 
                             $tot_atendimento = $tot_chamados + $tot_instalacoes;
-                            $perc_chamados = number_format($tot_chamados / $tot_atendimento * 100, 2);
-                            $perc_instalacoes = number_format($tot_instalacoes / $tot_atendimento * 100, 2);
+                            $perc_chamados = $tot_atendimento > 0 ? number_format($tot_chamados / $tot_atendimento * 100, 2) : '0.00';
+                            $perc_instalacoes = $tot_atendimento > 0 ? number_format($tot_instalacoes / $tot_atendimento * 100, 2) : '0.00';
 
                             if (permissao('perm_totais')) {
                                 echo "<script>$('#tot_instalacoes').html(\"$tot_instalacoes\")</script>";
