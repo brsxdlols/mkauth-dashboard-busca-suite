@@ -89,6 +89,13 @@ awk -v patch_start="${PATCH_START}" -v patch_end="${PATCH_END}" '
         print "                word-break: normal;"
         print "                white-space: nowrap;"
         print "            }"
+        print ""
+        print "            .dashboard-stat-card.is-manual .dashboard-stat-head {"
+        print "                font-size: 10px;"
+        print "                letter-spacing: -0.2px;"
+        print "                overflow-wrap: normal;"
+        print "                white-space: nowrap;"
+        print "            }"
         print "        }"
         print "        " patch_end
         inserted = 1
@@ -103,6 +110,7 @@ awk -v patch_start="${PATCH_START}" -v patch_end="${PATCH_END}" '
 sed -i \
     -e "s/col-12 col-md-12 col-lg-9 mb-2'/col-12 col-md-12 col-lg-10 mb-2 dashboard-clients-column'/" \
     -e "s/col-12 col-md-12 col-lg-3 mb-2'/col-12 col-md-12 col-lg-2 mb-2 dashboard-attendance-column'/" \
+    -e "s/'Bloq manual'/'Bloqueio manual'/" \
     "${TMP_FILE}"
 
 if ! grep -Fq "dashboard-clients-column" "${TMP_FILE}" || \
