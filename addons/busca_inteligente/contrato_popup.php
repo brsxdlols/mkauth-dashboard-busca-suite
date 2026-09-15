@@ -120,6 +120,10 @@ $embedded_view = isset($_GET['embed']) && $_GET['embed'] === '1';
             .grid { grid-template-columns: 1fr; }
             .actions { flex-direction: column-reverse; }
         }
+        @media (min-width: 480px) {
+            body.is-embedded .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            body.is-embedded .actions { flex-direction: row; }
+        }
     </style>
 </head>
 <body<?= $embedded_view ? ' class="is-embedded"' : ''; ?>>
