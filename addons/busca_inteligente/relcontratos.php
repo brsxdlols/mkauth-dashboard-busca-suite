@@ -113,9 +113,17 @@ if ($result) {
     .contract-table tbody tr:nth-child(even) { background:#f6f8fb; }
     .contract-client-link { color:#193755; text-decoration:none; }
     .contract-client-link:hover { color:#1268db; text-decoration:underline; }
+    .contract-modal[hidden] { display:none !important; }
+    .contract-modal { position:fixed; inset:0; z-index:1080; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,.58); backdrop-filter:blur(4px); }
+    .contract-modal-dialog { display:flex; flex-direction:column; width:min(620px,calc(100vw - 32px)); height:min(780px,calc(100vh - 32px)); overflow:hidden; border:1px solid rgba(255,255,255,.55); border-radius:22px; background:#eef4fb; box-shadow:0 30px 80px rgba(15,23,42,.34); }
+    .contract-modal-head { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:54px; padding:0 16px 0 20px; background:#fff; border-bottom:1px solid #dbe5f0; color:#193755; }
+    .contract-modal-head strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .contract-modal-close { width:38px; height:38px; flex:0 0 auto; border:0; border-radius:10px; background:#edf2f7; color:#334155; font-size:26px; line-height:1; cursor:pointer; }
+    .contract-modal-close:hover { background:#fde7ea; color:#b42318; }
+    .contract-modal-frame { width:100%; min-height:0; flex:1 1 auto; border:0; background:#eef4fb; }
     @media (max-width: 1100px) { .contract-summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
     @media (max-width: 900px) { .contract-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width: 560px) { .contract-summary-grid { grid-template-columns:1fr; } .contract-search { align-items:stretch; flex-direction:column; } .contract-search button { width:100%; } .contract-toolbar span { display:none; } }
+    @media (max-width: 560px) { .contract-summary-grid { grid-template-columns:1fr; } .contract-search { align-items:stretch; flex-direction:column; } .contract-search button { width:100%; } .contract-toolbar span { display:none; } .contract-modal { padding:8px; } .contract-modal-dialog { width:100%; height:calc(100vh - 16px); border-radius:16px; } }
 </style>
 
 <form action="" method="get" class="contract-search">
@@ -172,13 +180,23 @@ if ($result) {
                 <?php if (!empty($status['pdf_url'])) { ?>
                     <a class="contract-view-link" href="<?= mka_contract_escape($status['pdf_url']); ?>" target="_blank"><i class="fa-solid fa-file-pdf"></i>Visualizar</a>
                 <?php } ?>
-                <a href="#" class="contract-action-link" onclick="abrirJanela('contrato_popup.php?uuid=<?= urlencode($row['uuid']); ?>&login=<?= urlencode($row['login']); ?>&nome=<?= urlencode($row['nome']); ?>', 620, 760); return false;"><i class="fa-solid fa-file-signature"></i><?= $status['status'] === 'missing' ? 'Ativar vigência' : 'Renovar'; ?></a>
+                <a href="#" class="contract-action-link" onclick="return mkaOpenContractModal('contrato_popup.php?embed=1&uuid=<?= urlencode($row['uuid']); ?>&login=<?= urlencode($row['login']); ?>&nome=<?= urlencode($row['nome']); ?>', <?= htmlspecialchars(json_encode(($status['status'] === 'missing' ? 'Ativar vigência — ' : 'Renovar contrato — ') . $row['nome']), ENT_QUOTES, 'UTF-8'); ?>);"><i class="fa-solid fa-file-signature"></i><?= $status['status'] === 'missing' ? 'Ativar vigência' : 'Renovar'; ?></a>
             </div>
         </td>
     </tr>
     <?php } ?>
     </tbody>
 </table>
+</div>
+
+<div class="contract-modal no_print" id="contractModal" hidden role="dialog" aria-modal="true" aria-labelledby="contractModalTitle">
+    <div class="contract-modal-dialog">
+        <div class="contract-modal-head">
+            <strong id="contractModalTitle">Ativar vigência</strong>
+            <button type="button" class="contract-modal-close" aria-label="Fechar">&times;</button>
+        </div>
+        <iframe class="contract-modal-frame" id="contractModalFrame" title="Ativação da vigência do contrato"></iframe>
+    </div>
 </div>
 
 <script>
@@ -220,6 +238,42 @@ if ($result) {
     });
     filterContracts();
 })();
+</script>
+
+<script>
+(function () {
+    var modal = document.getElementById('contractModal');
+    var frame = document.getElementById('contractModalFrame');
+    var title = document.getElementById('contractModalTitle');
+    var closeButton = modal.querySelector('.contract-modal-close');
+
+    function closeModal() {
+        modal.hidden = true;
+        frame.removeAttribute('src');
+        document.body.style.overflow = '';
+    }
+
+    window.mkaOpenContractModal = function (url, modalTitle) {
+        title.textContent = modalTitle || 'Ativar vigência';
+        frame.src = url;
+        modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        closeButton.focus();
+        return false;
+    };
+
+    closeButton.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
+    window.addEventListener('message', function (event) {
+        if (event.origin !== window.location.origin || !event.data || typeof event.data !== 'object') return;
+        if (event.data.type === 'mka-content-modal-close') closeModal();
+        if (event.data.type === 'mka-content-modal-refresh') {
+            closeModal();
+            window.setTimeout(function () { window.location.reload(); }, 250);
+        }
+    });
+}());
 </script>
 
 <?php include('../../baixo.php'); ?>
