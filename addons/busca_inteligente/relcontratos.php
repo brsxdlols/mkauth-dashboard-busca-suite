@@ -17,6 +17,11 @@
 <?php
 mka_contract_ensure_schema($link);
 $busca = isset($_GET['busca']) ? trim((string) $_GET['busca']) : '';
+$focused_client = isset($_GET['client']) ? trim((string) $_GET['client']) : '';
+if ($focused_client !== '') {
+    require_once __DIR__ . '/../shared/client_action_access.php';
+    mka_action_client($link, $focused_client, !empty($acesso_permitido));
+}
 
 $query = "
     SELECT c.uuid_cliente, c.nome, c.login, c.cadastro, c.fone, c.ssid, c.celular, c.celular2, c.plano, c.contrato,
@@ -44,6 +49,7 @@ if ($busca !== '') {
     ";
 }
 
+if ($focused_client !== '') $query .= " AND c.uuid_cliente='" . mysqli_real_escape_string($link, $focused_client) . "'";
 $query .= " ORDER BY c.nome ASC";
 $result = mysqli_query($link, $query);
 
@@ -70,6 +76,7 @@ if ($result) {
             'valor' => 'R$ ' . number_format((float) $row['valor'], 2, ',', '.'),
             'contrato_nome' => $row['contrato_nome'],
             'status' => $status,
+            'has_document' => mka_contract_has_document($link, $row['uuid_cliente']),
         );
     }
 }
@@ -177,7 +184,10 @@ if ($result) {
         <td><span class="contract-status-chip <?= $status['class']; ?>"><i class="<?= mka_contract_escape($status['icon']); ?>"></i><?= mka_contract_escape($label); ?></span></td>
         <td>
             <div class="contract-action-group">
+                <?php if (!$row['has_document']) { ?>
                 <a href="#" class="contract-action-link" onclick="return mkaOpenContractModal('contract_attachment.php?uuid=<?= urlencode($row['uuid']); ?>', 'Anexar contrato existente');"><i class="fa-solid fa-upload"></i>Anexar contrato</a>
+                <?php } ?>
+                <a href="#" class="contract-action-link" onclick="return mkaOpenContractModal('contract_archive.php?uuid=<?= urlencode($row['uuid']); ?>', 'Contratos atuais e arquivados');"><i class="fa-solid fa-archive"></i><?= $row['has_document'] ? 'Arquivar contrato / histórico' : 'Histórico de contratos'; ?></a>
                 <?php if (!empty($status['pdf_url'])) { ?>
                     <a class="contract-view-link" href="<?= mka_contract_escape($status['pdf_url']); ?>" target="_blank"><i class="fa-solid fa-file-pdf"></i>Visualizar</a>
                 <?php } ?>
@@ -257,7 +267,7 @@ if ($result) {
     window.mkaOpenContractModal = function (url, modalTitle) {
         title.textContent = modalTitle || 'Ativar vigência';
         frame.src = url;
-        frame.setAttribute('scrolling', url.indexOf('contract_attachment.php') !== -1 ? 'auto' : 'no');
+        frame.setAttribute('scrolling', /contract_(attachment|archive)\.php/.test(url) ? 'auto' : 'no');
         modal.hidden = false;
         document.body.style.overflow = 'hidden';
         closeButton.focus();
@@ -265,6 +275,9 @@ if ($result) {
     };
 
     closeButton.addEventListener('click', closeModal);
+    <?php if ($focused_client !== '' && isset($_GET['attach']) && count($rows) === 1 && !$rows[0]['has_document']) { ?>
+    window.mkaOpenContractModal(<?= json_encode('contract_attachment.php?uuid='.rawurlencode($focused_client)); ?>, 'Anexar contrato existente');
+    <?php } ?>
     modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
     window.addEventListener('message', function (event) {

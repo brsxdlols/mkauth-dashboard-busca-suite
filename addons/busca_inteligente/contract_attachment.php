@@ -5,6 +5,14 @@ require_once __DIR__ . '/../shared/contract_attachment.php';
 $uuid = isset($_GET['uuid']) ? trim((string) $_GET['uuid']) : '';
 $client = mka_action_client($link, $uuid, !empty($acesso_permitido));
 mka_attachment_schema($link);
+if (!isset($_GET['view'])) {
+    $lockName = 'mka-contract-' . substr(hash('sha256', $uuid), 0, 40);
+    $lock = mysqli_query($link, "SELECT GET_LOCK('$lockName',5) acquired");
+    $lockRow = $lock ? mysqli_fetch_assoc($lock) : null;
+    if (!$lockRow || (int) $lockRow['acquired'] !== 1) { http_response_code(409); exit('Outra operação está em andamento. Tente novamente.'); }
+    register_shutdown_function(function () use ($link,$lockName) { mysqli_query($link, "SELECT RELEASE_LOCK('$lockName')"); });
+    if (mka_contract_has_document($link, $uuid)) { http_response_code(409); exit('Este cliente já possui um contrato atual. Utilize a aba Contratos para arquivar antes de anexar outro.'); }
+}
 $storage = '/opt/mk-auth/contract-uploads';
 $safeUuid = mysqli_real_escape_string($link, $uuid);
 if (isset($_GET['view'])) {

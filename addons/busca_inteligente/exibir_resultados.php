@@ -1756,7 +1756,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     </p>
                                                                     <div class="client-address-actions">
                                                                         <div class="client-contract-line"><?= $contract_inline; ?></div>
-                                                                        <a class="map-link-btn no_print" href="#" onclick="return mkaOpenContentModal('contract_attachment.php?uuid=<?= urlencode($uuid_cliente); ?>', 'Anexar contrato existente');" title="Enviar contrato existente em PDF, JPG ou PNG"><i class="fa-solid fa-upload"></i> Anexar contrato</a>
+                                                                        <?php if (!mka_contract_has_document($link, $uuid_cliente)) { ?>
+                                                                        <a class="map-link-btn no_print" href="relcontratos.php?client=<?= urlencode($uuid_cliente); ?>&amp;attach=1" title="Ir aos contratos para anexar o documento"><i class="fa-solid fa-upload"></i> Anexar contrato</a>
+                                                                        <?php } ?>
                                                                         <?php if ($mapa_link != '') { ?>
                                                                             <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localização no Google Maps">
                                                                                 <i class="fa-solid fa-location-dot"></i> Localização no mapa

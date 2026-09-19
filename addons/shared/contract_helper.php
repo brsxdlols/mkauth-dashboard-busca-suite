@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/contract_attachment.php';
 
+function mka_contract_has_document($db, $uuid) {
+    return mka_attachment_latest($db, $uuid) !== null || mka_contract_get_native_signed($uuid) !== null;
+}
+
 if (!function_exists('mka_contract_escape')) {
     function mka_contract_escape($value)
     {
@@ -102,12 +106,15 @@ if (!function_exists('mka_contract_get_native_signed')) {
         }
 
         $normalized_base = rtrim($base_dir, '/\\\\');
+        $archive = isset($GLOBALS['link']) ? mka_contract_archive_map($GLOBALS['link']) : array();
         if (!isset($signed_files_by_base[$normalized_base])) {
             $signed_files_by_base[$normalized_base] = array();
             $all_files = glob($normalized_base . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'contrato_*.pdf');
             if (is_array($all_files)) {
                 foreach ($all_files as $candidate) {
                     $candidate_uuid = basename(dirname($candidate));
+                    if (!is_file($candidate) || is_link($candidate) || is_link(dirname($candidate))) continue;
+                    if (isset($archive[$candidate_uuid][mka_contract_native_key($candidate)])) continue;
                     $candidate_time = (int) @filemtime($candidate);
                     if ($candidate_time <= 0) {
                         continue;
