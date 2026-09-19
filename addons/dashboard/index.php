@@ -2,6 +2,12 @@
 include('config.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
 
+if (mka_suite_get_layout_mode($conn) === 'multi') {
+    define('MKA_MULTI_DASHBOARD', true);
+    require __DIR__ . '/multi.php';
+    exit;
+}
+
 if (mka_suite_get_layout_mode($conn) === 'legado') {
     header('Location: ../dashboard-legado/');
     exit;

@@ -260,16 +260,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                     <div class="col-4 form-floating mb-2 g-1">
                         <select class="form-select" name="suite_layout_mode" id="suite_layout_mode" aria-label="">
                             <?php
-                            if ($suite_layout_mode === 'legado') {
-                                echo "
-                        <option value='novo'>Novo</option>
-                        <option value='legado' selected>Legado</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='novo' selected>Novo</option>
-                        <option value='legado'>Legado</option>
-                    ";
+                            foreach (array('novo'=>'Nova', 'legado'=>'Legada', 'multi'=>'Multiempresas') as $mode=>$label) {
+                                echo '<option value="'.$mode.'"'.($suite_layout_mode===$mode ? ' selected' : '').'>'.$label.'</option>';
                             }
                             ?>
                         </select>

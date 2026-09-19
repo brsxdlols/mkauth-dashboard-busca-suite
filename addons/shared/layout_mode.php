@@ -309,7 +309,7 @@ if (!function_exists('mka_suite_normalize_layout_mode')) {
     function mka_suite_normalize_layout_mode($mode)
     {
         $mode = strtolower(trim((string) $mode));
-        return $mode === 'legado' ? 'legado' : 'novo';
+        return in_array($mode, array('legado', 'novo', 'multi'), true) ? $mode : 'novo';
     }
 }
 
