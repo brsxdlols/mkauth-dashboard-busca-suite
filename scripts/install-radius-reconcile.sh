@@ -294,16 +294,16 @@ foreach ($nasRows as $nas) {
         $pingCode = 1;
         @exec('ping -c 1 -W 1 ' . escapeshellarg($router) . ' 2>&1', $pingOutput, $pingCode);
         if ($pingCode !== 0) {
-            $reason = 'Sem ping at? o IP';
+            $reason = 'Sem ping até o IP';
         } else {
             $socketError = 0;
             $socketMessage = '';
             $socket = @fsockopen($router, (int)$cfg['api_port'], $socketError, $socketMessage, 2);
             if (!is_resource($socket)) {
-                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indispon?vel';
+                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indisponível';
             } else {
                 fclose($socket);
-                $reason = 'Usu?rio ou senha da API inv?lidos';
+                $reason = 'Usuário ou senha da API inválidos';
             }
         }
         $stats['routers_fail']++;

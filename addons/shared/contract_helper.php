@@ -231,7 +231,7 @@ if (!function_exists('mka_contract_render_inline')) {
         $end_date = !empty($status_info['end_date']) ? date('d/m/Y', strtotime($status_info['end_date'])) : '';
 
         if ($status_info['status'] === 'expired' && $days !== null) {
-            $label .= ' h? ' . abs((int) $days) . ' dias';
+            $label .= ' há ' . abs((int) $days) . ' dias';
             if ($end_date !== '') {
                 $label .= ' (' . $end_date . ')';
             }
@@ -241,7 +241,7 @@ if (!function_exists('mka_contract_render_inline')) {
                 $label .= ' (' . $end_date . ')';
             }
         } elseif ($status_info['status'] === 'active' && $end_date !== '') {
-            $label .= ' at? ' . $end_date;
+            $label .= ' até ' . $end_date;
         }
 
         $status_class = isset($status_info['class']) ? $status_info['class'] : 'contract-missing';

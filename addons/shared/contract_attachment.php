@@ -9,7 +9,7 @@ function mka_attachment_schema($db) {
         start_date DATE NULL, end_date DATE NULL, uploaded_by VARCHAR(120) NOT NULL,
         uploaded_at DATETIME NOT NULL, KEY idx_attachment_client (uuid_cliente,id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    if (!$ready) throw new RuntimeException('N?o foi poss?vel preparar o armazenamento dos contratos.');
+    if (!$ready) throw new RuntimeException('Não foi possível preparar o armazenamento dos contratos.');
 }
 function mka_attachment_latest($db, $uuid) {
     static $rows = null;

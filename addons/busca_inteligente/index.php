@@ -121,13 +121,13 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } .content-view-modal{padding:8px}.content-view-card{height:calc(100vh - 16px);border-radius:14px}.content-view-head{padding:9px 10px;gap:6px}.content-view-head strong{max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.content-view-action{width:34px;padding:0;justify-content:center}.content-view-action span{display:none}.content-view-head-actions{gap:5px} }
     </style>
 
-    <nav class="smart-toolbar no_print mka-suite-content-start" aria-label="Navega??o da Busca Inteligente">
+    <nav class="smart-toolbar no_print mka-suite-content-start" aria-label="Navegação da Busca Inteligente">
         <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
         <a href="index.php" class="is-active"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
         <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
         <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
         <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
-        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configura??es</span></a>
+        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
         <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
     </nav>
 
@@ -136,7 +136,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             <div class="score-modal-head"><h2 id="clientScoreModalTitle">Detalhes do Score</h2><button type="button" class="score-modal-close" aria-label="Fechar">&times;</button></div>
             <div class="score-modal-body">
                 <div class="score-modal-value"><strong id="clientScoreModalValue">0</strong></div>
-                <div class="score-history-label">Hist?rico dos ?ltimos pagamentos</div>
+                <div class="score-history-label">Histórico dos últimos pagamentos</div>
                 <div class="score-history-dots" id="clientScoreHistory"></div>
                 <div class="score-history-legend"><span><i style="background:#e5484d"></i>Em atraso</span><span><i style="background:#94a3b8"></i>No vencimento</span><span><i style="background:#20c963"></i>Antecipado</span></div>
             </div>
@@ -144,14 +144,14 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     </div>
     <div class="trust-unlock-modal no_print" id="trustUnlockModal" hidden role="dialog" aria-modal="true" aria-labelledby="trustUnlockModalTitle">
         <div class="trust-unlock-card">
-            <div class="trust-unlock-head"><strong id="trustUnlockModalTitle">Desbloqueio de Confian?a</strong><button type="button" class="trust-unlock-close" aria-label="Fechar">&times;</button></div>
-            <iframe class="trust-unlock-frame" id="trustUnlockFrame" title="Desbloqueio de Confian?a"></iframe>
+            <div class="trust-unlock-head"><strong id="trustUnlockModalTitle">Desbloqueio de Confiança</strong><button type="button" class="trust-unlock-close" aria-label="Fechar">&times;</button></div>
+            <iframe class="trust-unlock-frame" id="trustUnlockFrame" title="Desbloqueio de Confiança"></iframe>
         </div>
     </div>
     <div class="content-view-modal no_print" id="contentViewModal" hidden role="dialog" aria-modal="true" aria-labelledby="contentViewModalTitle">
         <div class="content-view-card">
             <div class="content-view-head"><strong id="contentViewModalTitle">Detalhes do cliente</strong><div class="content-view-head-actions"><button type="button" class="content-view-action" id="contentViewPhoto" hidden><i class="bi bi-camera-fill"></i><span>Trocar foto</span></button><button type="button" class="content-view-action" id="contentViewPrint" hidden><i class="bi bi-printer-fill"></i><span>Imprimir</span></button><button type="button" class="content-view-action is-primary" id="contentViewPdf" hidden><i class="bi bi-file-earmark-pdf-fill"></i><span>Baixar PDF</span></button><button type="button" class="content-view-close" aria-label="Fechar">&times;</button><input type="file" id="contentViewPhotoFile" accept="image/jpeg,image/png,image/webp" hidden></div></div>
-            <iframe class="content-view-frame" id="contentViewFrame" title="Conte?do do cliente"></iframe>
+            <iframe class="content-view-frame" id="contentViewFrame" title="Conteúdo do cliente"></iframe>
         </div>
     </div>
     <div class="manual-block-modal no_print" id="manualBlockModal" hidden role="dialog" aria-modal="true" aria-labelledby="manualBlockModalTitle">
@@ -161,8 +161,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
                 <p class="manual-block-client" id="manualBlockClient"></p>
                 <div class="manual-block-history" id="manualBlockHistory" hidden></div>
                 <label class="manual-block-label" for="manualBlockReason" id="manualBlockReasonLabel">Motivo do bloqueio</label>
-                <textarea class="manual-block-reason" id="manualBlockReason" maxlength="2000" required placeholder="Descreva o motivo desta opera??o"></textarea>
-                <p class="manual-block-note" id="manualBlockNote">O acesso do cliente ser? interrompido e permanecer? bloqueado at? um desbloqueio manual.</p>
+                <textarea class="manual-block-reason" id="manualBlockReason" maxlength="2000" required placeholder="Descreva o motivo desta operação"></textarea>
+                <p class="manual-block-note" id="manualBlockNote">O acesso do cliente será interrompido e permanecerá bloqueado até um desbloqueio manual.</p>
             </div>
             <div class="manual-block-actions"><button type="button" class="manual-block-cancel">Cancelar</button><button type="submit" class="is-submit" id="manualBlockSubmit">Confirmar bloqueio</button></div>
         </form>
@@ -179,18 +179,18 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             var isUnlock = action === 'desbloqueio';
             current={uuid:uuid,name:name,action:action};submit.disabled=false;title.textContent=isUnlock?'Desbloqueio manual':'Bloqueio manual';client.textContent=name;
             label.textContent=isUnlock?'Motivo do desbloqueio':'Motivo do bloqueio';submit.textContent=isUnlock?'Confirmar desbloqueio':'Confirmar bloqueio';submit.classList.toggle('is-unlock',isUnlock);
-            note.textContent=isUnlock?'Aten??o: se o cliente estiver com d?bitos em aberto, poder? ser bloqueado novamente pela rotina autom?tica do sistema. Este desbloqueio n?o concede prazo de confian?a. O motivo ficar? registrado no hist?rico.':'O acesso ser? interrompido e permanecer? bloqueado at? um desbloqueio manual.';
+            note.textContent=isUnlock?'Atenção: se o cliente estiver com débitos em aberto, poderá ser bloqueado novamente pela rotina automática do sistema. Este desbloqueio não concede prazo de confiança. O motivo ficará registrado no histórico.':'O acesso será interrompido e permanecerá bloqueado até um desbloqueio manual.';
             history.hidden=true;history.innerHTML='';modal.hidden=false;document.body.style.overflow='hidden';reason.focus();
-            if(isUnlock){fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(uuid),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(data){if(!current||current.uuid!==uuid)return;if(data.ok&&data.block){history.innerHTML='<strong>Registro do bloqueio</strong><br><b>Motivo:</b> '+escapeHtml(data.block.motivo)+'<br><b>Data:</b> '+escapeHtml(data.block.criado_em)+'<br><b>Usu?rio:</b> '+escapeHtml(data.block.usuario);history.hidden=false;}else{history.innerHTML='<strong>Registro anterior n?o encontrado.</strong>';history.hidden=false;}}).catch(function(){history.innerHTML='<strong>N?o foi poss?vel consultar o registro anterior.</strong>';history.hidden=false;});}
+            if(isUnlock){fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(uuid),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(data){if(!current||current.uuid!==uuid)return;if(data.ok&&data.block){history.innerHTML='<strong>Registro do bloqueio</strong><br><b>Motivo:</b> '+escapeHtml(data.block.motivo)+'<br><b>Data:</b> '+escapeHtml(data.block.criado_em)+'<br><b>Usuário:</b> '+escapeHtml(data.block.usuario);history.hidden=false;}else{history.innerHTML='<strong>Registro anterior não encontrado.</strong>';history.hidden=false;}}).catch(function(){history.innerHTML='<strong>Não foi possível consultar o registro anterior.</strong>';history.hidden=false;});}
             return false;
         };
         form.addEventListener('submit',function(event){
-            event.preventDefault();if(!current||!reason.value.trim()||waiting)return;submit.disabled=true;waiting=true;current.reason=reason.value.trim();note.textContent='Processando a opera??o e registrando o hist?rico...';
+            event.preventDefault();if(!current||!reason.value.trim()||waiting)return;submit.disabled=true;waiting=true;current.reason=reason.value.trim();note.textContent='Processando a operação e registrando o histórico...';
             var nativeUrl='../../executar_bloqueio<?= $ext_mk; ?>?acao='+encodeURIComponent(current.action)+'&uuid_cliente='+encodeURIComponent(current.uuid);
             var body=new URLSearchParams();body.set('uuid',current.uuid);body.set('action',current.action);body.set('reason',current.reason);
-            function readResult(response){return response.json().then(function(data){if(!response.ok||!data.ok)throw new Error(data.message||'N?o foi poss?vel confirmar a opera??o.');return data;});}
+            function readResult(response){return response.json().then(function(data){if(!response.ok||!data.ok)throw new Error(data.message||'Não foi possível confirmar a operação.');return data;});}
             function postAudit(){return fetch('client_manual_block_audit.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:body.toString()}).then(readResult);}
-            fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(current.uuid),{credentials:'same-origin',cache:'no-store'}).then(readResult).then(function(data){body.set('csrf',data.csrf);return postAudit();}).then(function(){return fetch(nativeUrl,{credentials:'same-origin',cache:'no-store'});}).then(function(response){if(!response.ok)throw new Error('Falha ao executar a opera??o nativa.');return response.text();}).then(function(text){if(/acesso negado/i.test(text))throw new Error('A sess?o n?o possui permiss?o para executar esta opera??o.');body.set('phase','confirm');return postAudit();}).then(function(){window.location.reload();}).catch(function(error){waiting=false;submit.disabled=false;note.textContent=error.message||'N?o foi poss?vel concluir a opera??o.';});
+            fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(current.uuid),{credentials:'same-origin',cache:'no-store'}).then(readResult).then(function(data){body.set('csrf',data.csrf);return postAudit();}).then(function(){return fetch(nativeUrl,{credentials:'same-origin',cache:'no-store'});}).then(function(response){if(!response.ok)throw new Error('Falha ao executar a operação nativa.');return response.text();}).then(function(text){if(/acesso negado/i.test(text))throw new Error('A sessão não possui permissão para executar esta operação.');body.set('phase','confirm');return postAudit();}).then(function(){window.location.reload();}).catch(function(error){waiting=false;submit.disabled=false;note.textContent=error.message||'Não foi possível concluir a operação.';});
         });
         modal.querySelector('.manual-block-close').addEventListener('click',closeModal);modal.querySelector('.manual-block-cancel').addEventListener('click',closeModal);
         modal.addEventListener('click',function(event){if(event.target===modal)closeModal();});document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!modal.hidden&&!waiting)closeModal();});
@@ -209,10 +209,10 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             var trigger = event.target.closest('.client-score');
             if (trigger) {
                 event.preventDefault(); history.innerHTML = ''; value.textContent = trigger.getAttribute('data-score') || '0';
-                addDots(parseInt(trigger.getAttribute('data-late') || '0', 10), 'is-late', 'T?tulo pago em atraso');
-                addDots(parseInt(trigger.getAttribute('data-ontime') || '0', 10), 'is-ontime', 'T?tulo pago no vencimento');
-                addDots(parseInt(trigger.getAttribute('data-early') || '0', 10), 'is-early', 'T?tulo pago antecipadamente');
-                if (!history.children.length) history.innerHTML = '<span class="score-history-empty">Ainda n?o h? pagamentos no hist?rico.</span>';
+                addDots(parseInt(trigger.getAttribute('data-late') || '0', 10), 'is-late', 'Título pago em atraso');
+                addDots(parseInt(trigger.getAttribute('data-ontime') || '0', 10), 'is-ontime', 'Título pago no vencimento');
+                addDots(parseInt(trigger.getAttribute('data-early') || '0', 10), 'is-early', 'Título pago antecipadamente');
+                if (!history.children.length) history.innerHTML = '<span class="score-history-empty">Ainda não há pagamentos no histórico.</span>';
                 modal.hidden = false; document.body.style.overflow = 'hidden'; return;
             }
             if (event.target === modal || event.target.closest('.score-modal-close')) closeModal();
@@ -241,18 +241,18 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         var photoBtn=document.getElementById('contentViewPhoto'), printBtn=document.getElementById('contentViewPrint'), pdfBtn=document.getElementById('contentViewPdf'), photoFile=document.getElementById('contentViewPhotoFile'), clientUuid='', connectionsPromise=Promise.resolve();
         function closeModal(){modal.hidden=true;frame.removeAttribute('src');clientUuid='';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=true;document.body.style.overflow='';}
         function clean(value){var node=document.createElement('div');node.textContent=value==null?'':String(value);return node.innerHTML;}
-        function injectConnections(doc,payload){if(doc.getElementById('mka-last-connections'))return;var items=payload&&payload.items?payload.items:[],rows='';items.forEach(function(item,index){rows+='<tr><td>'+(index+1)+'</td><td>'+clean(item.ip)+'</td><td>'+clean(item.start)+'</td><td>'+clean(item.end)+'</td><td>'+clean(item.mac)+'</td></tr>';});if(!rows)rows='<tr><td colspan="5">Nenhuma conex?o encontrada.</td></tr>';var section=doc.createElement('section');section.id='mka-last-connections';section.className='mka-last-connections';section.innerHTML='<div class="mka-connections-title">?ltimas 5 conex?es do cliente</div><table><thead><tr><th>#</th><th>IP</th><th>In?cio</th><th>Fim</th><th>MAC</th></tr></thead><tbody>'+rows+'</tbody></table>';doc.body.appendChild(section);}
-        function loadRecentConnections(doc){if(!clientUuid)return Promise.resolve();connectionsPromise=fetch('client_connections.php?uuid='+encodeURIComponent(clientUuid),{credentials:'same-origin',cache:'no-store'}).then(function(response){if(!response.ok)throw new Error('Falha ao consultar conex?es.');return response.json();}).then(function(payload){if(payload.ok)injectConnections(doc,payload);}).catch(function(){injectConnections(doc,{items:[]});});return connectionsPromise;}
+        function injectConnections(doc,payload){if(doc.getElementById('mka-last-connections'))return;var items=payload&&payload.items?payload.items:[],rows='';items.forEach(function(item,index){rows+='<tr><td>'+(index+1)+'</td><td>'+clean(item.ip)+'</td><td>'+clean(item.start)+'</td><td>'+clean(item.end)+'</td><td>'+clean(item.mac)+'</td></tr>';});if(!rows)rows='<tr><td colspan="5">Nenhuma conexão encontrada.</td></tr>';var section=doc.createElement('section');section.id='mka-last-connections';section.className='mka-last-connections';section.innerHTML='<div class="mka-connections-title">Últimas 5 conexões do cliente</div><table><thead><tr><th>#</th><th>IP</th><th>Início</th><th>Fim</th><th>MAC</th></tr></thead><tbody>'+rows+'</tbody></table>';doc.body.appendChild(section);}
+        function loadRecentConnections(doc){if(!clientUuid)return Promise.resolve();connectionsPromise=fetch('client_connections.php?uuid='+encodeURIComponent(clientUuid),{credentials:'same-origin',cache:'no-store'}).then(function(response){if(!response.ok)throw new Error('Falha ao consultar conexões.');return response.json();}).then(function(payload){if(payload.ok)injectConnections(doc,payload);}).catch(function(){injectConnections(doc,{items:[]});});return connectionsPromise;}
         function applyClientReportLayout(){try{var doc=frame.contentDocument;if(!doc)return;if(clientUuid&&!doc.getElementById('mka-client-report-layout')){var style=document.createElement('link');style.id='mka-client-report-layout';style.rel='stylesheet';style.href='/admin/addons/busca_inteligente/client_pdf.css?v=8';doc.head.appendChild(style);var zoom=document.createElement('style');zoom.id='mka-client-report-screen-zoom';zoom.textContent='@media screen{html,body{font-size:1.05rem!important;line-height:1.4!important}td,th{font-size:1rem!important;padding:.45rem .65rem!important}h1{font-size:2.15rem!important}h2{font-size:1.65rem!important}h3,h4{font-size:1.25rem!important}}';doc.head.appendChild(zoom);}Array.prototype.forEach.call(doc.images,function(img){if(/img_nao_disp\.gif(?:\?|$)/i.test(img.src||'')){img.src='/mkfiles/logo.jpg';img.alt='Logo do provedor';img.style.objectFit='contain';}});loadRecentConnections(doc);}catch(e){}}
         window.mkaOpenContentModal=function(url,modalTitle){var match=String(url||'').match(/[?&](?:cliente|uuid)=([^&#]+)/);clientUuid=match?decodeURIComponent(match[1]):'';var isClient=clientUuid!=='';title.textContent=modalTitle||'Detalhes';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=!isClient;frame.src=url;modal.hidden=false;document.body.style.overflow='hidden';return false;};
         window.mkaOpenRepairDiagnostic=function(login,clientName){
             clientUuid='';photoBtn.hidden=printBtn.hidden=pdfBtn.hidden=true;
-            title.textContent='Diagn?stico da conex?o ? '+(clientName||login);
+            title.textContent='Diagnóstico da conexão — '+(clientName||login);
             frame.name='mkaRepairDiagnosticFrame';frame.src='client_diagnostic.php?login='+encodeURIComponent(login||'');modal.hidden=false;document.body.style.overflow='hidden';return false;
         };
         frame.addEventListener('load',applyClientReportLayout);
-        printBtn.addEventListener('click',function(){try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){window.alert('N?o foi poss?vel abrir a impress?o.');}});
-        pdfBtn.addEventListener('click',function(){if(!clientUuid)return;pdfBtn.disabled=true;var downloadName='dados_cliente.pdf';Promise.resolve(connectionsPromise).catch(function(){}).then(function(){var doc=frame.contentDocument;if(!doc||!doc.documentElement)throw new Error('As informa??es do cliente ainda n?o carregaram.');var data=new FormData();data.append('uuid',clientUuid);data.append('report_html','<!DOCTYPE html>\n'+doc.documentElement.outerHTML);return fetch('client_pdf.php',{method:'POST',credentials:'same-origin',body:data});}).then(function(response){var type=(response.headers.get('Content-Type')||'').toLowerCase(),disposition=response.headers.get('Content-Disposition')||'',nameMatch=disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);if(nameMatch){try{downloadName=decodeURIComponent(nameMatch[1]||nameMatch[2]);}catch(e){downloadName=nameMatch[1]||nameMatch[2];}}if(!response.ok||type.indexOf('application/pdf')===-1)return response.text().then(function(message){var clean=document.createElement('div');clean.innerHTML=message;throw new Error(clean.textContent.trim()||'N?o foi poss?vel gerar o PDF.');});return response.blob();}).then(function(blob){if(blob.size<500)throw new Error('O servidor n?o retornou um PDF v?lido.');var url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=downloadName;document.body.appendChild(anchor);anchor.click();anchor.remove();window.setTimeout(function(){URL.revokeObjectURL(url);},2000);}).catch(function(error){window.alert(error.message||'N?o foi poss?vel gerar o PDF.');}).then(function(){pdfBtn.disabled=false;});});
+        printBtn.addEventListener('click',function(){try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){window.alert('Não foi possível abrir a impressão.');}});
+        pdfBtn.addEventListener('click',function(){if(!clientUuid)return;pdfBtn.disabled=true;var downloadName='dados_cliente.pdf';Promise.resolve(connectionsPromise).catch(function(){}).then(function(){var doc=frame.contentDocument;if(!doc||!doc.documentElement)throw new Error('As informações do cliente ainda não carregaram.');var data=new FormData();data.append('uuid',clientUuid);data.append('report_html','<!DOCTYPE html>\n'+doc.documentElement.outerHTML);return fetch('client_pdf.php',{method:'POST',credentials:'same-origin',body:data});}).then(function(response){var type=(response.headers.get('Content-Type')||'').toLowerCase(),disposition=response.headers.get('Content-Disposition')||'',nameMatch=disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);if(nameMatch){try{downloadName=decodeURIComponent(nameMatch[1]||nameMatch[2]);}catch(e){downloadName=nameMatch[1]||nameMatch[2];}}if(!response.ok||type.indexOf('application/pdf')===-1)return response.text().then(function(message){var clean=document.createElement('div');clean.innerHTML=message;throw new Error(clean.textContent.trim()||'Não foi possível gerar o PDF.');});return response.blob();}).then(function(blob){if(blob.size<500)throw new Error('O servidor não retornou um PDF válido.');var url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=downloadName;document.body.appendChild(anchor);anchor.click();anchor.remove();window.setTimeout(function(){URL.revokeObjectURL(url);},2000);}).catch(function(error){window.alert(error.message||'Não foi possível gerar o PDF.');}).then(function(){pdfBtn.disabled=false;});});
         photoBtn.addEventListener('click',function(){photoFile.value='';photoFile.click();});
         photoFile.addEventListener('change',function(){if(!clientUuid||!photoFile.files||!photoFile.files[0])return;var data=new FormData();data.append('uuid',clientUuid);data.append('foto',photoFile.files[0]);photoBtn.disabled=true;fetch('client_photo.php',{method:'POST',credentials:'same-origin',body:data}).then(function(r){return r.json();}).then(function(result){if(!result.ok)throw new Error(result.message||'Falha ao trocar a foto.');frame.contentWindow.location.reload();}).catch(function(error){window.alert(error.message||'Falha ao trocar a foto.');}).then(function(){photoBtn.disabled=false;});});
         modal.querySelector('.content-view-close').addEventListener('click',closeModal);
@@ -474,9 +474,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     $filtro = isset($_GET['filtro']) == '' ? '' : $_GET['filtro'];
 
     $lista_organizar = array(
-        "c.data_ins DESC" => "Inclus?o Recente",
-        "c.last_update DESC" => "?ltimos Alterados",
-        "c.tit_vencidos DESC" => "T?tulos Vencidos",
+        "c.data_ins DESC" => "Inclusão Recente",
+        "c.last_update DESC" => "Últimos Alterados",
+        "c.tit_vencidos DESC" => "Títulos Vencidos",
         "c.data_bloq" => "Data Bloqueado",
         "c.nome" => "nome A-Z",
         "c.nome DESC" => "nome Z-A",
@@ -490,8 +490,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     $lista_filtro = array(
         "" => "Nenhum",
-        "pessoa = 'fisica' AND" => "Pessoa F?sica",
-        "pessoa = 'juridica' AND" => "Pessoa Jur?dica",
+        "pessoa = 'fisica' AND" => "Pessoa Física",
+        "pessoa = 'juridica' AND" => "Pessoa Jurídica",
     );
 
     $busca = trim($busca);
@@ -514,7 +514,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     }
 
 
-    // Rela??o de grupos do usu?rio logado
+    // Relação de grupos do usuário logado
 
     $sql_usuario_grupos = mysqli_query($link, "SELECT cli_grupos FROM sis_acesso WHERE login LIKE '$usuario_logado' AND cli_grupos NOT LIKE 'full_clientes%'");
 
@@ -555,7 +555,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         
     }
 
-    //Pagina??o
+    //Paginaçço
     $registros_por_pagina = isset($_GET['num_registros']) == '' ? '25' : $_GET['num_registros'];
     $pagina = isset($_GET['pagina']) == '' ? $pc = "1" : $pc = $_GET['pagina'];
 
@@ -595,7 +595,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <div class="row g-1">
             <div class="col-8 col-sm-6">
                 <div class="form-floating">
-                    <input type="search" class="form-control" id="busca" name="busca" placeholder="Busque por nome, login, Endere?o, plano, CPF... ou nome + Endere?o ou bloqueado ou offline ou desativado ou observacao" value="<?php echo $busca; ?>" list="sugestoes" />
+                    <input type="search" class="form-control" id="busca" name="busca" placeholder="Busque por nome, login, Endereço, plano, CPF... ou nome + Endereço ou bloqueado ou offline ou desativado ou observacao" value="<?php echo $busca; ?>" list="sugestoes" />
                     <label for="busca"> Digite o que procura:</label>
                 </div>
             </div>

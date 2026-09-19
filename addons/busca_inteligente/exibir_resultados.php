@@ -23,7 +23,7 @@
             return false;
         }
 
-        title.textContent = clientName || 'Monitor de tr?fego';
+        title.textContent = clientName || 'Monitor de tráfego';
         subtitle.textContent = 'PPPoE monitorado: ' + login + (plano ? ' | Plano: ' + plano : '') + (concentrador ? ' | Concentrador: ' + concentrador : '');
         frame.src = 'monitor_traffic.php?embed=1&login=' + encodeURIComponent(login) + '&router=' + encodeURIComponent(router) + '&concentrador=' + encodeURIComponent(concentrador || '');
         overlay.classList.add('is-open');
@@ -1018,11 +1018,11 @@ if (!empty($logins_resultado)) {
 
 $tot_resultados = mysqli_num_rows($result);
 
-// Pagina??o
+// Paginação
 $limite = mysqli_num_rows($result_limit);
 $tot_paginas = $tot_resultados / $registros_por_pagina;
 
-// agora vamos criar os bot?es "Anterior e pr?ximo"
+// agora vamos criar os botões "Anterior e próximo"
 $anterior = $pc - 1;
 $proximo = $pc + 1;
 
@@ -1048,13 +1048,13 @@ if ($acesso_permitido) echo '<b class="client-results-count">Resultados Encontra
     </div>
 
     <div class='col-12 col-md-4 client-address-col'>
-        <p class='center'>Endere?o</p>
+        <p class='center'>Endereço</p>
     </div>
     <div class='col-12 col-md-2 client-contact-col'>
         <p class='center'>Contato</p>
     </div>
     <div class='col-12 col-md-3 client-data-col'>
-        <p class='center'>Dados da Conex?o</p>
+        <p class='center'>Dados da Conexão</p>
     </div>
 </div>
 
@@ -1165,7 +1165,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
     <div class="traffic-monitor-dialog">
         <div class="traffic-monitor-header">
             <div>
-                <p id="trafficMonitorClient" class="traffic-monitor-title">Monitor de tr?fego</p>
+                <p id="trafficMonitorClient" class="traffic-monitor-title">Monitor de tráfego</p>
                 <p id="trafficMonitorPppoe" class="traffic-monitor-subtitle">PPPoE monitorado</p>
             </div>
             <button type="button" class="traffic-monitor-close" onclick="closeTrafficModal()" aria-label="Fechar monitor">X</button>
@@ -1355,11 +1355,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         // echo $score;
 
         if ($score < ($max_score / 3)) {
-            $scoreClass = 'is-critical'; $scoreTitle = 'Score cr?tico';
+            $scoreClass = 'is-critical'; $scoreTitle = 'Score crítico';
         } else if ($score >= ($max_score / 3) && $score < ($max_score / 2.5)) {
             $scoreClass = 'is-low'; $scoreTitle = 'Score baixo';
         } else if ($score >= ($max_score / 2.5) && $score < ($max_score / 2)) {
-            $scoreClass = 'is-attention'; $scoreTitle = 'Score em aten??o';
+            $scoreClass = 'is-attention'; $scoreTitle = 'Score em atenção';
         } else if ($score >= ($max_score / 2) && $score < ($max_score / 1.4)) {
             $scoreClass = 'is-regular'; $scoreTitle = 'Score regular';
         } else if ($score >= ($max_score / 1.4) && $score < ($max_score / 1.05)) {
@@ -1368,7 +1368,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             $scoreClass = 'is-excellent'; $scoreTitle = 'Score excelente';
         }
         $scoreTrophy = $scoreClass === 'is-excellent' ? " <i class='bi bi-award-fill client-score-trophy' aria-hidden='true'></i>" : '';
-        $showScore = "<button type='button' class='client-score {$scoreClass}' title='{$scoreTitle} ? clique para ver o hist?rico' data-score='{$score}' data-late='{$scoreHistoryLate}' data-ontime='{$scoreHistoryOnTime}' data-early='{$scoreHistoryEarly}'><span>Score</span><strong>{$score}</strong>{$scoreTrophy}</button>";
+        $showScore = "<button type='button' class='client-score {$scoreClass}' title='{$scoreTitle} — clique para ver o histórico' data-score='{$score}' data-late='{$scoreHistoryLate}' data-ontime='{$scoreHistoryOnTime}' data-early='{$scoreHistoryEarly}'><span>Score</span><strong>{$score}</strong>{$scoreTrophy}</button>";
 
 
         // The end implementation for Score
@@ -1393,7 +1393,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             if ($cli_ativado == "n") {
                 if ($data_desativado != '') {
                     $data_desativado = date('d/m/Y - H:i:s', strtotime($data_desativado));
-                    $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($data_desativado))); // Usa cli_ativado como base para a renova??o
+                    $dataRenovacao = date('Y-m-d', strtotime('+1 year', strtotime($data_desativado))); // Usa cli_ativado como base para a renovação
                 }
             ?>
 
@@ -1426,7 +1426,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         } elseif ($observacao == "sim") {
                             ?>
                             <div class='col-auto client-status-col'>
-                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-observation-online" title="Cliente online em observa??o">
+                                <a href='http://<?= "{$ip_conn[strtolower($login_cliente)]}:{$porta_acesso}"; ?>' target='_blank' class="client-status-badge is-observation-online" title="Cliente online em observação">
                                     <i class="fa-solid fa-user-check fs-5"></i>
                                     <i class="fa-solid fa-lock-open status-lock-overlay"></i>
                                     <i class="fa-solid fa-clock status-clock-overlay"></i>
@@ -1457,22 +1457,22 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 ?>
                                 <div class="billing-alert-stack">
                                 <?php if ($tem_titulo_vencido) { ?>
-                                    <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext ?>?uuid=<?= $uuid_cliente; ?>' title='Ver t?tulos vencidos no financeiro de <?= $nome_cliente; ?>'>
+                                    <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
                                         <i class="fa-solid fa-file-invoice-dollar"></i>
                                         <?= $quantidade_titulos_vencidos; ?>
                                     </a>
                                 <?php } ?>
                                 <?php if ($carne_terminando) { ?>
-                                    <span class="ending-booklet-alert" title="Restam <?= $num_parcelas; ?> t?tulos no carn? de <?= $nome_cliente; ?>">
+                                    <span class="ending-booklet-alert" title="Restam <?= $num_parcelas; ?> títulos no carnê de <?= $nome_cliente; ?>">
                                         <i class="fa-solid fa-triangle-exclamation"></i>
                                         <span class="remaining-title-count"><?= $num_parcelas; ?></span>
                                     </span>
                                 <?php } elseif ($sem_carne) { ?>
-                                    <span class="no-booklet-alert" title="O cliente n?o tem carn?">
+                                    <span class="no-booklet-alert" title="O cliente não tem carnê">
                                         <i class="fa-solid fa-circle-exclamation"></i>
                                     </span>
                                 <?php } elseif (!$parcelas_validas) { ?>
-                                    <span class="invalid-booklet-alert" title="N?mero de parcelas inv?lido">
+                                    <span class="invalid-booklet-alert" title="Número de parcelas inválido">
                                         <i class="fa-solid fa-circle-exclamation"></i>
                                     </span>
                                 <?php } ?>
@@ -1501,7 +1501,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                 <a href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='VER CLIENTE: <?= $nome_cliente; ?>'><?= $nome_cliente; ?></a>
                                             </p>
 
-                                            <p class='info_add'><b>Obs ser? removida em:</b> <?= $obs_data; ?></p>
+                                            <p class='info_add'><b>Obs será removida em:</b> <?= $obs_data; ?></p>
 
                                         <?php
                                     } else {
@@ -1530,7 +1530,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                             } elseif ($observacao == "sim") {
                                                 ?>
                                                     <div class='col-auto client-status-col'>
-                                                        <span class="client-status-badge is-observation-offline" title="Cliente offline em observa??o">
+                                                        <span class="client-status-badge is-observation-offline" title="Cliente offline em observação">
                                                             <i class="fa-solid fa-user-check fs-5"></i>
                                                             <i class="fa-solid fa-lock-open status-lock-overlay"></i>
                                                             <i class="fa-solid fa-clock status-clock-overlay"></i>
@@ -1560,22 +1560,22 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                     ?>
                                                     <div class="billing-alert-stack">
                                                     <?php if ($tem_titulo_vencido) { ?>
-                                                        <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Ver t?tulos vencidos no financeiro de <?= $nome_cliente; ?>'>
+                                                        <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
                                                             <i class="fa-solid fa-file-invoice-dollar"></i>
                                                             <?= $quantidade_titulos_vencidos; ?>
                                                         </a>
                                                     <?php } ?>
                                                     <?php if ($carne_terminando) { ?>
-                                                        <span class="ending-booklet-alert" title="Restam <?= $num_parcelas; ?> t?tulos no carn? de <?= $nome_cliente; ?>">
+                                                        <span class="ending-booklet-alert" title="Restam <?= $num_parcelas; ?> títulos no carnê de <?= $nome_cliente; ?>">
                                                             <i class="fa-solid fa-triangle-exclamation"></i>
                                                             <span class="remaining-title-count"><?= $num_parcelas; ?></span>
                                                         </span>
                                                     <?php } elseif ($sem_carne) { ?>
-                                                        <span class="no-booklet-alert" title="O cliente n?o tem carn?">
+                                                        <span class="no-booklet-alert" title="O cliente não tem carnê">
                                                             <i class="fa-solid fa-circle-exclamation"></i>
                                                         </span>
                                                     <?php } elseif (!$parcelas_validas) { ?>
-                                                        <span class="invalid-booklet-alert" title="N?mero de parcelas inv?lido">
+                                                        <span class="invalid-booklet-alert" title="Número de parcelas inválido">
                                                             <i class="fa-solid fa-circle-exclamation"></i>
                                                         </span>
                                                     <?php } ?>
@@ -1607,7 +1607,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                 <p class='final_conn'><b>Caiu em:</b> <?= $final_conn; ?></p>
 
-                                                                <p class='info_add'><b>Obs ser? removida em:</b> <?= $obs_data; ?></p>
+                                                                <p class='info_add'><b>Obs será removida em:</b> <?= $obs_data; ?></p>
 
                                                             <?php
                                                         } else {
@@ -1628,32 +1628,31 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             <div class='client-meta-stack'>
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
-                                                                <p class='info_add'><b>?ltima altera??o:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Altera??es realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes n?o registrados para esta altera??o.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
+                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
                                                                 <p class='info_add invoice-summary-line'><span><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></span> <?= $showScore; ?></p>
-                                                                <p class='info_add'><b>Conta banc?ria:</b> <?= htmlspecialchars($conta_cliente !== '' ? $conta_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></p>
+                                                                <p class='info_add'><b>Conta bancária:</b> <?= htmlspecialchars($conta_cliente !== '' ? $conta_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></p>
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
-                                                            <a class="client-action-btn" href="#" onclick="return mkaOpenContentModal('contract_attachment.php?uuid=<?= urlencode($uuid_cliente); ?>', 'Anexar contrato existente');" title="Anexar contrato PDF ou imagem"><i class="fa-solid fa-upload"></i></a>
-                                                            <a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : ''; ?>" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='N?mero de parcelas em aberto: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : ''; ?>" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-file-invoice"></i>
-                                                                <span class="badge-parcelas-inline" title="N?mero de parcelas em aberto"><?= $num_parcelas; ?></span>
+                                                                <span class="badge-parcelas-inline" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
                                                             </a>
                                                             <a class="client-action-btn" href='../../cliente_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='ALTERAR CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-user-pen"></i>
                                                             </a>
-                                                            <a class="client-action-btn" href='det_conn.php?login=<?= $login_cliente; ?>' title='CONEX?ES CLIENTE: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn" href='det_conn.php?login=<?= $login_cliente; ?>' title='CONEXÕES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-router"></i>
                                                             </a>
                                                             <a class="client-action-btn" href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset"></i>
                                                             </a>
 <?php if ($bloqueado == "sim") { ?>
-                                                            <a class="client-action-btn is-warning" href='#' onclick="return mkaOpenTrustUnlock(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Desbloqueio de Confian?a">
+                                                            <a class="client-action-btn is-warning" href='#' onclick="return mkaOpenTrustUnlock(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Desbloqueio de Confiança">
                                                                 <i class="fa-solid fa-lock-open"></i>
                                                             </a>
                                                             <?php } ?>
-                                                            <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('../../cliente_info.<?= $links_ext; ?>?cliente=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Detalhes do cliente ? ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('../../cliente_info.<?= $links_ext; ?>?cliente=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Detalhes do cliente — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-circle-info"></i>
                                                             </a>
                                                             <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('contrato_popup.php?embed=1&uuid=<?= urlencode($uuid_cliente); ?>&login=<?= urlencode($login_cliente); ?>&nome=<?= urlencode($nome_cliente); ?>', 'Ativar ou renovar contrato');" title="Ativar ou renovar contrato">
@@ -1665,7 +1664,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 </a>
                                                             <?php } ?>
                                                             <?php if (!empty($nas_ip[strtolower($login_cliente)])) { ?>
-                                                                <a class="client-action-btn is-success" href='#' onclick='return openTrafficModal(<?= json_encode($login_cliente); ?>, <?= json_encode($nas_ip[strtolower($login_cliente)]); ?>, <?= json_encode($nome_cliente); ?>, <?= json_encode($plano_cliente); ?>, <?= json_encode(isset($nas_nome[$nas_ip[strtolower($login_cliente)]]) ? $nas_nome[$nas_ip[strtolower($login_cliente)]] : ""); ?>);' title='Tr?fego em tempo real'>
+                                                                <a class="client-action-btn is-success" href='#' onclick='return openTrafficModal(<?= json_encode($login_cliente); ?>, <?= json_encode($nas_ip[strtolower($login_cliente)]); ?>, <?= json_encode($nome_cliente); ?>, <?= json_encode($plano_cliente); ?>, <?= json_encode(isset($nas_nome[$nas_ip[strtolower($login_cliente)]]) ? $nas_nome[$nas_ip[strtolower($login_cliente)]] : ""); ?>);' title='Tráfego em tempo real'>
                                                                     <i class="fa-solid fa-chart-line"></i>
                                                                 </a>
                                                             <?php } ?>
@@ -1728,7 +1727,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                 <div class='col-12 col-md-4 client-address-col text-center'>
                                                                     <p class='client-address-details'>
-                                                                        <?= $end_cliente; ?> <b>n?</b> <?= $numero_casa; ?>
+                                                                        <?= $end_cliente; ?> <b>nº</b> <?= $numero_casa; ?>
 
                                                                         <?= $bairro_cliente; ?>
                                                                         <?= $complemento_cliente; ?>
@@ -1757,9 +1756,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     </p>
                                                                     <div class="client-address-actions">
                                                                         <div class="client-contract-line"><?= $contract_inline; ?></div>
+                                                                        <a class="map-link-btn no_print" href="#" onclick="return mkaOpenContentModal('contract_attachment.php?uuid=<?= urlencode($uuid_cliente); ?>', 'Anexar contrato existente');" title="Enviar contrato existente em PDF, JPG ou PNG"><i class="fa-solid fa-upload"></i> Anexar contrato</a>
                                                                         <?php if ($mapa_link != '') { ?>
-                                                                            <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localiza??o no Google Maps">
-                                                                                <i class="fa-solid fa-location-dot"></i> Localiza??o no mapa
+                                                                            <a class="map-link-btn no_print" href="<?= $mapa_link; ?>" target="_blank" rel="noopener noreferrer" title="Abrir localização no Google Maps">
+                                                                                <i class="fa-solid fa-location-dot"></i> Localização no mapa
                                                                             </a>
                                                                         <?php } ?>
                                                                     </div>
@@ -1873,7 +1873,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                         <b>Plano:</b> <?= $plano_cliente; ?>
 							                </p>
-                                                                    <p class='dados_cliente'><b>Dias de corte:</b> <a class="cut-day-link no_print" href="#" onclick="return mkaOpenContentModal('client_cut_day.php?id=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Alterar dia de corte ? ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Consultar ou alterar os dias de corte"><?= $dias_corte_cliente; ?></a><span class="d-print-inline d-none"><?= $dias_corte_cliente; ?></span></p>
+                                                                    <p class='dados_cliente'><b>Dias de corte:</b> <a class="cut-day-link no_print" href="#" onclick="return mkaOpenContentModal('client_cut_day.php?id=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Alterar dia de corte — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Consultar ou alterar os dias de corte"><?= $dias_corte_cliente; ?></a><span class="d-print-inline d-none"><?= $dias_corte_cliente; ?></span></p>
 
                                                                     <p class='dados_cliente'><b>IPv6:</b> <?= htmlspecialchars(isset($ipv6_delegated[strtolower(trim($login_cliente))]) ? $ipv6_delegated[strtolower(trim($login_cliente))] : '-', ENT_QUOTES, 'UTF-8'); ?></p>
 
@@ -1906,10 +1906,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                     </p>
                                                                     <div class="connection-actions no_print">
-                                                                        <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('?ltimas conex?es ? ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as ?ltimas 10 conex?es"><i class="fa-solid fa-clock-rotate-left"></i> ?ltimas conex?es</a>
+                                                                        <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>
                                                                         <?php if (strtolower(trim((string) $bloqueado)) === 'sim') { ?>
-                                                                        <a class="connection-diagnostic-btn is-manual-unlock" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'desbloqueio');" title="Desbloquear sem conceder prazo de confian?a"><i class="fa-solid fa-lock-open"></i> Desbloquear</a>
+                                                                        <a class="connection-diagnostic-btn is-manual-unlock" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'desbloqueio');" title="Desbloquear sem conceder prazo de confiança"><i class="fa-solid fa-lock-open"></i> Desbloquear</a>
                                                                         <?php } else { ?>
                                                                         <a class="connection-diagnostic-btn is-manual-block" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'bloqueio');" title="Bloquear este cliente manualmente"><i class="fa-solid fa-user-lock"></i> Bloquear</a>
                                                                         <?php } ?>
@@ -1984,7 +1984,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                 if ($pc < $tot_paginas) {
                                                                     ?>
                                                                     <li class="page-item">
-                                                                        <span class="page-link"><a href="<?= $url; ?>&pagina=<?= $proximo; ?>">Pr?xima</a> </span>
+                                                                        <span class="page-link"><a href="<?= $url; ?>&pagina=<?= $proximo; ?>">Próxima</a> </span>
                                                                     </li>
 
                                                                 <?php
