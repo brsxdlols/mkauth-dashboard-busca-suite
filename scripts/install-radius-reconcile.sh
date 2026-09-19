@@ -1,6 +1,14 @@
 #!/bin/sh
 set -eu
 
+# Install log protection before the database backup or the first reconcile run.
+INSTALLER_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ ! -f "$INSTALLER_DIR/install-radius-log-cleanup.sh" ]; then
+  echo "Erro: instalador de limpeza do log ausente." >&2
+  exit 1
+fi
+sh "$INSTALLER_DIR/install-radius-log-cleanup.sh"
+
 SCRIPT_DIR="/opt/mk-auth/scripts"
 SCRIPT_FILE="$SCRIPT_DIR/mkauth_radius_ppp_reconcile.php"
 CRON_FILE="/etc/cron.d/mkauth-radius-ppp-reconcile"
@@ -286,16 +294,16 @@ foreach ($nasRows as $nas) {
         $pingCode = 1;
         @exec('ping -c 1 -W 1 ' . escapeshellarg($router) . ' 2>&1', $pingOutput, $pingCode);
         if ($pingCode !== 0) {
-            $reason = 'Sem ping até o IP';
+            $reason = 'Sem ping at? o IP';
         } else {
             $socketError = 0;
             $socketMessage = '';
             $socket = @fsockopen($router, (int)$cfg['api_port'], $socketError, $socketMessage, 2);
             if (!is_resource($socket)) {
-                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indisponível';
+                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indispon?vel';
             } else {
                 fclose($socket);
-                $reason = 'Usuário ou senha da API inválidos';
+                $reason = 'Usu?rio ou senha da API inv?lidos';
             }
         }
         $stats['routers_fail']++;

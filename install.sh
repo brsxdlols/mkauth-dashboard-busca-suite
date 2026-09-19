@@ -8,6 +8,9 @@ STAMP="$(date +%Y%m%d_%H%M%S)"
 BACKUP_DIR="${BACKUP_ROOT}/${STAMP}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Release accumulated reconcile logs before generating installation backups.
+bash "${SCRIPT_DIR}/scripts/install-radius-log-cleanup.sh"
+
 lint_file() {
   local file="$1"
   if command -v php >/dev/null 2>&1 && [ -f "$file" ]; then
