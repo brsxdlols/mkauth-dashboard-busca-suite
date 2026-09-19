@@ -71,6 +71,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .score-modal-head h2 { margin:0; color:#20364f; font-size:16px; font-weight:750; }
         .score-modal-close { border:0; border-radius:8px; background:#f1f5f9; color:#52667c; font-size:20px; line-height:28px; width:32px; height:32px; }
         .score-modal-body { padding:20px; }
+        .score-modal-client { margin:0 0 18px; color:#20364f; font-weight:700; text-align:center; overflow-wrap:anywhere; }
         .score-modal-value { display:flex; align-items:baseline; justify-content:center; gap:7px; margin-bottom:18px; color:#20364f; }
         .score-modal-value strong { font-size:34px; line-height:1; }
         .score-history-label { margin-bottom:9px; color:#687b90; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
@@ -135,6 +136,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <div class="score-modal-card">
             <div class="score-modal-head"><h2 id="clientScoreModalTitle">Detalhes do Score</h2><button type="button" class="score-modal-close" aria-label="Fechar">&times;</button></div>
             <div class="score-modal-body">
+                <p class="score-modal-client" id="clientScoreModalName"></p>
                 <div class="score-modal-value"><strong id="clientScoreModalValue">0</strong></div>
                 <div class="score-history-label">Histórico dos últimos pagamentos</div>
                 <div class="score-history-dots" id="clientScoreHistory"></div>
@@ -200,6 +202,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     (function () {
         var modal = document.getElementById('clientScoreModal');
         var value = document.getElementById('clientScoreModalValue');
+        var clientName = document.getElementById('clientScoreModalName');
         var history = document.getElementById('clientScoreHistory');
         function addDots(total, cssClass, title) {
             for (var i = 0; i < total; i++) { var dot = document.createElement('span'); dot.className = 'score-history-dot ' + cssClass; dot.title = title; history.appendChild(dot); }
@@ -209,6 +212,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             var trigger = event.target.closest('.client-score');
             if (trigger) {
                 event.preventDefault(); history.innerHTML = ''; value.textContent = trigger.getAttribute('data-score') || '0';
+                clientName.textContent = trigger.getAttribute('data-client-name') || '';
                 addDots(parseInt(trigger.getAttribute('data-late') || '0', 10), 'is-late', 'Título pago em atraso');
                 addDots(parseInt(trigger.getAttribute('data-ontime') || '0', 10), 'is-ontime', 'Título pago no vencimento');
                 addDots(parseInt(trigger.getAttribute('data-early') || '0', 10), 'is-early', 'Título pago antecipadamente');

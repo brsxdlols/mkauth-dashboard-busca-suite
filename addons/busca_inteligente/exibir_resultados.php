@@ -1369,7 +1369,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             $scoreClass = 'is-excellent'; $scoreTitle = 'Score excelente';
         }
         $scoreTrophy = $scoreClass === 'is-excellent' ? " <i class='bi bi-award-fill client-score-trophy' aria-hidden='true'></i>" : '';
-        $showScore = "<button type='button' class='client-score {$scoreClass}' title='{$scoreTitle} — clique para ver o histórico' data-score='{$score}' data-late='{$scoreHistoryLate}' data-ontime='{$scoreHistoryOnTime}' data-early='{$scoreHistoryEarly}'><span>Score</span><strong>{$score}</strong>{$scoreTrophy}</button>";
+        $scoreClientName = htmlspecialchars((string) $nome_cliente, ENT_QUOTES, 'UTF-8');
+        $showScore = "<button type='button' class='client-score {$scoreClass}' title='{$scoreTitle} — clique para ver o histórico' data-client-name='{$scoreClientName}' data-score='{$score}' data-late='{$scoreHistoryLate}' data-ontime='{$scoreHistoryOnTime}' data-early='{$scoreHistoryEarly}'><span>Score</span><strong>{$score}</strong>{$scoreTrophy}</button>";
 
 
         // The end implementation for Score
