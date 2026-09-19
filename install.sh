@@ -193,6 +193,14 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
 fi
 
 echo "[3/8] Instalando arquivos"
+# Keep uploaded contracts outside addon directories replaced by upgrades.
+mkdir -p /opt/mk-auth/contract-uploads
+chmod 0770 /opt/mk-auth/contract-uploads
+if id www-data >/dev/null 2>&1; then
+  chown www-data:www-data /opt/mk-auth/contract-uploads
+elif id apache >/dev/null 2>&1; then
+  chown apache:apache /opt/mk-auth/contract-uploads
+fi
 mkdir -p "${TARGET_ADDONS_DIR}"
 cp -a "${SCRIPT_DIR}/admin/index.hhvm" "${TARGET_ADMIN_DIR}/index.hhvm"
 rm -rf "${TARGET_ADDONS_DIR}/dashboard"
@@ -223,6 +231,9 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/manual_block_audit.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/client_action_access.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/contract_attachment.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/contract_attachment.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/index.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/delete_installation_request.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"

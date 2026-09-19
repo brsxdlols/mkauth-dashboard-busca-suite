@@ -32,7 +32,9 @@ BEFORE UPDATE ON sis_cliente
 FOR EACH ROW
 BEGIN
     DECLARE v_last_action VARCHAR(16) DEFAULT NULL;
-    IF OLD.bloqueado='sim' AND OLD.tipobloq='man' AND NEW.bloqueado='nao' THEN
+    -- The native routine may rewrite tipobloq before clearing bloqueado.
+    -- Use the recorded operator decision, not that mutable flag, as authority.
+    IF OLD.bloqueado='sim' THEN
         SET v_last_action = (
             SELECT a.acao
               FROM dashboard_am_manual_block_audit a
@@ -41,7 +43,7 @@ BEGIN
         );
         IF v_last_action='bloqueio' THEN
             SET NEW.bloqueado=OLD.bloqueado;
-            SET NEW.tipobloq=OLD.tipobloq;
+            SET NEW.tipobloq='man';
             SET NEW.data_bloq=OLD.data_bloq;
         END IF;
     END IF;

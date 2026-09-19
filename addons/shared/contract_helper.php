@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/contract_attachment.php';
 
 if (!function_exists('mka_contract_escape')) {
     function mka_contract_escape($value)
@@ -80,6 +81,12 @@ if (!function_exists('mka_contract_get_latest')) {
         }
 
         $row = mysqli_fetch_assoc($query);
+        $attachment = mka_attachment_latest($db, (string) $uuid_cliente);
+        if ($attachment) {
+            if (!$row || strcmp($attachment['activated_at'], $row['activated_at']) >= 0) return $attachment;
+            $row['pdf_url'] = $attachment['pdf_url'];
+            $row['manual_attachment'] = 1;
+        }
         return $row ?: null;
     }
 }
@@ -146,10 +153,10 @@ if (!function_exists('mka_contract_build_status')) {
     {
         $today = $today ?: date('Y-m-d');
 
-        if ($contract_row && !empty($contract_row['native_signed']) && empty($contract_row['end_date'])) {
+        if ($contract_row && (!empty($contract_row['native_signed']) || !empty($contract_row['manual_attachment'])) && empty($contract_row['end_date'])) {
             return array(
                 'status' => 'active',
-                'label' => 'Contrato assinado',
+                'label' => !empty($contract_row['manual_attachment']) ? 'Contrato anexado' : 'Contrato assinado',
                 'days' => null,
                 'class' => 'contract-active',
                 'icon' => 'fa-solid fa-file-shield',
@@ -157,7 +164,7 @@ if (!function_exists('mka_contract_build_status')) {
                 'end_date' => '',
                 'duration_months' => 0,
                 'pdf_url' => isset($contract_row['pdf_url']) ? $contract_row['pdf_url'] : '',
-                'source' => 'native',
+                'source' => !empty($contract_row['manual_attachment']) ? 'attachment' : 'native',
             );
         }
 
@@ -211,7 +218,7 @@ if (!function_exists('mka_contract_build_status')) {
             'end_date' => $contract_row['end_date'],
             'duration_months' => isset($contract_row['duration_months']) ? (int) $contract_row['duration_months'] : 0,
             'pdf_url' => isset($contract_row['pdf_url']) ? $contract_row['pdf_url'] : '',
-            'source' => !empty($contract_row['native_signed']) ? 'native' : 'history',
+            'source' => !empty($contract_row['manual_attachment']) ? 'attachment' : (!empty($contract_row['native_signed']) ? 'native' : 'history'),
         );
     }
 }
@@ -224,7 +231,7 @@ if (!function_exists('mka_contract_render_inline')) {
         $end_date = !empty($status_info['end_date']) ? date('d/m/Y', strtotime($status_info['end_date'])) : '';
 
         if ($status_info['status'] === 'expired' && $days !== null) {
-            $label .= ' há ' . abs((int) $days) . ' dias';
+            $label .= ' h? ' . abs((int) $days) . ' dias';
             if ($end_date !== '') {
                 $label .= ' (' . $end_date . ')';
             }
@@ -234,7 +241,7 @@ if (!function_exists('mka_contract_render_inline')) {
                 $label .= ' (' . $end_date . ')';
             }
         } elseif ($status_info['status'] === 'active' && $end_date !== '') {
-            $label .= ' até ' . $end_date;
+            $label .= ' at? ' . $end_date;
         }
 
         $status_class = isset($status_info['class']) ? $status_info['class'] : 'contract-missing';
@@ -244,7 +251,7 @@ if (!function_exists('mka_contract_render_inline')) {
         if ($pdf_url !== '') {
             return '<a class="contract-inline-badge ' . mka_contract_escape($status_class)
                 . '" href="' . mka_contract_escape($pdf_url)
-                . '" target="_blank" rel="noopener" title="Abrir contrato assinado">'
+                . '" target="_blank" rel="noopener" title="Abrir contrato">'
                 . $content . '<i class="fa fa-external-link" aria-hidden="true"></i></a>';
         }
 

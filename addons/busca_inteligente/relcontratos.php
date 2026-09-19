@@ -3,14 +3,14 @@
 <?php include('../../topo.php'); ?>
 <?php require_once __DIR__ . '/../shared/layout_mode.php'; mka_suite_render_top_spacing_style($link); ?>
 
-<nav class="contract-toolbar mka-suite-content-start" aria-label="Navegação de contratos">
+<nav class="contract-toolbar mka-suite-content-start" aria-label="Navega??o de contratos">
     <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
     <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= mka_contract_escape($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}); ?></span></a>
     <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
     <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
     <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
     <a href="relcontratos.php" class="is-active"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
-    <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
+    <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configura??es</span></a>
     <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
 </nav>
 
@@ -135,24 +135,24 @@ if ($result) {
 
 <div class="contract-summary-grid">
     <button type="button" class="contract-summary-card is-all is-selected" data-status-filter="all" aria-pressed="true"><h3>Todos</h3><strong><?= count($rows); ?></strong><p>todos os contratos</p></button>
-    <button type="button" class="contract-summary-card is-active" data-status-filter="active" aria-pressed="false"><h3>Contrato ativo</h3><strong><?= $totals['active']; ?></strong><p>vigência em dia</p></button>
+    <button type="button" class="contract-summary-card is-active" data-status-filter="active" aria-pressed="false"><h3>Contrato ativo</h3><strong><?= $totals['active']; ?></strong><p>vig?ncia em dia</p></button>
     <button type="button" class="contract-summary-card is-warning" data-status-filter="warning" aria-pressed="false"><h3>A vencer</h3><strong><?= $totals['warning']; ?></strong><p>prestes a expirar</p></button>
-    <button type="button" class="contract-summary-card is-expired" data-status-filter="expired" aria-pressed="false"><h3>Expirado</h3><strong><?= $totals['expired']; ?></strong><p>pedindo renovação</p></button>
-    <button type="button" class="contract-summary-card is-missing" data-status-filter="missing" aria-pressed="false"><h3>Sem contrato</h3><strong><?= $totals['missing']; ?></strong><p>aguarda ativação</p></button>
+    <button type="button" class="contract-summary-card is-expired" data-status-filter="expired" aria-pressed="false"><h3>Expirado</h3><strong><?= $totals['expired']; ?></strong><p>pedindo renova??o</p></button>
+    <button type="button" class="contract-summary-card is-missing" data-status-filter="missing" aria-pressed="false"><h3>Sem contrato</h3><strong><?= $totals['missing']; ?></strong><p>aguarda ativa??o</p></button>
 </div>
 
 <div class="contract-table-wrap">
 <table class="contract-table small">
     <thead><tr>
-        <th>INÍCIO</th>
+        <th>IN?CIO</th>
         <th>VENCIMENTO</th>
         <th>NOME</th>
         <th>TECNOLOGIA</th>
         <th>FONE</th>
         <th>PLANO</th>
         <th>VALOR PLANO</th>
-        <th>SITUAÇÃO ATUAL</th>
-        <th>AÇÃO</th>
+        <th>SITUA??O ATUAL</th>
+        <th>A??O</th>
     </tr></thead>
     <tbody>
     <?php foreach ($rows as $row) {
@@ -161,7 +161,7 @@ if ($result) {
         $end = $status['end_date'] ? date('d/m/Y', strtotime($status['end_date'])) : '--';
         $label = $status['label'];
         if ($status['status'] === 'expired' && $status['days'] !== null) {
-            $label = 'Expirado há ' . abs((int) $status['days']) . ' dias';
+            $label = 'Expirado h? ' . abs((int) $status['days']) . ' dias';
         } elseif ($status['status'] === 'warning' && $status['days'] !== null) {
             $label = 'Prestes a expirar em ' . abs((int) $status['days']) . ' dias';
         }
@@ -177,10 +177,11 @@ if ($result) {
         <td><span class="contract-status-chip <?= $status['class']; ?>"><i class="<?= mka_contract_escape($status['icon']); ?>"></i><?= mka_contract_escape($label); ?></span></td>
         <td>
             <div class="contract-action-group">
+                <a href="#" class="contract-action-link" onclick="return mkaOpenContractModal('contract_attachment.php?uuid=<?= urlencode($row['uuid']); ?>', 'Anexar contrato existente');"><i class="fa-solid fa-upload"></i>Anexar contrato</a>
                 <?php if (!empty($status['pdf_url'])) { ?>
                     <a class="contract-view-link" href="<?= mka_contract_escape($status['pdf_url']); ?>" target="_blank"><i class="fa-solid fa-file-pdf"></i>Visualizar</a>
                 <?php } ?>
-                <a href="#" class="contract-action-link" onclick="return mkaOpenContractModal('contrato_popup.php?embed=1&uuid=<?= urlencode($row['uuid']); ?>&login=<?= urlencode($row['login']); ?>&nome=<?= urlencode($row['nome']); ?>', <?= htmlspecialchars(json_encode(($status['status'] === 'missing' ? 'Ativar vigência — ' : 'Renovar contrato — ') . $row['nome']), ENT_QUOTES, 'UTF-8'); ?>);"><i class="fa-solid fa-file-signature"></i><?= $status['status'] === 'missing' ? 'Ativar vigência' : 'Renovar'; ?></a>
+                <a href="#" class="contract-action-link" onclick="return mkaOpenContractModal('contrato_popup.php?embed=1&uuid=<?= urlencode($row['uuid']); ?>&login=<?= urlencode($row['login']); ?>&nome=<?= urlencode($row['nome']); ?>', <?= htmlspecialchars(json_encode(($status['status'] === 'missing' ? 'Ativar vig?ncia ? ' : 'Renovar contrato ? ') . $row['nome']), ENT_QUOTES, 'UTF-8'); ?>);"><i class="fa-solid fa-file-signature"></i><?= $status['status'] === 'missing' ? 'Ativar vig?ncia' : 'Renovar'; ?></a>
             </div>
         </td>
     </tr>
@@ -192,10 +193,10 @@ if ($result) {
 <div class="contract-modal no_print" id="contractModal" hidden role="dialog" aria-modal="true" aria-labelledby="contractModalTitle">
     <div class="contract-modal-dialog">
         <div class="contract-modal-head">
-            <strong id="contractModalTitle">Ativar vigência</strong>
+            <strong id="contractModalTitle">Ativar vig?ncia</strong>
             <button type="button" class="contract-modal-close" aria-label="Fechar">&times;</button>
         </div>
-        <iframe class="contract-modal-frame" id="contractModalFrame" title="Ativação da vigência do contrato" scrolling="no"></iframe>
+        <iframe class="contract-modal-frame" id="contractModalFrame" title="Ativa??o da vig?ncia do contrato" scrolling="no"></iframe>
     </div>
 </div>
 
@@ -254,8 +255,9 @@ if ($result) {
     }
 
     window.mkaOpenContractModal = function (url, modalTitle) {
-        title.textContent = modalTitle || 'Ativar vigência';
+        title.textContent = modalTitle || 'Ativar vig?ncia';
         frame.src = url;
+        frame.setAttribute('scrolling', url.indexOf('contract_attachment.php') !== -1 ? 'auto' : 'no');
         modal.hidden = false;
         document.body.style.overflow = 'hidden';
         closeButton.focus();
