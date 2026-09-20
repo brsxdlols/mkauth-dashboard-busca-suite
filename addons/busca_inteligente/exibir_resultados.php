@@ -1055,12 +1055,14 @@ if ($acesso_permitido) echo '<b class="client-results-count">Resultados Encontra
         <p class='center'>Contato</p>
     </div>
     <div class='col-12 col-md-3 client-data-col'>
-        <p class='center'>Dados da Conexão</p>
+        <p class='center'><?= !empty($isMultiBusiness) ? 'Cadastro e financeiro' : 'Dados da Conexão'; ?></p>
     </div>
 </div>
 
 <?php
-if ($check_online == 'mkauth') {
+if (!empty($isMultiBusiness)) {
+    $username_on = $ip_conn = $nas_ip = $nas_nome = array();
+} elseif ($check_online == 'mkauth') {
     // INFO DE CLIENTES ONLINE COM MKAUTH
     $radius_ipv6_fields = array();
     foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk') as $ipv6_field) {
@@ -1162,6 +1164,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
 ?>
 
+<?php if (empty($isMultiBusiness)) { ?>
 <div id="trafficMonitorModal" class="traffic-monitor-modal" onclick="if(event.target === this){ closeTrafficModal(); }">
     <div class="traffic-monitor-dialog">
         <div class="traffic-monitor-header">
@@ -1175,6 +1178,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
     </div>
 </div>
 
+<?php } ?>
 <form method='POST' action='' target='_blank'>
 
     <?php
@@ -1376,6 +1380,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         // The end implementation for Score
 
         $bgColor = $cont % 2 == 0 ? "bg-body-secondary" : "bg-light";
+        if (!empty($isMultiBusiness)) {
+            include __DIR__ . '/multi_client_row.php';
+            $cont++;
+            continue;
+        }
         //echo $bgColor;
 
     ?>
@@ -1936,7 +1945,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             
                                                             <input type='image' src='img/icon_menu_mapa.png' formaction='../../clientes_map.google.<?= $links_ext; ?>' title='Ver no Mapa' />
                                                             <input type='image' src='img/icon_menu_email2.png' formaction='../../send_cliente.<?= $links_ext; ?>' title='Enviar Mensagem' />
-                                                            <input type='image' src='img/icon_menu_reparar.png' formaction='../../reparar.<?= $links_ext; ?>' title='Reparar Clientes' />
+                                                            <?php if (empty($isMultiBusiness)) { ?><input type='image' src='img/icon_menu_reparar.png' formaction='../../reparar.<?= $links_ext; ?>' title='Reparar Clientes' /><?php } ?>
 
                                                         </div>
 

@@ -1,6 +1,7 @@
 <?php
 include('nav/header.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
+$isMultiBusiness = mka_suite_get_layout_mode(isset($link) ? $link : null) === 'multi';
 require_once __DIR__ . '/../shared/client_update_audit.php';
 require_once __DIR__ . '/../shared/manual_block_audit.php';
 mka_client_audit_ensure_table(isset($link) ? $link : null);
@@ -12,12 +13,20 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 }
 ?>
 
-<body class="">
+<body class="<?= $isMultiBusiness ? 'multi-business-search' : ''; ?>">
 
     <?php include('../../topo.php'); ?>
     <?php mka_suite_render_top_spacing_style($link); ?>
 
     <style>
+        .multi-business-search .client-head { display:none; }
+        .multi-business-search .search-stat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+        .multi-business-search .multi-client-row { display:grid;grid-template-columns:1.2fr 1.2fr .8fr 1fr;gap:12px;margin:12px 0;padding:14px;background:#fff;border:1px solid #d6e0ec;border-radius:16px; }
+        .multi-client-row section { min-width:0;padding:14px;background:#f7f9fc;border:1px solid #e0e7f0;border-radius:12px;overflow-wrap:anywhere; }
+        .multi-client-row h3,.multi-client-row h4 { margin:0 0 12px;font-size:15px;font-weight:700; }
+        .multi-client-row p { margin:6px 0; }
+        @media(max-width:1000px){.multi-business-search .multi-client-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
+        @media(max-width:600px){.multi-business-search .multi-client-row{grid-template-columns:minmax(0,1fr);}.multi-business-search .search-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
         .smart-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
         .smart-toolbar a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border-radius:11px; color:#36506c; text-decoration:none; font-size:13px; font-weight:700; transition:background .18s ease,color .18s ease,transform .18s ease; }
         .smart-toolbar a:hover { background:#edf5ff; color:#1268db; transform:translateY(-1px); }
@@ -499,6 +508,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     );
 
     $busca = trim($busca);
+    if ($isMultiBusiness && preg_match('/^(on|off|sem con[^+]*|ramal)(\+.*)?$/i', $busca)) {
+        $busca = '';
+    }
     $palavras_buscas = str_replace(" ", "%", $busca);
 
     //$username_on = "";
@@ -568,15 +580,17 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     ?>
 
     <datalist id="sugestoes">
+        <?php if (!$isMultiBusiness) { ?>
         <option value="on">
         <option value="off">
+        <option value="sem conexoes">
+        <?php } ?>
         <option value="adicionais">
         <option value="bloqueado">
         <option value="bloqueado manualmente">
         <option value="atrasado">
         <option value="observacao">
         <option value="desativado">
-        <option value="sem conexoes">
         <option value="sem carne">
         <option value="sem titulo">
         <option value="sem telefone">
@@ -599,7 +613,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <div class="row g-1">
             <div class="col-8 col-sm-6">
                 <div class="form-floating">
-                    <input type="search" class="form-control" id="busca" name="busca" placeholder="Busque por nome, login, Endereço, plano, CPF... ou nome + Endereço ou bloqueado ou offline ou desativado ou observacao" value="<?php echo $busca; ?>" list="sugestoes" />
+                    <input type="search" class="form-control" id="busca" name="busca" placeholder="<?= $isMultiBusiness ? 'Busque por nome, documento, endereço, plano ou situação cadastral' : 'Busque por nome, login, endereço, plano, CPF, bloqueado, offline ou observação'; ?>" value="<?= htmlspecialchars($busca, ENT_QUOTES, 'UTF-8'); ?>" list="sugestoes" />
                     <label for="busca"> Digite o que procura:</label>
                 </div>
             </div>
