@@ -162,6 +162,10 @@ install_manual_block_guard() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
+for addon in rel_clientes rel_caixa graf_faturamento; do
+  test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
+  lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
+done
 mkdir -p "${BACKUP_DIR}"
 
 echo "[2/8] Gerando backup"
@@ -193,6 +197,13 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
 fi
 
 echo "[3/8] Instalando arquivos"
+for addon in rel_clientes rel_caixa graf_faturamento; do
+  if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
+    cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
+  fi
+  mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
+  cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
+done
 # Keep uploaded contracts outside addon directories replaced by upgrades.
 mkdir -p /opt/mk-auth/contract-uploads
 chmod 0770 /opt/mk-auth/contract-uploads

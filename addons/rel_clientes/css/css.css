@@ -1,0 +1,58 @@
+
+        #table_busca { margin:0 auto; }
+            
+            #btn_buscar, #form_pesquisa input, #form_pesquisa select { padding: 10px; font-size:18px; }
+            #btn_buscar { background: Navy; color:#FFF; border: 1.5px solid Navy;}
+
+/*
+            #form_pesquisa label{
+                font-size: 17px;
+                font-weight: bold;
+            }
+            #form_pesquisa input, select{
+                padding: 5px;
+                font-size: 17px;
+            }*/
+
+            #balanco_mensal td { font-size: 18px; color:#FFF;}
+
+            .icon {width: 25px; height: 25px; vertical-align:middle;}
+
+            /* {
+            height: 400px; 
+            width: 440px;
+            }
+
+             {
+            height: 550px; 
+            width: 100%;
+            }
+
+             {
+            height: 550px; 
+            width: 35%;
+            float:left;
+            }
+
+            {
+            height: 550px; 
+            width: 65%;
+            float: left;
+            }*/
+
+            #container, #container2, #container22, #container23, #container9, #container4, #container5, #container26, #container27, #container8{
+            height: 400px; 
+            width: 100%;
+            /*float: left;*/
+            }
+
+            .highcharts-figure, .highcharts-data-table table {
+                width:100%;
+                margin: 1em auto;
+            }
+
+            #graf_1, #graf_2 { width:100%; height:300px; }
+
+            .hide { display:none;}
+
+            .icon_sm { width: 32px; }
