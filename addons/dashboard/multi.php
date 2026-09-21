@@ -14,18 +14,8 @@ $exb_balanco_clientes = $exb_balanco_chamados = 'n';
 $canTotals = permissao('perm_totais');
 $canFinance = permissao('perm_relFin') || permissao('perm_relFat');
 $canConfig = permissao('perm_config');
-$multiFinanceLinks = array();
-foreach (array('rel_caixa'=>'Caixa','rel_clientes'=>'Ativações e cancelamentos','graf_faturamento'=>'Faturamento') as $addon=>$label) {
-    if (is_dir(__DIR__.'/../'.$addon)) $multiFinanceLinks['/admin/addons/'.$addon.'/']=$label;
-}
-foreach (array('titulos_vencidos'=>'Títulos vencidos','titulos_receber'=>'A receber') as $page=>$label) {
-    foreach (array('hhvm','php') as $extension) {
-        if (is_file(__DIR__.'/../../'.$page.'.'.$extension)) {
-            $multiFinanceLinks['/admin/'.$page.'.'.$extension]=$label;
-            break;
-        }
-    }
-}
+$multiShortcutLinks = explode(',', isset($multiCfg['link']) ? $multiCfg['link'] : '');
+$multiShortcutLabels = explode(',', isset($multiCfg['texto']) ? $multiCfg['texto'] : '');
 $safeUser = mysqli_real_escape_string($conn, $usuario_logado);
 $accessQuery = mysqli_query($conn, "SELECT cli_grupos FROM sis_acesso WHERE login='$safeUser' LIMIT 1");
 $access = $accessQuery ? mysqli_fetch_assoc($accessQuery) : null;
@@ -82,22 +72,30 @@ if ($canTotals) {
 .multi-quick-links a,.multi-search button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 18px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none!important;box-shadow:0 8px 18px rgba(15,23,42,.10);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;background:linear-gradient(180deg,#6f7a86 0%,#5d6773 100%);color:#fff!important;border:0;text-transform:uppercase}
 .multi-quick-links a:hover,.multi-search button:hover{transform:translateY(-2px);box-shadow:0 14px 24px rgba(15,23,42,.14);filter:brightness(1.02)}
 .multi-quick-links a.is-primary,.multi-search button{background:linear-gradient(180deg,#2f80ff 0%,#1f6de8 100%)}
+.multi-quick-links a.is-success{background:linear-gradient(180deg,#23995f 0%,#1d8d56 100%)}
 .multi-quick-links a:focus-visible,.multi-search button:focus-visible{outline:3px solid #173451;outline-offset:3px}
 </style></head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
 <header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div></header>
-<section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
-<?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
-<a href="../busca_inteligente/">Clientes</a><a href="../busca_inteligente/relcontratos.php">Contratos</a>
-<?php if($canFinance){foreach($multiFinanceLinks as $url=>$label){?><a href="<?=mka_contract_escape($url)?>"><?=mka_contract_escape($label)?></a><?php }} ?>
-</nav></section>
 <form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
 <section class="multi-summary"><h2>Clientes</h2>
 <?php if (!$canTotals) { ?><p>Seu usuário não possui permissão para visualizar os totais.</p><?php } elseif($multiError) { ?><p role="alert">Não foi possível carregar os indicadores. Tente novamente.</p><?php } else { ?>
 <div class="multi-cards"><?php foreach($cards as $card) { ?>
 <a class="multi-stat <?= $card[4] ?>" href="../busca_inteligente/index.php?busca=<?=rawurlencode($card[3])?>"><span><?=mka_contract_escape($card[0])?></span><strong><?=number_format($card[1],0,',','.')?></strong><small><?=number_format($card[2]>0 ? $card[1]/$card[2]*100 : 0,2,',','.')?>%</small></a>
 <?php } ?></div><p class="multi-note">Total inclui adicionais. Os demais indicadores de situação consideram os cadastros principais.</p><?php } ?></section>
+<section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
+<?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
+<?php foreach($multiShortcutLinks as $shortcutIndex=>$shortcut) {
+    $shortcut=trim($shortcut);
+    if($shortcut==='') continue;
+    $external=(bool)preg_match('~^https?://~i',$shortcut);
+    if(!$external && preg_match('~^[a-z][a-z0-9+.-]*:|^//~i',$shortcut)) continue;
+    $url=$external ? $shortcut : '/admin/'.ltrim($shortcut,'/');
+    $label=isset($multiShortcutLabels[$shortcutIndex]) ? trim($multiShortcutLabels[$shortcutIndex]) : '';
+    if($label==='') $label=$shortcut;
+?><a href="<?=mka_contract_escape($url)?>"<?php if($external){?> class="is-success" target="_blank" rel="noopener noreferrer"<?php } ?>><?=mka_contract_escape($label)?></a><?php } ?>
+</nav></section>
 <?php if($canFinance) {
     $tot_fat_previsto=$tot_entrada=$tot_a_receber=$tot_contas_pagar=$tot_saida=$saldo=$tot_geral_entrada_sem_emprestimo=$tot_geral_emprestimos=0;
     include __DIR__.'/graf_periodo.php';
