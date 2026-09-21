@@ -78,12 +78,20 @@ if ($canTotals) {
 @media(min-width:1101px){.multi-cards{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}}
 @media(min-width:601px) and (max-width:1100px){.multi-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:600px){.multi-main{padding:12px}.multi-stat strong{font-size:26px}}
+.multi-quick-links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:8px 8px 2px}
+.multi-quick-links a,.multi-search button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 18px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none!important;box-shadow:0 8px 18px rgba(15,23,42,.10);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;background:linear-gradient(180deg,#6f7a86 0%,#5d6773 100%);color:#fff!important;border:0;text-transform:uppercase}
+.multi-quick-links a:hover,.multi-search button:hover{transform:translateY(-2px);box-shadow:0 14px 24px rgba(15,23,42,.14);filter:brightness(1.02)}
+.multi-quick-links a.is-primary,.multi-search button{background:linear-gradient(180deg,#2f80ff 0%,#1f6de8 100%)}
+.multi-quick-links a:focus-visible,.multi-search button:focus-visible{outline:3px solid #173451;outline-offset:3px}
 </style></head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
-<header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div><nav class="multi-nav" aria-label="Atalhos">
-<a href="../busca_inteligente/">Clientes</a><a href="../busca_inteligente/relcontratos.php">Contratos</a><?php if($canConfig){?><a href="cfg.php">Configurações</a><?php } ?></nav></header>
-<?php if($canFinance && $multiFinanceLinks){ ?><nav class="multi-nav" aria-label="Financeiro" style="margin-bottom:20px"><?php foreach($multiFinanceLinks as $url=>$label){?><a href="<?=mka_contract_escape($url)?>"><?=mka_contract_escape($label)?></a><?php } ?></nav><?php } ?>
+<header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div></header>
+<section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
+<?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
+<a href="../busca_inteligente/">Clientes</a><a href="../busca_inteligente/relcontratos.php">Contratos</a>
+<?php if($canFinance){foreach($multiFinanceLinks as $url=>$label){?><a href="<?=mka_contract_escape($url)?>"><?=mka_contract_escape($label)?></a><?php }} ?>
+</nav></section>
 <form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
 <section class="multi-summary"><h2>Clientes</h2>
 <?php if (!$canTotals) { ?><p>Seu usuário não possui permissão para visualizar os totais.</p><?php } elseif($multiError) { ?><p role="alert">Não foi possível carregar os indicadores. Tente novamente.</p><?php } else { ?>
