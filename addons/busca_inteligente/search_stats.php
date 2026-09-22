@@ -19,6 +19,11 @@ $searchStats=array(
 );
 $currentStatSearch = array_key_exists('busca', $_GET) ? strtolower(trim((string)$_GET['busca'])) : null;
 if (!empty($isMultiBusiness)) $searchStats = array_merge(array_slice($searchStats, 0, 6), array_slice($searchStats, 8, 2));
+$stats['disabled'] = 0;
+$statsDisabled = mysqli_query($link, "SELECT COUNT(*) total FROM sis_cliente c WHERE $grupos c.cli_ativado='n'");
+if ($statsDisabled && ($sr = mysqli_fetch_assoc($statsDisabled))) $stats['disabled'] = (int)$sr['total'];
+// Disabled customers are separate from the existing active-customer totals.
+$searchStats[] = array('Desativados', $stats['disabled'], $percent($stats['disabled'], $stats['clients'] + $stats['disabled']), '?busca=desativado', 'is-dark', 'fa-user-slash');
 ?>
 <div class="search-stat-grid no_print" aria-label="Resumo de clientes">
 <?php foreach($searchStats as $stat){
