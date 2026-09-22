@@ -20,13 +20,12 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     <style>
         .multi-business-search .client-head { display:none; }
-        .multi-business-search .search-stat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
         .multi-business-search .multi-client-row { display:grid;grid-template-columns:1.2fr 1.2fr .8fr 1fr;gap:12px;margin:12px 0;padding:14px;background:#fff;border:1px solid #d6e0ec;border-radius:16px; }
         .multi-client-row section { min-width:0;padding:14px;background:#f7f9fc;border:1px solid #e0e7f0;border-radius:12px;overflow-wrap:anywhere; }
         .multi-client-row h3,.multi-client-row h4 { margin:0 0 12px;font-size:15px;font-weight:700; }
         .multi-client-row p { margin:6px 0; }
         @media(max-width:1000px){.multi-business-search .multi-client-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
-        @media(max-width:600px){.multi-business-search .multi-client-row{grid-template-columns:minmax(0,1fr);}.multi-business-search .search-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+        @media(max-width:600px){.multi-business-search .multi-client-row{grid-template-columns:minmax(0,1fr);}}
         .smart-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
         .smart-toolbar a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border-radius:11px; color:#36506c; text-decoration:none; font-size:13px; font-weight:700; transition:background .18s ease,color .18s ease,transform .18s ease; }
         .smart-toolbar a:hover { background:#edf5ff; color:#1268db; transform:translateY(-1px); }
