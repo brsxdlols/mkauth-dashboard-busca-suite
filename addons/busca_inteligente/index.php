@@ -28,6 +28,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .multi-client-row section:nth-child(2),.multi-client-row section:nth-child(3) { text-align:center; }
         .multi-client-row h3,.multi-client-row h4 { margin:0 0 8px;font-size:inherit;font-weight:700; }
         .multi-client-row p { margin:4px 0; }
+        .multi-financial-alerts { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0; }
+        .multi-financial-alerts > * { display:inline-flex;align-items:center;gap:4px; }
+        .multi-financial-alerts .multi-alert-label { font-size:11px; }
         .multi-client-head { display:grid;grid-template-columns:1.35fr 1.45fr .75fr 1.25fr;gap:12px;align-items:center;padding:12px 10px;margin-bottom:6px;background:#29313a;color:#fff;border-radius:14px;text-align:center;font-size:.875em; }
         @media(min-width:1001px){.multi-client-row h4{display:none;}}
         @media(max-width:1000px){.multi-client-head{display:none;}}

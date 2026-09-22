@@ -9,6 +9,19 @@ $multiDetail = '../../cliente_det.'.rawurlencode($links_ext).'?uuid='.rawurlenco
 <article class="multi-client-row <?=mka_contract_escape($bgColor)?>">
 <section><label class="no_print"><input type="checkbox" class="login_select" name="login[]" value="<?=mka_contract_escape($login_cliente)?>"> Selecionar cliente</label><h3><a href="<?=mka_contract_escape($multiDetail)?>"><?=mka_contract_escape($nome_cliente)?></a></h3>
 <p><strong>Situação:</strong> <?=mka_contract_escape($multiStatus)?></p>
+<div class="multi-financial-alerts" aria-label="Alertas financeiros">
+<?php if ($tem_titulo_vencido) { ?>
+<a class="overdue-title-action" href="<?=mka_contract_escape($multiDetail)?>" title="Ver títulos vencidos"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> <?=(int)$quantidade_titulos_vencidos?><span class="multi-alert-label"> títulos vencidos</span></a>
+<?php } ?>
+<?php if ($carne_terminando) { ?>
+<span class="ending-booklet-alert" title="Restam <?=(int)$num_parcelas?> títulos no carnê"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span class="remaining-title-count"><?=(int)$num_parcelas?></span><span class="multi-alert-label"> Carnê terminando</span></span>
+<?php } elseif ($sem_carne) { ?>
+<span class="no-booklet-alert" title="O cliente não tem carnê"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span class="multi-alert-label"> Sem carnê</span></span>
+<?php } elseif (!$parcelas_validas) { ?>
+<span class="invalid-booklet-alert" title="Número de parcelas inválido"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span class="multi-alert-label"> Parcelas inválidas</span></span>
+<?php } ?>
+<a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : '' ?>" href="<?=mka_contract_escape($multiDetail)?>" title="Ver parcelas em aberto"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i> <?= $parcelas_validas ? (int)$num_parcelas : '-' ?><span class="multi-alert-label"> em aberto</span></a>
+</div>
 <p><strong>CPF/CNPJ:</strong> <?=mka_contract_escape($cpf_cnpj_fmt)?></p>
 <p><strong>Cadastro:</strong> <?=mka_contract_escape($data_cad_fmt)?></p>
 <p><strong>Última alteração:</strong> <?=mka_contract_escape($last_update_fmt)?></p>
