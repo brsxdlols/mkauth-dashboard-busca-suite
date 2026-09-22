@@ -24,6 +24,13 @@ $statsDisabled = mysqli_query($link, "SELECT COUNT(*) total FROM sis_cliente c W
 if ($statsDisabled && ($sr = mysqli_fetch_assoc($statsDisabled))) $stats['disabled'] = (int)$sr['total'];
 // Disabled customers are separate from the existing active-customer totals.
 $searchStats[] = array('Desativados', $stats['disabled'], $percent($stats['disabled'], $stats['clients'] + $stats['disabled']), '?busca=desativado', 'is-disabled', 'fa-user-slash');
+// Keep billing exceptions last; manual block follows Offline in provider mode.
+$billingStats = array(); $orderedStats = array();
+foreach ($searchStats as $stat) {
+    if ($stat[3] === '?busca=sem+carne' || $stat[3] === '?busca=sem+tit') $billingStats[] = $stat;
+    else $orderedStats[] = $stat;
+}
+$searchStats = array_merge($orderedStats, $billingStats);
 ?>
 <style>.search-stat-card.is-disabled{--accent:#6b7280;--card-bg:linear-gradient(145deg,#7b818b,#626975);color:#fff}</style>
 <div class="search-stat-grid no_print" aria-label="Resumo de clientes">

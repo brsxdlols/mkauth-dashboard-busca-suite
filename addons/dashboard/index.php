@@ -1787,6 +1787,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
         ?>
 
+        <?php $dashboard_stats = array_merge(array_slice($dashboard_stats, 0, 8), array_slice($dashboard_stats, 10, 1), array_slice($dashboard_stats, 8, 2)); ?>
         <?php include('graf_periodo.php'); ?>
         <?php include('cli_periodo.php'); ?>
 
