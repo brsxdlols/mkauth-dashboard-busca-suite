@@ -1,7 +1,8 @@
 <?php
 include('nav/header.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
-$isMultiBusiness = mka_suite_get_layout_mode(isset($link) ? $link : null) === 'multi';
+// Multiempresas changes only the dashboard; both modes use the complete new search.
+$isMultiBusiness = false;
 require_once __DIR__ . '/../shared/client_update_audit.php';
 require_once __DIR__ . '/../shared/manual_block_audit.php';
 mka_client_audit_ensure_table(isset($link) ? $link : null);
@@ -20,22 +21,23 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     <style>
         .multi-business-search .client-head { display:none; }
-        .multi-business-search .multi-client-row { position:relative;display:grid;grid-template-columns:1.35fr 1.45fr .75fr 1.25fr;gap:12px;margin:0 0 12px;padding:16px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px;overflow:hidden;font-size:.875em; }
+        .multi-business-search .multi-client-row { position:relative;display:grid;grid-template-columns:28px 42px minmax(0,1.35fr) minmax(0,1.45fr) minmax(0,.75fr) minmax(0,1.25fr);gap:12px;margin:0 0 12px;padding:16px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px;overflow:hidden;font-size:.875em; }
         .multi-client-row::before { content:'';position:absolute;top:0;left:0;right:0;height:6px;background:#29313a; }
         .multi-client-row section { min-width:0;padding:10px 12px;border:1px solid rgba(148,163,184,.18);border-radius:10px;background:rgba(255,255,255,.58);box-shadow:inset 0 1px 0 rgba(255,255,255,.65);overflow-wrap:anywhere; }
         .multi-client-row.bg-light section { background:#f8fafc; }
         .multi-client-row.bg-body-secondary section { background:rgba(255,255,255,.52); }
-        .multi-client-row section:nth-child(2),.multi-client-row section:nth-child(3) { text-align:center; }
+        .multi-client-row section:nth-of-type(2),.multi-client-row section:nth-of-type(3) { text-align:center; }
         .multi-client-row h3,.multi-client-row h4 { margin:0 0 8px;font-size:inherit;font-weight:700; }
         .multi-client-row p { margin:4px 0; }
-        .multi-financial-alerts { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0; }
-        .multi-financial-alerts > * { display:inline-flex;align-items:center;gap:4px; }
-        .multi-financial-alerts .multi-alert-label { font-size:11px; }
-        .multi-client-head { display:grid;grid-template-columns:1.35fr 1.45fr .75fr 1.25fr;gap:12px;align-items:center;padding:12px 10px;margin-bottom:6px;background:#29313a;color:#fff;border-radius:14px;text-align:center;font-size:.875em; }
+        .multi-status-col { text-align:center; }
+        .multi-financial-alerts { display:flex;flex-direction:column;align-items:center;gap:8px;margin:8px 0; }
+        .multi-financial-alerts > * { display:inline-flex;flex-direction:column;align-items:center;gap:2px; }
+        .multi-financial-alerts .multi-alert-label { position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
+        .multi-name-col h3 { font-weight:400; }
+        .multi-client-head { display:grid;grid-template-columns:28px 42px minmax(0,1.35fr) minmax(0,1.45fr) minmax(0,.75fr) minmax(0,1.25fr);gap:12px;align-items:center;padding:12px 10px;margin-bottom:6px;background:#29313a;color:#fff;border-radius:14px;text-align:center;font-size:.875em; }
         @media(min-width:1001px){.multi-client-row h4{display:none;}}
         @media(max-width:1000px){.multi-client-head{display:none;}}
-        @media(max-width:1000px){.multi-business-search .multi-client-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
-        @media(max-width:600px){.multi-business-search .multi-client-row{grid-template-columns:minmax(0,1fr);}}
+        @media(max-width:1000px){.multi-business-search .multi-client-row{grid-template-columns:28px 42px minmax(0,1fr);}.multi-client-row section{grid-column:1 / -1;}.multi-client-row .multi-name-col{grid-column:3;}.multi-check-col{grid-column:1;}.multi-status-col{grid-column:2;}}
         .smart-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }
         .smart-toolbar a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border-radius:11px; color:#36506c; text-decoration:none; font-size:13px; font-weight:700; transition:background .18s ease,color .18s ease,transform .18s ease; }
         .smart-toolbar a:hover { background:#edf5ff; color:#1268db; transform:translateY(-1px); }
