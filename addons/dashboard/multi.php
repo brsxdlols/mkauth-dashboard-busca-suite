@@ -58,6 +58,7 @@ if ($canTotals) {
 <link href="css/bootstrap.css" rel="stylesheet"><link href="../../estilos/mk-auth.css" rel="stylesheet"><link href="../../estilos/font-awesome.css" rel="stylesheet">
 <script src="../../scripts/jquery.js"></script><script src="../../scripts/mk-auth.js"></script>
 <script src="js/highcharts.js"></script><script src="js/exporting.js"></script>
+<link href="../../estilos/bi-icons.css" rel="stylesheet">
 <style>
 .multi-page{background:#f5f7fb;color:#20364f}.multi-main{width:100%;max-width:1900px;margin:auto;padding:24px;box-sizing:border-box}.multi-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:22px}.multi-heading h1{font-size:27px;margin:0 0 6px}.multi-heading p{margin:0;color:#60738c}.multi-nav{display:flex;gap:8px;flex-wrap:wrap}.multi-nav a,.multi-search button{background:#1467df;color:white;border-radius:10px;padding:12px 18px;text-decoration:none;border:0;font-weight:600}.multi-search{display:flex;gap:10px;margin-bottom:20px}.multi-search input{min-width:0;flex:1;border:1px solid #ced9e7;border-radius:10px;padding:14px;background:white}.multi-summary{background:white;border:1px solid #d4dfed;border-radius:18px;padding:18px;margin-bottom:24px}.multi-summary h2{font-size:15px;margin:0 0 16px;text-transform:uppercase;letter-spacing:.06em}.multi-cards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.multi-stat{display:flex;flex-direction:column;gap:14px;min-width:0;padding:18px;border-radius:15px;text-decoration:none!important;color:#173451!important;background:#f5f8fc;border:1px solid #d5e0ed}.multi-stat strong{font-size:clamp(28px,3vw,44px);line-height:1.1;font-weight:400;overflow-wrap:anywhere}.multi-stat span{font-weight:700}.multi-stat small{border-top:1px solid #ffffff55;padding-top:10px;font-size:15px}.multi-stat.blue{background:#2678ef;color:white!important}.multi-stat.cyan{background:#28bbd2}.multi-stat.mint{background:#86e4b1}.multi-stat.red{background:#e73551;color:white!important}.multi-stat.yellow{background:#ffca19}.multi-note{color:#60738c;font-size:13px;margin:14px 0 0}.multi-main .card{border-radius:16px;overflow:hidden}.multi-main .highcharts-figure{margin:0;min-width:0}.multi-main .row>*{min-width:0}@media(max-width:1100px){.multi-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.multi-main{padding:14px}.multi-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.multi-stat{padding:14px}.multi-search{flex-direction:column}.multi-heading h1{font-size:23px}}
 </style><style>
@@ -74,6 +75,21 @@ if ($canTotals) {
 .multi-quick-links a.is-primary,.multi-search button{background:linear-gradient(180deg,#2f80ff 0%,#1f6de8 100%)}
 .multi-quick-links a.is-success{background:linear-gradient(180deg,#23995f 0%,#1d8d56 100%)}
 .multi-quick-links a:focus-visible,.multi-search button:focus-visible{outline:3px solid #173451;outline-offset:3px}
+.multi-stat{position:relative;border-radius:16px;gap:0;border:0;overflow:hidden}
+.multi-stat span{padding-right:27px;font-size:11px;line-height:1.15;overflow-wrap:anywhere}
+.multi-stat strong{margin-top:8px;text-align:center;font-weight:300;font-size:clamp(2rem,1.15vw + 1rem,2.8rem);line-height:.9;letter-spacing:0;font-variant-numeric:tabular-nums}
+.multi-stat small{margin-top:8px;padding-top:7px;text-align:center;font-size:1.12rem;font-weight:600;line-height:1.15;border-top:1px solid rgba(15,23,42,.10)}
+.multi-stat .multi-stat-icon{position:absolute;right:7px;top:7px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.20);font-size:12px}
+.multi-stat.blue{background:linear-gradient(180deg,#2f80ff,#1f6de8);color:#fff!important}
+.multi-stat.light{background:linear-gradient(180deg,#fff,#f8fafc);color:#1f2937!important;border:1px solid rgba(203,213,225,.88)}
+.multi-stat.light .multi-stat-icon{background:#edf2f7}
+.multi-stat.cyan{background:linear-gradient(180deg,#35c8eb,#22b8db);color:#0f172a!important}
+.multi-stat.mint{background:linear-gradient(180deg,#96edba,#80E7AB);color:#0f5132!important}
+.multi-stat.red{background:linear-gradient(180deg,#eb455a,#df3148);color:#fff!important}
+.multi-stat.yellow{background:linear-gradient(180deg,#ffcf35,#ffc107);color:#2f2500!important}
+.multi-stat.outline-danger{border:1px solid rgba(248,113,113,.72)}
+.multi-stat.outline-danger small{border-top-color:rgba(248,113,113,.22)}
+.multi-stat.outline-danger .multi-stat-icon{background:#fff0f2}
 </style></head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
@@ -81,8 +97,8 @@ if ($canTotals) {
 <form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
 <section class="multi-summary"><h2>Clientes</h2>
 <?php if (!$canTotals) { ?><p>Seu usuário não possui permissão para visualizar os totais.</p><?php } elseif($multiError) { ?><p role="alert">Não foi possível carregar os indicadores. Tente novamente.</p><?php } else { ?>
-<div class="multi-cards"><?php foreach($cards as $card) { ?>
-<a class="multi-stat <?= $card[4] ?>" href="../busca_inteligente/index.php?busca=<?=rawurlencode($card[3])?>"><span><?=mka_contract_escape($card[0])?></span><strong><?=number_format($card[1],0,',','.')?></strong><small><?=number_format($card[2]>0 ? $card[1]/$card[2]*100 : 0,2,',','.')?>%</small></a>
+<div class="multi-cards"><?php $multiIcons=array('blue'=>'bi-people-fill','light'=>'bi-person-plus-fill','cyan'=>'bi-person-check-fill','mint'=>'bi-eye-fill','red'=>'bi-person-fill-lock','yellow'=>'bi-clock-fill'); foreach($cards as $card) { $multiIcon=isset($multiIcons[$card[4]])?$multiIcons[$card[4]]:($card[3]==='sem carne'?'bi-file-earmark-x-fill':'bi-receipt'); ?>
+<a class="multi-stat <?= $card[4] ?>" href="../busca_inteligente/index.php?busca=<?=rawurlencode($card[3])?>"><i class="multi-stat-icon <?= $multiIcon ?>" aria-hidden="true"></i><span><?=mka_contract_escape($card[0])?></span><strong><?=number_format($card[1],0,',','.')?></strong><small><?=number_format($card[2]>0 ? $card[1]/$card[2]*100 : 0,2,',','.')?>%</small></a>
 <?php } ?></div><p class="multi-note">Total inclui adicionais. Os demais indicadores de situação consideram os cadastros principais.</p><?php } ?></section>
 <section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
 <?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
