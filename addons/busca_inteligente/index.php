@@ -20,10 +20,17 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     <style>
         .multi-business-search .client-head { display:none; }
-        .multi-business-search .multi-client-row { display:grid;grid-template-columns:1.2fr 1.2fr .8fr 1fr;gap:12px;margin:12px 0;padding:14px;background:#fff;border:1px solid #d6e0ec;border-radius:16px; }
-        .multi-client-row section { min-width:0;padding:14px;background:#f7f9fc;border:1px solid #e0e7f0;border-radius:12px;overflow-wrap:anywhere; }
-        .multi-client-row h3,.multi-client-row h4 { margin:0 0 12px;font-size:15px;font-weight:700; }
-        .multi-client-row p { margin:6px 0; }
+        .multi-business-search .multi-client-row { position:relative;display:grid;grid-template-columns:1.35fr 1.45fr .75fr 1.25fr;gap:12px;margin:0 0 12px;padding:16px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px;overflow:hidden;font-size:.875em; }
+        .multi-client-row::before { content:'';position:absolute;top:0;left:0;right:0;height:6px;background:#29313a; }
+        .multi-client-row section { min-width:0;padding:10px 12px;border:1px solid rgba(148,163,184,.18);border-radius:10px;background:rgba(255,255,255,.58);box-shadow:inset 0 1px 0 rgba(255,255,255,.65);overflow-wrap:anywhere; }
+        .multi-client-row.bg-light section { background:#f8fafc; }
+        .multi-client-row.bg-body-secondary section { background:rgba(255,255,255,.52); }
+        .multi-client-row section:nth-child(2),.multi-client-row section:nth-child(3) { text-align:center; }
+        .multi-client-row h3,.multi-client-row h4 { margin:0 0 8px;font-size:inherit;font-weight:700; }
+        .multi-client-row p { margin:4px 0; }
+        .multi-client-head { display:grid;grid-template-columns:1.35fr 1.45fr .75fr 1.25fr;gap:12px;align-items:center;padding:12px 10px;margin-bottom:6px;background:#29313a;color:#fff;border-radius:14px;text-align:center;font-size:.875em; }
+        @media(min-width:1001px){.multi-client-row h4{display:none;}}
+        @media(max-width:1000px){.multi-client-head{display:none;}}
         @media(max-width:1000px){.multi-business-search .multi-client-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
         @media(max-width:600px){.multi-business-search .multi-client-row{grid-template-columns:minmax(0,1fr);}}
         .smart-toolbar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin:10px 15px 18px; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 10px 28px rgba(15,23,42,.06); }

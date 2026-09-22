@@ -3,7 +3,10 @@ if (empty($isMultiBusiness) || !isset($row)) return;
 $multiStatus = $cli_ativado !== 's' ? 'Desativado' : ($bloqueado === 'sim' ? 'Bloqueado' : ($observacao === 'sim' ? 'Em observação' : 'Livre'));
 $multiDetail = '../../cliente_det.'.rawurlencode($links_ext).'?uuid='.rawurlencode($uuid_cliente);
 ?>
-<article class="multi-client-row">
+<?php if (empty($multiClientHeadRendered)) { $multiClientHeadRendered = true; ?>
+<div class="multi-client-head"><span>Nome Completo</span><span>Endereço</span><span>Contato</span><span>Cadastro e financeiro</span></div>
+<?php } ?>
+<article class="multi-client-row <?=mka_contract_escape($bgColor)?>">
 <section><label class="no_print"><input type="checkbox" class="login_select" name="login[]" value="<?=mka_contract_escape($login_cliente)?>"> Selecionar cliente</label><h3><a href="<?=mka_contract_escape($multiDetail)?>"><?=mka_contract_escape($nome_cliente)?></a></h3>
 <p><strong>Situação:</strong> <?=mka_contract_escape($multiStatus)?></p>
 <p><strong>CPF/CNPJ:</strong> <?=mka_contract_escape($cpf_cnpj_fmt)?></p>
