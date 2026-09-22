@@ -18,6 +18,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <title>MK - AUTH :: <?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'};  ?></title>
 
 
+    <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css" />
     <link href="../../estilos/mk-auth.css" rel="stylesheet" type="text/css" />
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css" />
     <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
@@ -31,7 +32,9 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <body>
 
+    <?php if (!defined('ADMIN2URL')) define('ADMIN2URL', '/admin/'); ?>
     <?php include("../../topo.php"); ?>
+    <?php include(__DIR__ . '/mkauth_dashboard_top.php'); ?>
 
     <?php
     mka_suite_ensure_layout_column($conn);
