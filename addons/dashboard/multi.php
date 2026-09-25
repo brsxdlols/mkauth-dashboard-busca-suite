@@ -91,7 +91,7 @@ if ($canTotals) {
 .multi-stat.outline-danger small{border-top-color:rgba(248,113,113,.22)}
 .multi-stat.outline-danger .multi-stat-icon{background:#fff0f2}
 </style></head><body class="multi-page mka-suite-dashboard-page">
-<?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); mka_suite_render_top_spacing_style($conn); ?>
+<?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); include __DIR__.'/mkauth_dashboard_top.php'; mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
 <header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div></header>
 <form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
