@@ -1,4 +1,8 @@
 <?php
+// Native headers on newer MK-AUTH releases require the native configuration.
+if (!defined('VERSAO2UPDATE') && is_file('/opt/mk-auth/include/configure.php')) {
+	require_once '/opt/mk-auth/include/configure.php';
+}
 require_once __DIR__ . '/../shared/contract_helper.php';
 // INCLUE FUNCOES DE ADDONS -----------------------------------------------------------------------
 include_once('addons.class.php');
@@ -15,6 +19,21 @@ if (!file_exists("login.hhvm")) {
 	if (!isset($_SESSION['MKA_Logado'])) exit('Acesso negado... <a href="/admin/login.php">Fazer Login</a>');
 } else {
 	$ext_mk = '.hhvm';
+	// Multiempresas checks permissions before topo.php starts the native session.
+	if (session_status() === PHP_SESSION_NONE) {
+		$adminSessionCookies = array();
+		foreach (array_keys($_COOKIE) as $cookieName) {
+			if (preg_match('/^_admin-[a-f0-9]{40}-MKA$/D', $cookieName)) $adminSessionCookies[] = $cookieName;
+		}
+		// Native MK-AUTH names the admin cookie per installation.
+		// Never select subscriber/public sessions or guess an operator identity.
+		if (count($adminSessionCookies) === 1) session_name($adminSessionCookies[0]);
+		session_start();
+	}
+	if (empty($_SESSION['MKA_Logado']) && empty($_SESSION['MM_Usuario'])) {
+		http_response_code(403);
+		exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
+	}
 }
 
 // debug($_SESSION);

@@ -1,4 +1,17 @@
-<?php include('addons.class.php'); ?>
+<?php
+if (!defined('VERSAO2UPDATE') && is_file('/opt/mk-auth/include/configure.php')) {
+    require_once '/opt/mk-auth/include/configure.php';
+}
+include('addons.class.php'); ?>
+<?php
+// Some native addon loaders no longer initialize the addon manifest.
+$searchManifestPath = __DIR__ . '/manifest.json';
+$searchManifest = is_readable($searchManifestPath) ? json_decode(file_get_contents($searchManifestPath)) : null;
+$Manifest = (object) array(
+    'name' => is_object($searchManifest) && isset($searchManifest->name) && is_scalar($searchManifest->name) ? (string) $searchManifest->name : 'Inicio',
+    'version' => is_object($searchManifest) && isset($searchManifest->version) && is_scalar($searchManifest->version) ? (string) $searchManifest->version : '7.85'
+);
+?>
 <?php require_once __DIR__ . '/../shared/contract_helper.php'; ?>
 
 <?php
@@ -11,6 +24,18 @@ if(!file_exists(__DIR__."/../../login.hhvm")){
     if (!isset($_SESSION['mka_logado'])) exit('Acesso negado... <a href="/admin/login.php">Fazer Login</a>');
 }else{
     $ext_mk = '.hhvm';
+    if (session_status() === PHP_SESSION_NONE) {
+        $adminSessionCookies = array();
+        foreach (array_keys($_COOKIE) as $cookieName) {
+            if (preg_match('/^_admin-[a-f0-9]{40}-MKA$/D', $cookieName)) $adminSessionCookies[] = $cookieName;
+        }
+        if (count($adminSessionCookies) === 1) session_name($adminSessionCookies[0]);
+        session_start();
+    }
+    if (empty($_SESSION['MKA_Logado']) && empty($_SESSION['MM_Usuario'])) {
+        http_response_code(403);
+        exit('Acesso negado... <a href="/admin/login.hhvm">Fazer Login</a>');
+    }
 }
 
 
