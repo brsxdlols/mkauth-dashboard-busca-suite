@@ -159,7 +159,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
         $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
         $popup_clientes_sessao = isset($cfg['popup_clientes_sessao']) ? $cfg['popup_clientes_sessao'] : 'n';
-        $popup_clientes_sessao_duracao = isset($cfg['popup_clientes_sessao_duracao']) ? (int) $cfg['popup_clientes_sessao_duracao'] : 2;
+        $popup_clientes_sessao_duracao = isset($cfg['popup_clientes_sessao_duracao']) ? (int) $cfg['popup_clientes_sessao_duracao'] : 3;
         $qtd_meses_graficos = $cfg['qtd_meses_graficos'];
         $limite_ticket = $cfg['limite_ticket'];
         $link = $cfg['link'];
@@ -504,7 +504,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <label for="floatingSelect">Popup de Clientes ao Logar/Deslogar?</label>
                     </div>
                     <div class="col-2 form-floating mb-2 g-1">
-                        <input type="number" name="popup_clientes_sessao_duracao" class="form-control" id="popup_clientes_sessao_duracao" placeholder="2" min="1" max="15" step="1" value="<?php echo (int) $popup_clientes_sessao_duracao; ?>">
+                        <input type="number" name="popup_clientes_sessao_duracao" class="form-control" id="popup_clientes_sessao_duracao" placeholder="3" min="1" max="15" step="1" value="<?php echo (int) $popup_clientes_sessao_duracao; ?>">
                         <label for="popup_clientes_sessao_duracao">Tempo do Popup (s)</label>
                     </div>
                     <div class="col-4 form-floating mb-2 g-1">
@@ -513,6 +513,12 @@ if (isset($_SESSION['MM_Usuario'])) {
                             <option value="n" <?php echo $radius_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
                         </select>
                         <label for="radius_alert_enabled">Exibir alerta de integração Radius?</label>
+                    </div>
+                    <div class="col-4 form-floating mb-2 g-1">
+                        <select class="form-select" id="payment_notifications_enabled" disabled><option value="1">Sim</option><option value="0">Não</option></select>
+                        <label for="payment_notifications_enabled">Exibir notificações de pagamento?</label>
+                        <small id="payment-preference-status" role="status">Salvo automaticamente para seu usuário.</small>
+                        <script src="../shared/payment_preferences.js?v=20261007b" defer></script>
                     </div>
                     <div class="col-6 form-floating mb-2 g-1">
                         <select class="form-select" name="qtd_meses_graficos" id="floatingSelect" aria-label="">

@@ -1,0 +1,63 @@
+<?php
+require __DIR__.'/../shared/notification_bootstrap.php';
+if (!permissao('perm_clientes')) { http_response_code(403); exit('Sem permissão.'); }
+$login = trim((string)($_GET['login'] ?? ''));
+if (strlen($login)>64) { http_response_code(422); exit('Login inválido.'); }
+$user = (string)(!empty($_SESSION['MKA_Usuario']) ? $_SESSION['MKA_Usuario'] : ($_SESSION['MM_Usuario'] ?? ''));
+$st=$conn->prepare('SELECT cli_grupos FROM sis_acesso WHERE login=? LIMIT 1');$st->bind_param('s',$user);$st->execute();$access=$st->get_result()->fetch_assoc();
+$groups=$access?array_map('trim',explode(',',(string)$access['cli_grupos'])):array();
+$full=$access && (trim((string)$access['cli_grupos'])==='' || in_array('full_clientes',$groups,true));
+if (!$full) {
+    $st=$conn->prepare('SELECT grupo FROM sis_cliente WHERE login=? LIMIT 1');$st->bind_param('s',$login);$st->execute();$client=$st->get_result()->fetch_assoc();
+    if (!$access || !$client || !in_array($client['grupo'],$groups,true)) { http_response_code(403);exit('Cliente fora dos grupos permitidos.'); }
+}
+session_write_close();header('Cache-Control: no-store');
+require_once __DIR__.'/radius_lib.php';
+function radius_live_type($entry) {
+    if($entry['type']==='outros' && preg_match('/rlm_sql|\(sql\)|connections to reach .*spares/i',$entry['line'])) return 'sql';
+    return $entry['type'];
+}
+if (isset($_GET['data'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    $data=radius_read_logs('todos',2000);$rows=array();
+    $limit=(int)($_GET['limit']??100);if(!in_array($limit,array(100,250,500,1000,2000),true))$limit=100;
+    $selected=isset($_GET['types']) ? explode(',',(string)$_GET['types']) : array('conectados','erros','multiplos');
+    foreach ($data['entries'] as $entry) {
+        if ($login!=='' && $entry['login']!==$login) continue;
+        if ($login==='' && !in_array(radius_live_type($entry),$selected,true)) continue;
+        // FreeRADIUS can log credentials in [login/password]. Never display passwords.
+        $type=radius_live_type($entry);$labels=radius_type_labels();
+        $rows[]=array('type'=>$type,'label'=>$labels[$type],'login'=>$entry['login'],'line'=>$entry['line']);
+        if (count($rows)>=$limit) break;
+    }
+    $history=null;
+    $logins=array_values(array_unique(array_filter(array_column($rows,'login'))));$names=array();
+    if($logins){$stmt=$conn->prepare('SELECT login,nome FROM sis_cliente WHERE login IN ('.implode(',',array_fill(0,count($logins),'?')).')');$stmt->bind_param(str_repeat('s',count($logins)),...$logins);$stmt->execute();$result=$stmt->get_result();while($client=$result->fetch_assoc())$names[$client['login']]=$client['nome'];}
+    foreach($rows as &$row)$row['name']=$names[$row['login']]??'';unset($row);
+    if($login!=='' && isset($_GET['history']) && !$rows){require __DIR__.'/history.php';$history=radius_latest_history($login);}
+    echo json_encode(array('rows'=>$rows,'history'=>$history,'error'=>$data['error'],'updated_at'=>$data['updated_at']),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);exit;
+}
+?>
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Log RADIUS</title>
+<link rel="stylesheet" href="radius.css"><style>body{font:14px system-ui;background:#f3f7fc;color:#17324f;padding:16px;margin:0}button{padding:9px 14px;border:1px solid #b8cbe4;border-radius:8px;background:white;cursor:pointer}.radius-log-list{border-radius:12px;max-height:none;min-height:80px}h2{margin-top:0}</style>
+<h2>Log RADIUS <?= $login!==''?'— '.radius_escape($login):'— geral' ?></h2><button id="toggle">Pausar</button><p id="status" role="status">Carregando…</p><p id="history-note"></p><p>Atualização a cada 3 segundos, filtro nos eventos carregados.<?php if($login!==''): ?> Login OK histórico não comprova conexão atual; ausência de log não comprova ausência de requisição.<?php endif; ?></p><div class="log-search"><input id="search" aria-label="Buscar nome ou login" placeholder="Digite nome ou login para filtrar"><label>Linhas <select id="line-limit"><option>100</option><option>250</option><option>500</option><option>1000</option><option>2000</option></select></label></div><main id="logs" class="radius-log-list"></main>
+<style>.live-filters{display:flex;flex-wrap:wrap;gap:8px;border:1px solid #d7e2f0;border-radius:12px;padding:14px;margin:16px 0;background:#fff}.live-filters legend{font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;padding:0 6px}.live-filters label{position:relative;cursor:pointer;margin:0}.live-filters input{position:absolute;opacity:0;width:1px;height:1px}.live-filters span{display:block;border:1px solid #d9e3f1;border-radius:8px;background:white;color:#475569;padding:8px 13px;font-size:12px;font-weight:700;transition:background .15s,box-shadow .15s}.live-filters input:checked+span{background:#2563eb;border-color:#2563eb;color:#fff}.live-filters label:hover span{box-shadow:0 3px 10px #2563eb26}.live-filters input:focus-visible+span{outline:3px solid #93c5fd;outline-offset:2px}</style>
+<style>html{height:100%;overflow:hidden}body{box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;gap:8px}body>*{flex-shrink:0}body p{margin:3px 0}#history-note:empty{display:none}.live-filters{margin:3px 0}#logs{flex:1 1 0;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain}.log-search{display:flex;gap:12px;padding:8px 0}.log-search input{flex:1;min-width:0}.log-search input,.log-search select{padding:10px;border:1px solid #d7e2f0;border-radius:8px;background:white;color:#17324f}#toggle{align-self:flex-start}h2{margin:0;font-size:20px}</style>
+<script>
+const toggleColors=document.createElement('style');toggleColors.textContent='#toggle{background:#e3344f;border-color:#e3344f;color:#fff;font-weight:600;transition:background .15s}#toggle:hover{background:#c9253e}#toggle.is-paused{background:#2563eb;border-color:#2563eb}#toggle.is-paused:hover{background:#1d4ed8}';document.head.append(toggleColors);
+document.getElementById('toggle').addEventListener('click',function(){this.classList.toggle('is-paused');});
+// Compact toolbar: reserve the modal height for events rather than controls.
+const compactStyle=document.createElement('style');compactStyle.textContent='body{padding:10px 14px;gap:6px}.log-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.log-heading h2{font-size:18px;margin:0}.log-heading button{padding:5px 12px;font-size:12px}.live-filters{padding:6px 0;margin:0;border:0;background:transparent;gap:6px}.live-filters legend{display:none}.live-filters span{padding:6px 10px;font-size:11px}#status{font-size:11px;color:#708198;margin:0}.log-search{padding:0;gap:8px}.log-search input,.log-search select{padding:7px 9px;font-size:12px}#history-note{font-size:11px}';document.head.append(compactStyle);
+const headingBar=document.createElement('header');headingBar.className='log-heading';const heading=document.querySelector('h2'),pause=document.getElementById('toggle');heading.before(headingBar);headingBar.append(heading,pause);
+if(<?= $login===''?'true':'false' ?>){const note=document.getElementById('history-note').nextElementSibling;if(note&&note.tagName==='P')note.remove();}
+const hiddenStyle=document.createElement('style');hiddenStyle.textContent='#logs [hidden]{display:none!important}';document.head.append(hiddenStyle);
+const radiusTypes=document.createElement('fieldset');radiusTypes.className='live-filters';
+const isGeneral=<?= $login===''?'true':'false' ?>;
+if(isGeneral){const legend=document.createElement('legend');legend.textContent='Exibir eventos';radiusTypes.append(legend);for(const [value,label,checked] of [['conectados','Login OK',true],['erros','Login incorreto',true],['multiplos','Duplicados',true],['sql','SQL',false],['outros','Informações',false]]){const wrap=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=value;input.checked=checked;const caption=document.createElement('span');caption.textContent=label;wrap.append(input,caption);radiusTypes.append(wrap);}document.getElementById('status').before(radiusTypes);}
+let running=true,timer,controller,busy=false,first=true,saved=[];const status=document.getElementById('status'),logs=document.getElementById('logs');
+async function update(){if(!running||document.hidden||busy)return;busy=true;controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),8000);try{const r=await fetch('live.php?data=1&limit='+document.getElementById('line-limit').value+(first?'&history=1':'')+(isGeneral?'&types='+encodeURIComponent(Array.from(radiusTypes.querySelectorAll('input:checked'),e=>e.value).join(',')):'')+'&login='+encodeURIComponent(<?= json_encode($login,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>),{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('Acesso indisponível ('+r.status+')');const d=await r.json();first=false;if(d.history){document.getElementById('history-note').textContent=d.history.note;if(d.history.row)saved=[d.history.row];}if(isGeneral||d.rows.length)saved=d.rows;logs.replaceChildren();status.textContent=d.error||('Atualizado em '+d.updated_at+(saved.length?'':' — aguardando registros.'));for(const row of saved){const el=document.createElement('article');el.className='radius-log-entry type-'+row.type;const meta=document.createElement('div');meta.className='radius-log-meta';const badge=document.createElement('span');badge.className='radius-log-badge';badge.textContent=row.label;const name=document.createElement('span');name.className='radius-client-link';name.textContent=row.name?row.name+' • '+row.login:row.login;meta.append(badge,name);const code=document.createElement('code');code.textContent=row.line;el.append(meta,code);logs.append(el);}applySearch();}catch(e){status.textContent='Falha na atualização: '+e.message;}finally{busy=false;clearTimeout(timeout);if(running&&!document.hidden)timer=setTimeout(update,3000);}}
+radiusTypes.addEventListener('change',()=>{saved=[];logs.replaceChildren();clearTimeout(timer);if(!busy)update();});
+function applySearch(){const q=document.getElementById('search').value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();for(const el of logs.children)el.hidden=!el.textContent.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q);}
+document.getElementById('search').addEventListener('input',applySearch);document.getElementById('line-limit').addEventListener('change',()=>{clearTimeout(timer);if(!busy)update();});
+document.getElementById('toggle').onclick=function(){running=!running;this.textContent=running?'Pausar':'Retomar';clearTimeout(timer);if(running)update();};document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden&&running)update();});window.addEventListener('pagehide',()=>{running=false;clearTimeout(timer);if(controller)controller.abort();});update();
+</script></html>

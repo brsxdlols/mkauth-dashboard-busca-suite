@@ -1919,6 +1919,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                     </p>
                                                                     <div class="connection-actions no_print">
+                                                                        <a class="connection-diagnostic-btn" href="../radius/live.php?login=<?= urlencode($login_cliente); ?>" data-radius-login="<?= htmlspecialchars($login_cliente, ENT_QUOTES, 'UTF-8'); ?>">LOG RADIUS</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>
                                                                         <?php if (strtolower(trim((string) $bloqueado)) === 'sim') { ?>

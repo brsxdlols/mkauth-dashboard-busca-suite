@@ -1235,7 +1235,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             tbl_chamados_abertos VARCHAR(1) NOT NULL DEFAULT 's',
             tbl_contas_pagar VARCHAR(1) NOT NULL DEFAULT 's',
             popup_clientes_sessao VARCHAR(1) NOT NULL DEFAULT 'n',
-            popup_clientes_sessao_duracao INT NOT NULL DEFAULT 2,
+            popup_clientes_sessao_duracao INT NOT NULL DEFAULT 3,
             qtd_meses_graficos INT NOT NULL DEFAULT 3,
             limite_ticket INT NOT NULL DEFAULT 1000,
             link TEXT,
@@ -1310,7 +1310,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         if (mysqli_num_rows($query5b) == 0) {
             $query_alterar_table = mysqli_query($conn, "ALTER TABLE dashboard_am_sis_cfg 
-            ADD popup_clientes_sessao_duracao INT NOT NULL DEFAULT 2
+            ADD popup_clientes_sessao_duracao INT NOT NULL DEFAULT 3
             AFTER popup_clientes_sessao");
 
             if (!$query_alterar_table) {
@@ -1339,7 +1339,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
             $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
             $popup_clientes_sessao = isset($cfg['popup_clientes_sessao']) ? $cfg['popup_clientes_sessao'] : 'n';
-            $popup_clientes_sessao_duracao = isset($cfg['popup_clientes_sessao_duracao']) ? (int) $cfg['popup_clientes_sessao_duracao'] : 2;
+            $popup_clientes_sessao_duracao = isset($cfg['popup_clientes_sessao_duracao']) ? (int) $cfg['popup_clientes_sessao_duracao'] : 3;
             $qtd_meses_graficos = $cfg['qtd_meses_graficos'];
             $limite_ticket = $cfg['limite_ticket'];
             $link = $cfg['link'];
@@ -1364,7 +1364,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         $tbl_chamados_abertos = $cfgDefault(isset($tbl_chamados_abertos) ? $tbl_chamados_abertos : '', 's');
         $tbl_contas_pagar = $cfgDefault(isset($tbl_contas_pagar) ? $tbl_contas_pagar : '', 'n');
         $popup_clientes_sessao = $cfgDefault(isset($popup_clientes_sessao) ? $popup_clientes_sessao : '', 'n');
-        $popup_clientes_sessao_duracao = isset($popup_clientes_sessao_duracao) ? max(1, min(15, (int) $popup_clientes_sessao_duracao)) : 2;
+        $popup_clientes_sessao_duracao = isset($popup_clientes_sessao_duracao) ? max(1, min(15, (int) $popup_clientes_sessao_duracao)) : 3;
 
 
         // Relação de grupos do usuário logado
@@ -1441,7 +1441,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                     ?>
             </datalist>
 
-            <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline">
+            <style>.dashboard-main-search .form-control,.dashboard-main-search button{height:58px!important}.dashboard-main-search label{white-space:normal;overflow-wrap:break-word}</style>
+            <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline dashboard-main-search">
                 <div class="row g-1">
 
                     <div class="col form-floating mb-3">
@@ -1831,13 +1832,21 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             ?>
             <div class='col-12 col-md-12 col-lg-2 mb-2 dashboard-attendance-column'>
                 <div class='dashboard-surface'>
+                    <style>.dashboard-attendance-column .dashboard-stat-foot{display:none!important}.dashboard-stat-head{white-space:normal!important;overflow-wrap:break-word!important;word-break:normal!important;padding-right:28px;min-height:26px;height:auto!important}.dashboard-stat-card{min-width:0}.dashboard-stat-icon{right:7px!important}.dashboard-session-toast-toolbar{display:none!important}.dashboard-toast-inline-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}.dashboard-session-toast-list{overflow:hidden!important;max-height:70vh}.dashboard-session-toast-title,.dashboard-session-toast-meta{overflow-wrap:anywhere}.dashboard-search-form{align-items:stretch!important}.dashboard-search-form input,.dashboard-search-form button{height:48px!important}</style>
                     <h2 class="dashboard-section-title">Atendimentos</h2>
                     <div class="dashboard-section-body">
                         <div class="dashboard-attendance-grid">
                             <a href="/admin/suporte_aberto.hhvm" class="dashboard-stat-card is-primary text-light text-decoration-none">
                                 <div class="dashboard-stat-head">Chamados</div>
                                 <span class="dashboard-stat-icon"><i class="bi bi-headset"></i></span>
-                                <div class="dashboard-stat-value" id="tot_chamados"></div>
+                                <div class="dashboard-stat-value" id="tot_chamados"><?php
+                                $tot_chamados = 0;
+                                if (permissao('perm_totais') && permissao('perm_chamados')) {
+                                    $countSupport = mysqli_query($conn, "SELECT COUNT(*) total FROM sis_suporte s LEFT JOIN sis_cliente c ON s.login=c.login WHERE $grupos s.visita <= '$nova_data_1' AND s.status='aberto' AND c.cli_ativado='s'");
+                                    if ($countSupport) $tot_chamados = (int)mysqli_fetch_assoc($countSupport)['total'];
+                                    echo $countSupport ? $tot_chamados : '—';
+                                } else { echo '—'; }
+                                ?></div>
                                 <div class="dashboard-stat-foot" id="perc_chamados">0.00</div>
                             </a>
                             <a href="/admin/instalacoes_abertas.hhvm" class="dashboard-stat-card is-warning text-dark text-decoration-none">
@@ -1962,6 +1971,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             }
             ?>
 
+            <div class="col-12 mb-2"><style>.mka-radius-launch{display:block;width:100%;padding:12px 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font:600 14px system-ui;cursor:pointer;transition:background .18s,box-shadow .18s,transform .18s}.mka-radius-launch:hover{background:#1d4ed8;box-shadow:0 6px 16px #2563eb35;transform:translateY(-1px)}.mka-radius-launch:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.mka-radius-launch:active{transform:translateY(0)}</style><button type="button" class="mka-radius-launch" data-radius-login="">Log RADIUS</button></div>
+<script src="../shared/radius_modal.js?v=20261006"></script>
             <!-- Acesso Rápido -->
             <div class='col-12 col-md-12 col-lg-12'>
                 <div class='dashboard-surface mb-2'>
@@ -2546,7 +2557,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                     var configuredSeconds = Number.parseInt(window.dashboardSessionPopupDuration, 10);
                     if (!Number.isFinite(configuredSeconds)) {
-                        configuredSeconds = 2;
+                        configuredSeconds = 3;
                     }
                     configuredSeconds = Math.max(1, Math.min(15, configuredSeconds));
 
@@ -2652,7 +2663,12 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         connectionHtml + (eventData.show_contract === false ? '' : '<div class="dashboard-session-toast-status is-' + contractStatus + '"><i class="' + contractIcon + '"></i><span>' + contractLabel + '</span></div>') + radiusFailures + radiusAction +
                         '</div>';
 
+                    var inlineActions=document.createElement('div');inlineActions.className='dashboard-toast-inline-actions';
+                    inlineActions.innerHTML='<button type="button" class="dashboard-session-toast-link" data-clear-session-popups="1">Limpar</button><button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Não mostrar mais</button>';
+                    if(!eventData.guide)item.querySelector('.dashboard-session-toast-content').appendChild(inlineActions);
                     list.prepend(item);
+                    sessionStorage.removeItem('dashboard-session-popups-minimized');
+                    setToastStackMinimized(false);
                     if (sessionStorage.getItem('dashboard-session-popups-minimized') === '1') {
                         setToastStackMinimized(true);
                     }
@@ -2708,6 +2724,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             sessionStorage.setItem('dashboard-session-toast-' + eventId, '1');
                         }
                         window.setTimeout(function() {
+                            if(!item.querySelector('.dashboard-toast-inline-actions')){var actions=document.createElement('div');actions.className='dashboard-toast-inline-actions';actions.innerHTML='<button type="button" class="dashboard-session-toast-link" data-clear-session-popups="1">Limpar</button><button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Não mostrar mais</button>';var content=item.querySelector('.dashboard-session-toast-content');if(content)content.appendChild(actions);}
                             scheduleToastRemoval(item);
                         }, index * 240);
                     });

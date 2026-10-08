@@ -1155,6 +1155,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         </script>
     <?php } ?>
 
+<script src="../shared/radius_modal.js?v=20261006"></script>
     <script src="../../menu.js.<?= $links_ext; ?>"></script>
 
 <?php include('../../rodape.php'); ?>

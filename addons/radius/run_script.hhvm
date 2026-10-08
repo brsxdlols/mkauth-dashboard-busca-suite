@@ -1,0 +1,3 @@
+<?php
+http_response_code(405);
+exit('Visualizador somente leitura. Limpeza de sessões indisponível.');

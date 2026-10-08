@@ -1,0 +1,10 @@
+(function(){'use strict';
+const select=document.getElementById('payment_notifications_enabled');if(!select)return;
+const status=document.getElementById('payment-preference-status');
+const duration=document.createElement('input');duration.type='number';duration.min='1';duration.max='30';duration.value='3';duration.id='payment-duration';duration.className='form-control';
+const mode=document.createElement('select');mode.id='payment-mode';mode.className='form-select';for(const [v,t] of [['simple','Simplificado'],['detailed','Detalhado']]){const o=document.createElement('option');o.value=v;o.textContent=t;mode.append(o);}
+for(const [el,label] of [[duration,'Tempo do aviso de pagamento (s)'],[mode,'Exibição do pagamento']]){const wrap=document.createElement('div');wrap.className='col-4 form-floating mb-2 g-1';const l=document.createElement('label');l.htmlFor=el.id;l.textContent=label;wrap.append(el,l);select.parentElement.after(wrap);el.disabled=true;el.addEventListener('change',()=>select.dispatchEvent(new Event('change')));}
+let csrf;select.disabled=true;
+fetch('/admin/addons/dashboard/payment_events.php',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Preferência indisponível');return r.json();}).then(d=>{csrf=d.csrf;select.value=d.enabled?'1':'0';duration.value=d.duration_seconds||3;mode.value=d.display_mode||'simple';select.disabled=duration.disabled=mode.disabled=false;}).catch(e=>status.textContent=e.message);
+select.addEventListener('change',async()=>{select.disabled=duration.disabled=mode.disabled=true;try{const r=await fetch('/admin/addons/dashboard/payment_events.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({csrf,enabled:select.value,duration_seconds:duration.value,display_mode:mode.value})});if(!r.ok)throw Error('Não foi possível salvar; tente novamente.');status.textContent='Preferências salvas para seu usuário.';}catch(e){status.textContent=e.message;}finally{select.disabled=duration.disabled=mode.disabled=false;}});
+})();

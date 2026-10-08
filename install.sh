@@ -162,7 +162,7 @@ install_manual_block_guard() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
-for addon in rel_clientes rel_caixa graf_faturamento; do
+for addon in rel_clientes rel_caixa graf_faturamento radius; do
   test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
@@ -197,12 +197,20 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
 fi
 
 echo "[3/8] Instalando arquivos"
-for addon in rel_clientes rel_caixa graf_faturamento; do
+for addon in rel_clientes rel_caixa graf_faturamento radius; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
   mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
-  cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
+  if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ]; then
+    # Preserve the standalone Radius Logs addon and its existing settings/API.
+    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${TARGET_ADDONS_DIR}/radius/"
+    if [ ! -f "${TARGET_ADDONS_DIR}/radius/radius_lib.php" ]; then
+      cp -a "${SCRIPT_DIR}/addons/radius/radius_lib.php" "${TARGET_ADDONS_DIR}/radius/"
+    fi
+  else
+    cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
+  fi
 done
 # Keep uploaded contracts outside addon directories replaced by upgrades.
 mkdir -p /opt/mk-auth/contract-uploads
@@ -264,6 +272,8 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 install_additional_block_patch
 install_manual_block_guard
 install_reconcile
+
+bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
 
 echo "[8/8] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"

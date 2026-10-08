@@ -100,6 +100,8 @@ if ($canTotals) {
 <div class="multi-cards"><?php $multiIcons=array('blue'=>'bi-people-fill','light'=>'bi-person-plus-fill','cyan'=>'bi-person-check-fill','mint'=>'bi-eye-fill','red'=>'bi-person-fill-lock','yellow'=>'bi-clock-fill'); foreach($cards as $card) { $multiIcon=isset($multiIcons[$card[4]])?$multiIcons[$card[4]]:($card[3]==='sem carne'?'bi-file-earmark-x-fill':'bi-receipt'); ?>
 <a class="multi-stat <?= $card[4] ?>" href="../busca_inteligente/index.php?busca=<?=rawurlencode($card[3])?>"><i class="multi-stat-icon <?= $multiIcon ?>" aria-hidden="true"></i><span><?=mka_contract_escape($card[0])?></span><strong><?=number_format($card[1],0,',','.')?></strong><small><?=number_format($card[2]>0 ? $card[1]/$card[2]*100 : 0,2,',','.')?>%</small></a>
 <?php } ?></div><p class="multi-note">Total inclui adicionais. Os demais indicadores de situação consideram os cadastros principais.</p><?php } ?></section>
+<p><button type="button" data-radius-login="">Log RADIUS</button></p>
+<script src="../shared/radius_modal.js?v=20261006"></script>
 <section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
 <?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
 <?php foreach($multiShortcutLinks as $shortcutIndex=>$shortcut) {
