@@ -77,7 +77,8 @@ diag_row('QoS / Queue de banda', $queueValue, $queueState, $queueDetail);
 diag_row('Financeiro', $overdue > 0 ? $overdue . ' título(s) vencido(s)' : 'Financeiro OK', $overdue > 0 ? 'warn' : 'ok', $open . ' título(s) em aberto; ' . $overdue . ' vencido(s).');
 ?>
 </section><div class="actions" style="justify-content:space-between"><span style="color:#52677b;font-size:13px"><strong>Aviso:</strong> o reparo derrubará a conexão do cliente e aguardará a reconexão PPPoE.</span><span style="display:flex;gap:10px;flex:none"><button class="cancel" type="button" onclick="parent.postMessage({type:'mka-content-modal-close'},'*')">Fechar</button><button class="repair" id="runRepair" type="button">Executar reparo</button></span></div><div class="repair-progress" id="repairProgress"><span class="pulse"></span><strong id="repairTitle">Executando reparo...</strong><div id="repairMessage" style="margin-top:7px">Aguarde enquanto o cadastro é atualizado.</div></div></main>
-<p style="padding:0 24px"><button type="button" data-radius-login="<?= diag_h($login) ?>">Log RADIUS deste cliente</button></p>
+<div class="wrap" style="padding-top:0"><button class="repair" style="width:100%;transition:filter .18s" type="button" data-radius-login="<?= diag_h($login) ?>">LOG RADIUS DESTE CLIENTE</button></div>
+<style>.repair:hover:not(:disabled){filter:brightness(.92)}.repair:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}</style>
 <script src="../shared/radius_modal.js?v=20261006"></script>
 <script>
 (function(){var button=document.getElementById('runRepair'),box=document.getElementById('repairProgress'),title=document.getElementById('repairTitle'),message=document.getElementById('repairMessage'),tries=0;

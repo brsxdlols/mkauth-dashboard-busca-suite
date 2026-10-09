@@ -1,8 +1,24 @@
 #!/bin/sh
 set -eu
 
+# Verify actual installed artifacts, not only a marker or a version string.
+manifest=/var/lib/mkauth_radius_ppp_reconcile/installed.sha256
+installer_id=$(sha256sum "$0" | cut -d ' ' -f 1)
+configuration_id=$(printf '%s\n' "${MYSQL_HOST:-127.0.0.1}" "${MYSQL_USER:-root}" "${MYSQL_PASS:-vertrigo}" "${MYSQL_DB:-mkradius}" "${API_USER:-mkauth}" "${API_PORT:-8728}" "${FALLBACK_API_PASS:-123456}" "${PPP_SERVICES:-pppoe}" "${CRON_INTERVAL:-*/2 * * * *}" | sha256sum | cut -d ' ' -f 1)
+if [ -f "$manifest" ] && [ -f "$manifest.installer" ] &&
+   [ "$(cat "$manifest.installer")" = "$installer_id" ] &&
+   [ -f "$manifest.configuration" ] &&
+   [ "$(cat "$manifest.configuration")" = "$configuration_id" ] &&
+   [ ! -f /etc/cron.d/sistel-radius-ppp-reconcile ] &&
+   sha256sum -c "$manifest" >/dev/null 2>&1; then
+  echo 'Reconciliador, guarda, status e cron conferidos: já aplicados; instalação ignorada.'
+  exit 0
+fi
+
 # Install log protection before the database backup or the first reconcile run.
 INSTALLER_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+test -f "$INSTALLER_DIR/radacct-maintenance.sh" || { echo 'Ferramenta de manutenção ausente.' >&2; exit 1; }
+bash -n "$INSTALLER_DIR/radacct-maintenance.sh"
 if [ ! -f "$INSTALLER_DIR/install-radius-log-cleanup.sh" ]; then
   echo "Erro: instalador de limpeza do log ausente." >&2
   exit 1
@@ -55,7 +71,9 @@ if [ -f "$DASHBOARD_STATUS" ]; then
   cp -a "$DASHBOARD_STATUS" "$BACKUP_DIR/radius_status.php.bak"
 fi
 
-mysqldump -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASS" "$MYSQL_DB" radacct nas 2>/dev/null | gzip > "$BACKUP_DIR/radacct_nas.sql.gz" || true
+chmod 700 "$BACKUP_DIR"
+mysqldump -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASS" --single-transaction --skip-lock-tables "$MYSQL_DB" radacct nas > "$BACKUP_DIR/radacct_nas.sql"
+gzip "$BACKUP_DIR/radacct_nas.sql"
 
 # The standalone installer used the "sistel" names below. Disable that
 # implementation before installing this suite version so two reconcilers can
@@ -63,11 +81,108 @@ mysqldump -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASS" "$MYSQL_DB" radacct na
 pkill -f '[s]istel_radius_ppp_reconcile.php' 2>/dev/null || true
 rm -f "$LEGACY_CRON_FILE" "$LEGACY_SCRIPT_FILE"
 
-cat > "$SCRIPT_FILE" <<'PHP'
+if [ -f "$SCRIPT_DIR/mkauth_radius_offline_guard.php" ]; then
+  cp -a "$SCRIPT_DIR/mkauth_radius_offline_guard.php" "$BACKUP_DIR/"
+fi
+cat > "$SCRIPT_DIR/mkauth_radius_offline_guard.php.next" <<'GUARD_PHP'
+<?php
+function offline_guard_path($router) {
+    global $cfg;
+    return dirname($cfg['state_file']) . '/offline-' . md5($router) . '.json';
+}
+function offline_guard_reset($router, $apply) {
+    if ($apply) file_put_contents(offline_guard_path($router), '{}', LOCK_EX);
+}
+function offline_guard($db, $router, $active, $apply, $onlyLogin, &$stats) {
+    $present = array();
+    foreach ($active as $ppp) {
+        if (!isset($ppp['name'], $ppp['service']) || trim($ppp['name']) === '') {
+            offline_guard_reset($router, $apply);
+            log_line("OFFLINE_SKIP router=$router reason=malformed_snapshot");
+            return;
+        }
+        // Preserve any login present on the NAS, including other PPP services.
+        $present[strtolower(trim($ppp['name']))] = true;
+    }
+    if (!$present) {
+        offline_guard_reset($router, $apply);
+        log_line("OFFLINE_SKIP router=$router reason=empty_snapshot");
+        return;
+    }
+    $stmt = $db->prepare("SELECT * FROM radacct WHERE nasipaddress=? AND acctstoptime IS NULL AND framedprotocol='PPP' AND (nasporttype='Ethernet' OR nasportid='Clientes')");
+    $stmt->bind_param('s', $router);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = array(); $logins = array(); $absent = array();
+    while ($row = $result->fetch_assoc()) {
+        $login = strtolower(trim($row['username']));
+        $logins[$login] = true;
+        if (!isset($present[$login])) { $rows[] = $row; $absent[$login] = true; }
+    }
+    $stmt->close();
+    if (count($absent) > max(20, (int)ceil(count($logins) * 0.10))) {
+        offline_guard_reset($router, $apply);
+        log_line("OFFLINE_SKIP router=$router reason=mass_absence absent=" . count($absent));
+        return;
+    }
+    $path = offline_guard_path($router);
+    $previous = is_file($path) ? json_decode(file_get_contents($path), true) : array();
+    if (!is_array($previous)) $previous = array();
+    $next = array(); $now = time();
+    foreach ($rows as $row) {
+        $login = strtolower(trim($row['username']));
+        if ($onlyLogin !== null && $login !== $onlyLogin) continue;
+        $last = $row['acctupdatetime'] ?: $row['acctstarttime'];
+        $lastTime = strtotime($last);
+        if (!$lastTime || $lastTime > $now - 600) continue;
+        $key = (string)$row['radacctid'];
+        $signature = hash('sha256', json_encode(array($row['acctsessionid'], $row['acctstarttime'], $row['acctupdatetime'], $row['username'])));
+        $prior = isset($previous[$key]) ? $previous[$key] : null;
+        $validPrior = $prior && $prior['signature'] === $signature && $prior['seen'] >= $now - 600;
+        $first = $validPrior ? $prior['first'] : $now;
+        $next[$key] = array('signature' => $signature, 'first' => $first, 'seen' => $now);
+        if (!$validPrior || $now - $first < 120) {
+            log_line("OFFLINE_PENDING login=$login router=$router radacctid=$key");
+            continue;
+        }
+        if (!$apply) { log_line("DRY_CLOSE login=$login router=$router radacctid=$key"); continue; }
+        // Back up the exact row before its conditional update; never delete history.
+        $backup = dirname($path) . '/offline-rollback-' . date('Ymd') . '.jsonl';
+        $record = array('captured_at' => date('c'), 'row' => $row);
+        $encoded = json_encode($record);
+        if ($encoded === false || file_put_contents($backup, $encoded . "\n", FILE_APPEND | LOCK_EX) === false) {
+            throw new RuntimeException('Offline rollback backup failed');
+        }
+        chmod($backup, 0600);
+        $update = $db->prepare("UPDATE radacct SET acctstoptime=COALESCE(acctupdatetime,acctstarttime), acctterminatecause='Lost-Service' WHERE radacctid=? AND nasipaddress=? AND acctstoptime IS NULL AND acctsessionid=? AND acctupdatetime <=> ? AND acctstarttime <=> ?");
+        $update->bind_param('issss', $row['radacctid'], $router, $row['acctsessionid'], $row['acctupdatetime'], $row['acctstarttime']);
+        $update->execute();
+        if ($update->affected_rows === 1) {
+            if (!isset($stats['closed'])) $stats['closed'] = 0;
+            $stats['closed']++;
+            unset($next[$key]);
+            log_line("CLOSE_ABSENT login=$login router=$router radacctid=$key last_update=$last");
+        }
+        $update->close();
+    }
+    if ($apply) {
+        $temp = $path . '.tmp';
+        if (file_put_contents($temp, json_encode($next), LOCK_EX) === false || !rename($temp, $path)) {
+            throw new RuntimeException('Offline state save failed');
+        }
+        chmod($path, 0600);
+    }
+}
+GUARD_PHP
+php -l "$SCRIPT_DIR/mkauth_radius_offline_guard.php.next"
+chmod 600 "$SCRIPT_DIR/mkauth_radius_offline_guard.php.next"
+mv "$SCRIPT_DIR/mkauth_radius_offline_guard.php.next" "$SCRIPT_DIR/mkauth_radius_offline_guard.php"
+cat > "$SCRIPT_FILE.next" <<'PHP'
 #!/usr/bin/env php
 <?php
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
 ini_set('display_errors', '0');
+umask(0077);
 
 $cfg = array(
     'mysql_host' => getenv('MYSQL_HOST') ?: '127.0.0.1',
@@ -84,6 +199,9 @@ $cfg = array(
 );
 
 $apply = in_array('--apply', $argv, true);
+$runLock = fopen('/var/lib/mkauth_radius_ppp_reconcile/run.lock', 'c');
+if (!$runLock || !flock($runLock, LOCK_EX | LOCK_NB)) exit(0);
+require_once __DIR__ . '/mkauth_radius_offline_guard.php';
 $onlyLogin = null;
 $onlyRouter = null;
 foreach ($argv as $arg) {
@@ -162,6 +280,10 @@ class RouterosMiniApi {
     public function comm($command) {
         $this->writeSentence(array($command));
         $reply = $this->readReply();
+        if (!$this->hasDone($reply)) return false;
+        foreach ($reply as $sentence) {
+            if (isset($sentence[0]) && ($sentence[0] === '!trap' || $sentence[0] === '!fatal')) return false;
+        }
         $rows = array();
         foreach ($reply as $sentence) {
             if (!isset($sentence[0]) || $sentence[0] !== '!re') continue;
@@ -253,10 +375,16 @@ class RouterosMiniApi {
         if ($c === false || $c === '') return false;
         $c = ord($c);
         if (($c & 0x80) === 0x00) return $c;
-        if (($c & 0xC0) === 0x80) return (($c & ~0xC0) << 8) + ord(fread($this->socket, 1));
-        if (($c & 0xE0) === 0xC0) return (($c & ~0xE0) << 16) + (ord(fread($this->socket, 1)) << 8) + ord(fread($this->socket, 1));
-        if (($c & 0xF0) === 0xE0) return (($c & ~0xF0) << 24) + (ord(fread($this->socket, 1)) << 16) + (ord(fread($this->socket, 1)) << 8) + ord(fread($this->socket, 1));
-        return false;
+        if (($c & 0xC0) === 0x80) { $extra = 1; $value = $c & 0x3F; }
+        elseif (($c & 0xE0) === 0xC0) { $extra = 2; $value = $c & 0x1F; }
+        elseif (($c & 0xF0) === 0xE0) { $extra = 3; $value = $c & 0x0F; }
+        else return false;
+        for ($i = 0; $i < $extra; $i++) {
+            $byte = fread($this->socket, 1);
+            if ($byte === false || $byte === '') return false;
+            $value = ($value << 8) | ord($byte);
+        }
+        return $value;
     }
 }
 
@@ -309,16 +437,21 @@ foreach ($nasRows as $nas) {
         $stats['routers_fail']++;
         $failedRouters[] = array('router' => $router, 'name' => $routerName, 'reason' => $reason);
         log_line("ROUTER_FAIL router=$router name=\"$routerName\" reason=\"$reason\"");
+        offline_guard_reset($router, $apply);
         continue;
     }
 
-    $stats['routers_ok']++;
     $active = $api->comm('/ppp/active/print');
     $api->disconnect();
     if (!is_array($active)) {
-        log_line("ROUTER_EMPTY router=$router name=\"$routerName\"");
+        $stats['routers_fail']++;
+        $failedRouters[] = array('router' => $router, 'name' => $routerName, 'reason' => 'Consulta PPP incompleta ou recusada');
+        offline_guard_reset($router, $apply);
+        log_line("ROUTER_FAIL router=$router reason=invalid_ppp_reply");
         continue;
     }
+    $stats['routers_ok']++;
+    offline_guard($db, $router, $active, $apply, $onlyLogin, $stats);
 
     foreach ($active as $ppp) {
         if (!isset($ppp['name'])) continue;
@@ -349,14 +482,14 @@ foreach ($nasRows as $nas) {
 
         $stopped = null;
         if ($session !== '') {
-            $stmt = $db->prepare("SELECT radacctid, acctsessionid, acctstarttime, acctstoptime FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? AND LOWER(acctsessionid) = ? ORDER BY radacctid DESC LIMIT 1");
+            $stmt = $db->prepare("SELECT * FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? AND LOWER(acctsessionid) = ? ORDER BY radacctid DESC LIMIT 1");
             $stmt->bind_param('sss', $login, $router, $session);
             $stmt->execute();
             $stopped = $stmt->get_result()->fetch_assoc();
             $stmt->close();
         }
         if (!$stopped) {
-            $stmt = $db->prepare("SELECT radacctid, acctsessionid, acctstarttime, acctstoptime FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? ORDER BY radacctid DESC LIMIT 1");
+            $stmt = $db->prepare("SELECT * FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? ORDER BY radacctid DESC LIMIT 1");
             $stmt->bind_param('ss', $login, $router);
             $stmt->execute();
             $stopped = $stmt->get_result()->fetch_assoc();
@@ -366,12 +499,19 @@ foreach ($nasRows as $nas) {
         if ($stopped) {
             log_line(($apply ? 'REOPEN' : 'DRY_REOPEN') . " login=$login router=$router radacctid={$stopped['radacctid']} session=$session ip=$address caller=\"$caller\" uptime=$uptime stopped=\"{$stopped['acctstoptime']}\"");
             if ($apply) {
-                $stmt = $db->prepare("UPDATE radacct SET acctstoptime = NULL, acctterminatecause = NULL, acctupdatetime = NOW(), acctsessiontime = ?, framedipaddress = ?, callingstationid = ?, acctsessionid = IF(? <> '', ?, acctsessionid) WHERE radacctid = ?");
-                $stmt->bind_param('issssi', $sessionSeconds, $address, $caller, $session, $session, $stopped['radacctid']);
+                $rollbackFile = '/var/lib/mkauth_radius_ppp_reconcile/reopen-rollback-' . date('Ymd') . '.jsonl';
+                // Serialize then base64 to preserve latin1 database bytes without lossy JSON conversion.
+                $rollback = json_encode(array('saved_at' => date('c'), 'operation' => 'reopen', 'row_php_base64' => base64_encode(serialize($stopped))));
+                if ($rollback === false || file_put_contents($rollbackFile, $rollback . "\n", FILE_APPEND | LOCK_EX) === false) {
+                    throw new RuntimeException('Reopen rollback backup failed');
+                }
+                chmod($rollbackFile, 0600);
+                $stmt = $db->prepare("UPDATE radacct SET acctstoptime = NULL, acctterminatecause = NULL, acctupdatetime = NOW(), acctsessiontime = ?, framedipaddress = ?, callingstationid = ?, acctsessionid = IF(? <> '', ?, acctsessionid) WHERE radacctid = ? AND acctstoptime IS NOT NULL AND acctstoptime <=> ? AND acctupdatetime <=> ?");
+                $stmt->bind_param('issssiss', $sessionSeconds, $address, $caller, $session, $session, $stopped['radacctid'], $stopped['acctstoptime'], $stopped['acctupdatetime']);
                 if (!$stmt->execute()) {
                     $stats['errors']++;
                     log_line("ERROR_REOPEN login=$login radacctid={$stopped['radacctid']} error={$stmt->error}");
-                } else {
+                } elseif ($stmt->affected_rows === 1) {
                     $stats['reopened']++;
                 }
                 $stmt->close();
@@ -410,10 +550,12 @@ if ($failedRouters) {
 }
 log_line("SUMMARY apply=" . ($apply ? 'yes' : 'no') . " only_login=" . ($onlyLogin ?: 'all') . " only_router=" . ($onlyRouter ?: 'all') . " " . json_encode($stats));
 $db->close();
+exit(($stats['errors'] > 0 || $stats['routers_fail'] > 0) ? 2 : 0);
 PHP
 
-chmod 755 "$SCRIPT_FILE"
-php -l "$SCRIPT_FILE"
+php -l "$SCRIPT_FILE.next"
+chmod 700 "$SCRIPT_FILE.next"
+mv "$SCRIPT_FILE.next" "$SCRIPT_FILE"
 
 cat > "$DASHBOARD_STATUS" <<'PHP'
 <?php
@@ -501,15 +643,14 @@ done
 fi
 
 echo "Backup criado em: $BACKUP_DIR"
-echo "Primeira conciliacao iniciada em segundo plano..."
-/usr/bin/php "$SCRIPT_FILE" --apply >/dev/null 2>&1 &
+echo "O reconciliador possui trava de execucao para evitar concorrencia."
 
 cat > "$CRON_FILE" <<EOF
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 $CRON_INTERVAL root MYSQL_HOST="$MYSQL_HOST" MYSQL_USER="$MYSQL_USER" MYSQL_PASS="$MYSQL_PASS" MYSQL_DB="$MYSQL_DB" API_USER="$API_USER" API_PORT="$API_PORT" FALLBACK_API_PASS="$FALLBACK_API_PASS" PPP_SERVICES="$PPP_SERVICES" /usr/bin/php "$SCRIPT_FILE" --apply >/dev/null 2>&1
 EOF
-chmod 644 "$CRON_FILE"
+chmod 600 "$CRON_FILE"
 service cron reload 2>/dev/null || service crond reload 2>/dev/null || /etc/init.d/cron reload 2>/dev/null || true
 
 echo "Instalado: $SCRIPT_FILE"
@@ -517,8 +658,24 @@ echo "Cron ativo: $CRON_FILE"
 echo "Log: $LOG_FILE"
 echo "Status: $STATE_FILE"
 echo "Dashboard status: $DASHBOARD_STATUS"
+if [ -f "$SCRIPT_DIR/mkauth-radacct-maintenance.sh" ]; then
+  cp -a "$SCRIPT_DIR/mkauth-radacct-maintenance.sh" "$BACKUP_DIR/"
+fi
+cp "$INSTALLER_DIR/radacct-maintenance.sh" "$SCRIPT_DIR/mkauth-radacct-maintenance.sh"
+chmod 700 "$SCRIPT_DIR/mkauth-radacct-maintenance.sh"
+echo "Manutenção opcional instalada, não executada: $SCRIPT_DIR/mkauth-radacct-maintenance.sh --check"
 echo "Rodando aplicacao imediata..."
-php "$SCRIPT_FILE" --apply | tail -n 25
+if php "$SCRIPT_FILE" --apply > "$BACKUP_DIR/initial-run.log" 2>&1; then
+  tail -n 25 "$BACKUP_DIR/initial-run.log"
+else
+  tail -n 25 "$BACKUP_DIR/initial-run.log" >&2
+  echo 'Falha na execução inicial; instalação não marcada como concluída. Consulte o backup e o status.' >&2
+  exit 1
+fi
 echo "Para testar manual: php $SCRIPT_FILE"
 echo "Para aplicar manual: php $SCRIPT_FILE --apply"
 echo "Para um login: php $SCRIPT_FILE --login=LOGIN --apply"
+sha256sum "$SCRIPT_FILE" "$SCRIPT_DIR/mkauth_radius_offline_guard.php" "$SCRIPT_DIR/mkauth-radacct-maintenance.sh" "$CRON_FILE" "$DASHBOARD_STATUS" > "$manifest"
+printf '%s\n' "$installer_id" > "$manifest.installer"
+printf '%s\n' "$configuration_id" > "$manifest.configuration"
+chmod 600 "$manifest" "$manifest.installer" "$manifest.configuration"

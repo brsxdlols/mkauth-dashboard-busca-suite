@@ -204,7 +204,7 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
   mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
   if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ]; then
     # Preserve the standalone Radius Logs addon and its existing settings/API.
-    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${TARGET_ADDONS_DIR}/radius/"
+    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/client_links.php" "${SCRIPT_DIR}/addons/radius/client_status.php" "${SCRIPT_DIR}/addons/radius/client_status.js" "${TARGET_ADDONS_DIR}/radius/"
     if [ ! -f "${TARGET_ADDONS_DIR}/radius/radius_lib.php" ]; then
       cp -a "${SCRIPT_DIR}/addons/radius/radius_lib.php" "${TARGET_ADDONS_DIR}/radius/"
     fi
@@ -248,6 +248,11 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/online_rule.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/live.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/client_links.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/client_status.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/manual_block_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_action_access.php"

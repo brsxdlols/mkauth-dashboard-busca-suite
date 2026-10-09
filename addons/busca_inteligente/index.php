@@ -519,6 +519,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     );
 
     $busca = trim($busca);
+    $disabledScope = strtolower($busca) === 'desativado';
+    $disabledSearchTerm = isset($_GET['disabled_q']) && is_string($_GET['disabled_q']) ? trim($_GET['disabled_q']) : '';
     if ($isMultiBusiness && preg_match('/^(on|off|sem con[^+]*|ramal)(\+.*)?$/i', $busca)) {
         $busca = '';
     }
@@ -624,8 +626,14 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <div class="row g-1">
             <div class="col-8 col-sm-6">
                 <div class="form-floating">
+                    <?php if ($disabledScope) { ?>
+                    <input type="hidden" name="busca" value="desativado" />
+                    <input type="search" class="form-control" id="busca" name="disabled_q" placeholder="Nome ou login do cliente desativado" value="<?= htmlspecialchars($disabledSearchTerm, ENT_QUOTES, 'UTF-8'); ?>" />
+                    <label for="busca">Buscar clientes desativados — nome ou login</label>
+                    <?php } else { ?>
                     <input type="search" class="form-control" id="busca" name="busca" placeholder="<?= $isMultiBusiness ? 'Busque por nome, documento, endereço, plano ou situação cadastral' : 'Busque por nome, login, endereço, plano, CPF, bloqueado, offline ou observação'; ?>" value="<?= htmlspecialchars($busca, ENT_QUOTES, 'UTF-8'); ?>" list="sugestoes" />
                     <label for="busca"> Digite o que procura:</label>
+                    <?php } ?>
                 </div>
             </div>
             <div class="col-4 col-sm-2">
@@ -748,6 +756,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         AND c.last_update BETWEEN DATE_SUB(cua.captured_at, INTERVAL 5 SECOND) AND DATE_ADD(cua.captured_at, INTERVAL 5 MINUTE)
     ";
 
+    require_once __DIR__.'/../shared/online_rule.php';
+    $onlineClientSql = mka_online_family_sql();
     $query_default = "
             $query_base     
             FROM sis_cliente c
@@ -779,7 +789,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $query_ok = "$query_default
             c.cli_ativado LIKE 's' AND 
             c.ramal LIKE '$partes[1]' AND 
-            EXISTS (SELECT 1 FROM radacct WHERE username = c.login AND acctstoptime IS NULL)
+            $onlineClientSql
             $group ORDER BY $organizar";
 
         $result = mysqli_query($link, "$query_ok");
@@ -789,8 +799,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         //include('clientes_offline.php');
         // echo "estou aqui! no offf";
         $query_ok = "$query_default
-            NOT EXISTS
-            (SELECT LOWER(TRIM(username)) FROM radacct WHERE username = c.login AND acctstoptime IS NULL LIMIT 1)
+            NOT $onlineClientSql
             AND c.cli_ativado LIKE 's' AND c.ramal LIKE '$partes[1]' 
             $group ORDER BY $organizar";
 
@@ -977,10 +986,15 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $result = mysqli_query($link, "$query_ok");
         $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
         include('exibir_resultados.php');
-    } else if (strtolower($partes[0] == "desativado")) {
+    } else if (strtolower($partes[0]) === "desativado") {
+        $disabledSearchCondition = '';
+        if ($disabledSearchTerm !== '') {
+            $disabledLike = mysqli_real_escape_string($link, '%' . str_replace(array('\\', '%', '_'), array('\\\\', '\\%', '\\_'), $disabledSearchTerm) . '%');
+            $disabledSearchCondition = " AND (c.nome LIKE '$disabledLike' OR c.login LIKE '$disabledLike')";
+        }
 
         $query_ok = "$query_default
-            c.cli_ativado LIKE 'n'
+            c.cli_ativado LIKE 'n' $disabledSearchCondition
             $group ORDER BY $organizar";
 
         $result = mysqli_query($link, "$query_ok");
@@ -1038,7 +1052,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     } else if (strtolower($partes[0]) == 'on' || strtolower($partes[0]) == 'online') {
         $query_ok = "$query_default
             c.cli_ativado LIKE 's' AND 
-            EXISTS (SELECT 1 FROM radacct WHERE username = c.login AND acctstoptime IS NULL)
+            $onlineClientSql
             $group ORDER BY $organizar";
 
         $result = mysqli_query($link, "$query_ok");
@@ -1047,8 +1061,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     } else if (strtolower($partes[0]) == 'off' || strtolower($partes[0]) == 'offline') {
         //include('clientes_offline.php');
         $query_ok = "$query_default
-            NOT EXISTS
-            (SELECT LOWER(TRIM(username)) FROM radacct WHERE username = c.login AND acctstoptime IS NULL LIMIT 1)
+            NOT $onlineClientSql
             AND c.cli_ativado LIKE 's' $cond_offline  
             $group ORDER BY $organizar";
 

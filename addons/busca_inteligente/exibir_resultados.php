@@ -1035,7 +1035,8 @@ $busca2 = str_replace("+", "%2B", $busca2);
 
 //$url_REF = "?busca=$busca2&organizar=name&num_registros=$registros_por_pagina&pagina=$pc";
 
-$tot_clientes = $tot_resultados + $count_adicional;
+// The disabled card counts customer records, not their additional logins.
+$tot_clientes = !empty($disabledScope) ? $tot_resultados : $tot_resultados + $count_adicional;
 if ($acesso_permitido) echo '<b class="client-results-count">Resultados Encontrados = ' . (int)$tot_clientes . '</b>';
 ?>
 
@@ -1062,7 +1063,7 @@ if ($acesso_permitido) echo '<b class="client-results-count">Resultados Encontra
 <?php
 if (!empty($isMultiBusiness)) {
     $username_on = $ip_conn = $nas_ip = $nas_nome = array();
-} elseif ($check_online == 'mkauth') {
+} elseif (true) {
     // INFO DE CLIENTES ONLINE COM MKAUTH
     $radius_ipv6_fields = array();
     foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk') as $ipv6_field) {
@@ -1070,10 +1071,13 @@ if (!empty($isMultiBusiness)) {
         if ($ipv6_column_query && mysqli_num_rows($ipv6_column_query) > 0) $radius_ipv6_fields[] = $ipv6_field;
     }
     $radius_ipv6_select = empty($radius_ipv6_fields) ? '' : ', ' . implode(', ', $radius_ipv6_fields);
-    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress{$radius_ipv6_select} FROM radacct WHERE acctstoptime IS NULL");
+    require_once __DIR__.'/../shared/online_rule.php';
+    $username_on = array();
+    $allowedOnlineSql = mka_online_sql($grupos);
+    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress{$radius_ipv6_select} FROM radacct WHERE acctstoptime IS NULL AND LOWER(TRIM(username)) IN ($allowedOnlineSql) ORDER BY radacctid ASC");
 
     while ($row2 = mysqli_fetch_assoc($query_cliente_on)) {
-        $username_on[trim(strtolower($row2['username']))] = strtolower($row2['username']);
+        $username_on[trim(strtolower($row2['username']))] = trim(strtolower($row2['username']));
 
         $nas_ip[trim(strtolower($row2['username']))] = $row2['nasipaddress'];
         $ip_conn[trim(strtolower($row2['username']))] = $row2['framedipaddress'];
@@ -1425,7 +1429,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     $data_bloq = date('d/m/Y - H:i:s', strtotime($data_bloq));
                     $obs_data = date('d/m/Y', strtotime($obs_data));
 
-                    if (strcasecmp($username_on[strtolower($login_cliente)], strtolower($login_cliente)) == 0) {
+                    if (isset($username_on[trim(strtolower($login_cliente))])) {
 
                         if ($bloqueado == "sim") {
                     ?>
@@ -1702,13 +1706,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 
             }*/
 
-                                                                    $add_online = $username_on[strtolower($username_cli_adicional)];
+                                                                    $add_online = ($username_on[trim(strtolower($username_cli_adicional))] ?? '');
 
                                                                     $conn_add = " <a class='client-action-btn' href='det_conn.php?login=$username_cli_adicional' title='CONEXOES CLIENTE: $nome_cliente'>
                                                                         <i class='fa-solid fa-router'></i>
                                                                          </a> ";
 
-                                                                    if (strcasecmp(strtolower($add_online), strtolower($username_cli_adicional)) == 0) {
+                                                                    if (isset($username_on[trim(strtolower($username_cli_adicional))])) {
                                                             ?>
                                                                     <a class='client-add-status is-online' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
                                                                         <i class="fa-solid fa-circle-check"></i><?= $username_cli_adicional; ?></a>
@@ -1965,6 +1969,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                         //echo "</table>";
 
                                                         $url = "?busca=$busca2&organizar=$organizar&num_registros=$registros_por_pagina";
+                                                        if (!empty($disabledScope)) $url .= '&disabled_q=' . rawurlencode($disabledSearchTerm);
 
 
 

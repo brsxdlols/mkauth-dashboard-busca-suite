@@ -1688,7 +1688,10 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         // Card Clientes
         // echo $grupos;
-        $query_clientes_online = mysqli_query($conn, "SELECT r.username FROM radacct r FORCE INDEX (acctstoptime) WHERE r.acctstoptime IS NULL");
+        require_once __DIR__.'/../shared/online_rule.php';
+        $username_on = array();
+        $query_clientes_online = mysqli_query($conn, mka_online_sql($grupos));
+        if (!$query_clientes_online) throw new RuntimeException('Não foi possível consultar clientes online.');
         while ($row3 = mysqli_fetch_array($query_clientes_online)) {
             $username_on[trim(strtolower($row3['username']))] = trim(strtolower($row3['username']));
         }
@@ -1735,6 +1738,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             $c_add++;
         }
 
+        $cli_on = count($username_on); // distinct registered logins, never session rows
         $tot_clientes = $cli_ + $c_add;
 
         $tot_clientes_livres = $cli_ - $cli_bloq;
@@ -1833,6 +1837,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             <div class='col-12 col-md-12 col-lg-2 mb-2 dashboard-attendance-column'>
                 <div class='dashboard-surface'>
                     <style>.dashboard-attendance-column .dashboard-stat-foot{display:none!important}.dashboard-stat-head{white-space:normal!important;overflow-wrap:break-word!important;word-break:normal!important;padding-right:28px;min-height:26px;height:auto!important}.dashboard-stat-card{min-width:0}.dashboard-stat-icon{right:7px!important}.dashboard-session-toast-toolbar{display:none!important}.dashboard-toast-inline-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}.dashboard-session-toast-list{overflow:hidden!important;max-height:70vh}.dashboard-session-toast-title,.dashboard-session-toast-meta{overflow-wrap:anywhere}.dashboard-search-form{align-items:stretch!important}.dashboard-search-form input,.dashboard-search-form button{height:48px!important}</style>
+                    <?php require __DIR__.'/../shared/attendance_map.php'; ?>
                     <h2 class="dashboard-section-title">Atendimentos</h2>
                     <div class="dashboard-section-body">
                         <div class="dashboard-attendance-grid">
@@ -1903,19 +1908,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                 <?php
                                 $dashboardRamalStats = array();
-                                $queryRamalStats = mysqli_query($conn, "
-                                    SELECT c.ramal,
-                                           COUNT(*) AS total_clientes,
-                                           COUNT(active.username) AS total_online
-                                    FROM sis_cliente c
-                                    LEFT JOIN (
-                                        SELECT DISTINCT username
-                                        FROM radacct FORCE INDEX (acctstoptime)
-                                        WHERE acctstoptime IS NULL
-                                    ) active ON active.username = c.login
-                                    WHERE c.cli_ativado LIKE 's'
-                                    GROUP BY c.ramal
-                                ");
+                                $queryRamalStats = mysqli_query($conn, mka_online_ramal_sql($grupos));
                                 if ($queryRamalStats) {
                                     while ($ramalStat = mysqli_fetch_assoc($queryRamalStats)) {
                                         $dashboardRamalStats[(string) $ramalStat['ramal']] = array(
