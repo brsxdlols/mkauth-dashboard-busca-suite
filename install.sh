@@ -202,7 +202,7 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
   mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
-  if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ]; then
+  if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ] && ! grep -Fq "require __DIR__.'/live.php';" "${TARGET_ADDONS_DIR}/radius/index.php"; then
     # Preserve the standalone Radius Logs addon and its existing settings/API.
     cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/client_links.php" "${SCRIPT_DIR}/addons/radius/client_status.php" "${SCRIPT_DIR}/addons/radius/client_status.js" "${TARGET_ADDONS_DIR}/radius/"
     if [ ! -f "${TARGET_ADDONS_DIR}/radius/radius_lib.php" ]; then
@@ -211,6 +211,21 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
   else
     cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
   fi
+done
+# Grant only the web user's read access to the RADIUS log, including rotation.
+for web_user in www-data apache; do
+  id "$web_user" >/dev/null 2>&1 || continue
+  for radius_log in /var/log/freeradius/radius.log /var/log/radius/radius.log; do
+    [ -f "$radius_log" ] || continue
+    if command -v setfacl >/dev/null 2>&1; then
+      setfacl -m "u:$web_user:--x" "$(dirname "$radius_log")"
+      setfacl -m "u:$web_user:r--" "$radius_log"
+      setfacl -m "d:u:$web_user:r-X" "$(dirname "$radius_log")"
+    else
+      echo "[aviso] Confira a leitura de $radius_log pelo usuario $web_user; setfacl indisponivel."
+    fi
+  done
+  break
 done
 # Keep uploaded contracts outside addon directories replaced by upgrades.
 mkdir -p /opt/mk-auth/contract-uploads
@@ -251,6 +266,8 @@ lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/online_rule.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/live.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/index.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/logs_data.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/client_links.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/client_status.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
