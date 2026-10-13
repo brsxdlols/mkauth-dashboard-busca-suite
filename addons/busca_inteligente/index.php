@@ -182,13 +182,15 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             <div class="manual-block-body">
                 <p class="manual-block-client" id="manualBlockClient"></p>
                 <div class="manual-block-history" id="manualBlockHistory" hidden></div>
+                <div class="manual-block-history" id="manualBlockForecast" hidden aria-live="polite"></div>
                 <label class="manual-block-label" for="manualBlockReason" id="manualBlockReasonLabel">Motivo do bloqueio</label>
                 <textarea class="manual-block-reason" id="manualBlockReason" maxlength="2000" required placeholder="Descreva o motivo desta operação"></textarea>
-                <p class="manual-block-note" id="manualBlockNote">O acesso será interrompido pelo bloqueio comum do MK-AUTH. Se o financeiro estiver em dia, o cliente poderá ser desbloqueado na próxima rotina financeira. Para manter o bloqueio por inadimplência, deve existir um boleto vencido há mais dias que o prazo de corte configurado. Para impedir o desbloqueio automático, revise essa opção em Opções > Recursos de sistema; essa configuração afeta a rotina do sistema.</p>
+                <p class="manual-block-note" id="manualBlockNote">O acesso ser&#225; interrompido pelo bloqueio comum do MK-AUTH. Se o financeiro estiver em dia, o cliente poder&#225; ser desbloqueado na pr&#243;xima rotina financeira. Para manter o bloqueio por inadimpl&#234;ncia, deve existir um boleto vencido h&#225; mais dias que o prazo de corte configurado. Para impedir o desbloqueio autom&#225;tico, revise essa op&#231;&#227;o em Op&#231;&#245;es &gt; Recursos de sistema; essa configura&#231;&#227;o afeta a rotina do sistema.</p>
             </div>
             <div class="manual-block-actions"><button type="button" class="manual-block-cancel">Cancelar</button><button type="submit" class="is-submit" id="manualBlockSubmit">Confirmar bloqueio</button></div>
         </form>
     </div>
+    <script src="../shared/block_forecast.js?v=20261013-1"></script>
     <script>
     (function () {
         var modal=document.getElementById('manualBlockModal'), form=document.getElementById('manualBlockForm');
@@ -201,8 +203,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             var isUnlock = action === 'desbloqueio';
             current={uuid:uuid,name:name,action:action};submit.disabled=false;title.textContent=isUnlock?'Desbloquear cliente':'Bloquear cliente';client.textContent=name;
             label.textContent=isUnlock?'Motivo do desbloqueio':'Motivo do bloqueio';submit.textContent=isUnlock?'Confirmar desbloqueio':'Confirmar bloqueio';submit.classList.toggle('is-unlock',isUnlock);
-            note.textContent=isUnlock?'Se houver título vencido há mais dias que o prazo de corte, o cliente poderá ser bloqueado novamente pela rotina financeira. Para conceder um prazo de liberação, utilize o desbloqueio de confiança. Este desbloqueio comum não concede prazo de confiança. O motivo ficará registrado no histórico.':'O acesso será interrompido pelo bloqueio comum do MK-AUTH. Se o financeiro estiver em dia, o cliente poderá ser desbloqueado na próxima rotina financeira. Para manter o bloqueio por inadimplência, deve existir um boleto vencido há mais dias que o prazo de corte configurado. Para impedir o desbloqueio automático, revise essa opção em Opções > Recursos de sistema; essa configuração afeta a rotina do sistema.';
+            note.textContent=isUnlock?"Se houver t\u00edtulo vencido h\u00e1 mais dias que o prazo de corte, o cliente poder\u00e1 ser bloqueado novamente pela rotina financeira. Para conceder um prazo de libera\u00e7\u00e3o, utilize o desbloqueio de confian\u00e7a. Este desbloqueio comum n\u00e3o concede prazo de confian\u00e7a. O motivo ficar\u00e1 registrado no hist\u00f3rico.":"O acesso ser\u00e1 interrompido pelo bloqueio comum do MK-AUTH. Se o financeiro estiver em dia, o cliente poder\u00e1 ser desbloqueado na pr\u00f3xima rotina financeira. Para manter o bloqueio por inadimpl\u00eancia, deve existir um boleto vencido h\u00e1 mais dias que o prazo de corte configurado. Para impedir o desbloqueio autom\u00e1tico, revise essa op\u00e7\u00e3o em Op\u00e7\u00f5es > Recursos de sistema; essa configura\u00e7\u00e3o afeta a rotina do sistema.";
             history.hidden=true;history.innerHTML='';modal.hidden=false;document.body.style.overflow='hidden';reason.focus();
+            window.mkaLoadBlockForecast(uuid,document.getElementById('manualBlockForecast'));
             if(isUnlock){fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(uuid),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(data){if(!current||current.uuid!==uuid)return;if(data.ok&&data.block){history.innerHTML='<strong>Registro do bloqueio</strong><br><b>Motivo:</b> '+escapeHtml(data.block.motivo)+'<br><b>Data:</b> '+escapeHtml(data.block.criado_em)+'<br><b>Usuário:</b> '+escapeHtml(data.block.usuario);history.hidden=false;}else{history.innerHTML='<strong>Registro anterior não encontrado.</strong>';history.hidden=false;}}).catch(function(){history.innerHTML='<strong>Não foi possível consultar o registro anterior.</strong>';history.hidden=false;});}
             return false;
         };

@@ -15,4 +15,8 @@ Para novas instalacoes e atualizacoes desta versao, selecionar explicitamente RE
 
 Teste do fluxo do modal: node scripts/test-native-block-modal.js.
 
+Atualizacao de 13/10: corrigida a leitura UTF-8 dos textos na implantacao do Visual Net. O modal consulta boletos com status aberto/vencido, sem titulos excluidos, e calcula a previsao a partir do vencimento mais antigo e dos dias de corte do cliente. Mostra a soma e o primeiro dia em que o atraso supera esse prazo. Trata-se de uma estimativa: a rotina nativa possui regras e agendamento proprios. Mostra tambem observacao, isencao, cliente desativado e configuracoes de bloqueio/desbloqueio automaticos. A consulta exige autenticacao e respeita os grupos permitidos.
+
+Backup da correcao no Visual Net: /opt/mk-auth/backups/codex-block-forecast-20261013_091203. Testes: php scripts/test-block-forecast.php e node scripts/test-block-forecast-js.js. Nenhum titulo ou estado de cliente foi alterado por esta consulta.
+
 Validacao: cinco arquivos PHP passaram no lint e os dois scripts de instalacao passaram em bash -n, via entrada padrao sem gravar ou executar a instalacao no servidor. Os testes do modal passaram para bloqueio, desbloqueio e falha da acao nativa. A aparencia ainda precisa de revisao visual: o navegador de captura local nao abriu neste ambiente.

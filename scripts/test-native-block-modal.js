@@ -8,7 +8,7 @@ async function run(action, failure=false) {
   const nodes = {};
   function node(id) { return nodes[id] ||= {value:'', hidden:true, style:{}, classList:{toggle(){}}, addEventListener(event,fn){this[event]=fn;}, focus(){}, querySelector(selector){return node(selector);}}; }
   const requests=[]; let reloads=0;
-  const context = {URLSearchParams, document:{getElementById:node, body:{style:{}}, createElement(){return {set textContent(v){this.innerHTML=v;}};}, addEventListener(){}}, window:{location:{reload(){reloads++;}}}, fetch:async (url,options={})=>{
+  const context = {URLSearchParams, document:{getElementById:node, body:{style:{}}, createElement(){return {set textContent(v){this.innerHTML=v;}};}, addEventListener(){}}, window:{mkaLoadBlockForecast(){},location:{reload(){reloads++;}}}, fetch:async (url,options={})=>{
     requests.push([url,options]);
     if(url.includes('executar_bloqueio')) return {ok:!failure,text:async()=>''};
     return {ok:true,json:async()=>({ok:true,csrf:'fixture'})};
