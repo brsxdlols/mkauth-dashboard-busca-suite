@@ -21,6 +21,9 @@ try {
  sql($db,"INSERT INTO radacct VALUES(' carol',NULL)");
  $row=$db->query("SELECT ($old) old_on,($new) new_on FROM sis_cliente c WHERE id=3")->fetch_assoc();
  check($row['old_on']==1 && $row['new_on']==0,'leading-space incompatibility detected');
+ $set=mka_perf_set_sql();
+ $r=$db->query("SELECT id,($new) raw_on,($set) set_on FROM sis_cliente c ORDER BY id");
+ while($row=$r->fetch_assoc())check($row['raw_on']===$row['set_on'],'materialized set preserves raw spaces and case '.$row['id']);
  $version=mka_perf_version();
  $st=$db->prepare("INSERT INTO sis_opcao VALUES('suite_search_optimization',?)");$flag=json_encode(array('mode'=>'pending','until'=>time()+60,'version'=>$version,'schema'=>mka_perf_schema($db)));$st->bind_param('s',$flag);$st->execute();
  check(mka_perf_mode($db)==='legacy','future dirty login returns to normalized rule');
@@ -30,7 +33,7 @@ try {
  $flag=json_encode(array('mode'=>'pending','until'=>time()-1,'version'=>$version,'schema'=>mka_perf_schema($db)));$st=$db->prepare("UPDATE sis_opcao SET valor=?");$st->bind_param('s',$flag);$st->execute();
  check(mka_perf_mode($db)==='legacy','abandoned validation expires to legacy');
  $flag=json_encode(array('mode'=>'direct','version'=>$version,'schema'=>mka_perf_schema($db)));$st->execute();
- $_GET['busca']='on';check(mka_search_online_family_sql($db)===mka_perf_direct_sql(),'approved direct mode scoped to online');
+ $_GET['busca']='on';check(mka_search_online_family_sql($db)===mka_perf_set_sql(),'approved direct mode scoped to online');
  $_GET['busca']='atrasado';check(mka_search_online_family_sql($db)===mka_online_family_sql(),'unrelated filters remain unchanged');
  $flag=json_encode(array('mode'=>'direct','version'=>'different'));$st->execute();
  check(mka_perf_mode($db)==='legacy','changed implementation requires revalidation');

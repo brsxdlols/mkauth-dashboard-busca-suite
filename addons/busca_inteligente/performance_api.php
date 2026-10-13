@@ -26,12 +26,14 @@ function perf_compatibility($db){
     $checks['bounded_active_sessions']=$active<=50000;
     if (!$checks['matching_ci_collations'] || !$checks['indexed_open_sessions'] || !$checks['bounded_active_sessions']) return array('compatible'=>false,'checks'=>$checks,'active_sessions'=>$active);
     $checks['clean_login_spaces']=perf_scalar($db,"SELECT (SELECT COUNT(*) FROM radacct WHERE acctstoptime IS NULL AND BINARY username<>BINARY TRIM(username))+(SELECT COUNT(*) FROM sis_cliente WHERE cli_ativado='s' AND BINARY login<>BINARY TRIM(login))+(SELECT COUNT(*) FROM sis_adicional WHERE BINARY login<>BINARY TRIM(login) OR BINARY username<>BINARY TRIM(username))")===0;
-    if ($checks['clean_login_spaces']) {
-        $old=mka_online_family_sql();$new=mka_perf_direct_sql();
+    if ($checks['clean_login_spaces'] || mka_perf_preexisting_direct()) {
+        $old=mka_perf_preexisting_direct() ? mka_perf_direct_sql() : mka_online_family_sql();$new=mka_perf_set_sql();
         // Both classifications are compared within one SQL statement, never by two changing totals.
         $checks['same_classification']=perf_scalar($db,"SELECT COUNT(*) FROM sis_cliente c WHERE c.cli_ativado='s' AND (($old)<>($new))")===0;
     }else $checks['same_classification']=false;
-    return array('compatible'=>!in_array(false,$checks,true),'checks'=>$checks,'active_sessions'=>$active);
+    // Spaces do not invalidate equivalence with an existing raw comparison.
+    $eligible=$checks; if(mka_perf_preexisting_direct())unset($eligible['clean_login_spaces']);
+    return array('compatible'=>!in_array(false,$eligible,true),'checks'=>$checks,'active_sessions'=>$active);
 }
 function perf_write_flag($db,$value){$s=$db->prepare("INSERT INTO sis_opcao(nome,valor) VALUES('suite_search_optimization',?) ON DUPLICATE KEY UPDATE valor=VALUES(valor)");$s->bind_param('s',$value);if(!$s->execute())throw new RuntimeException('Nao foi possivel salvar a politica.');}
 function perf_runs($plan){$p=mka_perf_dir().'/'.$plan['id'].'.runs';$rows=array();foreach(is_file($p)?file($p,FILE_IGNORE_NEW_LINES):array() as $line){$r=json_decode($line,true);if(is_array($r))$rows[]=$r;}return $rows;}
@@ -53,7 +55,7 @@ try {
  if($action==='prepare'){
     $old=mka_perf_plan();$lease=$old && !empty($old['pending']) ? json_decode($old['pending'],true) : null;if($lease && ($lease['until'] ?? 0)>time())perf_reply(array('ok'=>true,'plan'=>$old,'csrf'=>$_SESSION['suite_perf_csrf']));
     $compat=perf_compatibility($conn);$id=bin2hex(random_bytes(24));
-    $p=array_merge($compat,array('id'=>$id,'expires'=>time()+1800,'previous'=>mka_perf_flag($conn),'already_direct'=>mka_perf_mode($conn)==='direct','source_hash'=>hash_file('sha256',__DIR__.'/index.php'),'user_hash'=>hash('sha256',$user)));
+    $p=array_merge($compat,array('id'=>$id,'expires'=>time()+1800,'previous'=>mka_perf_flag($conn),'already_direct'=>mka_perf_set_enabled($conn),'baseline_direct'=>mka_perf_mode($conn)==='direct','source_hash'=>hash_file('sha256',__DIR__.'/index.php'),'user_hash'=>hash('sha256',$user)));
     $p['tables']=array();$r=perf_query($conn,"SELECT TABLE_NAME,ENGINE,TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('radacct','sis_cliente','sis_adicional')");while($row=mysqli_fetch_assoc($r))$p['tables'][]=$row;
     $p['indexes']=array();$r=perf_query($conn,"SELECT TABLE_NAME,INDEX_NAME,COLUMN_NAME,SEQ_IN_INDEX FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND ((TABLE_NAME='radacct' AND COLUMN_NAME IN ('username','acctstoptime')) OR (TABLE_NAME='sis_cliente' AND COLUMN_NAME IN ('login','cli_ativado')) OR (TABLE_NAME='sis_adicional' AND COLUMN_NAME IN ('login','username'))) ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX");while($row=mysqli_fetch_assoc($r))$p['indexes'][]=$row;
     file_put_contents(mka_perf_dir().'/'.$id.'.json',json_encode($p),LOCK_EX);$_SESSION['suite_perf_plan']=$id;

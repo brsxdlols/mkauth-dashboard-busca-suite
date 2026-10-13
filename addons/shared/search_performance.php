@@ -3,6 +3,15 @@ require_once __DIR__.'/online_rule.php';
 function mka_perf_direct_sql() {
     return "(EXISTS (SELECT 1 FROM radacct r WHERE r.acctstoptime IS NULL AND r.username=c.login) OR EXISTS (SELECT 1 FROM sis_adicional a INNER JOIN radacct r ON r.username=a.username AND r.acctstoptime IS NULL WHERE a.login=c.login))";
 }
+// UNION forces a reusable set instead of scanning open sessions for each customer.
+function mka_perf_set_sql() {
+    return "COALESCE(c.login IN (SELECT online_family.login FROM (SELECT r.username AS login FROM radacct r WHERE r.acctstoptime IS NULL AND r.username IS NOT NULL UNION SELECT a.login FROM sis_adicional a JOIN radacct r ON r.username=a.username AND r.acctstoptime IS NULL WHERE a.login IS NOT NULL) online_family),0)";
+}
+function mka_perf_preexisting_direct() { return defined('MKA_SEARCH_PREEXISTING_DIRECT') && MKA_SEARCH_PREEXISTING_DIRECT; }
+function mka_perf_set_enabled($db) {
+    $flag=json_decode(mka_perf_flag($db),true);
+    return is_array($flag) && ($flag['version'] ?? '')===mka_perf_version() && in_array($flag['mode'] ?? '',array('direct','pending'),true) && mka_perf_mode($db)==='direct';
+}
 function mka_perf_version() { return hash('sha256',hash_file('sha256',__FILE__).hash_file('sha256',__DIR__.'/online_rule.php').hash_file('sha256',__DIR__.'/../busca_inteligente/index.php')); }
 function mka_perf_schema($db) {
     $q=mysqli_query($db,"SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,COLLATION_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND ((TABLE_NAME='sis_cliente' AND COLUMN_NAME='login') OR (TABLE_NAME='sis_adicional' AND COLUMN_NAME IN ('login','username')) OR (TABLE_NAME='radacct' AND COLUMN_NAME='username')) ORDER BY TABLE_NAME,COLUMN_NAME");
@@ -19,7 +28,7 @@ function mka_perf_mode($db) {
     if (($flag['schema'] ?? '')!==mka_perf_schema($db)) return 'legacy';
     // Future dirty logins must never silently change the normalized classification.
     $guard=mysqli_query($db,"SELECT EXISTS(SELECT 1 FROM radacct WHERE acctstoptime IS NULL AND BINARY username<>BINARY TRIM(username) LIMIT 1) OR EXISTS(SELECT 1 FROM sis_cliente WHERE cli_ativado='s' AND BINARY login<>BINARY TRIM(login) LIMIT 1) OR EXISTS(SELECT 1 FROM sis_adicional WHERE BINARY login<>BINARY TRIM(login) OR BINARY username<>BINARY TRIM(username) LIMIT 1) OR EXISTS(SELECT 1 FROM sis_cliente c JOIN radacct r ON r.username=c.login AND r.acctstoptime IS NULL WHERE c.cli_ativado='s' AND c.login='' LIMIT 1) AS incompatible");
-    $row=$guard ? mysqli_fetch_assoc($guard) : null;if(!$row || !empty($row['incompatible']))return 'legacy';
+    $row=$guard ? mysqli_fetch_assoc($guard) : null;if(!$row || (!mka_perf_preexisting_direct() && !empty($row['incompatible'])))return 'legacy';
     if (($flag['mode'] ?? '')==='direct') return 'direct';
     if (($flag['mode'] ?? '')==='pending' && ($flag['until'] ?? 0)>time()) return 'direct';
     return 'legacy';
@@ -43,7 +52,7 @@ function mka_perf_start($db,$allowed) {
     if (stripos(mysqli_get_server_info($db),'MariaDB')===false) return;
     if (!mysqli_query($db,'SET SESSION max_statement_time=15')) return;
     if (function_exists('set_time_limit')) set_time_limit(45);
-    $GLOBALS['mka_perf']=array('started'=>(float)($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)),'id'=>$nonce,'rule'=>$rule,'baseline_mode'=>!empty($p['already_direct'])?'direct':'legacy','metrics'=>array(),'failed'=>false);
+    $GLOBALS['mka_perf']=array('started'=>(float)($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)),'id'=>$nonce,'rule'=>$rule,'baseline_mode'=>!empty($p['already_direct']) || !empty($p['baseline_direct'])?'direct':'legacy','baseline_set'=>!empty($p['already_direct']),'metrics'=>array(),'failed'=>false);
     if (!headers_sent()) header('Cache-Control: no-store');
 }
 function mka_search_online_family_sql($db) {
@@ -51,7 +60,9 @@ function mka_search_online_family_sql($db) {
     if (!in_array($filter,array('on','online','off','offline'),true) && !(defined('MKA_SEARCH_PREEXISTING_DIRECT') && MKA_SEARCH_PREEXISTING_DIRECT)) return mka_online_family_sql();
     $p=$GLOBALS['mka_perf'] ?? null;
     $mode=$p ? ($p['rule']==='candidate' ? 'direct' : ($p['rule']==='baseline' ? $p['baseline_mode'] : mka_perf_mode($db))) : mka_perf_mode($db);
-    return $mode==='direct' ? mka_perf_direct_sql() : mka_online_family_sql();
+    if ($mode!=='direct') return mka_online_family_sql();
+    if ($p && $p['rule']==='baseline') return !empty($p['baseline_set']) ? mka_perf_set_sql() : mka_perf_direct_sql();
+    return ($p && $p['rule']==='candidate') || mka_perf_set_enabled($db) ? mka_perf_set_sql() : mka_perf_direct_sql();
 }
 function mka_perf_query($db,$sql,$phase) {
     if (!isset($GLOBALS['mka_perf'])) return mysqli_query($db,$sql);

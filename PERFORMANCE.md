@@ -1,3 +1,7 @@
+## Comparação com a regra direta existente
+
+O candidato reúne as famílias online em uma subconsulta com UNION, evitando varrer as sessões abertas para cada cliente. Quando existe a regra direta preservada pelo instalador, a equivalência é validada contra essa regra, inclusive com espaços nos logins. Instalações com regra normalizada continuam exigindo a validação de espaços e equivalência. A aplicação depende das medições completas e confirmação, com validação posterior e reversão.
+
 ## Análise automática no navegador
 
 Após instalar, abra `/admin/addons/busca_inteligente/performance.php` com seu login administrativo. A medição inicia automaticamente, sem exportar cookies nem informar URL no terminal. Aplicar uma otimização continua exigindo confirmação e validação antes/depois. O CLI com cookies permanece disponível apenas para uso técnico opcional.
