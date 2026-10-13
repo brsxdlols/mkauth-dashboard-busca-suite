@@ -2,10 +2,12 @@
 include('config.php');
 
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__.'/../shared/session_preview.php';
 
 if (!function_exists('json_response_dashboard')) {
     function json_response_dashboard($payload)
     {
+        $payload=mka_session_preview($payload);
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -134,8 +136,8 @@ $events_cache_file = sys_get_temp_dir() . '/mkauth_dashboard_session_events.json
 if (@is_file($events_cache_file) && @filemtime($events_cache_file) >= (time() - 8)) {
     $cached_events = @file_get_contents($events_cache_file);
     if (is_string($cached_events) && $cached_events !== '') {
-        echo $cached_events;
-        exit;
+        $cached_payload=json_decode($cached_events,true);
+        if(is_array($cached_payload)) json_response_dashboard($cached_payload);
     }
 }
 
@@ -252,7 +254,6 @@ if (is_string($events_json)) {
     if (@file_put_contents($cache_tmp, $events_json, LOCK_EX) !== false) {
         @rename($cache_tmp, $events_cache_file);
     }
-    echo $events_json;
-    exit;
+    json_response_dashboard($events_response);
 }
 json_response_dashboard($events_response);
