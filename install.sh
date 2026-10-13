@@ -370,19 +370,6 @@ chmod 0660 /var/lib/mkauth-suite-performance/optimization.lock
 if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance/optimization.lock; fi
 cp "${SCRIPT_DIR}/scripts/search-performance.py" /opt/mk-auth/scripts/mkauth-search-performance.py
 chmod 0700 /opt/mk-auth/scripts/mkauth-search-performance.py
-echo "Diagnostico web: /admin/addons/busca_inteligente/performance.php (sessao administrativa necessaria)."
-if [ -t 1 ] && [ -r /dev/tty ]; then
-  printf 'Deseja medir Online/Offline pela web e avaliar uma otimizacao? [s/N] ' >/dev/tty
-  IFS= read -r performance_choice </dev/tty
-  if [ "$performance_choice" = s ] || [ "$performance_choice" = S ]; then
-    printf 'URL completa da Busca (http/https): ' >/dev/tty
-    IFS= read -r performance_url </dev/tty
-    printf 'Caminho privado do arquivo Netscape de cookies da SUA sessao (chmod 600): ' >/dev/tty
-    IFS= read -r performance_cookies </dev/tty
-    if command -v python3 >/dev/null 2>&1; then
-      python3 /opt/mk-auth/scripts/mkauth-search-performance.py --url "$performance_url" --cookies "$performance_cookies" --report "${BACKUP_DIR}/performance-http.json" </dev/tty || echo '[aviso] diagnostico web nao concluido. Use a tela autenticada para repetir.'
-    else
-      echo '[aviso] Python 3 ausente. Abra a tela de diagnostico pelo navegador.'
-    fi
-  fi
-fi
+echo "Diagnostico web automatico: /admin/addons/busca_inteligente/performance.php"
+echo "Abra esse endereco no navegador com seu login administrativo. A analise inicia automaticamente."
+echo "Nao e necessario exportar cookies. A otimizacao continua exigindo confirmacao na tela."

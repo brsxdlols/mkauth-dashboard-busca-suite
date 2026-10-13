@@ -1,3 +1,7 @@
+## Análise automática no navegador
+
+Após instalar, abra `/admin/addons/busca_inteligente/performance.php` com seu login administrativo. A medição inicia automaticamente, sem exportar cookies nem informar URL no terminal. Aplicar uma otimização continua exigindo confirmação e validação antes/depois. O CLI com cookies permanece disponível apenas para uso técnico opcional.
+
 # Diagnostico e otimizacao Online/Offline
 
 Escopo desta etapa: desempenho e otimizacao. O alerta de multiplas sessoes PPPoE ficou para outra etapa. Sessoes simultaneas legitimas e registros duplicados de acctuniqueid sao problemas distintos; este recurso nao limpa nenhum deles.
