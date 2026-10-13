@@ -8,7 +8,7 @@ Versao promovida para `main` com autorizacao em 13/10/2026. A versao anterior ae
 
 ## Estado publicado
 
-- Desempenho: instalador agora mede SQL e aplica a politica automaticamente somente com equivalencia e ganho, backup e validacao posterior; nao solicita cookies. Botao nas configuracoes e telas principais abre modal, com analise manual iniciada por clique. No Visual Net, validacao SQL em 13/10/2026: Online 5,677s -> 0,116s; Offline 5,279s -> 0,172s (soma das medianas de listagem completa e primeira pagina). Nao confundir com tempo HTTP/renderizacao. Backup: /opt/mk-auth/backups/codex-block-forecast-20261013_114055. Sem alerta de multiplas sessoes. Consultar PERFORMANCE.md.
+- Desempenho: instalador agora mede SQL e aplica a politica automaticamente somente com equivalencia e ganho, backup e validacao posterior; nao solicita cookies. Botao somente nas configuracoes abre modal, com analise manual iniciada por clique. No Visual Net, validacao SQL em 13/10/2026: Online 5,677s -> 0,116s; Offline 5,279s -> 0,172s (soma das medianas de listagem completa e primeira pagina). Nao confundir com tempo HTTP/renderizacao. Backup: /opt/mk-auth/backups/codex-block-forecast-20261013_114055. Sem alerta de multiplas sessoes. Consultar PERFORMANCE.md.
 
 - Repositorio: https://github.com/brsxdlols/mkauth-dashboard-busca-suite
 - Branch: main.

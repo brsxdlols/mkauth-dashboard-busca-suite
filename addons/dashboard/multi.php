@@ -103,7 +103,7 @@ if ($canTotals) {
 <p><button type="button" data-radius-login="">Log RADIUS</button></p>
 <script src="../shared/radius_modal.js?v=20261006"></script>
 <section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
-<?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a><?php } ?>
+<?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
 <?php foreach($multiShortcutLinks as $shortcutIndex=>$shortcut) {
     $shortcut=trim($shortcut);
     if($shortcut==='') continue;
@@ -119,5 +119,4 @@ if ($canTotals) {
     include __DIR__.'/graf_periodo.php';
     include __DIR__.'/graficos.php';
 } else { ?><section class="multi-summary"><h2>Faturamento</h2><p>Seu usuário não possui permissão para visualizar os gráficos financeiros.</p></section><?php } ?>
-</main><?php include('../../baixo.php'); ?><script src="../shared/performance_modal.js?v=20261013"></script>
-</body></html>
+</main><?php include('../../baixo.php'); ?></body></html>

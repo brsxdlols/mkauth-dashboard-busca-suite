@@ -50,6 +50,8 @@ if (isset($_SESSION['MM_Usuario'])) {
             background: linear-gradient(135deg, #1769e8, #3194ff); font-size: 22px;
         }
         .cfg-hero-copy { flex: 1; }
+        .cfg-performance-actions { display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
+        @media(max-width:760px){.cfg-hero{flex-wrap:wrap}}
         .cfg-hero h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
         .cfg-hero p { margin: 0; color: var(--cfg-muted); font-size: 14px; }
         .cfg-badge {
@@ -244,10 +246,10 @@ if (isset($_SESSION['MM_Usuario'])) {
                 <div class="cfg-hero">
                     <div class="cfg-hero-icon"><i class="fa fa-sliders"></i></div>
                     <div class="cfg-hero-copy">
-                        <h1>Configurações do Dashboard</h1><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a>
+                        <h1>Configurações do Dashboard</h1>
                         <p>Personalize os indicadores, alertas e recursos exibidos no sistema.</p>
                     </div>
-                    <span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span>
+                    <div class="cfg-performance-actions"><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a><span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span></div>
                 </div>
 
                 <section class="cfg-card">

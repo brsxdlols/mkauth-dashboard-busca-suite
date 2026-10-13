@@ -2,7 +2,7 @@
 
 O instalador mede automaticamente as consultas de listagem completa e primeira página de Online/Offline (três amostras, mediana), valida equivalência e aplica a política somente quando comprova ganho sem regressão. Mede novamente após aplicar; falhas restauram a política anterior. Salva `performance-install.json` e `performance-policy-backup.json` no backup da instalação. Essas medições são SQL, sem sessão web, assets ou renderização do navegador; a página autenticada permite medir HTTP completo.
 
-O botão Executar análise de desempenho está nas configurações e telas principais da Dashboard, Dashboard Multi e Busca. Abre um modal; a análise só começa ao clicar em Analisar desempenho. Nessa análise manual, aplicar continua exigindo confirmação. O instalador não exige URL nem cookies.
+O botão Executar análise de desempenho está somente nas configurações da Dashboard e Busca. Abre um modal; a análise só começa ao clicar em Analisar desempenho. Nessa análise manual, aplicar continua exigindo confirmação. O instalador não exige URL nem cookies.
 
 ## Comparação com a regra direta existente
 
