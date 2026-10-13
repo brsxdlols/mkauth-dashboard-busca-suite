@@ -1139,14 +1139,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         .dashboard-session-toast-close:hover { color: #0f172a; }
 
         .dashboard-session-toast-link {
-            border: 0;
-            background: transparent;
-            color: #5f6f82;
-            padding: 0;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: underline;
-            cursor: pointer;
+            border:0;background:none;padding:0;color:#78869b;font:11px system-ui;text-decoration:none;cursor:pointer;
         }
 
         .dashboard-session-toast-link:hover {
@@ -1946,7 +1939,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             }
             ?>
 
-            <div class="col-12 mb-2"><style>.mka-radius-launch{display:block;width:100%;padding:12px 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font:600 14px system-ui;cursor:pointer;transition:background .18s,box-shadow .18s,transform .18s}.mka-radius-launch:hover{background:#1d4ed8;box-shadow:0 6px 16px #2563eb35;transform:translateY(-1px)}.mka-radius-launch:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.mka-radius-launch:active{transform:translateY(0)}</style><button type="button" class="mka-radius-launch" data-radius-login="">Log RADIUS</button></div>
+            <div class="col-12 mb-2"><style>.mka-radius-launch{display:block;width:100%;padding:12px 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font:600 14px system-ui;cursor:pointer;transition:background .18s,box-shadow .18s,transform .18s}.mka-radius-launch:hover{background:#1d4ed8;box-shadow:0 6px 16px #2563eb35;transform:translateY(-1px)}.mka-radius-launch:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.mka-radius-launch:active{transform:translateY(0)}</style><button type="button" class="mka-radius-launch" data-radius-login="">RADIUS</button></div>
 <script src="../shared/radius_modal.js?v=20261006"></script>
             <!-- Acesso Rápido -->
             <div class='col-12 col-md-12 col-lg-12'>
@@ -2640,6 +2633,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                     var inlineActions=document.createElement('div');inlineActions.className='dashboard-toast-inline-actions';
                     inlineActions.innerHTML='<button type="button" class="dashboard-session-toast-link" data-clear-session-popups="1">Limpar</button><button type="button" class="dashboard-session-toast-link" data-disable-session-popups="1">Não mostrar mais</button>';
+                    if(eventData.demo){inlineActions.querySelectorAll('button').forEach(function(button){button.removeAttribute('data-disable-session-popups');button.removeAttribute('data-clear-session-popups');button.onclick=function(){item.remove();toggleToastToolbar();};});}
                     if(!eventData.guide)item.querySelector('.dashboard-session-toast-content').appendChild(inlineActions);
                     list.prepend(item);
                     sessionStorage.removeItem('dashboard-session-popups-minimized');
@@ -2650,6 +2644,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     toggleToastToolbar();
                     scheduleToastRemoval(item);
                 }
+
+                window.mkaTestConnectionPopup = function () {
+                    createSessionToast({id:'demo-'+Date.now(),type:'login',label:'TESTE - CLIENTE CONECTOU',name:'Cliente de teste',login:'teste',concentrator:'',formatted_time:new Date().toLocaleString('pt-BR'),contract_status:'active',contract_label:'Teste visual',contract_icon:'bi bi-info-circle',icon:'bi bi-box-arrow-in-right',demo:true});
+                };
 
                 function clearVisibleSessionToasts() {
                     jQuery('#dashboard-session-toast-list .dashboard-session-toast').remove();
