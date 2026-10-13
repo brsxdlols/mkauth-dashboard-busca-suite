@@ -66,7 +66,7 @@ let running=true,timer,controller,busy=false,first=true,saved=[],historyRange=nu
 function paintCurrent(current){
  if(isGeneral||!current)return;
  const entry=document.createElement('article');entry.className='radius-current-state';
- entry.style.cssText='margin:10px;padding:16px;border:1px solid #334155;border-radius:10px;color:#dbeafe;font:13px/1.6 system-ui';
+ entry.style.cssText='margin:0 0 7px;padding:12px 14px;border:1px solid #1e293b;border-left:4px solid #94a3b8;border-radius:10px;background:#0a0f16;color:#dbeafe;font:13px/1.6 system-ui';
  const badge=document.createElement('span');badge.textContent=current.state==='online'?'CONECTADO — ONLINE':current.state==='offline'?'DESCONECTADO — OFFLINE':'ESTADO INDISPONÍVEL';
  badge.style.cssText='display:inline-block;padding:4px 9px;border-radius:6px;font-weight:700;color:'+(current.state==='online'?'#6ee7b7':current.state==='offline'?'#fda4af':'#cbd5e1')+';background:'+(current.state==='online'?'#064e3b':current.state==='offline'?'#4c2632':'#334155');
  const name=document.createElement('div');name.textContent=(current.name?current.name+' • ':'')+current.login;
