@@ -6,4 +6,4 @@
 <div id="status" role="status">A análise faz três requisições de cada página por etapa, com limite por consulta. Execute fora do horário de pico.</div>
 <div id="report"></div><details><summary>Detalhes das medições</summary><pre id="details"></pre></details>
 <p>Sem limpeza de accounting, alteração de índices ou reinício de serviços. Online nos cards conta logins cadastrados; a listagem mostra clientes principais e seus adicionais. O Offline do card é calculado a partir desses totais.</p>
-<script src="performance.js?v=3"></script></main></html>
+<script src="performance.js?v=4"></script></main></html>

@@ -11,12 +11,10 @@ function perf_compatibility($db){
     $checks['bounded_active_sessions']=$active<=50000;
     if (!$checks['matching_ci_collations'] || !$checks['indexed_open_sessions'] || !$checks['bounded_active_sessions']) return array('compatible'=>false,'checks'=>$checks,'active_sessions'=>$active);
     $checks['clean_login_spaces']=perf_scalar($db,"SELECT (SELECT COUNT(*) FROM radacct WHERE acctstoptime IS NULL AND BINARY username<>BINARY TRIM(username))+(SELECT COUNT(*) FROM sis_cliente WHERE cli_ativado='s' AND BINARY login<>BINARY TRIM(login))+(SELECT COUNT(*) FROM sis_adicional WHERE BINARY login<>BINARY TRIM(login) OR BINARY username<>BINARY TRIM(username))")===0;
-    if ($checks['clean_login_spaces'] || mka_perf_preexisting_direct()) {
-        $old=mka_perf_preexisting_direct() ? mka_perf_direct_sql() : mka_online_family_sql();$new=mka_perf_set_sql();
-        // Both classifications are compared within one SQL statement, never by two changing totals.
-        $checks['same_classification']=perf_scalar($db,"SELECT COUNT(*) FROM sis_cliente c WHERE c.cli_ativado='s' AND (($old)<>($new))")===0;
-    }else $checks['same_classification']=false;
-    // Spaces do not invalidate equivalence with an existing raw comparison.
-    $eligible=$checks; if(mka_perf_preexisting_direct())unset($eligible['clean_login_spaces']);
+    $old=mka_perf_reference_sql();$new=mka_perf_set_sql();
+    // Both independently expressed classifications use one SQL snapshot.
+    $same=perf_scalar($db,"SELECT COUNT(*) FROM sis_cliente c WHERE c.cli_ativado='s' AND (($old)<>($new))")===0;
+    $checks['same_classification']=$same;
+    $eligible=$checks;unset($eligible['clean_login_spaces']);
     return array('compatible'=>!in_array(false,$eligible,true),'checks'=>$checks,'active_sessions'=>$active);
 }

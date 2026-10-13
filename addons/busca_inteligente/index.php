@@ -2,7 +2,8 @@
 include('nav/header.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
 require_once __DIR__ . '/../shared/search_performance.php';
-mka_perf_start($link,!empty($acesso_permitido));
+// The session-bound diagnostic plan is authorized by performance_api.php, independently of client totals.
+mka_perf_start($link,true);
 // Multiempresas changes only the dashboard; both modes use the complete new search.
 $isMultiBusiness = false;
 require_once __DIR__ . '/../shared/client_update_audit.php';

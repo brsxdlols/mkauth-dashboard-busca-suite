@@ -1,6 +1,6 @@
 (function(){
  const measure=document.getElementById('measure'),apply=document.getElementById('apply'),rollback=document.getElementById('rollback'),status=document.getElementById('status'),report=document.getElementById('report'),details=document.getElementById('details');
- let plan,csrf='',busy=false,samples={};
+ let plan,csrf='',busy=false,samples={},requestSequence=0;
  async function api(action){const r=await fetch('performance_api.php',{method:action?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:action?JSON.stringify({action,csrf}):undefined});const data=await r.json();if(!r.ok||data.error)throw Error(data.error||'Falha no diagnóstico.');return data;}
  function median(v){const a=[...v].sort((x,y)=>x-y),i=Math.floor(a.length/2);return a.length%2?a[i]:(a[i-1]+a[i])/2;}
  async function stage(rule){
@@ -9,7 +9,7 @@
    samples[rule][filter]=[];
    for(let n=0;n<3;n++){
     status.textContent='Medindo '+(filter==='on'?'Online':'Offline')+' — '+rule+' ('+(n+1)+'/3)...';
-    const url=new URL('index.php',location.href);url.search=new URLSearchParams({busca:filter,pagina:'1',num_registros:'25',organizar:'c.nome',_mka_perf:plan.id,_mka_rule:rule,_mka_run:crypto.randomUUID()});
+    const url=new URL('index.php',location.href);url.search=new URLSearchParams({busca:filter,pagina:'1',num_registros:'25',organizar:'c.nome',_mka_perf:plan.id,_mka_rule:rule,_mka_run:Date.now()+'-'+(++requestSequence)});
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000),start=performance.now();
     let text,r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal});text=await r.text();}finally{clearTimeout(timer);}
     const elapsed=(performance.now()-start)/1000;

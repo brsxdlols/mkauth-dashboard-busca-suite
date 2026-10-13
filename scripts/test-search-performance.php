@@ -3,6 +3,7 @@
 // No permanent table, accounting row or client is modified.
 if (PHP_SAPI!=='cli') exit(1);
 require __DIR__.'/../addons/shared/search_performance.php';
+if(getenv('MKA_TEST_RAW')==='1')define('MKA_SEARCH_PREEXISTING_DIRECT',true);
 $db=new mysqli(getenv('MYSQL_HOST')?:'127.0.0.1',getenv('MYSQL_USER')?:'root',getenv('MYSQL_PASS')?:'',getenv('MYSQL_DB')?:'mkradius');
 function check($ok,$name){if(!$ok)throw new RuntimeException('FAIL '.$name);echo 'PASS '.$name."\n";}
 function sql($db,$s){if(!$db->query($s))throw new RuntimeException('Fixture query failed.');}
@@ -21,12 +22,12 @@ try {
  sql($db,"INSERT INTO radacct VALUES(' carol',NULL)");
  $row=$db->query("SELECT ($old) old_on,($new) new_on FROM sis_cliente c WHERE id=3")->fetch_assoc();
  check($row['old_on']==1 && $row['new_on']==0,'leading-space incompatibility detected');
- $set=mka_perf_set_sql();
- $r=$db->query("SELECT id,($new) raw_on,($set) set_on FROM sis_cliente c ORDER BY id");
- while($row=$r->fetch_assoc())check($row['raw_on']===$row['set_on'],'materialized set preserves raw spaces and case '.$row['id']);
+ $set=mka_perf_set_sql();$reference=mka_perf_preexisting_direct()?$new:$old;
+ $r=$db->query("SELECT id,($reference) raw_on,($set) set_on FROM sis_cliente c ORDER BY id");
+ while($row=$r->fetch_assoc())check($row['raw_on']===$row['set_on'],'materialized normalized set preserves spaces and case '.$row['id']);
  $version=mka_perf_version();
  $st=$db->prepare("INSERT INTO sis_opcao VALUES('suite_search_optimization',?)");$flag=json_encode(array('mode'=>'pending','until'=>time()+60,'version'=>$version,'schema'=>mka_perf_schema($db)));$st->bind_param('s',$flag);$st->execute();
- check(mka_perf_mode($db)==='legacy','future dirty login returns to normalized rule');
+ check(mka_perf_mode($db)==='direct','normalized set accepts dirty logins without rewriting data');
  // This DELETE affects the TEMPORARY fixture table only, never native accounting.
  sql($db,"DELETE FROM radacct WHERE BINARY username=BINARY ' carol'");
  check(mka_perf_mode($db)==='direct','provisional lease');
@@ -34,7 +35,12 @@ try {
  check(mka_perf_mode($db)==='legacy','abandoned validation expires to legacy');
  $flag=json_encode(array('mode'=>'direct','version'=>$version,'schema'=>mka_perf_schema($db)));$st->execute();
  $_GET['busca']='on';check(mka_search_online_family_sql($db)===mka_perf_set_sql(),'approved direct mode scoped to online');
- $_GET['busca']='atrasado';check(mka_search_online_family_sql($db)===mka_online_family_sql(),'unrelated filters remain unchanged');
+ $_GET['busca']='atrasado';check(mka_search_online_family_sql($db)===(mka_perf_preexisting_direct()?mka_perf_set_sql():mka_online_family_sql()),'unrelated filters retain their installation rule');
  $flag=json_encode(array('mode'=>'direct','version'=>'different'));$st->execute();
- check(mka_perf_mode($db)==='legacy','changed implementation requires revalidation');
+ check(!mka_perf_set_enabled($db),'changed implementation disables optimized set');
+ sql($db,"INSERT INTO sis_cliente VALUES(5,' spaced ', 's'),(6,'','s'),(7,NULL,'s')");
+ sql($db,"INSERT INTO sis_adicional VALUES(' spaced ',' child-spaced '),('','empty-parent')");
+ sql($db,"INSERT INTO radacct VALUES('child-spaced',NULL),('empty-parent',NULL),('',NULL),('   ',NULL),(NULL,NULL)");
+ $equivalent=mka_perf_reference_sql();$r=$db->query("SELECT id,($reference) original_on,($equivalent) reference_on,($set) optimized_on FROM sis_cliente c ORDER BY id");
+ while($row=$r->fetch_assoc())check($row['original_on']===$row['optimized_on'] && $row['original_on']===$row['reference_on'],'spaces, empty and null edge case '.$row['id']);
 } finally { $db->close(); }

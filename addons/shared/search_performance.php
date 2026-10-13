@@ -5,7 +5,21 @@ function mka_perf_direct_sql() {
 }
 // UNION forces a reusable set instead of scanning open sessions for each customer.
 function mka_perf_set_sql() {
-    return "COALESCE(c.login IN (SELECT online_family.login FROM (SELECT r.username AS login FROM radacct r WHERE r.acctstoptime IS NULL AND r.username IS NOT NULL UNION SELECT a.login FROM sis_adicional a JOIN radacct r ON r.username=a.username AND r.acctstoptime IS NULL WHERE a.login IS NOT NULL) online_family),0)";
+    if (mka_perf_preexisting_direct()) return "COALESCE(c.login IN (SELECT online_family.login FROM (SELECT r.username AS login FROM radacct r WHERE r.acctstoptime IS NULL AND r.username IS NOT NULL UNION SELECT a.login FROM sis_adicional a JOIN radacct r ON r.username=a.username AND r.acctstoptime IS NULL WHERE a.login IS NOT NULL) online_family),0)";
+    // Normalize each open-login set once; preserve the existing spaces/case/empty-login rules.
+    return "COALESCE(LOWER(TRIM(c.login)) IN (SELECT online_family.login FROM (SELECT LOWER(TRIM(r.username)) AS login FROM radacct r WHERE r.acctstoptime IS NULL AND TRIM(r.username)<>'' UNION SELECT LOWER(TRIM(a.login)) FROM sis_adicional a JOIN (SELECT DISTINCT LOWER(TRIM(username)) AS login_key FROM radacct WHERE acctstoptime IS NULL AND TRIM(username)<>'') active ON active.login_key=LOWER(TRIM(a.username))) online_family),0)";
+}
+// Independent reference: distribute the original EXISTS over main and additional logins.
+// Materialized open keys avoid re-reading accounting for every customer.
+function mka_perf_reference_sql() {
+    $raw=mka_perf_preexisting_direct();
+    $key=$raw?'username':'LOWER(TRIM(username))';
+    $condition=$raw?'username IS NOT NULL':"TRIM(username)<>''";
+    $active="SELECT DISTINCT $key login_key FROM radacct WHERE acctstoptime IS NULL AND $condition";
+    $principal=$raw?'c.login':'LOWER(TRIM(c.login))';
+    $parent=$raw?'a.login':'LOWER(TRIM(a.login))';
+    $child=$raw?'a.username':'LOWER(TRIM(a.username))';
+    return "(EXISTS(SELECT 1 FROM ($active) primary_keys WHERE primary_keys.login_key=$principal) OR EXISTS(SELECT 1 FROM sis_adicional a JOIN ($active) additional_keys ON additional_keys.login_key=$child WHERE $parent=$principal))";
 }
 function mka_perf_preexisting_direct() { return defined('MKA_SEARCH_PREEXISTING_DIRECT') && MKA_SEARCH_PREEXISTING_DIRECT; }
 function mka_perf_set_enabled($db) {
@@ -26,9 +40,7 @@ function mka_perf_mode($db) {
     $flag=json_decode(mka_perf_flag($db),true);
     if (!is_array($flag) || ($flag['version'] ?? '')!==mka_perf_version()) return defined('MKA_SEARCH_PREEXISTING_DIRECT') && MKA_SEARCH_PREEXISTING_DIRECT ? 'direct' : 'legacy';
     if (($flag['schema'] ?? '')!==mka_perf_schema($db)) return 'legacy';
-    // Future dirty logins must never silently change the normalized classification.
-    $guard=mysqli_query($db,"SELECT EXISTS(SELECT 1 FROM radacct WHERE acctstoptime IS NULL AND BINARY username<>BINARY TRIM(username) LIMIT 1) OR EXISTS(SELECT 1 FROM sis_cliente WHERE cli_ativado='s' AND BINARY login<>BINARY TRIM(login) LIMIT 1) OR EXISTS(SELECT 1 FROM sis_adicional WHERE BINARY login<>BINARY TRIM(login) OR BINARY username<>BINARY TRIM(username) LIMIT 1) OR EXISTS(SELECT 1 FROM sis_cliente c JOIN radacct r ON r.username=c.login AND r.acctstoptime IS NULL WHERE c.cli_ativado='s' AND c.login='' LIMIT 1) AS incompatible");
-    $row=$guard ? mysqli_fetch_assoc($guard) : null;if(!$row || (!mka_perf_preexisting_direct() && !empty($row['incompatible'])))return 'legacy';
+    // The normalized candidate continues to handle dirty logins; raw installations retain their own rule.
     if (($flag['mode'] ?? '')==='direct') return 'direct';
     if (($flag['mode'] ?? '')==='pending' && ($flag['until'] ?? 0)>time()) return 'direct';
     return 'legacy';

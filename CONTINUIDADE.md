@@ -70,3 +70,11 @@ Patch opcional scripts/patch-map-traffic.py para addon instalado em addons/mapa-
 Dashboard e Busca (inclusive layouts legados) respeitam permissao nativa perm_totais para contagens agregadas, percentuais e quantidade de resultados. Busca preserva atalhos de filtro sem numeros e evita consultas de cards quando a permissao falta. API/tela de desempenho e perfil de metricas exigem Totais; a Dashboard Multi ja verificava essa permissao.
 
 Monitor do Mapa: /admin/addons/mapa-clientes/monitor/ aceita ?login= para abrir um cliente especifico. Entrada delega ao index.hhvm nativo, conserva autenticacao/grupos e define base href da pasta original para assets/APIs. Patch opcional instala a entrada, atualiza AMPLIAR/menu.js e atalhos do banco, sem remover a compatibilidade com ?monitor=1. Busca usa essa rota quando instalada; conserva o monitor antigo se o Mapa nao estiver disponivel. O projeto do Mapa mantido em outro chat deve incorporar as mesmas alteracoes para nao sobrescrever o ajuste da instalacao.
+
+### Desempenho e compatibilidade do diagnóstico (13/10/2026)
+- Gráficos financeiros agregam por período, mantendo os cálculos, os grupos e os cortes de saldo existentes; incluem as datas nativas com dia zero. Sem índices permanentes ou alterações de lançamentos.
+- Busca otimiza também a regra normalizada com espaços em logins, sem alterar cadastros. A comparação independente conserva a regra direta quando a instalação já a usava.
+- Instalador registra timeout de baseline como limite inferior, nunca como medição completa, e só confirma a política após equivalência e validação posterior.
+- Perfil de diagnóstico depende do plano privado da sessão, independentemente da permissão de quantidade de clientes.
+- Diagnóstico funciona em HTTP sem crypto.randomUUID; identificador de cache não substitui o token de autorização do servidor.
+- Testes: scripts/test-dashboard-finance.php, scripts/test-search-performance.php (normalizado e MKA_TEST_RAW=1), scripts/test-performance-http.js. Validados em PHP 7.3 e PHP 8.0.

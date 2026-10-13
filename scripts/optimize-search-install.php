@@ -7,18 +7,26 @@ if (!$backup || !is_dir($backup)) {fwrite(STDERR,"Backup indisponivel.\n");exit(
 require $admin.'/addons/shared/search_performance.php';
 require $admin.'/addons/shared/performance_compatibility.php';
 if (strpos(file_get_contents($admin.'/addons/busca_inteligente/index.php'), "define('MKA_SEARCH_PREEXISTING_DIRECT',true)")!==false) define('MKA_SEARCH_PREEXISTING_DIRECT',true);
-function install_perf_median($v) {sort($v,SORT_NUMERIC);return $v[1];}
+function install_perf_median($v) {sort($v,SORT_NUMERIC);return $v[(int)floor(count($v)/2)];}
 function install_perf_flag($db,$flag) {
     $s=$db->prepare("INSERT INTO sis_opcao(nome,valor) VALUES('suite_search_optimization',?) ON DUPLICATE KEY UPDATE valor=VALUES(valor)");
     $s->bind_param('s',$flag);if(!$s->execute())throw new RuntimeException('Falha ao salvar politica.');
 }
-function install_perf_measure($db,$predicate) {
+function install_perf_measure($db,$predicate,$allowBaselineTimeout=false) {
     $report=array();
     foreach(array('on','off') as $filter) {
         $query="SELECT c.*,cua.usuario AS last_update_user,cua.detalhes AS last_update_details FROM sis_cliente c LEFT JOIN sis_adicional c2 ON c.login=c2.login LEFT JOIN dashboard_am_client_update_audit cua ON c.uuid_cliente=cua.uuid_cliente AND c.last_update<>cua.previous_last_update AND c.last_update BETWEEN DATE_SUB(cua.captured_at,INTERVAL 5 SECOND) AND DATE_ADD(cua.captured_at,INTERVAL 5 MINUTE) WHERE c.cli_ativado='s' AND ".($filter==='off'?'NOT ':'')."($predicate) GROUP BY c.login ORDER BY c.nome";
         foreach(array('total'=>'','page'=>' LIMIT 0,25') as $phase=>$limit) {
             $times=array();
-            for($i=0;$i<3;$i++) {$t=microtime(true);$r=perf_query($db,$query.$limit);$times[]=microtime(true)-$t;$r->free();usleep(100000);}
+            for($i=0;$i<3;$i++) {
+                $t=microtime(true);
+                try {$r=perf_query($db,$query.$limit);$times[]=microtime(true)-$t;$r->free();}
+                catch(Throwable $e) {
+                    if(!$allowBaselineTimeout || (int)$db->errno!==1969)throw $e;
+                    $times[]=microtime(true)-$t;$report[$filter][$phase.'_lower_bound']=true;break;
+                }
+                usleep(100000);
+            }
             $report[$filter][$phase]=install_perf_median($times);
         }
         $report[$filter]['sum']=$report[$filter]['total']+$report[$filter]['page'];
@@ -38,7 +46,7 @@ try {
     $previous=mka_perf_flag($db);
     $baseline=mka_perf_set_enabled($db)?mka_perf_set_sql():(mka_perf_mode($db)==='direct'?mka_perf_direct_sql():mka_online_family_sql());
     $candidate=mka_perf_set_sql();
-    $report['before']=install_perf_measure($db,$baseline);
+    $report['before']=install_perf_measure($db,$baseline,true);
     $report['candidate']=install_perf_measure($db,$candidate);
     $gain=false;
     foreach(array('on','off') as $f){$b=$report['before'][$f]['sum'];$a=$report['candidate'][$f]['sum'];if($a>$b*1.10)throw new RuntimeException('Candidato apresentou piora; politica preservada.');if($b>0.5 && $a<$b*0.85)$gain=true;}
@@ -56,7 +64,7 @@ try {
         foreach(array('on','off') as $f)if($report['after'][$f]['sum']>$report['before'][$f]['sum']*1.10)throw new RuntimeException('Validacao posterior apresentou piora.');
         if(!perf_compatibility($db)['compatible'] || mka_perf_flag($db)!==$flag)throw new RuntimeException('Politica ou classificacao mudou durante validacao.');
         install_perf_flag($db,json_encode(array('mode'=>'direct','version'=>mka_perf_version(),'schema'=>mka_perf_schema($db))));$changed=false;$report['status']='optimized';
-        foreach(array('on','off') as $f)printf("[desempenho] %s SQL: %.3f s antes -> %.3f s depois\n",$f,$report['before'][$f]['sum'],$report['after'][$f]['sum']);
+        foreach(array('on','off') as $f)printf("[desempenho] %s SQL: %s%.3f s antes -> %.3f s depois\n",$f,(!empty($report['before'][$f]['total_lower_bound']) || !empty($report['before'][$f]['page_lower_bound'])) ? '>= ' : '',$report['before'][$f]['sum'],$report['after'][$f]['sum']);
     }
 } catch(Throwable $e) {
     if($changed && $db) {install_perf_flag($db,$previous);$report['rollback']=true;}

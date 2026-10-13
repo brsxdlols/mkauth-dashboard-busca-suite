@@ -1,102 +1,41 @@
-
-
-    <?php
-
-
-//$starttime = microtime(true);
-
+<?php
+// Aggregate each financial table once for the requested months instead of repeating per-month scans.
+$financeMonths=array();
+for($offset=$per_meses-1;$offset>=0;$offset--)$financeMonths[]=date('Y-m',strtotime("-$offset month"));
+$dueMonths=$payableMonths=$cashMonths=$ticketMonths=array();$balanceMonths=array();
+if($financeMonths){
+    // Include native partial zero-day dates that the previous YYYY-MM LIKE also counted.
+    $financeStart=min($financeMonths).'-00 00:00:00';
+    $financeEnd=date('Y-m-d H:i:s',strtotime(max($financeMonths).'-01 00:00:00 +1 month'));
+    $loadMonths=function($sql)use($conn){
+        $result=mysqli_query($conn,$sql);if(!$result)throw new RuntimeException('Falha ao consultar indicadores financeiros.');
+        $rows=array();while($row=mysqli_fetch_assoc($result))$rows[$row['month_key']]=$row;return $rows;
+    };
+    $dueMonths=$loadMonths("SELECT DATE_FORMAT(l.datavenc,'%Y-%m') month_key,SUM(l.valor) fat_previsto,SUM(CASE WHEN l.status NOT LIKE 'pago' THEN l.valor END) f_pagar FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login=c.login WHERE $grupos l.datavenc >= '$financeStart' AND l.datavenc < '$financeEnd' AND l.deltitulo=0 AND c.cli_ativado='s' GROUP BY month_key");
+    $payableMonths=$loadMonths("SELECT DATE_FORMAT(vencimento,'%Y-%m') month_key,SUM(valor) contas_a_pagar FROM sis_contaspagar WHERE vencimento >= '$financeStart' AND vencimento < '$financeEnd' AND status NOT LIKE 'liquidado' GROUP BY month_key");
+    $cashMonths=$loadMonths("SELECT DATE_FORMAT(data,'%Y-%m') month_key,SUM(entrada) tot_entrada,SUM(saida) tot_saida,SUM(CASE WHEN historico LIKE 'estorno%' THEN entrada END) estorno_entrada,SUM(CASE WHEN historico LIKE 'estorno%' THEN saida END) estorno_saida,SUM(CASE WHEN historico LIKE 'emprestimo%' OR historico LIKE 'credito emprestimo%' THEN entrada END) emprestimo FROM sis_caixa WHERE data >= '$financeStart' AND data < '$financeEnd' GROUP BY month_key");
+    $ticketMonths=$loadMonths("SELECT DATE_FORMAT(datapag,'%Y-%m') month_key,COUNT(login) ticket FROM sis_lanc WHERE datapag >= '$financeStart' AND datapag < '$financeEnd' AND valorpag <= $limite_ticket GROUP BY month_key");
+    // Keep the original balance cutoff and decimal SUM arithmetic, including short months.
+    $balanceColumns=array();$uniqueMonths=array_values(array_unique($financeMonths));
+    foreach($uniqueMonths as $n=>$month){$cutoff=$month.'-31 23:59:59';$balanceColumns[]="(SUM(CASE WHEN data <= '$cutoff' THEN entrada END)-SUM(CASE WHEN data <= '$cutoff' THEN saida END)) b$n";}
+    $balances=mysqli_query($conn,'SELECT '.implode(',',$balanceColumns)." FROM sis_caixa WHERE data < '$financeEnd'");
+    if(!$balances)throw new RuntimeException('Falha ao consultar saldo financeiro.');$balanceRow=mysqli_fetch_assoc($balances);
+    foreach($uniqueMonths as $n=>$month)$balanceMonths[$month]=$balanceRow['b'.$n];
+}
 for ($i = $per_meses - 1; $i >= 0; $i--) {
-
-    //Listagem de Meses e Anos
-    $mes_cap = date('m', strtotime("-$i month"));
-    $ano_cap = date('Y', strtotime("-$i month"));
-
-    // Regra para exibição do periodo atual
-    if ($i == 0) {
-        $mes_cap = date('m');
-        $ano_cap = date('Y');
-    }
-    //echo "<br>Mes: $mes_cap";
-    //echo "<br>Ano: $ano_cap";
-
-    $ano_mes = $ano_cap . '-' . $mes_cap;
-
-    // Tot Previsao Faturamento
-    $query_previsao_fat_[$ano_mes] = mysqli_query($conn, "SELECT sum(l.valor) fat_previsto FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login = c.login WHERE $grupos l.datavenc LIKE '$ano_cap-$mes_cap%' AND l.deltitulo = 0 AND c.cli_ativado = 's'");
-    while ($prev = mysqli_fetch_array($query_previsao_fat_[$ano_mes])) {
-        $previsao_mes_[$ano_mes] = $prev['fat_previsto'];
-    }
-
-        // Tot Previsao Faturamento
-        $query_a_receber_fat_[$ano_mes] = mysqli_query($conn, "SELECT sum(l.valor) f_pagar FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login = c.login WHERE $grupos l.datavenc LIKE '$ano_cap-$mes_cap%' AND l.deltitulo = 0 AND c.cli_ativado = 's' AND l.status NOT LIKE 'pago'");
-        while ($prev = mysqli_fetch_array($query_a_receber_fat_[$ano_mes])) {
-            $a_receber_mes_[$ano_mes] = $prev['f_pagar'];
-        }
-
-    // Tot Contas a pagar mes
-    $query_contas_a_pagar_[$ano_mes] = mysqli_query($conn, "SELECT sum(valor) contas_a_pagar FROM sis_contaspagar WHERE vencimento LIKE '$ano_cap-$mes_cap%' AND status NOT LIKE 'liquidado'");
-    while ($contas = mysqli_fetch_array($query_contas_a_pagar_[$ano_mes])) {
-        $contas_a_pagar_[$ano_mes] = $contas['contas_a_pagar'];
-    }
-
-    //Tot Entrada e Saida
-    $query_mes[$ano_mes] = mysqli_query($conn, "SELECT sum(entrada) tot_entrada, sum(saida) tot_saida FROM sis_caixa 
-        WHERE 
-        data LIKE '$ano_cap-$mes_cap%' 
-        ORDER BY data");
-
-    $tot_entrada_[$ano_mes] = 0;
-    $tot_saida_[$ano_mes] = 0;
-
-    $cont_ticket_[$ano_mes] = 0;
-
-    while ($row = mysqli_fetch_array($query_mes[$ano_mes])) {
-        $tot_entrada_[$ano_mes] = $row['tot_entrada'];
-        $tot_saida_[$ano_mes] = $row['tot_saida'];
-
-        $query_ticket_[$ano_mes] = mysqli_query($conn, "SELECT count(login) ticket FROM sis_lanc WHERE datapag LIKE '$ano_cap-$mes_cap%' AND valorpag <= $limite_ticket");
-        while ($cont = mysqli_fetch_array($query_ticket_[$ano_mes])) {
-            $cont_ticket_[$ano_mes] = $cont['ticket'];
-        }
-    }
-
-
-    //Tot Estorno
-    $query_mes[$ano_mes] = mysqli_query($conn, "SELECT sum(entrada) tot_estorno_entrada, sum(saida) tot_estorno_saida FROM sis_caixa 
-        WHERE historico LIKE 'estorno%' AND
-        data LIKE '$ano_cap-$mes_cap%' 
-        ORDER BY data");
-
-    $estorno_entrada_[$ano_mes] = 0;
-    $estorno_saida_[$ano_mes] = 0;
-
-    while ($row = mysqli_fetch_array($query_mes[$ano_mes])) {
-        $estorno_entrada_[$ano_mes] += $row['tot_estorno_entrada'];
-        $estorno_saida_[$ano_mes] += $row['tot_estorno_saida'];
-    }
-
-    //Desconto Emprestimo Ticket
-    $query_mes[$ano_mes] = mysqli_query($conn, "SELECT sum(entrada) tot_emprestimo FROM sis_caixa 
-        WHERE (historico LIKE 'emprestimo%' OR historico LIKE 'credito emprestimo%') AND
-        data LIKE '$ano_cap-$mes_cap%' 
-        ORDER BY data");
-
-    $desc_emprestimo_[$ano_mes] = 0;
-
-    while ($row = mysqli_fetch_array($query_mes[$ano_mes])) {
-        $desc_emprestimo_[$ano_mes] = $row['tot_emprestimo'];
-    }
-
-    $query_saldo_conta[$ano_mes] = mysqli_query($conn, "SELECT (sum(entrada) - sum(saida)) saldo_conta  FROM sis_caixa WHERE data <= '$ano_cap-$mes_cap-31 23:59:59'");
-
-    if (!$query_saldo_conta[$ano_mes]) {
-        echo mysqli_error($link);
-    }
-
-    while ($row = mysqli_fetch_array($query_saldo_conta[$ano_mes])) {
-        $saldo_conta_[$ano_mes] = $row['saldo_conta'];
-    }
-
+    $mes_cap=date('m',strtotime("-$i month"));$ano_cap=date('Y',strtotime("-$i month"));
+    if($i==0){$mes_cap=date('m');$ano_cap=date('Y');}
+    $ano_mes=$ano_cap.'-'.$mes_cap;
+    $previsao_mes_[$ano_mes]=$dueMonths[$ano_mes]['fat_previsto']??null;
+    $a_receber_mes_[$ano_mes]=$dueMonths[$ano_mes]['f_pagar']??null;
+    $contas_a_pagar_[$ano_mes]=$payableMonths[$ano_mes]['contas_a_pagar']??null;
+    $tot_entrada_[$ano_mes]=$cashMonths[$ano_mes]['tot_entrada']??null;
+    $tot_saida_[$ano_mes]=$cashMonths[$ano_mes]['tot_saida']??null;
+    $cont_ticket_[$ano_mes]=$ticketMonths[$ano_mes]['ticket']??'0';
+    $estorno_entrada_[$ano_mes]=0;$estorno_entrada_[$ano_mes]+=$cashMonths[$ano_mes]['estorno_entrada']??null;
+    $estorno_saida_[$ano_mes]=0;$estorno_saida_[$ano_mes]+=$cashMonths[$ano_mes]['estorno_saida']??null;
+    $desc_emprestimo_[$ano_mes]=$cashMonths[$ano_mes]['emprestimo']??null;
+    $saldo_conta_[$ano_mes]=$balanceMonths[$ano_mes]??null;
     $tot_entrada_[$ano_mes] = $tot_entrada_[$ano_mes] - $estorno_entrada_[$ano_mes] - $estorno_saida_[$ano_mes];
     $tot_entrada_[$ano_mes] = round($tot_entrada_[$ano_mes]);
 
