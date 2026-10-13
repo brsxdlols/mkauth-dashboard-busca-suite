@@ -3,18 +3,19 @@ if (!isset($acesso_permitido) || !$acesso_permitido) return;
 
 $statsNow = isset($now) && $now !== '' ? $now : date('Y-m-d');
 $stats = array('clients'=>0,'additional'=>0,'free'=>0,'observation'=>0,'blocked'=>0,'late'=>0,'online'=>0,'offline'=>0,'no_booklet'=>0,'no_titles'=>0);
-$statsClient = @mysqli_query($link, "SELECT COUNT(*) clients,SUM(c.bloqueado='nao') free_count,SUM(c.observacao='sim') observation_count,SUM(c.bloqueado='sim') blocked_count,SUM(c.parc_abertas='0' AND c.isento='nao' AND c.tipo_cob='carne') no_booklet,SUM(c.tit_abertos='0' AND c.isento='nao' AND c.tipo_cob='titulo') no_titles FROM sis_cliente c WHERE $grupos c.cli_ativado='s'");
+$statsClient = @mka_perf_query($link,"SELECT COUNT(*) clients,SUM(c.bloqueado='nao') free_count,SUM(c.observacao='sim') observation_count,SUM(c.bloqueado='sim') blocked_count,SUM(c.parc_abertas='0' AND c.isento='nao' AND c.tipo_cob='carne') no_booklet,SUM(c.tit_abertos='0' AND c.isento='nao' AND c.tipo_cob='titulo') no_titles FROM sis_cliente c WHERE $grupos c.cli_ativado='s'",'card-base');
 if($statsClient&&($sr=mysqli_fetch_assoc($statsClient))){$stats['clients']=(int)$sr['clients'];$stats['free']=(int)$sr['free_count'];$stats['observation']=(int)$sr['observation_count'];$stats['blocked']=(int)$sr['blocked_count'];$stats['no_booklet']=(int)$sr['no_booklet'];$stats['no_titles']=(int)$sr['no_titles'];}
-$statsAdditional=@mysqli_query($link,"SELECT COUNT(*) total FROM sis_adicional a LEFT JOIN sis_cliente c ON a.login=c.login WHERE $grupos c.cli_ativado='s'");if($statsAdditional&&($sr=mysqli_fetch_assoc($statsAdditional)))$stats['additional']=(int)$sr['total'];
+$statsAdditional=@mka_perf_query($link,"SELECT COUNT(*) total FROM sis_adicional a LEFT JOIN sis_cliente c ON a.login=c.login WHERE $grupos c.cli_ativado='s'",'card-additional');if($statsAdditional&&($sr=mysqli_fetch_assoc($statsAdditional)))$stats['additional']=(int)$sr['total'];
 $statsLate=@mysqli_query($link,"SELECT COUNT(DISTINCT l.login) total FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login=c.login WHERE $grupos c.cli_ativado='s' AND l.status<>'pago' AND l.deltitulo=0 AND l.datavenc<='$statsNow'");if($statsLate&&($sr=mysqli_fetch_assoc($statsLate)))$stats['late']=(int)$sr['total'];
 // Normalize each login set once; UNION and DISTINCT prevent duplicate session counts.
 if (empty($isMultiBusiness)) {
 require_once __DIR__.'/../shared/online_rule.php';
-$statsOnline=mysqli_query($link,mka_online_sql($grupos));
+$statsOnline=mka_perf_query($link,mka_online_sql($grupos),'card-online');
 if(!$statsOnline) throw new RuntimeException('Não foi possível consultar clientes online.');
 $stats['online']=mysqli_num_rows($statsOnline);
 }
 $statsTotal=$stats['clients']+$stats['additional'];$stats['offline']=$statsTotal-$stats['online'];
+mka_perf_cards($stats['online'],$stats['offline']);
 $percent=function($value,$base){return $base>0?number_format(($value/$base)*100,2,',','.').'%' :'0,00%';};
 $searchStats=array(
  array('Total',$statsTotal,'100,00%','index.php','is-primary','fa-users'),array('Adicionais',$stats['additional'],$percent($stats['additional'],$statsTotal),'?busca=adicionais','is-light','fa-user-plus'),array('Livres',$stats['free'],$percent($stats['free'],$stats['clients']),'?busca=','is-info','fa-user-check'),array('Observação',$stats['observation'],$percent($stats['observation'],$stats['clients']),'?busca=obs','is-observation','fa-eye'),array('Bloqueados',$stats['blocked'],$percent($stats['blocked'],$stats['clients']),'?busca=bloq','is-danger','fa-user-lock'),array('Atraso',$stats['late'],$percent($stats['late'],$stats['clients']),'?busca=atrasado','is-warning','fa-clock'),array('Online',$stats['online'],$percent($stats['online'],$statsTotal),'?busca=on','is-success','fa-wifi'),array('Offline',$stats['offline'],$percent($stats['offline'],$statsTotal),'?busca=off','is-dark','fa-plug-circle-xmark'),array('Sem carnê',$stats['no_booklet'],$percent($stats['no_booklet'],$statsTotal),'?busca=sem+carne','is-outline-danger','fa-file-circle-xmark'),array('Sem títulos',$stats['no_titles'],$percent($stats['no_titles'],$statsTotal),'?busca=sem+tit','is-outline-danger','fa-receipt')

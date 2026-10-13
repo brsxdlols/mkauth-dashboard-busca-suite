@@ -8,6 +8,8 @@ Versao promovida para `main` com autorizacao em 13/10/2026. A versao anterior ae
 
 ## Estado publicado
 
+- Nova etapa solicitada: desempenho e otimizacao apenas, sem alerta de multiplas sessoes nesta entrega. Consultar PERFORMANCE.md. Instalador interativo oferece benchmark HTTP autenticado; interface Busca > Configuracoes > Desempenho mede consultas completas, solicita confirmacao e valida depois. A aplicacao depende de ganho medido e equivalencia; a politica provisoria expira se abandonada. Nao afirmar melhora em um servidor sem executar o benchmark real nesse ambiente.
+
 - Repositorio: https://github.com/brsxdlols/mkauth-dashboard-busca-suite
 - Branch: main.
 - Correcao de compatibilidade mais recente: 6411b79075d27bb4a49912d2857ddf0ecc8b9832.

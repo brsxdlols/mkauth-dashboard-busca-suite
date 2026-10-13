@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+exec 8>/var/lock/mkauth-suite-install.lock
+flock -n 8 || { echo 'Outra instalacao da suite esta em andamento.' >&2; exit 1; }
+
 TARGET_ADMIN_DIR="${1:-/opt/mk-auth/admin}"
 TARGET_ADDONS_DIR="${TARGET_ADMIN_DIR}/addons"
 BACKUP_ROOT="${2:-/opt/mk-auth/backups/codex-install}"
@@ -145,9 +148,11 @@ install_reconcile() {
     return 0
   fi
 
-  if ! bash "${reconcile_installer}"; then
-    echo "[aviso] instalacao do reconcile retornou erro; continuei com a dashboard instalada."
-  fi
+  # Performance installation never invokes a writer against accounting.
+  # Existing reconciliation jobs are preserved; new ones require separate maintenance.
+  echo "[info] reconciliador disponivel no pacote; execucao e instalacao de cron nao realizadas nesta etapa."
+  cp "${SCRIPT_DIR}/scripts/radacct-maintenance.sh" /opt/mk-auth/scripts/mkauth-radacct-maintenance.sh
+  chmod 700 /opt/mk-auth/scripts/mkauth-radacct-maintenance.sh
 }
 
 remove_manual_block_guard() {
@@ -191,6 +196,19 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
 mkdir -p "${BACKUP_DIR}"
+
+# Preserve the exact, previously tested direct rule instead of downgrading it.
+if command -v python3 >/dev/null 2>&1 && [ -f "${TARGET_ADDONS_DIR}/busca_inteligente/index.php" ]; then
+  python3 - "${TARGET_ADDONS_DIR}/busca_inteligente/index.php" "${BACKUP_DIR}/existing-online-rule" <<'PY'
+from pathlib import Path
+import re, sys
+text=Path(sys.argv[1]).read_text(encoding='utf-8-sig')
+match=re.search(r'\$onlineClientSql\s*=\s*"(.*?)";',text,re.S)
+known="(EXISTS (SELECT 1 FROM radacct r WHERE r.acctstoptime IS NULL AND r.username=c.login) OR EXISTS (SELECT 1 FROM sis_adicional a INNER JOIN radacct r ON r.username=a.username AND r.acctstoptime IS NULL WHERE a.login=c.login))"
+direct=bool(match and re.sub(r'\s+','',match.group(1))==re.sub(r'\s+','',known)) or "define('MKA_SEARCH_PREEXISTING_DIRECT',true)" in text
+Path(sys.argv[2]).write_text('direct' if direct else 'default')
+PY
+fi
 
 echo "[2/8] Gerando backup"
 mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
@@ -281,6 +299,17 @@ cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 install_client_audit_hook
 install_branding
 apply_dashboard_online_additional_fix
+if [ -f "${BACKUP_DIR}/existing-online-rule" ] && [ "$(cat "${BACKUP_DIR}/existing-online-rule")" = direct ]; then
+  python3 - "${TARGET_ADDONS_DIR}/busca_inteligente/index.php" <<'PY'
+from pathlib import Path
+import sys
+p=Path(sys.argv[1]);text=p.read_text(encoding='utf-8')
+needle='$onlineClientSql = mka_search_online_family_sql($link);'
+if text.count(needle)!=1: raise SystemExit('Regra preexistente nao pode ser preservada automaticamente; revisar backup.')
+p.write_text(text.replace(needle,"define('MKA_SEARCH_PREEXISTING_DIRECT',true);\n    "+needle),encoding='utf-8')
+PY
+  echo '[OK] Regra direta preexistente preservada; nao foi substituida pela regra normalizada.'
+fi
 
 echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
@@ -289,6 +318,9 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/online_rule.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/search_performance.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance_api.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/live.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/index.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/logs_data.php"
@@ -318,7 +350,7 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_manual_block_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
-install_additional_block_patch
+echo '[info] sincronizacao adicional existente preservada; nao instalar novos workers durante o diagnostico de desempenho.'
 remove_manual_block_guard
 install_reconcile
 check_online_offline
@@ -328,3 +360,29 @@ bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DI
 echo "[8/8] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"
 echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
+
+# Authenticated HTTP measurements: no invented operator, cookie or session.
+mkdir -p /var/lib/mkauth-suite-performance
+chmod 2770 /var/lib/mkauth-suite-performance
+if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance; fi
+touch /var/lib/mkauth-suite-performance/optimization.lock
+chmod 0660 /var/lib/mkauth-suite-performance/optimization.lock
+if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance/optimization.lock; fi
+cp "${SCRIPT_DIR}/scripts/search-performance.py" /opt/mk-auth/scripts/mkauth-search-performance.py
+chmod 0700 /opt/mk-auth/scripts/mkauth-search-performance.py
+echo "Diagnostico web: /admin/addons/busca_inteligente/performance.php (sessao administrativa necessaria)."
+if [ -t 1 ] && [ -r /dev/tty ]; then
+  printf 'Deseja medir Online/Offline pela web e avaliar uma otimizacao? [s/N] ' >/dev/tty
+  IFS= read -r performance_choice </dev/tty
+  if [ "$performance_choice" = s ] || [ "$performance_choice" = S ]; then
+    printf 'URL completa da Busca (http/https): ' >/dev/tty
+    IFS= read -r performance_url </dev/tty
+    printf 'Caminho privado do arquivo Netscape de cookies da SUA sessao (chmod 600): ' >/dev/tty
+    IFS= read -r performance_cookies </dev/tty
+    if command -v python3 >/dev/null 2>&1; then
+      python3 /opt/mk-auth/scripts/mkauth-search-performance.py --url "$performance_url" --cookies "$performance_cookies" --report "${BACKUP_DIR}/performance-http.json" </dev/tty || echo '[aviso] diagnostico web nao concluido. Use a tela autenticada para repetir.'
+    else
+      echo '[aviso] Python 3 ausente. Abra a tela de diagnostico pelo navegador.'
+    fi
+  fi
+fi

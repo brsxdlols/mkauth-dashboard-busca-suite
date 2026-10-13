@@ -1,6 +1,8 @@
 <?php
 include('nav/header.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
+require_once __DIR__ . '/../shared/search_performance.php';
+mka_perf_start($link,!empty($acesso_permitido));
 // Multiempresas changes only the dashboard; both modes use the complete new search.
 $isMultiBusiness = false;
 require_once __DIR__ . '/../shared/client_update_audit.php';
@@ -759,7 +761,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     ";
 
     require_once __DIR__.'/../shared/online_rule.php';
-    $onlineClientSql = mka_online_family_sql();
+    $onlineClientSql = mka_search_online_family_sql($link);
     $query_default = "
             $query_base     
             FROM sis_cliente c
@@ -780,8 +782,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cli_ativado LIKE 's' AND c2.login = c.login
             $group ORDER BY $organizar ";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         /*if(!$result || !$result_limit){
                 echo mysqli_error()."<br>";
             }*/
@@ -794,8 +796,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             $onlineClientSql
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (strtolower($partes[0]) == 'off' && strtolower($partes[1]) != '') {
         //include('clientes_offline.php');
@@ -805,8 +807,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             AND c.cli_ativado LIKE 's' AND c.ramal LIKE '$partes[1]' 
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (strtolower($partes[0]) == 'ramal' && strtolower($partes[1]) != '') {
         //include('clientes_offline.php');
@@ -815,8 +817,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cli_ativado LIKE 's' AND c.ramal LIKE '$partes[1]' 
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'conta') && $partes[1] != '') {
         $query_ok = "$query_default
@@ -824,8 +826,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.conta = '$partes[1]'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'corte') && $partes[1] != '') {
         $query_ok = "$query_default
@@ -833,8 +835,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.dias_corte = '$partes[1]'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'sem con')) {
         $query_ok = "$query_default
@@ -843,8 +845,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             AND c.cli_ativado LIKE 's'  
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'sem tit')) {
         $query_ok = "$query_default
@@ -854,8 +856,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.tipo_cob LIKE 'titulo'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'sem carn')) {
         $query_ok = "$query_default
@@ -865,8 +867,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.tipo_cob LIKE 'carne'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'sem telefone')) {
         $query_ok = "$query_default
@@ -874,12 +876,12 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             (c.fone IS NULL AND c.celular IS NULL AND c.celular2 IS NULL)
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
 
         if (!$result) {
             echo mysqli_error($link);
         }
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'bloq')) {
 
@@ -888,8 +890,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.bloqueado LIKE 'sim'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if ($partes[0] != '' && startsWith($partes[1], 'bloq')) {
         $query_ok = "$query_default
@@ -901,8 +903,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_nome%')
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[2], 'bloq')) {
         $query_ok = "$query_default
@@ -915,8 +917,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_end%')
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], "obs")) {
 
@@ -925,8 +927,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.observacao LIKE 'sim'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'atrasado sem obs')) {
         $query_ok = "    $query_base
@@ -944,8 +946,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $cond_offline 
         $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'atrasado')) {
         $query_ok = "$query_base
@@ -962,8 +964,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $cond_offline 
         $group ORDER BY $organizar";
             
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         // if(!$result || !$result_limit){
         //     echo mysqli_error($link);
         // }
@@ -975,8 +977,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.parc_abertas = '$partes[1]'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (strtolower($partes[0]) === "desativado") {
         $disabledSearchCondition = '';
@@ -989,8 +991,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cli_ativado LIKE 'n' $disabledSearchCondition
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if ($partes[0] != '' && strtolower($partes[1] == 'desativado')) {
         $query_ok = "$query_default
@@ -1002,8 +1004,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_nome%')
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (strtolower($partes[2] == 'desativado')) {
         $query_ok = "$query_default
@@ -1015,8 +1017,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_end%')
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'venc') && $partes[1] != '') {
         $query_ok = "$query_default
@@ -1024,8 +1026,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.venc LIKE '%$string_end%'
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if ($partes[1] != '') {
         $query_ok = "$query_default
@@ -1038,8 +1040,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_end%')
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (strtolower($partes[0]) == 'on' || strtolower($partes[0]) == 'online') {
         $query_ok = "$query_default
@@ -1047,8 +1049,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             $onlineClientSql
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else if (strtolower($partes[0]) == 'off' || strtolower($partes[0]) == 'offline') {
         //include('clientes_offline.php');
@@ -1057,8 +1059,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             AND c.cli_ativado LIKE 's' $cond_offline  
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
     } else {
         $query_ok = "$query_default
@@ -1096,8 +1098,8 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c2.username LIKE '%$busca%')
             $group ORDER BY $organizar";
 
-        $result = mysqli_query($link, "$query_ok");
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
+        $result = mka_perf_query($link, "$query_ok", 'list-total');
+        $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
 
         // if(!$result || !$result_limit){
         //     echo mysqli_error($link);
@@ -1163,7 +1165,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 <script src="../shared/radius_modal.js?v=20261006"></script>
     <script src="../../menu.js.<?= $links_ext; ?>"></script>
 
-<?php include('../../rodape.php'); ?>
+<?php include('../../rodape.php'); mka_perf_emit(); ?>
 </body>
 
 </html>

@@ -4,6 +4,8 @@ Dashboard e busca compartilham `addons/shared/online_rule.php`: login normalizad
 
 O reconciliador mantém um único cron, a cada dois minutos, com trava contra execuções concorrentes. A guarda de ausência foi incorporada do instalador do mkauth-toolkit. Exige duas observações completas no mesmo NAS, separadas por 120 segundos, e accounting sem atualização por 10 minutos. Respostas incompletas, vazias, malformadas e ausência em massa não autorizam fechamento. Cada encerramento condicional tem cópia anterior do registro.
 
+Na versao com diagnostico de desempenho, esse instalador de reconciliacao nao e chamado automaticamente. Crons existentes sao preservados; uma nova instalacao/execucao deve ser autorizada em procedimento separado. O benchmark e a otimizacao descritos em PERFORMANCE.md nao alteram radacct.
+
 Na reinstalação, o instalador confere seu próprio checksum, a configuração solicitada e os arquivos reais instalados (reconciliador, guarda, status e cron). Se coincidirem, não reinstala nem executa uma conciliação extra. O cron continua ativo: só a instalação é ignorada. Falhas da execução inicial não geram marca de instalação concluída.
 
 Reaberturas também salvam a linha anterior e usam comparação de datas para não sobrescrever accounting atualizado entre leitura e escrita. O arquivo `reopen-rollback-*.jsonl` guarda os bytes originais em `row_php_base64` (serialização PHP codificada em base64); não interpretar arquivos de rollback recebidos de terceiros.
