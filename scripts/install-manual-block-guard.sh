@@ -34,7 +34,9 @@ BEGIN
     DECLARE v_last_action VARCHAR(16) DEFAULT NULL;
     -- The native routine may rewrite tipobloq before clearing bloqueado.
     -- Use the recorded operator decision, not that mutable flag, as authority.
-    IF OLD.bloqueado='sim' THEN
+    -- Native trust unlock uses observation and owns its expiration/removal.
+    -- Read NEW so granting observation takes effect in the same UPDATE.
+    IF OLD.bloqueado='sim' AND COALESCE(NEW.observacao,'nao') <> 'sim' THEN
         SET v_last_action = (
             SELECT a.acao
               FROM dashboard_am_manual_block_audit a

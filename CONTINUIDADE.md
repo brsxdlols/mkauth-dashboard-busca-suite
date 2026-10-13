@@ -14,6 +14,10 @@ Resumo de 30/09/2026. Nao contem credenciais nem o historico integral da convers
 
 ## Ultimas correcoes
 
+- 13/10/2026: incorporada a protecao de bloqueio manual observada no servidor Primos Net. O trigger respeita NEW.observacao='sim' para permitir o desbloqueio de confianca pelo mk-bot. A rotina nativa controla o vencimento e a remocao da observacao; o historico de bloqueio manual e preservado.
+- No caso analisado, as tentativas repetidas de desbloqueio terminaram em 09/10 as 18h34, apos a recriacao do trigger as 18h33. Isso e consistente com a correcao, sem constituir teste controlado. Em 13/10 o cliente estava fora de observacao e foi bloqueado por atraso. Nenhuma alteracao foi aplicada ao servidor durante esta analise.
+- Validacao local: `python scripts/test-manual-block-trust.py` verifica a condicao SQL extraida do instalador em oito cenarios. Nao valida a instalacao do trigger no MariaDB nem executa o mk-bot.
+
 - addons/dashboard/config.php e addons/busca_inteligente/config.php carregam a configuracao nativa quando necessaria e inicializam a sessao administrativa nativa na variante HHVM.
 - MK-AUTH 26.03: sessao administrativa usa cookie por instalacao; nao assumir a sessao PHP padrao. Manter verificacoes de autenticacao e permissao, sem inventar identidade de operador.
 - Carregar /opt/mk-auth/include/configure.php evita constante VERSAO2UPDATE ausente no topo nativo.
