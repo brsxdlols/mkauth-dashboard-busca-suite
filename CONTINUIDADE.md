@@ -60,3 +60,7 @@ git clone https://github.com/brsxdlols/mkauth-dashboard-busca-suite.git
 ```
 
 Abrir a pasta clonada no Codex e pedir para ler este arquivo antes de continuar. GitHub preserva codigo e este resumo, nao importa a conversa original. Para preservar historicos locais, guardar backup privado do estado .codex e das pastas de projeto com o aplicativo fechado; validar a restauracao antes de apagar a maquina antiga.
+
+## Grafico do Mapa de Clientes
+
+Patch opcional scripts/patch-map-traffic.py para addon instalado em addons/mapa-clientes/maps.hhvm: altura do painel acompanha os dados do cliente no desktop; coordenadas SVG usam tamanho real; ultimo ponto mostra Down/Up, demais pontos mantem tooltip com ambos valores; areas translucidas nas cores azul/vermelho. Instalador aplica apenas em versao reconhecida, com backup e lint PHP; nao importa configuracao do Mapa para o repositorio. Aplicado no Visual Net; backup /opt/mk-auth/backups/codex-map-traffic-XjwxzgRk.

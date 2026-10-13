@@ -377,3 +377,7 @@ else
   echo '[aviso] PHP ausente; otimizacao automatica nao executada.'
 fi
 echo "Nova analise disponivel no botao Executar analise de desempenho da Dashboard e Busca."
+
+if command -v python3 >/dev/null 2>&1; then
+  python3 "${SCRIPT_DIR}/scripts/patch-map-traffic.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/map-traffic" || echo '[aviso] Grafico do Mapa preservado; patch nao aplicado. Consulte o log.'
+fi
