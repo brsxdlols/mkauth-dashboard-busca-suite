@@ -44,7 +44,7 @@ function mka_perf_plan() {
 function mka_perf_start($db,$allowed) {
     if (!in_array($_GET['busca'] ?? '',array('on','off'),true) || (string)($_GET['pagina'] ?? '')!=='1' || (string)($_GET['num_registros'] ?? '')!=='25' || ($_GET['organizar'] ?? '')!=='c.nome') return;
     $nonce=$_GET['_mka_perf'] ?? '';
-    if (!$allowed || !function_exists('permissao') || !permissao('perm_totais') || !is_string($nonce) || !hash_equals((string)($_SESSION['suite_perf_plan'] ?? ''),$nonce)) return;
+    if (!$allowed || !is_string($nonce) || !hash_equals((string)($_SESSION['suite_perf_plan'] ?? ''),$nonce)) return;
     $p=mka_perf_plan(); if (!$p) return;
     $rule=$_GET['_mka_rule'] ?? 'baseline';
     if (!in_array($rule,array('baseline','candidate','applied'),true)) return;

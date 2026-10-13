@@ -1,14 +1,5 @@
 <?php
-if (!isset($acesso_permitido) || !$acesso_permitido) return;
-// Native Totais permission controls all aggregate numbers and percentages.
-if (!permissao('perm_totais')) {
-    $labels=array('Total'=>'index.php','Adicionais'=>'?busca=adicionais','Livres'=>'?busca=','Observação'=>'?busca=obs','Bloqueados'=>'?busca=bloq','Atraso'=>'?busca=atrasado','Online'=>'?busca=on','Offline'=>'?busca=off','Desativados'=>'?busca=desativado','Sem carnê'=>'?busca=sem+carne','Sem títulos'=>'?busca=sem+tit');
-    if(!empty($isMultiBusiness)){unset($labels['Online'],$labels['Offline']);}
-    echo '<div class="search-stat-grid no_print" aria-label="Filtros de clientes">';
-    foreach($labels as $label=>$url)echo '<a class="search-stat-card is-light" href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'"><span class="search-stat-label">'.htmlspecialchars($label,ENT_QUOTES,'UTF-8').'</span></a>';
-    echo '</div>';return;
-}
-
+// Client totals only affect displayed quantities; filters and search remain available.
 
 $statsNow = isset($now) && $now !== '' ? $now : date('Y-m-d');
 $stats = array('clients'=>0,'additional'=>0,'free'=>0,'observation'=>0,'blocked'=>0,'late'=>0,'online'=>0,'offline'=>0,'no_booklet'=>0,'no_titles'=>0);
@@ -50,5 +41,5 @@ $searchStats = array_merge($orderedStats, $billingStats);
     $targetStatSearch = null;
     if (strpos($stat[3], '?') !== false) { $statQuery = array(); parse_str((string)parse_url($stat[3], PHP_URL_QUERY), $statQuery); $targetStatSearch = isset($statQuery['busca']) ? strtolower(trim((string)$statQuery['busca'])) : ''; }
     $statSelected = ($targetStatSearch === null) ? ($currentStatSearch === null) : ($currentStatSearch !== null && $currentStatSearch === $targetStatSearch);
-?><a class="search-stat-card <?= $stat[4]; ?><?= $statSelected ? ' is-selected' : ''; ?>" href="<?= $stat[3]; ?>"<?= $statSelected ? ' aria-current="true"' : ''; ?>><span class="search-stat-icon"><i class="fa-solid <?= $stat[5]; ?>"></i></span><span class="search-stat-content"><span class="search-stat-number-row"><strong class="search-stat-value"><?= (int)$stat[1]; ?></strong><small class="search-stat-percent">/ <?= htmlspecialchars($stat[2],ENT_QUOTES,'UTF-8'); ?></small></span><span class="search-stat-label"><?= htmlspecialchars($stat[0],ENT_QUOTES,'UTF-8'); ?></span></span></a><?php } ?>
+?><a class="search-stat-card <?= $stat[4]; ?><?= $statSelected ? ' is-selected' : ''; ?>" href="<?= $stat[3]; ?>"<?= $statSelected ? ' aria-current="true"' : ''; ?>><span class="search-stat-icon"><i class="fa-solid <?= $stat[5]; ?>"></i></span><span class="search-stat-content"><span class="search-stat-number-row"><strong class="search-stat-value"><?= !empty($acesso_permitido) ? (int)$stat[1] : ''; ?></strong><small class="search-stat-percent"><?= !empty($acesso_permitido) ? '/ '.htmlspecialchars($stat[2],ENT_QUOTES,'UTF-8') : ''; ?></small></span><span class="search-stat-label"><?= htmlspecialchars($stat[0],ENT_QUOTES,'UTF-8'); ?></span></span></a><?php } ?>
 </div>

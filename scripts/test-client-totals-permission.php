@@ -1,9 +1,18 @@
 <?php
+// Run with php -n: no native permission function exists in Busca.
 if(PHP_SAPI!=='cli')exit(1);
-function permissao($permission){return false;}
-function mka_perf_query(){throw new RuntimeException('Aggregate query ran without Totais permission.');}
-$acesso_permitido=true;$isMultiBusiness=false;
-ob_start();require __DIR__.'/../addons/busca_inteligente/search_stats.php';$html=ob_get_clean();
-if(strpos($html,'Online')===false || strpos($html,'Bloqueados')===false)throw new RuntimeException('Customer filters disappeared.');
-if(preg_match('/[0-9%]/',strip_tags($html)) || strpos($html,'search-stat-value')!==false || strpos($html,'search-stat-percent')!==false)throw new RuntimeException('Aggregate values exposed without permission.');
-echo "PASS filters remain available; counts, percentages and aggregate queries withheld without native Totais permission.\n";
+function fixture_mysqli_query($db,$sql){return false;}
+function fixture_mysqli_fetch_assoc($r){return false;}
+function fixture_mysqli_num_rows($r){return 2;}
+function mka_perf_query(){return true;}
+function mka_perf_cards(){}
+$link=null;$grupos='';$isMultiBusiness=true;
+foreach(array(false,true) as $acesso_permitido){
+ ob_start();$source=file_get_contents(__DIR__.'/../addons/busca_inteligente/search_stats.php');$source=str_replace(array('mysqli_query(', 'mysqli_fetch_assoc(', 'mysqli_num_rows('),array('fixture_mysqli_query(', 'fixture_mysqli_fetch_assoc(', 'fixture_mysqli_num_rows('),$source);eval('?>'.$source);$html=ob_get_clean();
+ if(strpos($html,'Bloqueados')===false || strpos($html,'Sem títulos')===false)throw new RuntimeException('Filters disappeared.');
+ preg_match_all('/class="search-stat-value">([^<]*)</',$html,$values);
+ if(count($values[1])<8)throw new RuntimeException('Cards missing.');
+ foreach($values[1] as $value)if($acesso_permitido ? $value==='' : $value!=='')throw new RuntimeException('Count visibility incorrect.');
+ echo 'PASS totals '.($acesso_permitido?'visible':'hidden').'; filters rendered without Dashboard permission function.'.PHP_EOL;
+}
+

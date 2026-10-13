@@ -1041,7 +1041,7 @@ $busca2 = str_replace("+", "%2B", $busca2);
 
 // The disabled card counts customer records, not their additional logins.
 $tot_clientes = !empty($disabledScope) ? $tot_resultados : $tot_resultados + $count_adicional;
-if ($acesso_permitido && permissao('perm_totais')) echo '<b class="client-results-count">Resultados Encontrados = ' . (int)$tot_clientes . '</b>';
+if ($acesso_permitido) echo '<b class="client-results-count">Resultados Encontrados = ' . (int)$tot_clientes . '</b>';
 ?>
 
 <div class='row text-light text-center client-head'>
