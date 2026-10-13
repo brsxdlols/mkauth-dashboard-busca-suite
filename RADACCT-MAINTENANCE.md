@@ -10,6 +10,10 @@ Reaberturas também salvam a linha anterior e usam comparação de datas para n�
 
 ## Manutenção separada, nunca automática
 
+O instalador agora executa uma checagem leve e somente de leitura: tamanho estimado das tabelas, indices e EXPLAIN das consultas online/offline. O resultado fica em `online-offline-check.log` dentro do backup da instalacao. A checagem tem limite de 45 segundos; falha ou timeout gera aviso, sem afirmar que a verificacao passou. Ela nao limpa registros, nao cria indices e nao executa a manutencao abaixo.
+
+Para repetir: `timeout 45s bash /opt/mk-auth/scripts/mkauth-check-online-offline.sh`. Planos de consulta indicam pontos para investigar, mas nao comprovam a causa nem o tempo real da lentidao. A investigacao da Quality Telecom continua sem solucao comprovada.
+
 Dentro do pacote no servidor:
 
 ```bash

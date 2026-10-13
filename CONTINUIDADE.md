@@ -4,7 +4,7 @@ Resumo de 30/09/2026. Nao contem credenciais nem o historico integral da convers
 
 ## Ajuste separado em 13/10/2026
 
-Esta branch `ajustes/bloqueio-nativo` remove a protecao de bloqueio persistente e volta a utilizar somente o bloqueio nativo. A main em ae4afd0 foi preservada. Consulte BLOQUEIO-NATIVO.md para o escopo e a migracao; os registros abaixo descrevem a versao anteriormente publicada. Os ajustes foram aplicados com autorizacao no Visual Net Fibra em 13/10/2026, com backup previo e preservacao das demais diferencas locais. Novas instalacoes desta versao precisam selecionar REPO_REF=ajustes/bloqueio-nativo; o bootstrap padrao continua usando a main antiga.
+Versao promovida para `main` com autorizacao em 13/10/2026. A versao anterior ae4afd0 esta preservada em `backup/versao-ae4afd0`. O bootstrap padrao agora remove a protecao persistente de bloqueio manual, com backup dos triggers e arquivos antigos, e executa uma checagem online/offline somente de leitura com relatorio e limite de 45 segundos. Nenhuma limpeza de radacct ou criacao de indices e aplicada por essa checagem. Consulte BLOQUEIO-NATIVO.md para o escopo e a migracao; os registros abaixo descrevem a versao anteriormente publicada. Os ajustes de interface foram aplicados com autorizacao no Visual Net Fibra, preservando as demais diferencas locais. A lentidao da Quality Telecom continua sem solucao comprovada.
 
 ## Estado publicado
 

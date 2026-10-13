@@ -24,6 +24,10 @@ install.sh
 
 ## Instalar no servidor
 
+Versao atual: bloqueio comum do MK-AUTH. A instalacao remove a antiga protecao persistente de bloqueio manual (trigger e enforcer), com backup previo, preservando os estados dos clientes e o historico. A main inclui os ajustes do Visual Net; a versao anterior esta preservada em backup/versao-ae4afd0.
+
+Ao instalar, e executada uma checagem de online/offline somente de leitura, com limite de 45 segundos. Consulta tamanho estimado, indices e planos SQL; salva online-offline-check.log no backup e avisa se incompleta. Nao executa limpeza de radacct nem cria indices automaticamente. A checagem nao garante solucao de lentidao.
+
 ### Instalacao direta via curl
 
 ```bash

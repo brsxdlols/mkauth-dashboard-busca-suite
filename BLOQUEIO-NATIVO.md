@@ -1,8 +1,8 @@
-# Versao em ajuste: bloqueio nativo
+# Versao publicada: bloqueio nativo
 
 Base preservada: commit ae4afd02f379ea6f2c092de03af28938229958e5.
 Referencia local: backup/manual-block-trust-ae4afd0.
-Branch de trabalho: ajustes/bloqueio-nativo. A main permanece na versao publicada.
+Branch de trabalho: ajustes/bloqueio-nativo. Esta versao foi promovida para main; a anterior permanece em backup/versao-ae4afd0.
 
 - Dashboard: removidos o contador e o card de bloqueio manual; os dez cards dividem igualmente a largura disponivel, mantendo os pontos de quebra para telas menores.
 - Busca: removidos o card e o filtro especificos de bloqueio manual. Bloquear e Desbloquear usam a acao nativa do MK-AUTH. O modal preserva o motivo e o historico, sem forcar tipobloq.
@@ -11,7 +11,7 @@ Branch de trabalho: ajustes/bloqueio-nativo. A main permanece na versao publicad
 
 Aplicado com autorizacao no Visual Net Fibra em 13/10/2026. Backup anterior: /opt/mk-auth/backups/codex-native-block-20261013_090145. Foram aplicados somente os quatro arquivos de interface alterados e removida a protecao; outras diferencas locais do servidor foram preservadas. Validacao PHP e hashes dos arquivos passaram; o trigger persistente nao existe apos a alteracao. Confirmar servidor, alteracao e backup antes de instalar em outros ambientes. Nao executar o instalador no notebook.
 
-Para novas instalacoes e atualizacoes desta versao, selecionar explicitamente REPO_REF=ajustes/bloqueio-nativo no bootstrap. O bootstrap sem essa variavel continua usando a main preservada, que ainda possui a protecao antiga.
+Novas instalacoes e atualizacoes usam o bootstrap padrao da main. Ele remove a protecao persistente antiga com backup previo de triggers e arquivos e executa a checagem online/offline somente de leitura. A checagem salva um relatorio no backup e nao aplica limpeza ou indices automaticamente.
 
 Teste do fluxo do modal: node scripts/test-native-block-modal.js.
 

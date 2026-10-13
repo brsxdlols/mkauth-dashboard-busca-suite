@@ -157,7 +157,31 @@ remove_manual_block_guard() {
     echo "[aviso] rotina de remocao da protecao de bloqueio nao encontrada."
     return 0
   fi
-  bash "${installer}"
+  bash "${installer}" "${BACKUP_DIR}/manual-block"
+}
+
+check_online_offline() {
+  local checker="${SCRIPT_DIR}/scripts/check-online-offline.sh"
+  local report="${BACKUP_DIR}/online-offline-check.log"
+  echo "[checagem] Verificando online/offline sem alterar o banco"
+  if [ ! -f "$checker" ]; then
+    echo "[aviso] ferramenta de checagem online/offline ausente."
+    return 0
+  fi
+  mkdir -p /opt/mk-auth/scripts
+  cp "$checker" /opt/mk-auth/scripts/mkauth-check-online-offline.sh
+  chmod 700 /opt/mk-auth/scripts/mkauth-check-online-offline.sh
+  local status=0
+  if command -v timeout >/dev/null 2>&1; then
+    timeout 45s bash "$checker" "${TARGET_ADDONS_DIR}/shared/online_rule.php" > "$report" 2>&1 || status=$?
+  else
+    echo "[aviso] timeout ausente; checagem automatica nao executada." > "$report"
+    status=1
+  fi
+  cat "$report"
+  if [ "$status" -ne 0 ]; then
+    echo "[aviso] checagem online/offline incompleta (codigo $status). Consulte $report."
+  fi
 }
 
 echo "[1/8] Validando caminhos"
@@ -297,6 +321,7 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 install_additional_block_patch
 remove_manual_block_guard
 install_reconcile
+check_online_offline
 
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
 
