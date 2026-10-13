@@ -64,4 +64,5 @@ radiusTypes.addEventListener('change',()=>{saved=[];logs.replaceChildren();clear
 function applySearch(){const q=document.getElementById('search').value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();for(const el of logs.children)el.hidden=!el.textContent.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q);}
 document.getElementById('search').addEventListener('input',applySearch);document.getElementById('line-limit').addEventListener('change',()=>{clearTimeout(timer);if(!busy)update();});
 document.getElementById('toggle').onclick=function(){running=!running;this.textContent=running?'Pausar':'Retomar';clearTimeout(timer);if(running)update();};document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden&&running)update();});window.addEventListener('pagehide',()=>{running=false;clearTimeout(timer);if(controller)controller.abort();});update();
-</script><script src="../shared/compact_notice.js?v=20261008"></script><script src="client_status.js?v=20261009-settings2"></script></html>
+</script><script src="../shared/compact_notice.js?v=20261008"></script><script src="../shared/radius_preferences.js?v=20261013-global"></script>
+<script src="client_status.js?v=20261013-global"></script></html>

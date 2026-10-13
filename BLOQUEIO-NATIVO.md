@@ -15,6 +15,8 @@ Para novas instalacoes e atualizacoes desta versao, selecionar explicitamente RE
 
 Teste do fluxo do modal: node scripts/test-native-block-modal.js.
 
+Preferencia do RADIUS: Ocultar logins desativados agora e global por instalacao, salva em sis_opcao.radius_hide_disabled via endpoint autenticado e protegido por CSRF. Todos os usuarios, navegadores e o modal/monitor consultam a mesma opcao. O armazenamento local deixa de ser utilizado. A escolha e salva ao marcar/desmarcar; telas ja abertas sincronizam em ate 15 segundos. Aplicado no Visual Net, inicialmente ativo. Backup: /opt/mk-auth/backups/codex-block-forecast-20261013_093841. Teste: node scripts/test-radius-preferences.js.
+
 Atualizacao de 13/10: corrigida a leitura UTF-8 dos textos na implantacao do Visual Net. O modal consulta boletos com status aberto/vencido, sem titulos excluidos, e calcula a previsao a partir do vencimento mais antigo e dos dias de corte do cliente. Mostra a soma e o primeiro dia em que o atraso supera esse prazo. Trata-se de uma estimativa: a rotina nativa possui regras e agendamento proprios. Mostra tambem observacao, isencao, cliente desativado e configuracoes de bloqueio/desbloqueio automaticos. A consulta exige autenticacao e respeita os grupos permitidos.
 
 Backup da correcao no Visual Net: /opt/mk-auth/backups/codex-block-forecast-20261013_091203. Testes: php scripts/test-block-forecast.php e node scripts/test-block-forecast-js.js. Nenhum titulo ou estado de cliente foi alterado por esta consulta.

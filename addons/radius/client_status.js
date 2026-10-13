@@ -8,7 +8,6 @@
     input.type='checkbox'; label.className='radius-hide-disabled';
     label.append(input, document.createTextNode('Ocultar logins desativados'));
     const toolbar = document.querySelector('.log-search') || document.querySelector('.radius-filters');
-    const storageKey='radius-hide-disabled-persistent';
     const gear=document.createElement('button');gear.type='button';
     gear.textContent='⚙';gear.title='Configurações do Log RADIUS';gear.setAttribute('aria-label','Configurações do Log RADIUS');
     gear.style.cssText='display:inline-grid;place-items:center;width:34px;height:34px;flex:none;align-self:flex-start;border:1px solid #d7e2f0;border-radius:9px;background:#fff;color:#2563eb;font:22px/1 Arial;cursor:pointer';
@@ -17,12 +16,12 @@
     const settings=document.createElement('dialog');settings.setAttribute('aria-label','Configurações do Log RADIUS');
     settings.style.cssText='box-sizing:border-box;width:min(420px,90vw);padding:24px;border:1px solid #dce5f1;border-radius:16px;background:#fff;color:#18324a;box-shadow:0 24px 70px #0004;font:14px/1.5 Arial,sans-serif';
     const title=document.createElement('h3');title.textContent='Configurações do Log RADIUS';title.style.cssText='margin:0 0 16px;font-size:18px';
-    const help=document.createElement('p');help.textContent='A escolha fica salva neste navegador para este MK-Auth e vale também para o modal da dashboard. Para mostrar novamente, desmarque esta opção.';help.style.cssText='font-size:12px;color:#64748b;margin:12px 0';
+    const help=document.createElement('p');help.textContent='A escolha fica salva no servidor para todos os usu\u00e1rios e navegadores. Para mostrar novamente, desmarque.';help.style.cssText='font-size:12px;color:#64748b;margin:12px 0';
     const feedback=document.createElement('p');feedback.setAttribute('role','status');feedback.style.cssText='font-size:12px;color:#16804a;min-height:18px';
     const close=document.createElement('button');close.type='button';close.textContent='Concluir';close.style.cssText='border:0;border-radius:9px;padding:10px 18px;background:#2563eb;color:#fff;cursor:pointer;font-weight:600';
     settings.append(title,label,help,feedback,close);document.body.append(settings);
     gear.onclick=function(){feedback.textContent='';settings.showModal();};close.onclick=function(){settings.close();};settings.addEventListener('close',function(){gear.focus();});
-    try {const stored=localStorage.getItem(storageKey);input.checked=(stored===null?sessionStorage.getItem('radius-hide-disabled'):stored)==='1';} catch (_) {}
+
     let cache={}, busy=false, pending;
     function loginOf(entry) {
         const node=entry.querySelector('.radius-client-link');
@@ -60,8 +59,8 @@
         } catch (_) { /* Never label or hide customers when their status is unknown. */ }
         finally {busy=false;}
     }
-    input.onchange=function(){try{localStorage.setItem(storageKey,input.checked?'1':'0');feedback.textContent='Configuração salva automaticamente.';}catch(_){feedback.textContent='Não foi possível salvar neste navegador. A escolha vale apenas nesta página.';}paint();};
-    window.addEventListener('storage',function(event){if(event.key===storageKey){input.checked=event.newValue==='1';paint();}});
+    window.mkaRadiusPreference(input,feedback,paint);
+
     paint();refresh(true);
     const timer=setInterval(function(){refresh(true);},15000);
     window.addEventListener('pagehide',function(){clearInterval(timer);clearTimeout(pending);observer.disconnect();});
