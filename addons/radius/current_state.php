@@ -45,3 +45,35 @@ function radius_current_event($state,$rows,$history=null) {
         'login'=>$state['login'],'name'=>$state['name'],'client_url'=>$state['client_url'],
         'line'=>$date ? $date.' — '.($online?'Início da sessão atualmente aberta':'Encerramento da última sessão').' no MK-AUTH (radacct).' : 'Estado atual: '.($online?'Online':'Offline').'. Registro da '.($online?'conexão atual':'última desconexão').' indisponível no accounting.');
 }
+
+function radius_monitor_events($db,$state,$rows,$history=null) {
+    if($history && !empty($history['rows']))$rows=array_merge($rows,$history['rows']);
+    elseif($history && !empty($history['row']))$rows[]=$history['row'];
+    $events=array();$authTimes=array();
+    foreach($rows as $row){
+        $time=radius_log_timestamp($row['line']);if($time===null)continue;
+        if($row['type']==='conectados'){$row['label']='Login autorizado';$authTimes[]=$time;}
+        $row['name']=$row['name'] ?? $state['name'];$row['client_url']=$row['client_url'] ?? $state['client_url'];$row['source']='radius';
+        $row['event_time']=$time;$row['event_key']='log:'.sha1($row['line']);$events[$row['event_key']]=$row;
+    }
+    if(!empty($state['name']))try {
+        $indexes=$db->query("SHOW INDEX FROM radacct WHERE Column_name='username' AND Seq_in_index=1");$hint='';
+        if($indexes)while($index=$indexes->fetch_assoc())if(preg_match('/^[A-Za-z0-9_]+$/D',$index['Key_name'])){$hint=' FORCE INDEX (`'.$index['Key_name'].'`)';break;}
+        if($hint!=='')foreach(array('acctstarttime','acctstoptime') as $column){
+            $sql="SELECT acctstarttime,acctstoptime FROM radacct".$hint." WHERE username=? AND ".$column." IS NOT NULL ORDER BY ".$column." DESC LIMIT 5";
+            $st=$db->prepare($sql);$st->bind_param('s',$state['login']);$st->execute();$result=$st->get_result();
+            while($session=$result->fetch_assoc())foreach(array('acctstarttime','acctstoptime') as $field){
+                $time=$session[$field]?strtotime($session[$field]):false;if($time===false)continue;
+                $start=$field==='acctstarttime';$duplicate=false;
+                if($start)foreach($authTimes as $authTime)if(abs($authTime-$time)<=30){$duplicate=true;break;}
+                if($duplicate)continue;
+                $key=($start?'start:':'stop:').$time;
+                $events[$key]=array('type'=>$start?'conectados':'desconectados','label'=>$start?'Conexão':'Desconexão',
+                    'login'=>$state['login'],'name'=>$state['name'],'client_url'=>$state['client_url'],'event_time'=>$time,'event_key'=>$key,'source'=>$start?'accounting_start':'accounting_stop',
+                    'line'=>date('d/m/Y H:i:s',$time).' — '.($start?'Início':'Encerramento').' da sessão no MK-AUTH (radacct).');
+            }
+        }
+    }catch(Throwable $e){ /* Keep genuine RADIUS events when accounting is unavailable. */ }
+    $events=array_values($events);usort($events,function($a,$b){return $b['event_time']<=>$a['event_time'] ?: strcmp($a['event_key'],$b['event_key']);});
+    return array_slice($events,0,5);
+}

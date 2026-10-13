@@ -51,7 +51,7 @@ Revisar o instalador e confirmar backup antes de atualizar producao. Destino pad
 
 ## RADIUS sem historico
 
-O modal individual mostra estado atual pelas sessoes abertas de radacct e somente uma linha correspondente: Online usa o evento da sessao atual (ou seu inicio no accounting); Offline usa o ultimo acctstoptime. Eventos antigos nao se acumulam, e Linhas fica somente no monitor geral. Historico completo permanece em Ultimas conexoes. Exibe o periodo real dos arquivos consultados e avisa se a busca atingiu o limite. Ausencia de log por retencao nao implica Offline; falha na consulta de estado retorna indisponivel. Validado no Visual Net: cliente Online sem evento em oito arquivos.
+O modal individual mostra o estado atual separado no topo e os ultimos cinco eventos do login, ordenados do mais recente, com atualizacao a cada tres segundos. Combina autenticacoes/erros do RADIUS com inicio/encerramento de radacct, consulta indexada por login, sem duplicar o inicio correspondente a Login OK. Mantem eventos recebidos no modal durante rotacoes. Linhas fica somente no monitor geral. Historico completo permanece em Ultimas conexoes. Exibe o periodo real dos arquivos consultados e avisa se a busca atingiu o limite. Ausencia de log por retencao nao implica Offline; falha na consulta de estado retorna indisponivel. Validado no Visual Net: cliente Online sem evento em oito arquivos.
 
 ## Novo notebook
 

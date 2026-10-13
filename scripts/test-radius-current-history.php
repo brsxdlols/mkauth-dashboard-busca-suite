@@ -26,5 +26,10 @@ try {
     $old=array('type'=>'conectados','label'=>'Conectado','line'=>'Mon Oct 12 09:00:00 2026 : Auth: Login OK: [connected/***]','login'=>'connected');
     $event=radius_current_event($online,array($old));radius_test(strpos($event['line'],'13/10/2026 10:00:00')!==false,'old authorization never substitutes current session');
     $offline=radius_current_state($db,'offline',$client);$event=radius_current_event($offline,array($old));radius_test($event['type']==='desconectados' && strpos($event['line'],'12/10/2026 10:00:00')!==false,'offline shows latest session stop, not Login OK');
+    $rows=array();foreach(array('10:05:00','10:04:00','10:03:00','10:02:00','10:01:00','10:00:05') as $time)$rows[]=array('type'=>$time==='10:00:05'?'conectados':'erros','line'=>'Tue Oct 13 '.$time.' 2026 : Auth: Login incorrect: [connected/***]','login'=>'connected');
+    $events=radius_monitor_events($db,$online,$rows);radius_test(count($events)===5 && $events[0]['type']==='erros' && $events[0]['event_time']>$events[4]['event_time'],'five newest mixed events sorted descending');
+    $events=radius_monitor_events($db,$online,array($rows[5]));radius_test(count($events)===1 && $events[0]['source']==='radius','authorization and session start deduplicated');
+    $events=radius_monitor_events($db,$offline,array());radius_test(count($events)===2 && $events[0]['type']==='desconectados' && $events[1]['type']==='conectados','accounting stop and start remain separate events');
+    $r=radius_latest_history('other',5);radius_test(count($r['rows'])===1,'bounded multiple-event archive lookup');
     $db->close();
 } finally {unlink($log);unlink($log.'.1');rmdir($dir);putenv('RADIUS_LOG_FILE');}
