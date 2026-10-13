@@ -62,6 +62,14 @@ if(<?= $login===''?'true':'false' ?>){const note=document.getElementById('histor
 const hiddenStyle=document.createElement('style');hiddenStyle.textContent='#logs [hidden]{display:none!important}';document.head.append(hiddenStyle);
 const radiusTypes=document.createElement('fieldset');radiusTypes.className='live-filters';
 const isGeneral=<?= $login===''?'true':'false' ?>;
+if(!isGeneral){
+ document.body.classList.add('radius-individual');
+ const explanation=document.getElementById('history-note').nextElementSibling;
+ explanation.textContent='Últimos 5 eventos • atualização a cada 3 segundos. Estado atual separado do histórico.';
+ const fitStyle=document.createElement('style');
+ fitStyle.textContent='.radius-individual{gap:5px}.radius-individual #history-note{display:none}.radius-individual #log-range,.radius-individual #history-note+p{font-size:11px;line-height:1.4;margin:0}.radius-individual #logs{padding:8px}.radius-individual .radius-current-state{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:3px 12px;padding:9px 12px!important;font-size:12px!important;line-height:1.4!important}.radius-individual .radius-current-state>div:nth-child(n+3){grid-column:1/-1}.radius-individual .radius-log-entry{grid-template-columns:minmax(130px,180px) minmax(0,1fr);gap:10px;padding:8px 12px;margin-bottom:5px;min-height:0}.radius-individual .radius-log-meta{gap:4px}.radius-individual .radius-log-entry code{font-size:11px;line-height:1.4}.radius-individual .radius-client-link{font-size:11px;line-height:1.3}.radius-individual .log-search input{padding:6px 9px}@media(max-width:600px){.radius-individual .radius-log-entry{grid-template-columns:1fr}.radius-individual .radius-current-state{grid-template-columns:1fr}.radius-individual .radius-current-state>div{grid-column:1}}';
+ document.head.append(fitStyle);
+}
 if(!isGeneral){document.getElementById('line-limit').closest('label').hidden=true;const style=document.createElement('style');style.textContent='.radius-log-entry.type-desconectados .radius-log-badge{background:#4c2632;color:#fda4af}.radius-log-entry.type-desconectados code{color:#fda4af}';document.head.append(style);}
 if(isGeneral){const legend=document.createElement('legend');legend.textContent='Exibir eventos';radiusTypes.append(legend);for(const [value,label,checked] of [['conectados','Login OK',true],['erros','Login incorreto',true],['multiplos','Duplicados',true],['sql','SQL',false],['outros','Informações',false]]){const wrap=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=value;input.checked=checked;const caption=document.createElement('span');caption.textContent=label;wrap.append(input,caption);radiusTypes.append(wrap);}document.getElementById('status').before(radiusTypes);}
 let running=true,timer,controller,busy=false,first=true,saved=[],historyRange=null;const status=document.getElementById('status'),logs=document.getElementById('logs');
