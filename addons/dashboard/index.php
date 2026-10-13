@@ -1791,7 +1791,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                     $stat_size_class = $stat_digits >= 6 ? ' dashboard-stat-value--digits-6-plus' : ($stat_digits === 5 ? ' dashboard-stat-value--digits-5' : '');
                                     ?>
                                     <div class="dashboard-stat-value<?= $stat_size_class; ?>"><?= $stat_value; ?></div>
-                                    <div class="dashboard-stat-foot"><?= $stat['percent']; ?></div>
+                                    <div class="dashboard-stat-foot"><?= permissao('perm_totais') ? $stat['percent'] : ''; ?></div>
                                 </a>
                             <?php } ?>
                         </div>

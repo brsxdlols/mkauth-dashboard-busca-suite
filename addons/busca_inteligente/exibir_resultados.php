@@ -14,6 +14,10 @@
     });
 
     function openTrafficModal(login, router, clientName, plano, concentrador) {
+        <?php if (is_file(__DIR__.'/../mapa-clientes/monitor/index.php')) { ?>
+        window.open('/admin/addons/mapa-clientes/monitor/?login='+encodeURIComponent(login), '_blank', 'noopener');
+        return false;
+        <?php } ?>
         var overlay = document.getElementById('trafficMonitorModal');
         var frame = document.getElementById('trafficMonitorFrame');
         var title = document.getElementById('trafficMonitorClient');
@@ -1037,7 +1041,7 @@ $busca2 = str_replace("+", "%2B", $busca2);
 
 // The disabled card counts customer records, not their additional logins.
 $tot_clientes = !empty($disabledScope) ? $tot_resultados : $tot_resultados + $count_adicional;
-if ($acesso_permitido) echo '<b class="client-results-count">Resultados Encontrados = ' . (int)$tot_clientes . '</b>';
+if ($acesso_permitido && permissao('perm_totais')) echo '<b class="client-results-count">Resultados Encontrados = ' . (int)$tot_clientes . '</b>';
 ?>
 
 <div class='row text-light text-center client-head'>

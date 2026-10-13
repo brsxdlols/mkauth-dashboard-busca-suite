@@ -53,7 +53,7 @@ $tot_clientes = $tot_resultados + $count_adicional;
 
 if ($acesso_permitido) {
 ?>
-    <b>Resultados Encontrados = <?= $tot_clientes; ?></b>
+    <?php if (permissao('perm_totais')) { ?><b>Resultados Encontrados = <?= $tot_clientes; ?></b><?php } ?>
 
 <?php
 }

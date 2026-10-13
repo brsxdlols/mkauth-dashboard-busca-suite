@@ -337,7 +337,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_cliente_sem_adicionais%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_cliente_sem_adicionais%"; ?></p>
                                         </div>
                                     </a>
 
@@ -352,7 +352,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $c_add; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_adicional%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_adicional%"; ?></p>
                                         </div>
                                     </a>
                                 </div>
@@ -366,7 +366,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_clientes_livres; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_livres%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_livres%"; ?></p>
                                         </div>
                                     </a>
                                 </div>
@@ -380,7 +380,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_obs; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_observacao%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_observacao%"; ?></p>
                                         </div>
                                 </div>
                                 </a>
@@ -394,7 +394,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_bloq; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_bloqueado%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_bloqueado%"; ?></p>
                                         </div>
                                 </div>
                                 </a>
@@ -408,7 +408,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_atraso; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_atrasado%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_atrasado%"; ?></p>
                                         </div>
                                 </div>
                                 </a>
@@ -420,7 +420,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     <a href="/admin/addons/busca_inteligente-legado/index.php?busca=on" class="text-light">
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_on; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_online%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_online%"; ?></p>
                                         </div>
                                 </div>
                                 </a>
@@ -432,7 +432,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     <a href="/admin/addons/busca_inteligente-legado/index.php?busca=off" class="text-light">
                                         <div class="card-body m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $cli_offline; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_offline%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_offline%"; ?></p>
                                         </div>
                                 </div>
                                 </a>
@@ -444,7 +444,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     <a href="/admin/addons/busca_inteligente-legado/index.php?busca=sem carne" class="text-dark">
                                         <div class="card-body text-danger m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_sem_carne; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_sem_carne%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_sem_carne%"; ?></p>
                                         </div>
                                 </div>
                                 </a>
@@ -456,7 +456,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     <a href="/admin/addons/busca_inteligente-legado/index.php?busca=sem tit" class="text-dark">
                                         <div class="card-body text-danger m-0 p-0">
                                             <p class="display-6 m-0 p-0 text-center"><?php if (permissao('perm_totais')) echo $tot_sem_titulo; ?></p>
-                                            <p class="text-center m-0 p-0"><?php echo "$perc_clientes_sem_titulo%"; ?></p>
+                                            <p class="text-center m-0 p-0"><?php if (permissao('perm_totais')) echo "$perc_clientes_sem_titulo%"; ?></p>
                                         </div>
                                 </div>
                                 </a>

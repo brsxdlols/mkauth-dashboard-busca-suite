@@ -186,7 +186,7 @@
     }
     mysqli_close($link);
 
-    echo "<b>Total Clientes com Desconexões: $tot_clientes</b>";
+    if (permissao('perm_totais')) echo "<b>Total Clientes com Desconões: $tot_clientes</b>";
 
 ?>
 

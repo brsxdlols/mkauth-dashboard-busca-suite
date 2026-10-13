@@ -149,7 +149,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 <?php
         }
 
-        echo "<p class='m-0'><b>Resultados Encontrados:</b> ".mysqli_num_rows($result)."</p>";
+        if (permissao('perm_totais')) echo "<p class='m-0'><b>Resultados Encontrados:</b> ".mysqli_num_rows($result)."</p>";
 
         mysqli_close($conn);
     

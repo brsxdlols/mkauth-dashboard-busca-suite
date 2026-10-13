@@ -64,3 +64,9 @@ Abrir a pasta clonada no Codex e pedir para ler este arquivo antes de continuar.
 ## Grafico do Mapa de Clientes
 
 Patch opcional scripts/patch-map-traffic.py para addon instalado em addons/mapa-clientes/maps.hhvm: altura do painel acompanha os dados do cliente no desktop; coordenadas SVG usam tamanho real; ultimo ponto mostra Down/Up, demais pontos mantem tooltip com ambos valores; areas translucidas nas cores azul/vermelho. Instalador aplica apenas em versao reconhecida, com backup e lint PHP; nao importa configuracao do Mapa para o repositorio. Aplicado no Visual Net; backup /opt/mk-auth/backups/codex-map-traffic-XjwxzgRk.
+
+## Permissao Totais e rota Monitor
+
+Dashboard e Busca (inclusive layouts legados) respeitam permissao nativa perm_totais para contagens agregadas, percentuais e quantidade de resultados. Busca preserva atalhos de filtro sem numeros e evita consultas de cards quando a permissao falta. API/tela de desempenho e perfil de metricas exigem Totais; a Dashboard Multi ja verificava essa permissao.
+
+Monitor do Mapa: /admin/addons/mapa-clientes/monitor/ aceita ?login= para abrir um cliente especifico. Entrada delega ao index.hhvm nativo, conserva autenticacao/grupos e define base href da pasta original para assets/APIs. Patch opcional instala a entrada, atualiza AMPLIAR/menu.js e atalhos do banco, sem remover a compatibilidade com ?monitor=1. Busca usa essa rota quando instalada; conserva o monitor antigo se o Mapa nao estiver disponivel. O projeto do Mapa mantido em outro chat deve incorporar as mesmas alteracoes para nao sobrescrever o ajuste da instalacao.

@@ -1,5 +1,14 @@
 <?php
 if (!isset($acesso_permitido) || !$acesso_permitido) return;
+// Native Totais permission controls all aggregate numbers and percentages.
+if (!permissao('perm_totais')) {
+    $labels=array('Total'=>'index.php','Adicionais'=>'?busca=adicionais','Livres'=>'?busca=','Observação'=>'?busca=obs','Bloqueados'=>'?busca=bloq','Atraso'=>'?busca=atrasado','Online'=>'?busca=on','Offline'=>'?busca=off','Desativados'=>'?busca=desativado','Sem carnê'=>'?busca=sem+carne','Sem títulos'=>'?busca=sem+tit');
+    if(!empty($isMultiBusiness)){unset($labels['Online'],$labels['Offline']);}
+    echo '<div class="search-stat-grid no_print" aria-label="Filtros de clientes">';
+    foreach($labels as $label=>$url)echo '<a class="search-stat-card is-light" href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'"><span class="search-stat-label">'.htmlspecialchars($label,ENT_QUOTES,'UTF-8').'</span></a>';
+    echo '</div>';return;
+}
+
 
 $statsNow = isset($now) && $now !== '' ? $now : date('Y-m-d');
 $stats = array('clients'=>0,'additional'=>0,'free'=>0,'observation'=>0,'blocked'=>0,'late'=>0,'online'=>0,'offline'=>0,'no_booklet'=>0,'no_titles'=>0);

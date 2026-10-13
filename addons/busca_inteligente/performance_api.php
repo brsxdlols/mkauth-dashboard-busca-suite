@@ -5,7 +5,7 @@ if (strpos((string)file_get_contents(__DIR__.'/index.php'), "define('MKA_SEARCH_
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
 function perf_reply($data,$status=200){http_response_code($status);echo json_encode($data);exit;}
 $user=(string)($_SESSION['MKA_Usuario'] ?? $_SESSION['MM_Usuario'] ?? '');
-if (!permissao('perm_clientes') || $user==='') perf_reply(array('error'=>'Acesso administrativo necessario.'),403);
+if ((!permissao('perm_clientes') || !permissao('perm_totais')) || $user==='') perf_reply(array('error'=>'Acesso administrativo necessario.'),403);
 $st=$conn->prepare('SELECT cli_grupos FROM sis_acesso WHERE login=? LIMIT 1');$st->bind_param('s',$user);$st->execute();$access=$st->get_result()->fetch_assoc();
 if (!$access || (trim((string)$access['cli_grupos'])!=='' && !in_array('full_clientes',array_map('trim',explode(',',(string)$access['cli_grupos'])),true))) perf_reply(array('error'=>'Este diagnostico requer acesso a todos os grupos.'),403);
 if (stripos(mysqli_get_server_info($conn),'MariaDB')===false) perf_reply(array('error'=>'Benchmark SQL com timeout validado apenas para MariaDB. Nenhuma alteracao aplicada.'),422);
