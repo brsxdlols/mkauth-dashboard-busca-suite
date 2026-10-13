@@ -68,11 +68,12 @@ let running=true,timer,controller,busy=false,first=true,saved=[],historyRange=nu
 function paintCurrent(current){
  if(isGeneral||!current)return;
  const entry=document.createElement('article');entry.className='radius-current-state';
- entry.style.cssText='margin:0 0 7px;padding:12px 14px;border:1px solid #1e293b;border-left:4px solid #94a3b8;border-radius:10px;background:#0a0f16;color:#dbeafe;font:13px/1.6 system-ui';
+ const online=current.state==='online',offline=current.state==='offline';
+ entry.style.cssText='margin:0 0 7px;padding:12px 14px;border:1px solid '+(online?'#15966c':offline?'#64748b':'#1e293b')+';border-left-width:4px;border-radius:10px;background:'+(online?'#075e45':offline?'#374151':'#0a0f16')+';color:#f8fafc;font:13px/1.6 system-ui';
  const badge=document.createElement('span');badge.textContent=current.state==='online'?'CONECTADO — ONLINE':current.state==='offline'?'DESCONECTADO — OFFLINE':'ESTADO INDISPONÍVEL';
- badge.style.cssText='display:inline-block;padding:4px 9px;border-radius:6px;font-weight:700;color:'+(current.state==='online'?'#6ee7b7':current.state==='offline'?'#fda4af':'#cbd5e1')+';background:'+(current.state==='online'?'#064e3b':current.state==='offline'?'#4c2632':'#334155');
+ badge.style.cssText='display:inline-block;padding:4px 9px;border-radius:6px;font-weight:700;color:'+(online?'#d1fae5':offline?'#f8fafc':'#cbd5e1')+';background:'+(online?'#047857':offline?'#4b5563':'#334155');
  const name=document.createElement('div');name.textContent=(current.name?current.name+' • ':'')+current.login;
- const detail=document.createElement('div');detail.textContent='Estado atual no MK-AUTH, consultado em '+current.checked_at+'.';detail.style.color='#94a3b8';
+ const detail=document.createElement('div');detail.textContent='Estado atual no MK-AUTH, consultado em '+current.checked_at+'.';detail.style.color=online?'#c3f4de':offline?'#d1d5db':'#94a3b8';
  entry.append(badge,name,detail);
  if(!saved.length){const note=document.createElement('div');note.textContent='Sem registro de conexão no histórico consultado. O estado atual acima é independente da retenção dos logs.';note.style.cssText='margin-top:8px;color:#94a3b8';entry.append(note);}
  logs.append(entry);
