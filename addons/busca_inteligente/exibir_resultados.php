@@ -1840,19 +1840,24 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     <p class='dados_cliente <?= $color ?>'>
 
                                                                     <?php
-                                                                        if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
+                                                                                                                                                $access_ip = trim((string)($ip_conn[strtolower($login_cliente)] ?? ''));
+                                                                        $access_port = (int)$porta_acesso;
+                                                                        if ($access_port<1 || $access_port>65535) $access_port=80;
+                                                                        $access_host = strpos($access_ip, ':')!==false ? '['.$access_ip.']' : $access_ip;
+                                                                        $client_default_access_url = filter_var($access_ip,FILTER_VALIDATE_IP) ? ($access_port===443?'https':'http').'://'.$access_host.':'.$access_port : '#';
+if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                                         ?>
-                                                                               <span class="bg-warning text-dark px-1 py-0 rounded-pill small2">
+                                                                               <a href="<?= htmlspecialchars($client_default_access_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" title="Acessar equipamento pela porta <?= $access_port; ?>" class="bg-warning text-dark px-1 py-0 rounded-pill small2 text-decoration-none">
                                                                                 <b>IP:</b> <?= $ip_conn[strtolower($login_cliente)]; ?>
-                                                                                OBSERVACAO </span>
+                                                                                OBSERVACAO </a>
 
                                                                         <?php
                                                                         }
                                                                         else if ($bloqueado == "nao" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                                         ?>
-<span class="bg-success text-white px-1 py-0 rounded-pill small2">
+<a href="<?= htmlspecialchars($client_default_access_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" title="Acessar equipamento pela porta <?= $access_port; ?>" class="bg-success text-white px-1 py-0 rounded-pill small2 text-decoration-none">
                                                                                 <b>IP:</b> <?= $ip_conn[strtolower($login_cliente)]; ?>
-                                                                                ONLINE </span>
+                                                                                ONLINE </a>
 
 
 
@@ -1860,9 +1865,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         } else if ($bloqueado == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                                         ?>
 
-                                                                            <span class="bg-success text-white px-1 py-0 rounded-pill small2">
+                                                                            <a href="<?= htmlspecialchars($client_default_access_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" title="Acessar equipamento pela porta <?= $access_port; ?>" class="bg-success text-white px-1 py-0 rounded-pill small2 text-decoration-none">
                                                                                 <b>IP:</b> <?= $ip_conn[strtolower($login_cliente)]; ?>
-                                                                                BLOQUEADO </span>
+                                                                                BLOQUEADO </a>
 
                                                                         <?php
                                                                         } else if (empty($ip_conn[strtolower($login_cliente)])) {
