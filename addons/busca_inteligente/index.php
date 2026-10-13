@@ -150,7 +150,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
         <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
         <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
-        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
+        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a>
         <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
     </nav>
 
@@ -1166,6 +1166,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     <script src="../../menu.js.<?= $links_ext; ?>"></script>
 
 <?php include('../../rodape.php'); mka_perf_emit(); ?>
+<script src="../shared/performance_modal.js?v=20261013"></script>
 </body>
 
 </html>

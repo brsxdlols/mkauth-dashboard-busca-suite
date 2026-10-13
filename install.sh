@@ -370,6 +370,10 @@ chmod 0660 /var/lib/mkauth-suite-performance/optimization.lock
 if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance/optimization.lock; fi
 cp "${SCRIPT_DIR}/scripts/search-performance.py" /opt/mk-auth/scripts/mkauth-search-performance.py
 chmod 0700 /opt/mk-auth/scripts/mkauth-search-performance.py
-echo "Diagnostico web automatico: /admin/addons/busca_inteligente/performance.php"
-echo "Abra esse endereco no navegador com seu login administrativo. A analise inicia automaticamente."
-echo "Nao e necessario exportar cookies. A otimizacao continua exigindo confirmacao na tela."
+echo "[desempenho] Validando e otimizando consultas Online/Offline automaticamente"
+if command -v php >/dev/null 2>&1; then
+  php "${SCRIPT_DIR}/scripts/optimize-search-install.php" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}" || echo '[aviso] Otimizacao nao concluida; consulte o relatorio de desempenho no backup.'
+else
+  echo '[aviso] PHP ausente; otimizacao automatica nao executada.'
+fi
+echo "Nova analise disponivel no botao Executar analise de desempenho da Dashboard e Busca."

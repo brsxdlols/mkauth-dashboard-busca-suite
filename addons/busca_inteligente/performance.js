@@ -48,5 +48,4 @@
   finally{busy=false;measure.disabled=false;}
  };
  rollback.onclick=async()=>{try{await api('rollback');status.textContent='Política anterior restaurada.';rollback.hidden=true;}catch(e){status.textContent=e.message;}};
- measure.click();
 }());

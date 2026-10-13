@@ -14,27 +14,7 @@ if (empty($_SESSION['suite_perf_csrf'])) $_SESSION['suite_perf_csrf']=bin2hex(ra
 $input=json_decode(file_get_contents('php://input',false,null,0,10000),true) ?: array();
 $action=$_SERVER['REQUEST_METHOD']==='GET' ? 'prepare' : ($input['action'] ?? '');
 if ($_SERVER['REQUEST_METHOD']!=='GET' && (!isset($input['csrf']) || !is_string($input['csrf']) || !hash_equals($_SESSION['suite_perf_csrf'],$input['csrf']))) perf_reply(array('error'=>'Sessao expirada. Reabra o diagnostico.'),403);
-function perf_query($db,$sql){$r=mysqli_query($db,$sql);if(!$r)throw new RuntimeException('Consulta de diagnostico falhou ou excedeu o timeout.');return $r;}
-function perf_scalar($db,$sql){$r=perf_query($db,$sql);$row=mysqli_fetch_row($r);return (int)$row[0];}
-function perf_compatibility($db){
-    $checks=array();
-    $cols=perf_query($db,"SELECT TABLE_NAME,COLUMN_NAME,COLLATION_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND ((TABLE_NAME='sis_cliente' AND COLUMN_NAME='login') OR (TABLE_NAME='sis_adicional' AND COLUMN_NAME IN ('login','username')) OR (TABLE_NAME='radacct' AND COLUMN_NAME='username'))");
-    $collations=array();while($row=mysqli_fetch_assoc($cols))$collations[]=$row['COLLATION_NAME'];
-    $checks['matching_ci_collations']=count($collations)===4 && count(array_unique($collations))===1 && substr((string)$collations[0],-3)==='_ci';
-    $checks['indexed_open_sessions']=perf_scalar($db,"SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='radacct' AND SEQ_IN_INDEX=1 AND COLUMN_NAME='acctstoptime'")>0;
-    $active=perf_scalar($db,'SELECT COUNT(*) FROM radacct WHERE acctstoptime IS NULL');
-    $checks['bounded_active_sessions']=$active<=50000;
-    if (!$checks['matching_ci_collations'] || !$checks['indexed_open_sessions'] || !$checks['bounded_active_sessions']) return array('compatible'=>false,'checks'=>$checks,'active_sessions'=>$active);
-    $checks['clean_login_spaces']=perf_scalar($db,"SELECT (SELECT COUNT(*) FROM radacct WHERE acctstoptime IS NULL AND BINARY username<>BINARY TRIM(username))+(SELECT COUNT(*) FROM sis_cliente WHERE cli_ativado='s' AND BINARY login<>BINARY TRIM(login))+(SELECT COUNT(*) FROM sis_adicional WHERE BINARY login<>BINARY TRIM(login) OR BINARY username<>BINARY TRIM(username))")===0;
-    if ($checks['clean_login_spaces'] || mka_perf_preexisting_direct()) {
-        $old=mka_perf_preexisting_direct() ? mka_perf_direct_sql() : mka_online_family_sql();$new=mka_perf_set_sql();
-        // Both classifications are compared within one SQL statement, never by two changing totals.
-        $checks['same_classification']=perf_scalar($db,"SELECT COUNT(*) FROM sis_cliente c WHERE c.cli_ativado='s' AND (($old)<>($new))")===0;
-    }else $checks['same_classification']=false;
-    // Spaces do not invalidate equivalence with an existing raw comparison.
-    $eligible=$checks; if(mka_perf_preexisting_direct())unset($eligible['clean_login_spaces']);
-    return array('compatible'=>!in_array(false,$eligible,true),'checks'=>$checks,'active_sessions'=>$active);
-}
+require_once __DIR__.'/../shared/performance_compatibility.php';
 function perf_write_flag($db,$value){$s=$db->prepare("INSERT INTO sis_opcao(nome,valor) VALUES('suite_search_optimization',?) ON DUPLICATE KEY UPDATE valor=VALUES(valor)");$s->bind_param('s',$value);if(!$s->execute())throw new RuntimeException('Nao foi possivel salvar a politica.');}
 function perf_runs($plan){$p=mka_perf_dir().'/'.$plan['id'].'.runs';$rows=array();foreach(is_file($p)?file($p,FILE_IGNORE_NEW_LINES):array() as $line){$r=json_decode($line,true);if(is_array($r))$rows[]=$r;}return $rows;}
 function perf_median($values){sort($values,SORT_NUMERIC);$n=count($values);return $n%2?$values[(int)floor($n/2)]:($values[$n/2-1]+$values[$n/2])/2;}

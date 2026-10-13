@@ -15,7 +15,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         @media(max-width:900px){.config-grid{grid-template-columns:1fr}}@media(max-width:520px){.suite-toolbar span{display:none}.config-grid{margin-inline:8px}.config-card td{align-items:flex-start;flex-direction:column}.config-card input,.config-card select{width:100%}}
     </style>
     <nav class="suite-toolbar no_print mka-suite-content-start" aria-label="Navegação das configurações">
-        <li class="nav-item"><a href="performance.php"><i class="fa-solid fa-gauge-high"></i><span>Desempenho</span></a></li>
+        <li class="nav-item"><a href="performance.php" data-mka-performance><i class="fa-solid fa-gauge-high"></i><span>Desempenho</span></a></li>
         <li class="nav-item">
             <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
             </a>
@@ -456,6 +456,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         refreshFixedDays();
     })();
 </script>
+<script src="../shared/performance_modal.js?v=20261013"></script>
 </body>
 
 </html>

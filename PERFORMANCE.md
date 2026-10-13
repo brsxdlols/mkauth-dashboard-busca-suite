@@ -1,14 +1,13 @@
+## Instalação automática e análise pelo modal
+
+O instalador mede automaticamente as consultas de listagem completa e primeira página de Online/Offline (três amostras, mediana), valida equivalência e aplica a política somente quando comprova ganho sem regressão. Mede novamente após aplicar; falhas restauram a política anterior. Salva `performance-install.json` e `performance-policy-backup.json` no backup da instalação. Essas medições são SQL, sem sessão web, assets ou renderização do navegador; a página autenticada permite medir HTTP completo.
+
+O botão Executar análise de desempenho está nas configurações e telas principais da Dashboard, Dashboard Multi e Busca. Abre um modal; a análise só começa ao clicar em Analisar desempenho. Nessa análise manual, aplicar continua exigindo confirmação. O instalador não exige URL nem cookies.
+
 ## Comparação com a regra direta existente
 
-O candidato reúne as famílias online em uma subconsulta com UNION, evitando varrer as sessões abertas para cada cliente. Quando existe a regra direta preservada pelo instalador, a equivalência é validada contra essa regra, inclusive com espaços nos logins. Instalações com regra normalizada continuam exigindo a validação de espaços e equivalência. A aplicação depende das medições completas e confirmação, com validação posterior e reversão.
+O candidato reúne as famílias online em uma subconsulta com UNION, evitando varrer as sessões abertas para cada cliente. Quando existe a regra direta preservada pelo instalador, a equivalência é validada contra essa regra, inclusive com espaços nos logins. Instalações com regra normalizada continuam exigindo a validação de espaços e equivalência. A aplicação depende das medições, com validação posterior e reversão; no modal exige confirmação, no instalador ocorre automaticamente quando elegível.
 
-## Análise automática no navegador
-
-Após instalar, abra `/admin/addons/busca_inteligente/performance.php` com seu login administrativo. A medição inicia automaticamente, sem exportar cookies nem informar URL no terminal. Aplicar uma otimização continua exigindo confirmação e validação antes/depois. O CLI com cookies permanece disponível apenas para uso técnico opcional.
-
-# Diagnostico e otimizacao Online/Offline
-
-Escopo desta etapa: desempenho e otimizacao. O alerta de multiplas sessoes PPPoE ficou para outra etapa. Sessoes simultaneas legitimas e registros duplicados de acctuniqueid sao problemas distintos; este recurso nao limpa nenhum deles.
 
 ## Pela interface
 
@@ -29,7 +28,7 @@ Clientes principais, logins cadastrados (incluindo adicionais) e sessoes PPPoE s
 
 ## No final da instalacao
 
-O instalador em terminal interativo pergunta se deseja medir pela web e avaliar a otimizacao. Para medir no Debian precisa da URL e de um arquivo privado de cookies Netscape exportado da sua propria sessao administrativa (chmod 600). Nenhum usuario ou cookie e inventado e nenhuma senha/cookie e registrada no relatorio. Se preferir nao transferir cookies, recuse a etapa do terminal e utilize a interface autenticada.
+O instalador executa a otimizacao SQL automaticamente com backup e medicao antes/depois. O CLI HTTP com cookies permanece opcional para uso tecnico: requer a URL da pasta Busca e arquivo Netscape privado da propria sessao administrativa (chmod 600). Para a analise manual comum, use o modal autenticado, sem exportar cookies.
 
 O CLI instalado em /opt/mk-auth/scripts/mkauth-search-performance.py tambem solicita autorizacao depois do diagnostico. O relatorio HTTP fica no backup da instalacao. Em execucao nao interativa nenhuma otimizacao e aplicada.
 
@@ -37,4 +36,4 @@ O CLI instalado em /opt/mk-auth/scripts/mkauth-search-performance.py tambem soli
 
 Esta etapa nao executa DELETE/UPDATE em radacct, nao faz OPTIMIZE, nao cria/remove indices e nao reinicia MySQL ou FreeRADIUS. O reconciliador e novos workers de sincronizacao de adicionais nao sao instalados/executados automaticamente por esta versao do instalador. Jobs ja existentes sao preservados; qualquer manutencao ou nova instalacao dessas rotinas requer procedimento separado. A checagem leve de indices/EXPLAIN continua incluida.
 
-Testes realizados: sintaxe PHP/Bash; fixtures MariaDB em tabelas TEMPORARY de uma conexao isolada (sem modificar tabelas nativas), incluindo adicionais, caixa, multiplas sessoes, espacos e expiracao; fixture HTTP local para recusa, confirmacao e rollback apos falha. Isso nao constitui medicao de melhora em uma instalacao real. A confirmacao de ganho ocorre somente depois das medicoes autenticadas nesse ambiente. A lentidao da Quality Telecom ainda nao tem solucao comprovada.
+Testes realizados: sintaxe PHP/Bash; fixtures MariaDB em tabelas TEMPORARY de uma conexao isolada (sem modificar tabelas nativas), incluindo adicionais, caixa, multiplas sessoes, espacos e expiracao; fixture HTTP local para recusa, confirmacao e rollback apos falha. No Visual Net, execucao automatica validada em 13/10/2026: soma das medianas SQL Online 5,677s para 0,116s e Offline 5,279s para 0,172s. Esses tempos nao incluem HTTP, assets ou renderizacao. O ganho precisa ser medido em cada outro ambiente. A lentidao da Quality Telecom ainda nao tem solucao comprovada.

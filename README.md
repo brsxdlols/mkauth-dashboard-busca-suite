@@ -24,7 +24,7 @@ install.sh
 
 ## Instalar no servidor
 
-Diagnostico autenticado e otimizacao com confirmacao: [PERFORMANCE.md](PERFORMANCE.md). A instalacao mede pela web somente com sua sessao real, ou disponibiliza a tela Busca > Configuracoes > Desempenho. Sao tres amostras por filtro, tempos SQL/HTTP, validacao de compatibilidade, backup e reversao. Nao aplica automaticamente a otimizacao nem executa novas rotinas que escrevem em accounting ou desconectam adicionais.
+Otimizacao automatica na instalacao: [PERFORMANCE.md](PERFORMANCE.md). O instalador mede consultas Online/Offline com tres amostras, valida equivalencia e aplica somente com ganho comprovado, backup e validacao posterior; erros ou regressao restauram a politica anterior. Nao exige cookies. O botao Executar analise de desempenho na Dashboard e Busca abre o modal para medicao HTTP manual com a sessao real. Nao executa limpeza de accounting nem desconecta adicionais.
 
 Versao atual: bloqueio comum do MK-AUTH. A instalacao remove a antiga protecao persistente de bloqueio manual (trigger e enforcer), com backup previo, preservando os estados dos clientes e o historico. A main inclui os ajustes do Visual Net; a versao anterior esta preservada em backup/versao-ae4afd0.
 

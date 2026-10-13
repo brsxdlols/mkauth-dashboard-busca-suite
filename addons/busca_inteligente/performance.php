@@ -1,9 +1,9 @@
 <?php require __DIR__.'/../shared/notification_bootstrap.php'; if (!permissao('perm_clientes')) {http_response_code(403);exit('Acesso negado.');} ?>
 <!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Desempenho da Busca</title>
 <style>*{box-sizing:border-box}body{font:15px/1.55 system-ui;background:#f5f7fb;color:#20334b;margin:0;padding:24px}main{max-width:1050px;margin:auto;background:white;border:1px solid #dbe3ee;border-radius:16px;padding:26px}h1{font-size:24px;margin-top:0}button{border:0;border-radius:8px;padding:11px 17px;background:#2563eb;color:white;font:inherit;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.secondary{background:#64748b}#status{white-space:pre-line;background:#f1f5f9;padding:16px;border-radius:10px;margin:18px 0}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:10px;text-align:left;border-bottom:1px solid #e5eaf2}details{margin-top:16px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.actions{display:flex;gap:10px;flex-wrap:wrap}</style>
-<main><h1>Desempenho da Busca</h1><p>A análise de Online e Offline começa automaticamente usando seu login. A comparação testa a regra candidata sem alterar a classificação usada pelos demais usuários.</p>
+<main><h1>Desempenho da Busca</h1><p>Clique em Analisar desempenho para medir Online e Offline usando seu login. A comparação testa a regra candidata sem alterar a classificação usada pelos demais usuários.</p>
 <div class="actions"><button id="measure">Analisar desempenho</button><button id="apply" disabled>Aplicar otimização</button><button id="rollback" class="secondary" hidden>Reverter</button></div>
 <div id="status" role="status">A análise faz três requisições de cada página por etapa, com limite por consulta. Execute fora do horário de pico.</div>
 <div id="report"></div><details><summary>Detalhes das medições</summary><pre id="details"></pre></details>
 <p>Sem limpeza de accounting, alteração de índices ou reinício de serviços. Online nos cards conta logins cadastrados; a listagem mostra clientes principais e seus adicionais. O Offline do card é calculado a partir desses totais.</p>
-<script src="performance.js?v=2"></script></main></html>
+<script src="performance.js?v=3"></script></main></html>

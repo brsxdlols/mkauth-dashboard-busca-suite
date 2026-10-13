@@ -1950,7 +1950,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                             <?php if (permissao('perm_config')) {
                             ?>
-                                <a href='cfg.php' class='dashboard-quick-link is-primary'><img src='img/icon_config.png' class='align-middle icon_sm_2 me-1' title='Configurações Dash Board' /> Configurações</a>
+                                <a href='cfg.php' class='dashboard-quick-link is-primary'><img src='img/icon_config.png' class='align-middle icon_sm_2 me-1' title='Configurações Dash Board' /> Configurações</a><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a>
                             <?php } ?>
 
                             <?php
@@ -2939,6 +2939,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 });
             })();
         </script>
+<script src="../shared/performance_modal.js?v=20261013"></script>
 </body>
 
 </html>

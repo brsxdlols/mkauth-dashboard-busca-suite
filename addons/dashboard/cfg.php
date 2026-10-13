@@ -244,7 +244,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 <div class="cfg-hero">
                     <div class="cfg-hero-icon"><i class="fa fa-sliders"></i></div>
                     <div class="cfg-hero-copy">
-                        <h1>Configurações do Dashboard</h1>
+                        <h1>Configurações do Dashboard</h1><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a>
                         <p>Personalize os indicadores, alertas e recursos exibidos no sistema.</p>
                     </div>
                     <span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span>
@@ -717,6 +717,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             return false;
         }
     </script>
+<script src="../shared/performance_modal.js?v=20261013"></script>
 </body>
 
 </html>
