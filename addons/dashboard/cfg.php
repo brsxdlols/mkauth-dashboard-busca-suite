@@ -51,6 +51,8 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
         .cfg-hero-copy { flex: 1; }
         .cfg-performance-actions { display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
+        .cfg-performance-actions .mka-performance-launch { display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:0;border-radius:10px;background:#2563eb;color:#fff!important;font-size:13px;font-weight:600;text-decoration:none;box-shadow:0 4px 12px #2563eb26; }
+        .cfg-performance-actions .mka-performance-launch:hover { background:#1d4ed8; }
         @media(max-width:760px){.cfg-hero{flex-wrap:wrap}}
         .cfg-hero h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
         .cfg-hero p { margin: 0; color: var(--cfg-muted); font-size: 14px; }
@@ -719,7 +721,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             return false;
         }
     </script>
-<script src="../shared/performance_modal.js?v=20261013"></script>
+<script src="../shared/performance_modal.js?v=20261013-3"></script>
 </body>
 
 </html>

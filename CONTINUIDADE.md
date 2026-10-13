@@ -49,6 +49,10 @@ bash <(curl -fsSL -H 'Cache-Control: no-cache' "https://raw.githubusercontent.co
 
 Revisar o instalador e confirmar backup antes de atualizar producao. Destino padrao: /opt/mk-auth/admin.
 
+## RADIUS sem historico
+
+O modal individual mostra estado atual pelas sessoes abertas de radacct, separado dos eventos historicos. Exibe o periodo real dos arquivos consultados e avisa se a busca atingiu o limite. Ausencia de log por retencao nao implica Offline; falha na consulta de estado retorna indisponivel. Validado no Visual Net: cliente Online sem evento em oito arquivos.
+
 ## Novo notebook
 
 ```bash
