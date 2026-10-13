@@ -59,7 +59,7 @@ $now = date('Y-m-d');
 			echo '<script src="../../scripts/vue.js"></script>';
         }
 
-		$permissao = "perm_totais";
+		$permissao = "perm_numClientes";
 
 		$query_permissao = mysqli_query($link, "SELECT usuario FROM sis_perm WHERE nome LIKE '$permissao' AND usuario LIKE '$usuario_logado' AND permissao LIKE 'sim'");	
 		

@@ -11,7 +11,7 @@ $exb_ticket_medio = isset($multiCfg['exb_ticket_medio']) ? $multiCfg['exb_ticket
 $exb_saldo_conta = isset($multiCfg['exb_saldo_conta']) ? $multiCfg['exb_saldo_conta'] : 's';
 $exb_balanco_faturamento = 's';
 $exb_balanco_clientes = $exb_balanco_chamados = 'n';
-$canTotals = permissao('perm_totais');
+$canTotals = permissao('perm_numClientes');
 $canFinance = permissao('perm_relFin') || permissao('perm_relFat');
 $canConfig = permissao('perm_config');
 $multiShortcutLinks = explode(',', isset($multiCfg['link']) ? $multiCfg['link'] : '');
