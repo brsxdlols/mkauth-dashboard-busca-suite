@@ -93,7 +93,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
         .dashboard-stat-grid {
             display: grid !important;
-            grid-template-columns: repeat(11, minmax(0, 1fr));
+            grid-template-columns: repeat(10, minmax(0, 1fr));
             gap: 7px;
         }
 
@@ -249,10 +249,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             border-top-color: rgba(248, 113, 113, 0.22);
         }
 
-        .dashboard-stat-card.is-manual {
-            background: linear-gradient(180deg, #c83b3b 0%, #a91f1f 100%);
-            color: #ffffff !important;
-        }
+
 
         .dashboard-stat-card.is-light .dashboard-stat-icon {
             background: #edf2f7;
@@ -881,12 +878,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 white-space: nowrap;
             }
 
-            .dashboard-stat-card.is-manual .dashboard-stat-head {
-                font-size: 10px;
-                letter-spacing: -0.2px;
-                overflow-wrap: normal;
-                white-space: nowrap;
-            }
+
         }
 
         .dashboard-client-state-toast-stack {
@@ -1756,13 +1748,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $cli_sem_titulo = mysqli_query($conn, "SELECT login FROM sis_cliente c WHERE $grupos c.cli_ativado LIKE 's' AND c.tit_abertos LIKE '0' AND c.isento LIKE 'nao' AND c.tipo_cob LIKE 'titulo'");
         $tot_sem_titulo = mysqli_num_rows($cli_sem_titulo);
 
-        $cli_manual = 0;
-        $manual_block_column = @mysqli_query($conn, "SHOW COLUMNS FROM sis_cliente LIKE 'tipobloq'");
-        if ($manual_block_column && mysqli_num_rows($manual_block_column) > 0) {
-            $manual_block_query = @mysqli_query($conn, "SELECT COUNT(*) AS total FROM sis_cliente c WHERE $grupos c.cli_ativado LIKE 's' AND c.bloqueado='sim' AND c.tipobloq='man'");
-            if ($manual_block_query && ($manual_block_row = mysqli_fetch_assoc($manual_block_query))) $cli_manual = (int)$manual_block_row['total'];
-        }
-
         // Porcentagem dos Clientes
         $perc_clientes_livres = number_format($tot_clientes_livres / $cli_ * 100, 2);
         $perc_cliente_sem_adicionais = number_format($cli_ / $tot_clientes * 100, 2);
@@ -1774,7 +1759,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $perc_clientes_offline = number_format($cli_offline / $tot_clientes * 100, 2);
         $perc_clientes_sem_carne = number_format($tot_sem_carne / $tot_clientes * 100, 2);
         $perc_clientes_sem_titulo = number_format($tot_sem_titulo / $tot_clientes * 100, 2);
-        $perc_clientes_manual = $cli_ > 0 ? number_format($cli_manual / $cli_ * 100, 2) : '0.00';
 
         $dashboard_stats = array(
             array('label' => 'Total', 'value' => $tot_clientes, 'percent' => '100.00%', 'href' => '/admin/addons/busca_inteligente/index.php', 'theme' => 'is-primary', 'text' => 'text-light', 'icon' => 'bi-people-fill'),
@@ -1787,12 +1771,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             array('label' => 'Offline', 'value' => $cli_offline, 'percent' => $perc_clientes_offline . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=off', 'theme' => 'is-dark', 'text' => 'text-light', 'icon' => 'bi-plug-fill'),
             array('label' => 'Sem Carne', 'value' => $tot_sem_carne, 'percent' => $perc_clientes_sem_carne . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem carne', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'bi-file-earmark-x-fill'),
             array('label' => 'Sem Títulos', 'value' => $tot_sem_titulo, 'percent' => $perc_clientes_sem_titulo . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=sem tit', 'theme' => 'is-outline-danger', 'text' => 'text-dark', 'icon' => 'bi-receipt'),
-            array('label' => 'Bloqueio manual', 'value' => $cli_manual, 'percent' => $perc_clientes_manual . '%', 'href' => '/admin/addons/busca_inteligente/index.php?busca=bloqueado manualmente', 'theme' => 'is-manual', 'text' => 'text-light', 'icon' => 'bi-shield-lock-fill'),
         );
 
         ?>
 
-        <?php $dashboard_stats = array_merge(array_slice($dashboard_stats, 0, 8), array_slice($dashboard_stats, 10, 1), array_slice($dashboard_stats, 8, 2)); ?>
         <?php include('graf_periodo.php'); ?>
         <?php include('cli_periodo.php'); ?>
 

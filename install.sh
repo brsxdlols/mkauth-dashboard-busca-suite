@@ -150,11 +150,11 @@ install_reconcile() {
   fi
 }
 
-install_manual_block_guard() {
-  echo "[7/8] Protegendo bloqueios manuais antes do desbloqueio financeiro"
+remove_manual_block_guard() {
+  echo "[7/8] Removendo a protecao de bloqueio persistente"
   local installer="${SCRIPT_DIR}/scripts/install-manual-block-guard.sh"
   if [ ! -f "${installer}" ]; then
-    echo "[aviso] instalador da protecao de bloqueio manual nao encontrado."
+    echo "[aviso] rotina de remocao da protecao de bloqueio nao encontrada."
     return 0
   fi
   bash "${installer}"
@@ -292,7 +292,7 @@ lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
 install_additional_block_patch
-install_manual_block_guard
+remove_manual_block_guard
 install_reconcile
 
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"

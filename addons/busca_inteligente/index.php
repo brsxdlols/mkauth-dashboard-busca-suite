@@ -57,7 +57,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         .search-stat-number-row { display:flex;align-items:baseline;gap:4px;min-width:0;margin-top:auto;white-space:nowrap; }
         .search-stat-value { color:inherit;font-size:30px;font-weight:400;line-height:1;letter-spacing:-1px; }
         .search-stat-percent { flex:0 0 auto;color:inherit;font-size:11px;font-weight:800;line-height:1;letter-spacing:0;opacity:.96; }
-        .search-stat-card.is-primary{--accent:#2472e8;--card-bg:linear-gradient(145deg,#438cff,#1763dc)}.search-stat-card.is-light{--accent:#cbd7e5;--card-bg:#fff;color:#15263a}.search-stat-card.is-info{--accent:#20abc5;--card-bg:linear-gradient(145deg,#48c9df,#20abc5)}.search-stat-card.is-observation{--accent:#67d99a;--card-bg:linear-gradient(145deg,#91e8b6,#69d99a);color:#075d35}.search-stat-card.is-danger{--accent:#e83b58;--card-bg:linear-gradient(145deg,#f35a70,#e83452)}.search-stat-card.is-warning{--accent:#efb400;--card-bg:linear-gradient(145deg,#ffd34d,#f5b900);color:#4d3900}.search-stat-card.is-success{--accent:#198f52;--card-bg:linear-gradient(145deg,#35a86d,#16854b)}.search-stat-card.is-dark{--accent:#202934;--card-bg:linear-gradient(145deg,#3d4651,#20262e)}.search-stat-card.is-outline-danger{--accent:#ef4960;--card-bg:#fff;color:#e42643}.search-stat-card.is-manual{--accent:#b42323;--card-bg:linear-gradient(145deg,#c63b3b,#971b1b)}
+        .search-stat-card.is-primary{--accent:#2472e8;--card-bg:linear-gradient(145deg,#438cff,#1763dc)}.search-stat-card.is-light{--accent:#cbd7e5;--card-bg:#fff;color:#15263a}.search-stat-card.is-info{--accent:#20abc5;--card-bg:linear-gradient(145deg,#48c9df,#20abc5)}.search-stat-card.is-observation{--accent:#67d99a;--card-bg:linear-gradient(145deg,#91e8b6,#69d99a);color:#075d35}.search-stat-card.is-danger{--accent:#e83b58;--card-bg:linear-gradient(145deg,#f35a70,#e83452)}.search-stat-card.is-warning{--accent:#efb400;--card-bg:linear-gradient(145deg,#ffd34d,#f5b900);color:#4d3900}.search-stat-card.is-success{--accent:#198f52;--card-bg:linear-gradient(145deg,#35a86d,#16854b)}.search-stat-card.is-dark{--accent:#202934;--card-bg:linear-gradient(145deg,#3d4651,#20262e)}.search-stat-card.is-outline-danger{--accent:#ef4960;--card-bg:#fff;color:#e42643}
         .search-stat-card.is-light:hover,.search-stat-card.is-light.is-selected{color:#15263a}.search-stat-card.is-observation:hover,.search-stat-card.is-warning:hover{color:inherit}.search-stat-card.is-outline-danger:hover,.search-stat-card.is-outline-danger.is-selected{color:#e42643}.search-stat-card.is-light .search-stat-icon{background:#edf2f7}.search-stat-card.is-outline-danger .search-stat-icon{background:#fff0f2}
         @media(max-width:1650px){.search-stat-card{flex-basis:132px}}@media(max-width:1200px){.search-stat-card{flex-basis:140px}}@media(max-width:560px){.search-stat-grid{width:calc(100% - 24px);padding:12px;box-sizing:border-box}.search-stat-card{flex-basis:calc(50% - 4px);min-width:0}}@media(max-width:350px){.search-stat-card{flex-basis:100%}}
         .manual-block-modal { position:fixed; inset:0; z-index:1120; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.48); backdrop-filter:blur(4px); }
@@ -178,13 +178,13 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     </div>
     <div class="manual-block-modal no_print" id="manualBlockModal" hidden role="dialog" aria-modal="true" aria-labelledby="manualBlockModalTitle">
         <form class="manual-block-dialog" id="manualBlockForm">
-            <div class="manual-block-head"><strong id="manualBlockModalTitle">Bloqueio manual</strong><button type="button" class="manual-block-close" aria-label="Fechar">&times;</button></div>
+            <div class="manual-block-head"><strong id="manualBlockModalTitle">Bloquear cliente</strong><button type="button" class="manual-block-close" aria-label="Fechar">&times;</button></div>
             <div class="manual-block-body">
                 <p class="manual-block-client" id="manualBlockClient"></p>
                 <div class="manual-block-history" id="manualBlockHistory" hidden></div>
                 <label class="manual-block-label" for="manualBlockReason" id="manualBlockReasonLabel">Motivo do bloqueio</label>
                 <textarea class="manual-block-reason" id="manualBlockReason" maxlength="2000" required placeholder="Descreva o motivo desta operação"></textarea>
-                <p class="manual-block-note" id="manualBlockNote">O acesso do cliente será interrompido e permanecerá bloqueado até um desbloqueio manual.</p>
+                <p class="manual-block-note" id="manualBlockNote">O acesso será interrompido pelo bloqueio comum do MK-AUTH. Se o financeiro estiver em dia, o cliente poderá ser desbloqueado na próxima rotina financeira. Para manter o bloqueio por inadimplência, deve existir um boleto vencido há mais dias que o prazo de corte configurado. Para impedir o desbloqueio automático, revise essa opção em Opções > Recursos de sistema; essa configuração afeta a rotina do sistema.</p>
             </div>
             <div class="manual-block-actions"><button type="button" class="manual-block-cancel">Cancelar</button><button type="submit" class="is-submit" id="manualBlockSubmit">Confirmar bloqueio</button></div>
         </form>
@@ -197,11 +197,11 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         var waiting=false, current=null;
         function escapeHtml(value){var node=document.createElement('div');node.textContent=value==null?'':String(value);return node.innerHTML;}
         function closeModal(){if(waiting)return;modal.hidden=true;reason.value='';current=null;document.body.style.overflow='';}
-        window.mkaRunManualBlock = function (uuid, name, action) {
+        window.mkaRunClientBlock = function (uuid, name, action) {
             var isUnlock = action === 'desbloqueio';
-            current={uuid:uuid,name:name,action:action};submit.disabled=false;title.textContent=isUnlock?'Desbloqueio manual':'Bloqueio manual';client.textContent=name;
+            current={uuid:uuid,name:name,action:action};submit.disabled=false;title.textContent=isUnlock?'Desbloquear cliente':'Bloquear cliente';client.textContent=name;
             label.textContent=isUnlock?'Motivo do desbloqueio':'Motivo do bloqueio';submit.textContent=isUnlock?'Confirmar desbloqueio':'Confirmar bloqueio';submit.classList.toggle('is-unlock',isUnlock);
-            note.textContent=isUnlock?'Atenção: se o cliente estiver com débitos em aberto, poderá ser bloqueado novamente pela rotina automática do sistema. Este desbloqueio não concede prazo de confiança. O motivo ficará registrado no histórico.':'O acesso será interrompido e permanecerá bloqueado até um desbloqueio manual.';
+            note.textContent=isUnlock?'Se houver título vencido há mais dias que o prazo de corte, o cliente poderá ser bloqueado novamente pela rotina financeira. Para conceder um prazo de liberação, utilize o desbloqueio de confiança. Este desbloqueio comum não concede prazo de confiança. O motivo ficará registrado no histórico.':'O acesso será interrompido pelo bloqueio comum do MK-AUTH. Se o financeiro estiver em dia, o cliente poderá ser desbloqueado na próxima rotina financeira. Para manter o bloqueio por inadimplência, deve existir um boleto vencido há mais dias que o prazo de corte configurado. Para impedir o desbloqueio automático, revise essa opção em Opções > Recursos de sistema; essa configuração afeta a rotina do sistema.';
             history.hidden=true;history.innerHTML='';modal.hidden=false;document.body.style.overflow='hidden';reason.focus();
             if(isUnlock){fetch('client_manual_block_audit.php?uuid='+encodeURIComponent(uuid),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(data){if(!current||current.uuid!==uuid)return;if(data.ok&&data.block){history.innerHTML='<strong>Registro do bloqueio</strong><br><b>Motivo:</b> '+escapeHtml(data.block.motivo)+'<br><b>Data:</b> '+escapeHtml(data.block.criado_em)+'<br><b>Usuário:</b> '+escapeHtml(data.block.usuario);history.hidden=false;}else{history.innerHTML='<strong>Registro anterior não encontrado.</strong>';history.hidden=false;}}).catch(function(){history.innerHTML='<strong>Não foi possível consultar o registro anterior.</strong>';history.hidden=false;});}
             return false;
@@ -600,7 +600,6 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         <?php } ?>
         <option value="adicionais">
         <option value="bloqueado">
-        <option value="bloqueado manualmente">
         <option value="atrasado">
         <option value="observacao">
         <option value="desativado">
@@ -877,16 +876,6 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         if (!$result) {
             echo mysqli_error($link);
         }
-        $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
-        include('exibir_resultados.php');
-    } else if (startsWith(strtolower($busca), 'bloqueado manual') || startsWith(strtolower($busca), 'bloq manual')) {
-        $manual_block_filter = $has_tipobloq ? "c.bloqueado LIKE 'sim' AND c.tipobloq LIKE 'man'" : '1=0';
-        $query_ok = "$query_default
-            c.cli_ativado LIKE 's' AND
-            $manual_block_filter
-            $group ORDER BY $organizar";
-
-        $result = mysqli_query($link, "$query_ok");
         $result_limit = mysqli_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina");
         include('exibir_resultados.php');
     } else if (startsWith($partes[0], 'bloq')) {

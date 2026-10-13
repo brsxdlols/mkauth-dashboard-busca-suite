@@ -1225,7 +1225,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $tem_titulo_vencido = $quantidade_titulos_vencidos > 0;
         $bloqueado = $row['bloqueado'];
         $tipo_bloqueio = isset($row['tipobloq']) ? strtolower(trim((string) $row['tipobloq'])) : '';
-        $bloqueio_manual = ($bloqueado === 'sim' && $tipo_bloqueio === 'man');
         $data_bloq = $row['data_bloq'];
         $observacao = $row['observacao'];
         $obs_data = $row['rem_obs'];
@@ -1927,9 +1926,9 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>
                                                                         <?php if (strtolower(trim((string) $bloqueado)) === 'sim') { ?>
-                                                                        <a class="connection-diagnostic-btn is-manual-unlock" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'desbloqueio');" title="Desbloquear sem conceder prazo de confiança"><i class="fa-solid fa-lock-open"></i> Desbloquear</a>
+                                                                        <a class="connection-diagnostic-btn is-manual-unlock" href="#" onclick="return mkaRunClientBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'desbloqueio');" title="Desbloquear sem conceder prazo de confiança"><i class="fa-solid fa-lock-open"></i> Desbloquear</a>
                                                                         <?php } else { ?>
-                                                                        <a class="connection-diagnostic-btn is-manual-block" href="#" onclick="return mkaRunManualBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'bloqueio');" title="Bloquear este cliente manualmente"><i class="fa-solid fa-user-lock"></i> Bloquear</a>
+                                                                        <a class="connection-diagnostic-btn is-manual-block" href="#" onclick="return mkaRunClientBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'bloqueio');" title="Bloquear este cliente pelo MK-AUTH"><i class="fa-solid fa-user-lock"></i> Bloquear</a>
                                                                         <?php } ?>
                                                                     </div>
                                                                 </div>

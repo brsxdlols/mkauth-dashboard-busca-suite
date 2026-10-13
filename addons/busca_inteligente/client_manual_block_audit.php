@@ -50,14 +50,7 @@ if (isset($_POST['phase']) && $_POST['phase'] === 'confirm') {
         echo json_encode(array('ok'=>false,'message'=>'A operação nativa não confirmou a alteração do cliente. Atualize e confira o estado antes de tentar novamente.'));
         exit;
     }
-    if ($action === 'bloqueio') {
-        $column = mysqli_query($link, "SHOW COLUMNS FROM sis_cliente LIKE 'tipobloq'");
-        if ($column && mysqli_num_rows($column)) {
-            if (!mysqli_query($link, "UPDATE sis_cliente SET tipobloq='man' WHERE uuid_cliente='$safeUuid' AND bloqueado='sim'")) {
-                http_response_code(500); echo json_encode(array('ok'=>false,'message'=>'Bloqueado, mas não foi possível confirmar a marcação manual.')); exit;
-            }
-        }
-    }
+    // The native endpoint owns block flags; do not force a persistent manual block.
     echo json_encode(array('ok'=>true)); exit;
 }
 

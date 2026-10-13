@@ -2,6 +2,10 @@
 
 Resumo de 30/09/2026. Nao contem credenciais nem o historico integral da conversa.
 
+## Ajuste separado em 13/10/2026
+
+Esta branch `ajustes/bloqueio-nativo` remove a protecao de bloqueio persistente e volta a utilizar somente o bloqueio nativo. A main em ae4afd0 foi preservada. Consulte BLOQUEIO-NATIVO.md para o escopo e a migracao; os registros abaixo descrevem a versao anteriormente publicada. Os ajustes foram aplicados com autorizacao no Visual Net Fibra em 13/10/2026, com backup previo e preservacao das demais diferencas locais. Novas instalacoes desta versao precisam selecionar REPO_REF=ajustes/bloqueio-nativo; o bootstrap padrao continua usando a main antiga.
+
 ## Estado publicado
 
 - Repositorio: https://github.com/brsxdlols/mkauth-dashboard-busca-suite
