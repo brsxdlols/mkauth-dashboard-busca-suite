@@ -8,7 +8,14 @@
    .then(function(data){
     if(container.dataset.uuid!==uuid)return;
     if(!data.ok)throw new Error();
-    var f=data.forecast,lines=[];
+    var f=data.forecast,lines=[],status;
+    if(f.open_count===0)status='Nenhum boleto em aberto.';
+    else if(f.automatic_block==='nao')status='Bloqueio autom\u00e1tico desativado.';
+    else if(f.exempt)status='Cliente isento de cobran\u00e7a.';
+    else if(f.observation)status='Em observa\u00e7\u00e3o: respeitar o desbloqueio de confian\u00e7a.';
+    else if(!f.active)status='Cliente desativado.';
+    else if(!f.eligible_date)status='Previs\u00e3o de corte indispon\u00edvel.';
+    else status=f.eligible_now ? 'Pode ser bloqueado na pr\u00f3xima rotina financeira.' : 'Previs\u00e3o de bloqueio a partir de '+br(f.eligible_date)+', se continuar em aberto.';
     if(f.open_count===0)lines.push('Nenhum boleto em aberto encontrado.');
     else {
      lines.push('Boletos em aberto: '+f.open_count+'. Vencimento mais antigo: '+br(f.oldest_due)+'.');
@@ -24,7 +31,12 @@
     if(!f.active)lines.push('Cliente desativado.');
     if(f.automatic_unlock==='sim')lines.push('Desbloqueio autom\u00e1tico habilitado no sistema.');
     lines.push('Previs\u00e3o pela regra de atraso maior que os dias de corte; a execu\u00e7\u00e3o depende das regras e do agendamento do MK-AUTH. Pagamentos ou altera\u00e7\u00f5es posteriores podem mudar esta previs\u00e3o.');
-    container.textContent=lines.join('\n');container.style.whiteSpace='pre-line';
+    container.textContent=f.open_count>0 ? f.open_count+' boleto'+(f.open_count===1?'':'s')+' em aberto.\n'+status : status;
+    container.style.whiteSpace='pre-line';
+    var details=document.createElement('details'),label=document.createElement('summary'),body=document.createElement('div');
+    label.textContent='Ver detalhes';body.textContent=lines.join('\n');
+    details.style.marginTop='8px';body.style.marginTop='6px';
+    details.appendChild(label);details.appendChild(body);container.appendChild(details);
    }).catch(function(){if(container.dataset.uuid===uuid)container.textContent='N\u00e3o foi poss\u00edvel consultar a previs\u00e3o financeira. Confira os t\u00edtulos e o prazo de corte antes de continuar.';});
  };
 }());

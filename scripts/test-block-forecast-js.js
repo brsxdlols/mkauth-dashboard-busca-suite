@@ -1,8 +1,8 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../addons/shared/block_forecast.js'),'utf8');
 async function test(f,pattern,error=false){
- const container={dataset:{},style:{}};
- const context={window:{},fetch:async()=>({ok:!error,json:async()=>({ok:true,forecast:f})})};
+ const container={dataset:{},style:{},children:[],appendChild(n){this.children.push(n);}};
+ const context={window:{},document:{createElement(){return {style:{},children:[],appendChild(n){this.children.push(n);}};}},fetch:async()=>({ok:!error,json:async()=>({ok:true,forecast:f})})};
  vm.runInNewContext(source,context);context.window.mkaLoadBlockForecast('fixture',container);
  for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve));
  assert.match(container.textContent,pattern);
