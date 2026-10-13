@@ -12,7 +12,7 @@ foreach(array(false,true) as $acesso_permitido){
  if(strpos($html,'Bloqueados')===false || strpos($html,'Sem títulos')===false)throw new RuntimeException('Filters disappeared.');
  preg_match_all('/class="search-stat-value">([^<]*)</',$html,$values);
  if(count($values[1])<8)throw new RuntimeException('Cards missing.');
- foreach($values[1] as $value)if($acesso_permitido ? $value==='' : $value!=='')throw new RuntimeException('Count visibility incorrect.');
- echo 'PASS totals '.($acesso_permitido?'visible':'hidden').'; filters rendered without Dashboard permission function.'.PHP_EOL;
+ foreach($values[1] as $i=>$value)if($acesso_permitido || $i>=count($values[1])-2 ? $value==='' : $value!=='')throw new RuntimeException('Count visibility incorrect.');
+ echo 'PASS totals '.($acesso_permitido?'visible':'hidden').'; billing counts remain visible; filters rendered without Dashboard permission function.'.PHP_EOL;
 }
 

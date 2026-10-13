@@ -1786,7 +1786,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                     <div class="dashboard-stat-head"><?= $stat['label']; ?></div>
                                     <span class="dashboard-stat-icon"><i class="bi <?= $stat['icon']; ?>"></i></span>
                                     <?php
-                                    $stat_value = permissao('perm_numClientes') ? (string) $stat['value'] : '';
+                                    $stat_show_value = permissao('perm_numClientes') || in_array($stat['label'], array('Sem Carne', 'Sem Títulos'), true);
+                                    $stat_value = $stat_show_value ? (string) $stat['value'] : '';
                                     $stat_digits = strlen(preg_replace('/\D+/', '', $stat_value));
                                     $stat_size_class = $stat_digits >= 6 ? ' dashboard-stat-value--digits-6-plus' : ($stat_digits === 5 ? ' dashboard-stat-value--digits-5' : '');
                                     ?>
