@@ -38,7 +38,9 @@ try {
     $p=array_merge($compat,array('id'=>$id,'expires'=>time()+1800,'previous'=>mka_perf_flag($conn),'already_direct'=>mka_perf_set_enabled($conn),'baseline_direct'=>mka_perf_mode($conn)==='direct','source_hash'=>hash_file('sha256',__DIR__.'/index.php'),'user_hash'=>hash('sha256',$user)));
     $p['tables']=array();$r=perf_query($conn,"SELECT TABLE_NAME,ENGINE,TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('radacct','sis_cliente','sis_adicional')");while($row=mysqli_fetch_assoc($r))$p['tables'][]=$row;
     $p['indexes']=array();$r=perf_query($conn,"SELECT TABLE_NAME,INDEX_NAME,COLUMN_NAME,SEQ_IN_INDEX FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND ((TABLE_NAME='radacct' AND COLUMN_NAME IN ('username','acctstoptime')) OR (TABLE_NAME='sis_cliente' AND COLUMN_NAME IN ('login','cli_ativado')) OR (TABLE_NAME='sis_adicional' AND COLUMN_NAME IN ('login','username'))) ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX");while($row=mysqli_fetch_assoc($r))$p['indexes'][]=$row;
-    file_put_contents(mka_perf_dir().'/'.$id.'.json',json_encode($p),LOCK_EX);$_SESSION['suite_perf_plan']=$id;
+    $planJson=json_encode($p);
+    if ($planJson===false || @file_put_contents(mka_perf_dir().'/'.$id.'.json',$planJson,LOCK_EX)!==strlen($planJson)) throw new RuntimeException('Nao foi possivel gravar o diagnostico. Verifique permissoes e AppArmor; execute o instalador atualizado.');
+    $_SESSION['suite_perf_plan']=$id;
     perf_reply(array('ok'=>true,'plan'=>$p,'csrf'=>$_SESSION['suite_perf_csrf'],'php'=>PHP_VERSION,'database'=>mysqli_get_server_info($conn),'mk_auth'=>defined('VERSAO2UPDATE')?(string)VERSAO2UPDATE:'nao identificado'));
  }
  $p=mka_perf_plan();if(!$p)throw new RuntimeException('Diagnostico expirado. Inicie novamente.');

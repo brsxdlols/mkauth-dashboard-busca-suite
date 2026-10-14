@@ -369,6 +369,9 @@ echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
 mkdir -p /var/lib/mkauth-suite-performance
 chmod 2770 /var/lib/mkauth-suite-performance
 if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance; fi
+if command -v python3 >/dev/null 2>&1; then
+  python3 "${SCRIPT_DIR}/scripts/install-performance-apparmor.py" "${BACKUP_DIR}/apparmor" || echo '[aviso] AppArmor preservado; o diagnostico pode nao conseguir gravar arquivos privados.'
+fi
 touch /var/lib/mkauth-suite-performance/optimization.lock
 chmod 0660 /var/lib/mkauth-suite-performance/optimization.lock
 if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance/optimization.lock; fi
