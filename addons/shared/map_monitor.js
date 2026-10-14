@@ -37,7 +37,10 @@
   fetch(url.href,{credentials:'same-origin',cache:'no-store',signal:request.signal}).then(response=>{if(!response.ok)throw Error('Não foi possível consultar as conexões ('+response.status+').');return response.text();}).then(html=>{
    if(logModal!==modal)return;const rows=connectionRows(new DOMParser().parseFromString(html,'text/html'),login);content.replaceChildren();content.append(el('p','mka-client-log-note','Até 10 conexões recentes deste login. Tráfego conforme o registro da sessão.'));
    if(!rows.length){content.append(el('p','','Nenhuma conexão encontrada para este login.'));return;}
-   for(const record of rows){const card=el('article','mka-connection-card');for(const [label,value] of Object.entries(record)){const field=el('div','mka-connection-field');field.append(el('b','',label),el('span','',value));card.append(field);}content.append(card);}
+   rows.forEach((record,index)=>{const ongoing=record['Fim']==='—',card=el('article','mka-connection-card'+(index===0?(ongoing?' is-current-online':' is-current-offline'):''));
+    if(index===0)card.append(el('div','mka-connection-state',ongoing?'● Conectado · sessão em andamento':'● Desconectado · última sessão encerrada'));
+    for(const [label,value] of Object.entries(record)){const field=el('div','mka-connection-field');field.append(el('b','',label),el('span','',label==='Fim'&&ongoing?'Em andamento':value));card.append(field);}content.append(card);
+   });
   }).catch(error=>{if(logModal===modal)content.textContent=error.name==='AbortError'?'A consulta demorou. Feche e abra novamente para tentar outra vez.':error.message;}).finally(()=>{clearTimeout(timeout);if(logRequest===request)logRequest=null;});
  }
  function decorateDetails(box){
