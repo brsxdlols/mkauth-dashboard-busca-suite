@@ -10,14 +10,35 @@
   const all=[...merged.values()];
   return all.filter(row=>row.source!=='accounting_start'||!all.some(other=>other.source==='radius'&&other.type==='conectados'&&Math.abs(other.event_time-row.event_time)<=30)).sort((a,b)=>(b.event_time||0)-(a.event_time||0)).slice(0,5);
  }
- let logModal=null,logFocus=null;
- function closeClientLog(){if(!logModal)return;const modal=logModal;logModal=null;modal.remove();if(logFocus&&logFocus.isConnected)logFocus.focus();logFocus=null;}
+ let logModal=null,logFocus=null,logRequest=null;
+ function closeClientLog(){if(logRequest)logRequest.abort();logRequest=null;if(!logModal)return;const modal=logModal;logModal=null;modal.remove();if(logFocus&&logFocus.isConnected)logFocus.focus();logFocus=null;}
+ function connectionRows(doc,login){
+  const clean=node=>node.textContent.replace(/\s+/g,' ').trim(),norm=text=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  for(const table of doc.querySelectorAll('table')){
+   let columns=null;const rows=[];
+   for(const row of table.querySelectorAll('tr')){
+    const cells=Array.from(row.children).filter(cell=>['TD','TH'].includes(cell.tagName));if(!cells.length)continue;
+    const values=cells.map(clean),labels=values.map(norm);
+    if(labels.includes('LOGIN')&&labels.includes('HORA INICIAL')&&labels.includes('HORA FINAL')){columns=labels;continue;}
+    if(!columns||values.length<columns.length)continue;
+    const owner=values[columns.indexOf('LOGIN')];if(!owner||!(owner.toLowerCase()===login.toLowerCase()||owner.toLowerCase().startsWith(login.toLowerCase()+' ')))continue;
+    const record={};for(const [label,field] of [['HORA INICIAL','Início'],['HORA FINAL','Fim'],['DURACAO','Duração'],['TRAFEGO','Tráfego'],['IP','IP'],['IPV6 PD','IPv6 PD']]){const index=columns.indexOf(label);if(index>=0)record[field]=values[index]||'—';}rows.push(record);if(rows.length===10)return rows;
+   }
+   if(columns)return rows;
+  }
+  throw Error('Não foi possível identificar o histórico de conexões nesta versão.');
+ }
  function openClientLog(link,login){
   const url=new URL(link.getAttribute('href'),document.baseURI);if(url.origin!==location.origin||!url.pathname.endsWith('/relatorios_u.hhvm'))return;
-  closeClientLog();logFocus=link;const modal=el('dialog','mka-client-log-modal'),header=el('header'),title=el('span','','Log do cliente — '+login),close=el('button','','Fechar'),frame=el('iframe');
-  modal.setAttribute('aria-label','Log do cliente '+login);close.type='button';close.setAttribute('aria-label','Fechar log do cliente');frame.title='Log do cliente '+login;frame.src=url.href;
-  header.append(title,close);modal.append(header,frame);document.body.append(modal);logModal=modal;
+  closeClientLog();logFocus=link;const modal=el('dialog','mka-client-log-modal'),header=el('header'),title=el('span','','Últimas conexões — '+login),close=el('button','','Fechar'),content=el('div','mka-client-log-summary','Carregando conexões…');
+  modal.setAttribute('aria-label','Últimas conexões de '+login);close.type='button';close.setAttribute('aria-label','Fechar log do cliente');header.append(title,close);modal.append(header,content);document.body.append(modal);logModal=modal;
   close.addEventListener('click',()=>modal.close());modal.addEventListener('close',closeClientLog);modal.addEventListener('click',event=>{if(event.target===modal){const rect=modal.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)modal.close();}});modal.showModal();close.focus();
+  const request=new AbortController();logRequest=request;const timeout=setTimeout(()=>request.abort(),15000);
+  fetch(url.href,{credentials:'same-origin',cache:'no-store',signal:request.signal}).then(response=>{if(!response.ok)throw Error('Não foi possível consultar as conexões ('+response.status+').');return response.text();}).then(html=>{
+   if(logModal!==modal)return;const rows=connectionRows(new DOMParser().parseFromString(html,'text/html'),login);content.replaceChildren();content.append(el('p','mka-client-log-note','Até 10 conexões recentes deste login. Tráfego conforme o registro da sessão.'));
+   if(!rows.length){content.append(el('p','','Nenhuma conexão encontrada para este login.'));return;}
+   for(const record of rows){const card=el('article','mka-connection-card');for(const [label,value] of Object.entries(record)){const field=el('div','mka-connection-field');field.append(el('b','',label),el('span','',value));card.append(field);}content.append(card);}
+  }).catch(error=>{if(logModal===modal)content.textContent=error.name==='AbortError'?'A consulta demorou. Feche e abra novamente para tentar outra vez.':error.message;}).finally(()=>{clearTimeout(timeout);if(logRequest===request)logRequest=null;});
  }
  function decorateDetails(box){
   const popup=box.closest('.popup'),grid=popup&&popup.querySelector('.popup-grid');
