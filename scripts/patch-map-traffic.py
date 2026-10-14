@@ -66,6 +66,7 @@ def install_monitor_route(admin,backup):
     template=pathlib.Path(__file__).with_name('map-monitor-entry.php')
     if not template.is_file():raise RuntimeError('Monitor entry template unavailable.')
     target=admin/'addons/mapa-clientes/monitor/index.php'
+    if target.is_file() and 'suite-map-monitor-entry-v2' in target.read_text(encoding='utf-8'):return
     if target.is_file() and 'suite-map-monitor-entry-v1' not in target.read_text(encoding='utf-8'):
         raise RuntimeError('Existing monitor route belongs to another version; preserving it.')
     backup.mkdir(parents=True,exist_ok=True)
@@ -111,8 +112,10 @@ def migrate_monitor_links(backup):
 def main():
     admin=pathlib.Path(sys.argv[1] if len(sys.argv)>1 else '/opt/mk-auth/admin')
     backup=pathlib.Path(sys.argv[2]);target=admin/'addons/mapa-clientes/maps.hhvm'
-    if not target.is_file():print('[mapa] Addon ausente; nenhuma alteracao.');return
-    source=target.read_bytes().decode('utf-8');updated=patch(source)
+    if not target.is_file():print('[mapa] Mapa completo ausente; monitor independente tratado pelo instalador.');return
+    source=target.read_bytes().decode('utf-8')
+    try:updated=patch(source)
+    except ValueError as error:print('[mapa] Mapa completo preservado: '+str(error));return
     if shutil.which('php') is None:print('[mapa] PHP indisponivel; patch nao aplicado.');return
     backup.mkdir(parents=True,exist_ok=True)
     if source!=updated:

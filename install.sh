@@ -387,5 +387,12 @@ fi
 echo "Nova analise disponivel no botao Executar analise de desempenho da Dashboard e Busca."
 
 if command -v python3 >/dev/null 2>&1; then
+  MONITOR_UPDATER_DIR="$(dirname "${TARGET_ADMIN_DIR}")/scripts/mkauth-suite-monitor"
+  mkdir -p "${MONITOR_UPDATER_DIR}"
+  chmod 0700 "${MONITOR_UPDATER_DIR}"
+  for monitor_file in install-map-monitor.py patch-map-traffic.py standalone-monitor-entry.php; do
+    install -m 0600 "${SCRIPT_DIR}/scripts/${monitor_file}" "${MONITOR_UPDATER_DIR}/${monitor_file}"
+  done
+  python3 "${MONITOR_UPDATER_DIR}/install-map-monitor.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/monitor-package" || echo '[aviso] Monitor preservado ou indisponivel; confira o acesso ao GitHub e o log acima.'
   python3 "${SCRIPT_DIR}/scripts/patch-map-traffic.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/map-traffic" || echo '[aviso] Grafico do Mapa preservado; patch nao aplicado. Consulte o log.'
 fi

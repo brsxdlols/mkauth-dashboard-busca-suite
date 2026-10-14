@@ -77,3 +77,27 @@ O instalador cria backup antes de substituir:
 - O addon da busca foi organizado no repositorio como `busca_inteligente`
 - O destino esperado no servidor e `/opt/mk-auth/admin/addons/busca_inteligente`
 - O topo da dashboard usa a opcao `cor_menu` gravada em `sis_opcao`
+
+
+## Monitor de clientes sem o Mapa completo
+
+O instalador consulta a última release publicada de `brsxdlols/mkauth-toolkit`,
+baixa o pacote `.tar.gz` e valida o SHA-256 correspondente. Somente a base
+necessária ao monitor é instalada em `addons/mapa-clientes/monitor/runtime`;
+o instalador completo do Toolkit não é executado.
+
+O monitor recebe os ajustes desta suíte e abre pela rota `/admin/addons/mapa-clientes/monitor/`.
+Ele pode ser usado pela Busca mesmo quando o Mapa de Clientes completo não existe.
+Essa instalação não cria `mapa-clientes/index.php` ou `index.hhvm`: o botão do
+Mapa completo continua exibindo o aviso para contatar VPSCLOUD — Bruno Fontes.
+Mapas completos, configurações locais e dados do provedor existentes são preservados.
+
+As atualizações feitas no projeto do Mapa entram quando publicadas em uma nova
+release do Toolkit. Falha no download, checksum ou compatibilidade preserva o
+monitor anterior e produz um aviso. O backup registra a release e o SHA-256 usados.
+
+
+O atualizador permanente fica em `/opt/mk-auth/scripts/mkauth-suite-monitor/install-map-monitor.py`.
+O instalador do projeto Mapa pode invocá-lo como root após instalar uma release
+publicada, passando o diretório administrativo e um diretório novo de backup.
+Isso sincroniza a base isolada sem liberar o Mapa completo nos demais servidores.
