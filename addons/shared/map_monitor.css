@@ -75,3 +75,10 @@ body.monitor-client>.leaflet-popup .monitor-client-search input{width:100%!impor
 .mka-radius-heading{font-size:13px;gap:8px}.mka-radius-heading h2{overflow-wrap:anywhere;min-width:0;flex:1}.mka-radius-heading button{padding:9px 12px}
 .mka-radius-events{flex:none;min-height:0;max-height:none;overflow:visible}.mka-radius-event{grid-template-columns:1fr;gap:5px}.mka-radius-event code{font-size:11px}
 }
+
+.mka-details-toggle,.popup-grid [data-info="Nome"]{display:none}
+@media(max-width:820px){
+body.monitor-client>.leaflet-popup .popup-grid [data-info="Nome"]{display:block!important}
+body.monitor-client>.leaflet-popup .popup-grid:not(.mka-details-expanded) [data-info]:not([data-info="Nome"]):not([data-info="Login"]):not([data-info="Endereço"]):not([data-info="Status"]){display:none!important}
+.mka-details-toggle{display:block;grid-column:1/-1;margin-top:6px;padding:8px 12px;border:1px solid #cbd9e5;border-radius:7px;background:#f4f8fc;color:#1769aa;font:600 12px system-ui;cursor:pointer}
+}

@@ -2,6 +2,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('p
 class Node {
  constructor(tag,classes=''){this.tag=tag;this.className=classes;this.children=[];this.attrs={};this.events={};this.style={};this.textContent='';this.classList={contains:c=>this.className.split(' ').includes(c),add:c=>{if(!this.classList.contains(c))this.className+=' '+c;},toggle:(c,on)=>{if(on===undefined)on=!this.classList.contains(c);this.className=this.className.split(' ').filter(x=>x&&x!==c).concat(on?[c]:[]).join(' ');}};}
  append(...nodes){for(const node of nodes){if(node.parent)node.remove();this.children.push(node);node.parent=this;}}
+ prepend(...nodes){for(const node of nodes.reverse()){if(node.parent)node.remove();this.children.unshift(node);node.parent=this;}}
  before(node){const i=this.parent.children.indexOf(this);this.parent.children.splice(i,0,node);node.parent=this.parent;}
  remove(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);this.parent=null;}
  replaceChildren(...nodes){for(const node of [...this.children])node.remove();this.append(...nodes);}
@@ -15,6 +16,7 @@ class Node {
 }
 const body=new Node('body','monitor-client'),popup=new Node('div','popup');body.append(popup);
 function box(login){const b=new Node('div','traffic-mini');b.setAttribute('data-traffic-login',login);b.append(new Node('svg','traffic-mini-chart'));const legend=new Node('div','traffic-mini-legend');legend.append(new Node('b','traffic-rx'),new Node('b','traffic-tx'));b.append(legend);popup.append(b);return b;}
+const heading=new Node('h3');heading.textContent='Cliente Alpha';const details=new Node('div','popup-grid');popup.prepend(heading,details);
 let selected=box('alpha'),requests=[],stored={},timers=new Set();
 const doc={body,hidden:false,readyState:'complete',createElement:t=>new Node(t),createTextNode:t=>Object.assign(new Node('#text'),{textContent:t}),querySelector:()=>selected,addEventListener(){}};
 const context={document:doc,window:{addEventListener(){}},localStorage:{getItem:k=>stored[k],setItem:(k,v)=>stored[k]=v},AbortController,Map,Date,Array,String,encodeURIComponent,setTimeout(fn){const token={fn};timers.add(token);return token;},clearTimeout:t=>timers.delete(t),fetch:(url,opts)=>new Promise(resolve=>requests.push({url,opts,resolve}))};
@@ -22,6 +24,7 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../addons/shared/map_mon
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{
  assert(requests[0].url.includes('login=alpha'));
+ const more=details.querySelector('.mka-details-toggle');assert(more);assert.equal(more.getAttribute('aria-expanded'),'false');more.events.click.call(more);assert(details.classList.contains('mka-details-expanded'));more.events.click.call(more);assert(!details.classList.contains('mka-details-expanded'));assert.equal(details.querySelector('span').textContent,'Cliente Alpha');
  const old=requests[0];selected.remove();selected=box('beta@demo');context.window.mkaMapMonitor.sync(selected);
  assert(old.opts.signal.aborted,'Switch must cancel the old request');assert(requests[1].url.includes('login=beta%40demo'));
  const row=(login,line,time)=>({login,line,event_time:time,type:'conectados',label:'Login autorizado',source:'radius',event_key:login+time});

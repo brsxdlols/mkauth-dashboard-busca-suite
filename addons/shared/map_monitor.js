@@ -10,7 +10,16 @@
   const all=[...merged.values()];
   return all.filter(row=>row.source!=='accounting_start'||!all.some(other=>other.source==='radius'&&other.type==='conectados'&&Math.abs(other.event_time-row.event_time)<=30)).sort((a,b)=>(b.event_time||0)-(a.event_time||0)).slice(0,5);
  }
+ function decorateDetails(box){
+  const popup=box.closest('.popup'),grid=popup&&popup.querySelector('.popup-grid');
+  if(!grid||grid.querySelector('.mka-details-toggle'))return;
+  const heading=popup.querySelector('h3');
+  if(heading){const label=el('b','','Nome'),name=el('span','',heading.textContent);label.setAttribute('data-info','Nome');name.setAttribute('data-info','Nome');grid.prepend(label,name);}
+  const more=el('button','mka-details-toggle','Ver mais');more.type='button';more.setAttribute('aria-expanded','false');
+  more.addEventListener('click',function(){const expanded=this.getAttribute('aria-expanded')!=='true';this.setAttribute('aria-expanded',String(expanded));this.textContent=expanded?'Ver menos':'Ver mais';grid.classList.toggle('mka-details-expanded',expanded);});grid.append(more);
+ }
  function decorate(box){
+  decorateDetails(box);
   if(box.querySelector('.mka-monitor-controls'))return;
   const controls=el('div','mka-monitor-controls'),keys=el('div','mka-traffic-keys');
   for(const [kind,text] of [['down','↓ DOWN · Download'],['up','↑ UP · Upload']]){
