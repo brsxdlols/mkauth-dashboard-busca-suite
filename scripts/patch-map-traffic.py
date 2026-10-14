@@ -44,7 +44,7 @@ PAUSE="""  /* suite-map-monitor-v4 */
   function pollTraffic(login){if(trafficPaused||login!==trafficLogin)return;var box=document.querySelector('.traffic-mini[data-traffic-login="'+CSS.escape(login)+'"]');if(!box)return stopTraffic();var epoch=trafficEpoch,request=new AbortController();trafficRequest=request;fetch('traffic_api.hhvm?login='+encodeURIComponent(login),{credentials:'same-origin',cache:'no-store',signal:request.signal}).then(function(r){return r.json().then(function(data){if(!r.ok||!data.ok)throw new Error(data.error||'HTTP '+r.status);return data;});}).then(function(data){if(!trafficPaused&&epoch===trafficEpoch&&login===trafficLogin)renderTraffic(box,data);}).catch(function(e){if(e.name!=='AbortError'&&!trafficPaused&&epoch===trafficEpoch){var status=box.querySelector('.traffic-mini-status');if(status)status.textContent=e.message;}}).finally(function(){if(epoch!==trafficEpoch)return;if(trafficRequest===request)trafficRequest=null;if(!trafficPaused&&login===trafficLogin&&box.isConnected)trafficTimer=setTimeout(function(){pollTraffic(login);},3000);});}
   function startTraffic(login){trafficEpoch++;trafficPaused=false;stopTraffic(trafficLogin!==login);trafficLogin=login;trafficTimer=setTimeout(function(){pollTraffic(login);},80);}"""
 
-def patch(source):
+def patch_v4(source):
     source=patch_v3(source)
     if 'suite-map-monitor-v4' in source:return source
     for name in ['pollTraffic','startTraffic','trafficDots']:
@@ -57,6 +57,10 @@ def patch(source):
     source=re.sub(r'^  function startTraffic\([^\n]*','',source,count=1,flags=re.M)
     source=re.sub(r'^  function pollTraffic\([^\n]*',lambda m:PAUSE,source,count=1,flags=re.M)
     return source.replace('map_monitor.css?v=20261014','map_monitor.css?v=20261014-4').replace('map_monitor.js?v=20261014','map_monitor.js?v=20261014-4')
+
+def patch(source):
+    source=patch_v4(source)
+    return re.sub(r'(map_monitor\.(?:css|js)\?v=)[^\"<\s]+',r'\g<1>20261014-5',source)
 
 def install_monitor_route(admin,backup):
     template=pathlib.Path(__file__).with_name('map-monitor-entry.php')

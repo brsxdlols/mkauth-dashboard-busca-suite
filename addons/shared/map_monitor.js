@@ -15,7 +15,10 @@
  function decorate(box){
   if(box.querySelector('.mka-monitor-controls'))return;
   const controls=el('div','mka-monitor-controls'),keys=el('div','mka-traffic-keys');
-  keys.append(el('span','mka-traffic-down','↓ DOWN · Download'),el('span','mka-traffic-up','↑ UP · Upload'));
+  for(const [kind,text] of [['down','↓ DOWN · Download'],['up','↑ UP · Upload']]){
+   const toggle=el('button','mka-traffic-'+kind,text);toggle.type='button';toggle.setAttribute('aria-pressed','true');toggle.title='Mostrar ou ocultar '+(kind==='down'?'Download':'Upload');
+   toggle.addEventListener('click',function(){const visible=this.getAttribute('aria-pressed')!=='true';this.setAttribute('aria-pressed',String(visible));box.classList.toggle('mka-traffic-hide-'+kind,!visible);});keys.append(toggle);
+  }
   const label=el('label'),check=el('input');check.type='checkbox';check.checked=showValues;
   label.append(check,el('span','','Mostrar valores no gráfico'));
   const collect=el('button','mka-traffic-pause','Pausar coleta');collect.type='button';collect.setAttribute('aria-pressed','false');collect.addEventListener('click',function(){if(!window.mkaMapTrafficControl)return;const stopped=window.mkaMapTrafficControl.pause(this.getAttribute('aria-pressed')!=='true');this.setAttribute('aria-pressed',String(stopped));this.textContent=stopped?'Retomar coleta':'Pausar coleta';box.classList.toggle('mka-traffic-paused',stopped);});controls.append(keys,label,collect);box.querySelector('.traffic-mini-chart').before(controls);

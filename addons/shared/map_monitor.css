@@ -41,3 +41,17 @@ body.monitor-client>.leaflet-popup .popup-grid{gap:3px 8px!important}
 .mka-radius-event{padding:6px 9px}
 .traffic-mini-point-value{font-size:10px!important}
 }
+
+/* Size the traffic card from the natural height of the client details. */
+.mka-traffic-keys button{border:0;background:transparent;padding:3px 0;color:inherit;font:700 12px system-ui;cursor:pointer}
+.mka-traffic-keys button:before{content:'';display:inline-block;width:22px;height:3px;background:currentColor;vertical-align:middle;margin-right:6px;border-radius:2px}
+.mka-traffic-keys button[aria-pressed=false]{opacity:.45;text-decoration:line-through}
+.mka-traffic-hide-down .traffic-mini-rx,.mka-traffic-hide-down .traffic-mini-area-rx,.mka-traffic-hide-down .traffic-mini-dots-rx{display:none!important}
+.mka-traffic-hide-up .traffic-mini-tx,.mka-traffic-hide-up .traffic-mini-area-tx,.mka-traffic-hide-up .traffic-mini-dots-tx{display:none!important}
+@media(min-width:821px){
+body.monitor-client>.leaflet-popup .popup{grid-template-rows:auto minmax(210px,1fr)!important}
+body.monitor-client>.leaflet-popup .popup-grid{align-self:stretch!important;max-height:none!important;overflow:visible!important;gap:4px 8px!important}
+body.monitor-client>.leaflet-popup .popup-grid b,body.monitor-client>.leaflet-popup .popup-grid span{padding:4px 0!important;line-height:1.25!important}
+body.monitor-client>.leaflet-popup .traffic-mini{contain:size;align-self:stretch!important;box-sizing:border-box!important;height:auto!important}
+body.monitor-client>.leaflet-popup .traffic-mini-chart{min-height:140px!important}
+}
