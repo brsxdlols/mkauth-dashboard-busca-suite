@@ -45,7 +45,7 @@ def build_runtime(source,target,patcher):
     text=patcher.patch((target/'maps.hhvm').read_bytes().decode('utf-8'))
     # The only renderer entry is the monitor; direct map rendering is denied.
     text=text.replace('<?php',"<?php\nif(!defined('MKA_SUITE_MONITOR_RUNTIME')){http_response_code(403);exit('Acesso somente pelo monitor.');}\n$_GET['monitor']='1';",1)
-    text=text.replace('<head>','<head><link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">',1)
+    text=text.replace('<head>','<head><script src="/admin/addons/shared/admin_asset_paths.js?v=20261014-1"></script><link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">',1)
     text=text.replace('src="../../','src="/admin/').replace('href="../../','href="/admin/').replace("'../../","'/admin/").replace("'../geocodificacao/","'/admin/addons/geocodificacao/")
     (target/'maps.hhvm').write_bytes(text.encode('utf-8'))
 
