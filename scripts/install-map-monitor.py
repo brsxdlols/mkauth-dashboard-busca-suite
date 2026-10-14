@@ -45,6 +45,7 @@ def build_runtime(source,target,patcher):
     text=patcher.patch((target/'maps.hhvm').read_bytes().decode('utf-8'))
     # The only renderer entry is the monitor; direct map rendering is denied.
     text=text.replace('<?php',"<?php\nif(!defined('MKA_SUITE_MONITOR_RUNTIME')){http_response_code(403);exit('Acesso somente pelo monitor.');}\n$_GET['monitor']='1';",1)
+    text=text.replace('<head>','<head><link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">',1)
     text=text.replace('src="../../','src="/admin/').replace('href="../../','href="/admin/').replace("'../../","'/admin/").replace("'../geocodificacao/","'/admin/addons/geocodificacao/")
     (target/'maps.hhvm').write_bytes(text.encode('utf-8'))
 
@@ -71,18 +72,24 @@ def install_runtime(source,admin,backup,patcher):
     os.chmod(entry,0o644);os.utime(entry,None)
 
 def repair_geocode_loader(admin,backup):
-    target=admin/'scripts/mk-auth.js'
-    if not target.is_file():return
-    original=target.read_bytes()
-    updated=re.sub(rb'(s\.src\s*=\s*[\"\'])addons/geocodificacao/',rb'\1/admin/addons/geocodificacao/',original)
-    if original==updated:return
-    shutil.copy2(target,backup/'mk-auth-js-before-geocode-path.js')
-    staged=target.with_name(target.name+'.suite-monitor-new')
-    shutil.copy2(target,staged);staged.write_bytes(updated)
-    if hasattr(os,'chown'):
-        stat=target.stat();os.chown(staged,stat.st_uid,stat.st_gid)
-    os.utime(staged,None);os.replace(staged,target)
-    print('[monitor] URL absoluta do carregador de geocodificacao corrigida.')
+    files=[(admin/'addons/geocodificacao/geocodificacao.js','geocodificacao-js-before-paths.js'),(admin/'scripts/mk-auth.js','mk-auth-js-before-geocode-path.js')]
+    for target,name in files:
+        if not target.is_file():continue
+        original=target.read_bytes()
+        if name.startswith('geocodificacao-'):
+            updated=re.sub(rb'([\"\'])addons/geocodificacao/',rb'\1/admin/addons/geocodificacao/',original)
+            updated=re.sub(rb'([\"\'])conf_mapas\.hhvm',rb'\1/admin/conf_mapas.hhvm',updated)
+        else:
+            updated=re.sub(rb'(s\.src\s*=\s*[\"\'])addons/geocodificacao/',rb'\1/admin/addons/geocodificacao/',original)
+            updated=re.sub(rb'(geocodificacao\.js\?v=[^\"\'&]+)(?![^\"\']*suite_paths=)',rb'\1&suite_paths=2',updated)
+        if original==updated:continue
+        shutil.copy2(target,backup/name)
+        staged=target.with_name(target.name+'.suite-monitor-new')
+        shutil.copy2(target,staged);staged.write_bytes(updated)
+        if hasattr(os,'chown'):
+            stat=target.stat();os.chown(staged,stat.st_uid,stat.st_gid)
+        os.utime(staged,None);os.replace(staged,target)
+        print('[monitor] Caminhos absolutos da geocodificacao corrigidos: '+target.name)
 
 def main():
     admin=pathlib.Path(sys.argv[1]);backup=pathlib.Path(sys.argv[2]);backup.mkdir(parents=True,exist_ok=True);os.chmod(backup,0o700)

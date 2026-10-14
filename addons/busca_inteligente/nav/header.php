@@ -10,6 +10,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 ?>
 
 <head>
+    <link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
     <title>MK - AUTH :: <?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'};  ?></title>

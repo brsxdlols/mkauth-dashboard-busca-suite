@@ -22,7 +22,10 @@ class MonitorInstallTests(unittest.TestCase):
   with self.assertRaises(ValueError):m.extract_package(archive,self.path/'extract')
  def test_geocode_loader_absolute_and_idempotent(self):
   admin=self.path/'admin';(admin/'scripts').mkdir(parents=True);target=admin/'scripts/mk-auth.js';target.write_text('s.src="addons/geocodificacao/geocodificacao.js?v=2.10.3"; other="unchanged";')
+  geo=admin/'addons/geocodificacao';geo.mkdir(parents=True);(geo/'geocodificacao.js').write_text("fetch('addons/geocodificacao/geocode.php?action=batch_jobs');fetch('conf_mapas.hhvm');")
   backup=self.path/'backup';backup.mkdir();m.repair_geocode_loader(admin,backup)
+  self.assertIn("fetch('/admin/addons/geocodificacao/geocode.php",(geo/'geocodificacao.js').read_text())
+  self.assertIn("fetch('/admin/conf_mapas.hhvm",(geo/'geocodificacao.js').read_text())
   self.assertIn('s.src="/admin/addons/geocodificacao/',target.read_text());before=target.read_bytes();m.repair_geocode_loader(admin,backup);self.assertEqual(target.read_bytes(),before)
  def test_monitor_only_preserves_existing_map_and_config(self):
   source=self.path/'source';source.mkdir()
