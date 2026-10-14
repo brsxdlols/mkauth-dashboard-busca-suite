@@ -28,8 +28,8 @@
   }
   throw Error('Não foi possível identificar o histórico de conexões nesta versão.');
  }
- function openClientLog(link,login){
-  const url=new URL(link.getAttribute('href'),document.baseURI);if(url.origin!==location.origin||!url.pathname.endsWith('/relatorios_u.hhvm'))return;
+ function openClientLog(link,login,reportUrl){
+  const url=new URL(reportUrl||link.getAttribute('href'),document.baseURI);if(url.origin!==location.origin||!/\/relatorios_u\.(hhvm|php)$/.test(url.pathname))return;
   closeClientLog();logFocus=link;const modal=el('dialog','mka-client-log-modal'),header=el('header'),title=el('span','','Últimas conexões — '+login),close=el('button','','Fechar'),content=el('div','mka-client-log-summary','Carregando conexões…');
   modal.setAttribute('aria-label','Últimas conexões de '+login);close.type='button';close.setAttribute('aria-label','Fechar log do cliente');header.append(title,close);modal.append(header,content);document.body.append(modal);logModal=modal;
   close.addEventListener('click',()=>modal.close());modal.addEventListener('close',closeClientLog);modal.addEventListener('click',event=>{if(event.target===modal){const rect=modal.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)modal.close();}});modal.showModal();close.focus();
@@ -113,6 +113,8 @@
  }
  document.addEventListener('visibilitychange',function(){clearTimeout(timer);if(document.hidden){if(controller)controller.abort();}else if(!busy)poll();});
  window.addEventListener('pagehide',stop);
+ window.mkaClientConnectionLog=function(login,trigger,reportUrl){const link=trigger||el('a');openClientLog(link,login,(reportUrl||'/admin/relatorios_u.hhvm')+'?login='+encodeURIComponent(login));return false;};
+ if(new URLSearchParams(location.search).get('embed')==='1'&&window.self!==window.top)document.body.classList.add('mka-monitor-embedded');
  window.mkaMapMonitor={sync,stop};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>sync());else sync();
 }());

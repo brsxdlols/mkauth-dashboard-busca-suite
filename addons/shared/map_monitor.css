@@ -111,3 +111,12 @@ body.monitor-client>.leaflet-popup .popup-grid:not(.mka-details-expanded) [data-
 .mka-connection-card.is-current-offline{background:#f0f2f5;border-color:#b9c2cc;border-left:4px solid #687784}
 .is-current-offline .mka-connection-state{color:#52616e}
 @media(max-width:820px){.mka-connection-card{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px;padding:9px;margin-bottom:6px}.mka-client-log-summary{padding:9px}.mka-connection-field span{font-size:12px}}
+
+body.mka-monitor-embedded .traffic-monitor-btn{display:none!important}
+.mka-search-traffic-modal{width:min(1680px,98vw);height:94dvh;max-width:98vw;max-height:96dvh;border:1px solid #d4dfe8;border-radius:12px;padding:0;overflow:hidden;background:#eaf0f4}
+.mka-search-traffic-modal::backdrop{background:#14243c99}
+.mka-search-traffic-modal header{height:50px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;background:#fff;border-bottom:1px solid #dbe5ee;font:600 13px system-ui;color:#183142}
+.mka-search-traffic-modal header span{min-width:0;overflow-wrap:anywhere}
+.mka-search-traffic-modal button{border:0;border-radius:7px;padding:8px 12px;background:#edf3f8;color:#183142;cursor:pointer}
+.mka-search-traffic-modal iframe{display:block;width:100%;height:calc(100% - 50px);border:0}
+@media(max-width:820px){.mka-search-traffic-modal{width:calc(100vw - 12px);height:96dvh;max-width:none;max-height:96dvh}.mka-search-traffic-modal header{font-size:12px;padding:8px 10px}}

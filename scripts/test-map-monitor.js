@@ -22,7 +22,7 @@ let selected=box('alpha'),requests=[],stored={},timers=new Set();
 const doc={baseURI:"https://example.test/admin/addons/mapa-clientes/",body,hidden:false,readyState:'complete',createElement:t=>new Node(t),createTextNode:t=>Object.assign(new Node('#text'),{textContent:t}),querySelector:()=>selected,addEventListener(){}};
 const reportRows=[['LOGIN','HORA INICIAL','HORA FINAL','DURAÇÃO','TRÁFEGO','IP','IPV6 PD'],['other','foreign','','','1 MB','other-ip',''],['alpha','14/10/26 12:28:35','','','523 KB / 2 MB','100.64.2.75','2804::/56']];
 class ReportParser{parseFromString(){return {querySelectorAll:()=>[{querySelectorAll:()=>reportRows.map(values=>({children:values.map(text=>({tagName:'TD',textContent:text}))}))}]};}}
-const context={DOMParser:ReportParser,URL,location:{origin:"https://example.test"},document:doc,window:{addEventListener(){}},localStorage:{getItem:k=>stored[k],setItem:(k,v)=>stored[k]=v},AbortController,Map,Date,Array,String,encodeURIComponent,setTimeout(fn){const token={fn};timers.add(token);return token;},clearTimeout:t=>timers.delete(t),fetch:(url,opts)=>new Promise(resolve=>requests.push({url,opts,resolve}))};
+const context={DOMParser:ReportParser,URLSearchParams,URL,location:{origin:"https://example.test"},document:doc,window:{addEventListener(){}},localStorage:{getItem:k=>stored[k],setItem:(k,v)=>stored[k]=v},AbortController,Map,Date,Array,String,encodeURIComponent,setTimeout(fn){const token={fn};timers.add(token);return token;},clearTimeout:t=>timers.delete(t),fetch:(url,opts)=>new Promise(resolve=>requests.push({url,opts,resolve}))};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../addons/shared/map_monitor.js'),'utf8'),context);
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{

@@ -1167,6 +1167,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     <script src="../../menu.js.<?= $links_ext; ?>"></script>
 
 <?php include('../../rodape.php'); mka_perf_emit(); ?>
+<link rel="stylesheet" href="../shared/map_monitor.css?v=20261014-12">
+<script src="../shared/map_monitor.js?v=20261014-12"></script>
+<script src="../shared/search_client_modals.js?v=20261014-12" data-report-url="../../relatorios_u.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>"></script>
 </body>
 
 </html>

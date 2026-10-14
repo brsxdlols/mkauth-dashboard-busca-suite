@@ -637,7 +637,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
 
                                                             ?>
-                                                            <a href='#' onclick='javascript:abrirJanela("monitor_traffic.php?login=<?= "{$login_cliente}&router={$nas_ip[strtolower($login_cliente)]}"; ?>", 600, 650);'>
+                                                            <a href='#' onclick='<?php if (is_file(__DIR__.'/../mapa-clientes/monitor/index.php')) { ?>return mkaOpenClientMonitor(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>);<?php } else { ?>javascript:abrirJanela("monitor_traffic.php?login=<?= "{$login_cliente}&router={$nas_ip[strtolower($login_cliente)]}"; ?>", 600, 650);<?php } ?>'>
                                                                 <i class="fa-solid fa-chart-line fs-5" title="Trafego Atual"></i>
                                                             </a> |
 
@@ -673,7 +673,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     <a href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
                                                                         <img src='img/icon_bola_on.png' class='icon_p' title='Cliente Online'><?= $username_cli_adicional; ?></a>
 
-                                                                    <a href='#' onclick='javascript:abrirJanela("monitor_traffic.php?login=<?= "{$add_online}&router={$nas_ip[strtolower($add_online)]}"; ?>", 600, 650);'>
+                                                                    <a href='#' onclick='<?php if (is_file(__DIR__.'/../mapa-clientes/monitor/index.php')) { ?>return mkaOpenClientMonitor(<?= htmlspecialchars(json_encode($add_online), ENT_QUOTES, 'UTF-8'); ?>);<?php } else { ?>javascript:abrirJanela("monitor_traffic.php?login=<?= "{$add_online}&router={$nas_ip[strtolower($add_online)]}"; ?>", 600, 650);<?php } ?>'>
                                                                         <i class="fa-solid fa-chart-line" title="Trafego Atual"></i>
                                                                     </a> <?= $conn_add; ?>|
                                                                 <?php
