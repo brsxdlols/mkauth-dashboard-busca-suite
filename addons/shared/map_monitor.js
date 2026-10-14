@@ -3,16 +3,27 @@
  let showValues=true,active=null,generation=0,timer=null,controller=null,busy=false,paused=false,saved=[];
  function el(tag,cls,text){const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;}
  function sameLogin(a,b){return typeof a==='string'&&a.trim().toLowerCase()===String(b).trim().toLowerCase();}
- function stop(){generation++;clearTimeout(timer);timer=null;if(controller)controller.abort();controller=null;busy=false;if(active&&active.panel)active.panel.remove();active=null;saved=[];}
+ function stop(){closeClientLog();generation++;clearTimeout(timer);timer=null;if(controller)controller.abort();controller=null;busy=false;if(active&&active.panel)active.panel.remove();active=null;saved=[];}
  function mergeEvents(previous,rows,login){
   const merged=new Map();
   for(const row of [...previous,...(Array.isArray(rows)?rows:[])])if(row&&sameLogin(row.login,login))merged.set(row.event_key||row.line,row);
   const all=[...merged.values()];
   return all.filter(row=>row.source!=='accounting_start'||!all.some(other=>other.source==='radius'&&other.type==='conectados'&&Math.abs(other.event_time-row.event_time)<=30)).sort((a,b)=>(b.event_time||0)-(a.event_time||0)).slice(0,5);
  }
+ let logModal=null,logFocus=null;
+ function closeClientLog(){if(!logModal)return;const modal=logModal;logModal=null;modal.remove();if(logFocus&&logFocus.isConnected)logFocus.focus();logFocus=null;}
+ function openClientLog(link,login){
+  const url=new URL(link.getAttribute('href'),document.baseURI);if(url.origin!==location.origin||!url.pathname.endsWith('/relatorios_u.hhvm'))return;
+  closeClientLog();logFocus=link;const modal=el('dialog','mka-client-log-modal'),header=el('header'),title=el('span','','Log do cliente — '+login),close=el('button','','Fechar'),frame=el('iframe');
+  modal.setAttribute('aria-label','Log do cliente '+login);close.type='button';close.setAttribute('aria-label','Fechar log do cliente');frame.title='Log do cliente '+login;frame.src=url.href;
+  header.append(title,close);modal.append(header,frame);document.body.append(modal);logModal=modal;
+  close.addEventListener('click',()=>modal.close());modal.addEventListener('close',closeClientLog);modal.addEventListener('click',event=>{if(event.target===modal){const rect=modal.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)modal.close();}});modal.showModal();close.focus();
+ }
  function decorateDetails(box){
   const popup=box.closest('.popup'),grid=popup&&popup.querySelector('.popup-grid');
-  if(!grid||grid.querySelector('.mka-details-toggle'))return;
+  if(!grid)return;
+  for(const link of grid.querySelectorAll('.client-log-btn'))if(!link._mkaLogModal){link._mkaLogModal=true;link.addEventListener('click',function(event){event.preventDefault();openClientLog(this,box.getAttribute('data-traffic-login')||'');});}
+  if(grid.querySelector('.mka-details-toggle'))return;
   const heading=popup.querySelector('h3');
   if(heading){const label=el('b','','Nome'),name=el('span','',heading.textContent);label.setAttribute('data-info','Nome');name.setAttribute('data-info','Nome');grid.prepend(label,name);}
   const more=el('button','mka-details-toggle','Ver mais');more.type='button';more.setAttribute('aria-expanded','false');

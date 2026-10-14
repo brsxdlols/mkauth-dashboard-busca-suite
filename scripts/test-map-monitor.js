@@ -7,6 +7,7 @@ class Node {
  remove(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);this.parent=null;}
  replaceChildren(...nodes){for(const node of [...this.children])node.remove();this.append(...nodes);}
  setAttribute(k,v){this.attrs[k]=String(v);}getAttribute(k){return this.attrs[k]??null;}
+ focus(){this.focused=true;}showModal(){this.open=true;}close(){this.open=false;if(this.events.close)this.events.close();}
  addEventListener(k,v){this.events[k]=v;}
  querySelectorAll(selector){const result=[];for(const child of this.children){if(selector[0]==='.'?child.classList.contains(selector.slice(1)):child.tag===selector)result.push(child);result.push(...child.querySelectorAll(selector));}return result;}
  querySelector(selector){return this.querySelectorAll(selector)[0]||null;}
@@ -16,14 +17,15 @@ class Node {
 }
 const body=new Node('body','monitor-client'),popup=new Node('div','popup');body.append(popup);
 function box(login){const b=new Node('div','traffic-mini');b.setAttribute('data-traffic-login',login);b.append(new Node('svg','traffic-mini-chart'));const legend=new Node('div','traffic-mini-legend');legend.append(new Node('b','traffic-rx'),new Node('b','traffic-tx'));b.append(legend);popup.append(b);return b;}
-const heading=new Node('h3');heading.textContent='Cliente Alpha';const details=new Node('div','popup-grid');popup.prepend(heading,details);
+const heading=new Node('h3');heading.textContent='Cliente Alpha';const details=new Node('div','popup-grid');popup.prepend(heading,details);const logLink=new Node('a','client-log-btn');logLink.setAttribute('href','../../relatorios_u.hhvm?login=alpha');details.append(logLink);
 let selected=box('alpha'),requests=[],stored={},timers=new Set();
-const doc={body,hidden:false,readyState:'complete',createElement:t=>new Node(t),createTextNode:t=>Object.assign(new Node('#text'),{textContent:t}),querySelector:()=>selected,addEventListener(){}};
-const context={document:doc,window:{addEventListener(){}},localStorage:{getItem:k=>stored[k],setItem:(k,v)=>stored[k]=v},AbortController,Map,Date,Array,String,encodeURIComponent,setTimeout(fn){const token={fn};timers.add(token);return token;},clearTimeout:t=>timers.delete(t),fetch:(url,opts)=>new Promise(resolve=>requests.push({url,opts,resolve}))};
+const doc={baseURI:"https://example.test/admin/addons/mapa-clientes/",body,hidden:false,readyState:'complete',createElement:t=>new Node(t),createTextNode:t=>Object.assign(new Node('#text'),{textContent:t}),querySelector:()=>selected,addEventListener(){}};
+const context={URL,location:{origin:"https://example.test"},document:doc,window:{addEventListener(){}},localStorage:{getItem:k=>stored[k],setItem:(k,v)=>stored[k]=v},AbortController,Map,Date,Array,String,encodeURIComponent,setTimeout(fn){const token={fn};timers.add(token);return token;},clearTimeout:t=>timers.delete(t),fetch:(url,opts)=>new Promise(resolve=>requests.push({url,opts,resolve}))};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../addons/shared/map_monitor.js'),'utf8'),context);
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{
  assert(requests[0].url.includes('login=alpha'));
+ let prevented=false;logLink.events.click.call(logLink,{preventDefault(){prevented=true;}});assert(prevented);const logDialog=body.querySelector('.mka-client-log-modal');assert(logDialog.open);assert.equal(logDialog.querySelector('iframe').src,'https://example.test/admin/relatorios_u.hhvm?login=alpha');logDialog.querySelector('button').events.click();assert.equal(body.querySelector('.mka-client-log-modal'),null);assert(logLink.focused);assert(selected.isConnected);
  const more=details.querySelector('.mka-details-toggle');assert(more);assert.equal(more.getAttribute('aria-expanded'),'false');more.events.click.call(more);assert(details.classList.contains('mka-details-expanded'));more.events.click.call(more);assert(!details.classList.contains('mka-details-expanded'));assert.equal(details.querySelector('span').textContent,'Cliente Alpha');
  const old=requests[0];selected.remove();selected=box('beta@demo');context.window.mkaMapMonitor.sync(selected);
  assert(old.opts.signal.aborted,'Switch must cancel the old request');assert(requests[1].url.includes('login=beta%40demo'));
