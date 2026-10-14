@@ -246,7 +246,7 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
   mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
   if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ] && ! grep -Fq "require __DIR__.'/live.php';" "${TARGET_ADDONS_DIR}/radius/index.php"; then
     # Preserve the standalone Radius Logs addon and its existing settings/API.
-    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/client_links.php" "${SCRIPT_DIR}/addons/radius/client_status.php" "${SCRIPT_DIR}/addons/radius/client_status.js" "${TARGET_ADDONS_DIR}/radius/"
+    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/current_state.php" "${SCRIPT_DIR}/addons/radius/client_links.php" "${SCRIPT_DIR}/addons/radius/client_status.php" "${SCRIPT_DIR}/addons/radius/client_status.js" "${TARGET_ADDONS_DIR}/radius/"
     if [ ! -f "${TARGET_ADDONS_DIR}/radius/radius_lib.php" ]; then
       cp -a "${SCRIPT_DIR}/addons/radius/radius_lib.php" "${TARGET_ADDONS_DIR}/radius/"
     fi
@@ -322,6 +322,7 @@ lint_file "${TARGET_ADDONS_DIR}/shared/search_performance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance_api.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/live.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/current_state.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/index.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/logs_data.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/client_links.php"
