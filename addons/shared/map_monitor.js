@@ -1,8 +1,6 @@
 (function(){
  'use strict';
- const key='mka-monitor-show-values';
  let showValues=true,active=null,generation=0,timer=null,controller=null,busy=false,paused=false,saved=[];
- try{showValues=localStorage.getItem(key)!=='0';}catch(_){}
  function el(tag,cls,text){const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;}
  function sameLogin(a,b){return typeof a==='string'&&a.trim().toLowerCase()===String(b).trim().toLowerCase();}
  function stop(){generation++;clearTimeout(timer);timer=null;if(controller)controller.abort();controller=null;busy=false;if(active&&active.panel)active.panel.remove();active=null;saved=[];}
@@ -19,11 +17,12 @@
    const toggle=el('button','mka-traffic-'+kind,text);toggle.type='button';toggle.setAttribute('aria-pressed','true');toggle.title='Mostrar ou ocultar '+(kind==='down'?'Download':'Upload');
    toggle.addEventListener('click',function(){const visible=this.getAttribute('aria-pressed')!=='true';this.setAttribute('aria-pressed',String(visible));box.classList.toggle('mka-traffic-hide-'+kind,!visible);});keys.append(toggle);
   }
-  const label=el('label'),check=el('input');check.type='checkbox';check.checked=showValues;
+  showValues=true;
+  const label=el('label'),check=el('input');check.type='checkbox';check.checked=true;
   label.append(check,el('span','','Mostrar valores no gráfico'));
   const collect=el('button','mka-traffic-pause','Pausar coleta');collect.type='button';collect.setAttribute('aria-pressed','false');collect.addEventListener('click',function(){if(!window.mkaMapTrafficControl)return;const stopped=window.mkaMapTrafficControl.pause(this.getAttribute('aria-pressed')!=='true');this.setAttribute('aria-pressed',String(stopped));this.textContent=stopped?'Retomar coleta':'Pausar coleta';box.classList.toggle('mka-traffic-paused',stopped);});controls.append(keys,label,collect);box.querySelector('.traffic-mini-chart').before(controls);
   box.classList.toggle('mka-traffic-hide-values',!showValues);
-  check.addEventListener('change',function(){showValues=this.checked;box.classList.toggle('mka-traffic-hide-values',!showValues);try{localStorage.setItem(key,showValues?'1':'0');}catch(_){}});
+  check.addEventListener('change',function(){showValues=this.checked;box.classList.toggle('mka-traffic-hide-values',!showValues)});
   const legend=box.querySelector('.traffic-mini-legend');
   if(legend){
    const rx=legend.querySelector('.traffic-rx'),tx=legend.querySelector('.traffic-tx');
