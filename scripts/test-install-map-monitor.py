@@ -20,6 +20,10 @@ class MonitorInstallTests(unittest.TestCase):
   with tarfile.open(archive,'w:gz') as t:
    info=tarfile.TarInfo('package/link');info.type=tarfile.SYMTYPE;info.linkname='/etc';t.addfile(info)
   with self.assertRaises(ValueError):m.extract_package(archive,self.path/'extract')
+ def test_geocode_loader_absolute_and_idempotent(self):
+  admin=self.path/'admin';(admin/'scripts').mkdir(parents=True);target=admin/'scripts/mk-auth.js';target.write_text('s.src="addons/geocodificacao/geocodificacao.js?v=2.10.3"; other="unchanged";')
+  backup=self.path/'backup';backup.mkdir();m.repair_geocode_loader(admin,backup)
+  self.assertIn('s.src="/admin/addons/geocodificacao/',target.read_text());before=target.read_bytes();m.repair_geocode_loader(admin,backup);self.assertEqual(target.read_bytes(),before)
  def test_monitor_only_preserves_existing_map_and_config(self):
   source=self.path/'source';source.mkdir()
   for name in ['maps.hhvm','auth.php','access_policy.php','config.hhvm','maps_clientes_api.hhvm','traffic_api.hhvm','nas_health.hhvm','lib/routeros_api.class.php','index.hhvm','menu.js']:

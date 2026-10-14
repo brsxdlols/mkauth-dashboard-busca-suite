@@ -70,6 +70,20 @@ def install_runtime(source,admin,backup,patcher):
         if file.is_file():os.utime(file,None)
     os.chmod(entry,0o644);os.utime(entry,None)
 
+def repair_geocode_loader(admin,backup):
+    target=admin/'scripts/mk-auth.js'
+    if not target.is_file():return
+    original=target.read_bytes()
+    updated=re.sub(rb'(s\.src\s*=\s*[\"\'])addons/geocodificacao/',rb'\1/admin/addons/geocodificacao/',original)
+    if original==updated:return
+    shutil.copy2(target,backup/'mk-auth-js-before-geocode-path.js')
+    staged=target.with_name(target.name+'.suite-monitor-new')
+    shutil.copy2(target,staged);staged.write_bytes(updated)
+    if hasattr(os,'chown'):
+        stat=target.stat();os.chown(staged,stat.st_uid,stat.st_gid)
+    os.utime(staged,None);os.replace(staged,target)
+    print('[monitor] URL absoluta do carregador de geocodificacao corrigida.')
+
 def main():
     admin=pathlib.Path(sys.argv[1]);backup=pathlib.Path(sys.argv[2]);backup.mkdir(parents=True,exist_ok=True);os.chmod(backup,0o700)
     metadata=backup/'release.json';download('https://api.github.com/repos/'+REPOSITORY+'/releases/latest',metadata)
@@ -81,6 +95,7 @@ def main():
     spec=importlib.util.spec_from_file_location('map_patch',pathlib.Path(__file__).with_name('patch-map-traffic.py'));patcher=importlib.util.module_from_spec(spec);spec.loader.exec_module(patcher)
     install_runtime(source,admin,backup,patcher)
     patcher.migrate_monitor_links(backup)
+    repair_geocode_loader(admin,backup)
     (backup/'installed.json').write_text(json.dumps({'repository':REPOSITORY,'release':tag,'sha256':actual,'mode':'monitor-only'}),encoding='utf-8')
     print('[monitor] Toolkit '+tag+' verificado por SHA-256. Monitor instalado sem liberar o Mapa completo.')
 if __name__=='__main__':
