@@ -319,6 +319,7 @@ lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/online_rule.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/search_performance.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/native_activity_performance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance_api.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/live.php"
@@ -339,6 +340,8 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/contract_archive.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/multi.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/multi_client_row.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/index.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/graphs.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/graphs_frame.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/delete_installation_request.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/index.php"
@@ -373,6 +376,7 @@ cp "${SCRIPT_DIR}/scripts/search-performance.py" /opt/mk-auth/scripts/mkauth-sea
 chmod 0700 /opt/mk-auth/scripts/mkauth-search-performance.py
 echo "[desempenho] Validando e otimizando consultas Online/Offline automaticamente"
 if command -v php >/dev/null 2>&1; then
+  php "${SCRIPT_DIR}/scripts/optimize-native-activity-install.php" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}" || echo '[aviso] Atividades nativas preservadas; consulte native-activity-performance.json no backup.'
   php "${SCRIPT_DIR}/scripts/optimize-search-install.php" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}" || echo '[aviso] Otimizacao nao concluida; consulte o relatorio de desempenho no backup.'
 else
   echo '[aviso] PHP ausente; otimizacao automatica nao executada.'

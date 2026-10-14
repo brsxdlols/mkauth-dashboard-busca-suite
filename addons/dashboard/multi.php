@@ -116,7 +116,6 @@ if ($canTotals) {
 </nav></section>
 <?php if($canFinance) {
     $tot_fat_previsto=$tot_entrada=$tot_a_receber=$tot_contas_pagar=$tot_saida=$saldo=$tot_geral_entrada_sem_emprestimo=$tot_geral_emprestimos=0;
-    include __DIR__.'/graf_periodo.php';
-    include __DIR__.'/graficos.php';
+    include __DIR__.'/graphs_frame.php';
 } else { ?><section class="multi-summary"><h2>Faturamento</h2><p>Seu usuário não possui permissão para visualizar os gráficos financeiros.</p></section><?php } ?>
 </main><?php include('../../baixo.php'); ?></body></html>

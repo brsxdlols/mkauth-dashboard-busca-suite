@@ -1198,8 +1198,6 @@ if (isset($_SESSION['MM_Usuario'])) {
     <?php include('mkauth_dashboard_top.php'); ?>
     <?php mka_suite_render_top_spacing_style($conn); ?>
 
-    <script src="js/highcharts.js"></script>
-    <script src="js/exporting.js"></script>
 
 
     <div class='container-fluid mka-suite-dashboard-start'>
@@ -1768,12 +1766,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
         ?>
 
-        <?php include('graf_periodo.php'); ?>
-        <?php include('cli_periodo.php'); ?>
 
-        <?php include('cli_chamado_per.php'); ?>
 
-        <?php include('cli_planos.php'); ?>
 
         <div class='row mb-2 dashboard-summary-row'>
             <div class='col-12 col-md-12 col-lg-10 mb-2 dashboard-clients-column'>
@@ -1985,7 +1979,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
         <?php
         if ($exb_graficos_em_baixo == 'n') {
-            include_once('graficos.php');
+            include_once('graphs_frame.php');
         }
         ?>
 
@@ -2270,7 +2264,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         <?php
 
         if ($exb_graficos_em_baixo == 's') {
-            include_once('graficos.php');
+            include_once('graphs_frame.php');
         }
 
         // Close conn in MariaDB

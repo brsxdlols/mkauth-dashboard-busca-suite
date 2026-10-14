@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
+const text=fs.readFileSync(path.join(__dirname,'../addons/dashboard/graphs_frame.php'),'utf8');
+const source=text.match(/<script>([\s\S]*)<\/script>/)[1].replace(/<\?=[\s\S]*?\?>/,JSON.stringify('/admin/addons/dashboard/graphs.php'));
+const events={},status={},host={querySelector:()=>status,append(frame){this.frame=frame;}};
+const context={document:{readyState:'loading',getElementById:()=>host,createElement:()=>({style:{},contentWindow:{},addEventListener(){}})},window:{addEventListener(type,fn){events[type]=fn;}},location:{origin:'https://example.test'}};
+vm.runInNewContext(source,context);
+assert(!host.frame,'Graphs must not delay the main load event');
+events.load();assert.equal(host.frame.src,'/admin/addons/dashboard/graphs.php');
+const send=(origin,source,height)=>events.message({origin,source,data:{type:'mka-dashboard-graphs',height}});
+send('https://other.test',host.frame.contentWindow,900);assert(!status.hidden);
+send(context.location.origin,{},900);assert(!status.hidden);
+send(context.location.origin,host.frame.contentWindow,900);assert(status.hidden);assert.equal(host.frame.style.height,'900px');
+send(context.location.origin,host.frame.contentWindow,Infinity);assert.equal(host.frame.style.height,'900px');
+send(context.location.origin,host.frame.contentWindow,0);assert(host.hidden);
+console.log('PASS graphs deferred until main load; resize messages require same origin and exact iframe source.');
