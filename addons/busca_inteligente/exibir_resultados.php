@@ -1,3 +1,10 @@
+<?php
+// Failed or timed-out list queries must not reach mysqli result readers.
+if ($result === false || $result_limit === false) {
+    echo '<div role="alert" class="alert alert-warning">Não foi possível concluir a consulta da busca. Tente novamente ou consulte o diagnóstico de desempenho.</div>';
+    return;
+}
+?>
 <script>
     $(document).ready(function() {
         $('#selectall').click(function(event) { //on click 

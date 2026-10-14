@@ -81,7 +81,7 @@ function mka_perf_query($db,$sql,$phase) {
     $start=microtime(true);
     try { $result=mysqli_query($db,$sql); } catch (Throwable $e) { $result=false; }
     $record=array('phase'=>$phase,'seconds'=>microtime(true)-$start,'rows'=>$result instanceof mysqli_result ? mysqli_num_rows($result) : null,'ok'=>$result!==false);
-    if (!$result) $GLOBALS['mka_perf']['failed']=true;
+    if (!$result) { $GLOBALS['mka_perf']['failed']=true; $record['error_code']=mysqli_errno($db); $GLOBALS['mka_perf']['failure']=array('phase'=>$phase,'error_code'=>$record['error_code'],'timeout'=>in_array($record['error_code'],array(1969,3024),true)); }
     if ($phase==='list-total' && $result instanceof mysqli_result) {
         $ids=array();while($row=mysqli_fetch_assoc($result)) $ids[]=(string)($row['id'] ?? $row['uuid_cliente'] ?? '');
         sort($ids,SORT_STRING);$record['result_hash']=hash('sha256',json_encode($ids));if(mysqli_num_rows($result)>0)mysqli_data_seek($result,0);

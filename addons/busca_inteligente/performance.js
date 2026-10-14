@@ -16,7 +16,7 @@
     if(!r.ok)throw Error('A página respondeu com erro HTTP.');
     const doc=new DOMParser().parseFromString(text,'text/html'),node=doc.getElementById('mka-perf-metrics');
     if(!node)throw Error('A página não confirmou o perfil de diagnóstico; verifique sessão, versão instalada e sintaxe PHP.');
-    const metric=JSON.parse(node.textContent);if(metric.failed)throw Error('Uma consulta da página falhou ou excedeu o tempo permitido.');
+    const metric=JSON.parse(node.textContent);if(metric.failed){details.textContent=JSON.stringify(metric,null,2);const failure=metric.failure||{};throw Error(failure.timeout?'A consulta '+(failure.phase||'da busca')+' excedeu o limite de 15 segundos. Execute o instalador atualizado para revalidar a otimização.':'Uma consulta da busca falhou ('+(failure.phase||'diagnóstico')+', código '+(failure.error_code||'indisponível')+'). Consulte os detalhes das medições.');}
     samples[rule][filter].push({web_seconds:elapsed,metrics:metric});
     await new Promise(resolve=>setTimeout(resolve,500));
    }
