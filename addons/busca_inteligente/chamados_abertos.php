@@ -318,7 +318,7 @@
     </main>
     <script src="../shared/ticket_board.js?v=20261015-4"></script>
     <script src="../shared/support_attendance.js?v=20261015-4"></script>
-    <script src="../shared/ticket_native_modal.js?v=20261015-4"></script>
+    <script src="../shared/ticket_native_modal.js?v=20261015-5"></script>
 <?php include('../../baixo.php'); ?>
 
         <script src="../../menu.js.php"></script>

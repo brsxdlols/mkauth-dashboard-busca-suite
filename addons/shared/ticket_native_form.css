@@ -1,0 +1,37 @@
+html.has-navbar-fixed-top{padding-top:0!important}
+body.suite-ticket-body{margin:0!important;padding:0!important;background:#f4f7fc!important;color:#17324f;font:15px/1.5 system-ui,sans-serif!important}
+body.suite-ticket-body>:not(#suite-ticket-root):not(.ui-autocomplete):not(.modal):not(.ui-helper-hidden-accessible){display:none!important}
+#suite-ticket-root{box-sizing:border-box;max-width:1040px;width:100%;margin:0 auto;padding:22px}
+.suite-ticket-form{width:100%;margin:0;padding:0;font:15px/1.5 system-ui,sans-serif;color:#17324f}
+.suite-ticket-form>h4{display:none}
+.suite-ticket-section{padding:20px;border:1px solid #d0ddec;border-radius:11px;background:white;margin-bottom:16px;box-shadow:0 2px 7px #17324f05}
+.suite-ticket-section h3{margin:0 0 18px;font:700 18px/1.4 system-ui;color:#183c63}
+.suite-ticket-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
+.suite-ticket-form .field.is-horizontal{display:block;margin:0;min-width:0}
+.suite-ticket-form .field-label{display:block;flex:none;margin:0 0 6px;padding:0;text-align:left}
+.suite-ticket-form .field-label .label{font:650 14px/1.5 system-ui;color:#294665;margin:0}
+.suite-ticket-form .field-body,.suite-ticket-form .field-body>.field{display:block;flex:none;margin:0;padding:0;min-width:0}
+.suite-ticket-form .control{width:100%;min-width:0}
+.suite-ticket-form .input,.suite-ticket-form select,.suite-ticket-form textarea{box-sizing:border-box;display:block;width:100%;max-width:100%;height:44px;border:1px solid #b7cbe2;border-radius:7px;background:#fff;color:#163653;padding:10px 12px;font:400 16px/1.4 system-ui;box-shadow:none}
+.suite-ticket-form .input:focus,.suite-ticket-form select:focus,.suite-ticket-form textarea:focus{outline:3px solid #d4e6ff;border-color:#397acb}
+.suite-ticket-form .select{display:block;width:100%;height:auto}
+.suite-ticket-form .select:after{display:none}
+.suite-ticket-form select{padding-right:28px;appearance:auto}
+.suite-ticket-form textarea{height:auto;min-height:150px;resize:vertical}
+.suite-ticket-form .has-icons-left .input{padding-left:12px}
+.suite-ticket-form .has-icons-left>.icon{display:none}
+.suite-ticket-form .field.has-addons{display:flex;gap:7px;align-items:stretch}
+.suite-ticket-form .field.has-addons>.control.is-expanded{flex:1;min-width:0}
+.suite-ticket-form .field.has-addons>.control:not(.is-expanded){width:auto;flex:none}
+.suite-ticket-form .itens_listar{width:44px;height:44px;border:1px solid #b7cbe2;border-radius:7px!important;background:#edf4fd;color:#1e5ca7;box-shadow:none}
+.suite-ticket-wide,.suite-ticket-metadata{grid-column:1/-1}
+.suite-ticket-metadata{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;border-top:1px solid #e3eaf3;padding-top:15px}
+.suite-ticket-form .suite-ticket-readonly .field-label .label{font-size:12px;color:#657b94}
+.suite-ticket-readonly .field-body{font:500 14px/1.5 system-ui;color:#365576;overflow-wrap:anywhere}
+.suite-ticket-form .suite-ticket-submit{background:#f4f7fc;padding:5px 0 12px;margin:0;text-align:right}
+.suite-ticket-submit>.field-label{display:none}
+.suite-ticket-form .suite-ticket-submit [type=submit]{height:auto;min-height:44px;padding:11px 25px;background:#1764d6;border:1px solid #1764d6;border-radius:8px;color:white;font:650 15px/1.4 system-ui;cursor:pointer;box-shadow:none}
+.suite-ticket-submit input[type=hidden]{display:none}
+.suite-ticket-body .ui-autocomplete{z-index:10050!important;background:white;border:1px solid #b7cbe2;border-radius:7px;box-shadow:0 10px 30px #17324f22;max-height:240px;overflow:auto;color:#17324f;font:15px/1.5 system-ui}
+.suite-ticket-body .ui-menu-item{padding:7px 10px;cursor:pointer}.suite-ticket-body .ui-state-active{background:#e7f1ff;border:0;color:#1556a7}
+@media(max-width:650px){#suite-ticket-root{padding:12px}.suite-ticket-section{padding:15px}.suite-ticket-fields{grid-template-columns:minmax(0,1fr);gap:14px}.suite-ticket-metadata{grid-template-columns:minmax(0,1fr);gap:9px}.suite-ticket-form .suite-ticket-submit [type=submit]{width:100%}}

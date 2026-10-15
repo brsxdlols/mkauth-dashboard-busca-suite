@@ -146,4 +146,6 @@ Continuar para OS registra o encaminhamento e oferece o formulario nativo de cha
 
 Abrir chamado e a continuacao para OS abrem o formulario nativo em um modal na mesma pagina. A autenticacao, os campos e a gravacao continuam sendo do MK-AUTH. Apos o envio do formulario, fechar o modal atualiza a pagina preservando seus filtros e o periodo do calendario; fechar sem enviar nao grava nem atualiza. O carregador de preenchimento do atendimento tambem funciona dentro desse modal.
 
+O formulario usa o layout da Central, organizado em Cliente e atendimento, Agendamento e equipe e Detalhes do chamado. O cabecalho do provedor, navegacao e paineis laterais nativos ficam ocultos dentro do modal. Os campos existentes sao reorganizados sem recriar o formulario: IDs, campos ocultos, valores, validacao, busca de cliente e destino de envio nativos sao preservados. A folha `ticket_native_form.css` aplica a tipografia e os cards responsivos somente nesse documento do modal.
+
 Validacao: `php scripts/test-support-attendance.php` usa schema isolado para testar prazos, grupos e reenvios. Interface validada em 1360px e 400px, incluindo filtros, registro resolvido e continuacao para OS, com API simulada sem dados reais.
