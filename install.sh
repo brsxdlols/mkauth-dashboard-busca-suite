@@ -323,6 +323,8 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # intended for another PHP release and must not abort an otherwise valid install.
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/installations.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/visit_reminders.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/visit_reminders_api.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/instalacoes.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/installation_schedule_api.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
@@ -377,6 +379,7 @@ install_reconcile
 check_online_offline
 
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
+bash "${SCRIPT_DIR}/scripts/install-visit-reminders.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/visit-reminders"
 bash "${SCRIPT_DIR}/scripts/install-support-attendance.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/support-attendance"
 
 php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"

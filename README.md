@@ -158,7 +158,11 @@ A guia Atendimentos (`busca_inteligente/atendimentos.php`) abre nos registros cr
 
 O bloco do modal e identificado como ate 20 registros mais recentes, de todos os dias e atendentes, com link para a guia completa. Ver/editar registro usa o mesmo modal, com as permissoes existentes de autor/administrador para edicao e reabertura. O historico atualiza apos salvar, mantendo os filtros. `php scripts/test-attendance-history.php` valida datas, filtros, grupos e paginacao em schema isolado.
 
-### Central de instalacoes
+### Lembretes de visitas
+
+O instalador inclui avisos globais no canto superior direito do MK-AUTH para visitas de chamados e instalacoes, a partir dos 10 minutos anteriores. A consulta ocorre a cada 30 segundos na pagina ativa. O aviso identifica cliente, tipo e horario, permanece depois do horario e ao navegar/recarregar, e so e dispensado pelo usuario no botao Fechar. A dispensa e individual e persistida em `suite_visit_reminders`, sem alterar chamados, instalacoes ou dados financeiros. Reagendamentos geram outro aviso para o novo horario; visitas alteradas/canceladas e dados fora das permissoes atuais deixam de ser apresentados. Sao respeitados os grupos de clientes e a propriedade/permissoes nativas de instalacoes. `php scripts/test-visit-reminders.php` valida limites de horario, persistencia, dispensa e escopos em schema descartavel.
+
+### Central de instalacoes (calendario)
 
 A guia `busca_inteligente/instalacoes.php` usa calendario como abertura, lista, pesquisa por nome/login/endereco, situacao e tecnico. Os cards mostram todas em aberto, visitas atrasadas (inclusive semanas anteriores), proximas 24h, sem agendamento e sem tecnico. Criar e editar abrem os formularios reais do MK-AUTH em modal com cards, preservando campos, validacoes, botoes de itens e gravacao nativa.
 
