@@ -7,8 +7,8 @@ $attendanceToday=(new DateTimeImmutable('now',new DateTimeZone('America/Sao_Paul
 <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-4">
 <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-8">
 <link rel="stylesheet" href="../shared/attendance_history.css?v=20261015-8">
+ <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'attendance'); ?>
 <main class="attendance-page" data-today="<?= htmlspecialchars($attendanceToday,ENT_QUOTES,'UTF-8'); ?>">
- <nav class="attendance-tabs" aria-label="Central de chamados"><a href="index.php">Início</a><a href="chamados_abertos.php">Chamados e calendário</a><a href="instalacoes.php">Instalações</a><a href="atendimentos.php" aria-current="page">Atendimentos</a><a href="cfg.php">Configurações</a></nav>
  <header class="attendance-page-heading"><div><h1>Atendimentos</h1><p>Histórico pela data de abertura do atendimento. Consulte os registros do dia ou filtre outros períodos.</p></div><button type="button" data-open-attendance="">Registrar atendimento</button></header>
  <form id="attendance-report-filters" class="attendance-report-filters">
   <label>Data inicial<input type="date" name="from" value="<?= $attendanceToday; ?>" required></label>

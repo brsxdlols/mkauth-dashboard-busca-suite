@@ -2,6 +2,7 @@
 if(PHP_SAPI!=='cli')exit(1);
 // Run only in a disposable schema; this script never opens the native mkradius schema.
 require_once __DIR__.'/../addons/shared/installations.php';
+require_once __DIR__.'/../addons/shared/support_navigation.php';
 mysqli_report(MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT);
 $admin=new mysqli('127.0.0.1','root','vertrigo');$schema='suite_install_test_'.bin2hex(random_bytes(5));
 $admin->query('CREATE DATABASE `'.$schema.'` CHARACTER SET utf8mb4');
@@ -13,6 +14,10 @@ try {
     $db->query('CREATE TABLE sis_perm(usuario VARCHAR(64),nome VARCHAR(64),permissao VARCHAR(3))');
     $db->query("INSERT INTO sis_perm VALUES('ana','perm_instalacao','sim'),('ana','perm_instAlterar','nao'),('joao','perm_instTodosUsuarios','sim')");
     check_install(!function_exists('permissao')&&mka_installation_permission($db,'ana','perm_instalacao'),'permission works without Dashboard-only function');
+    ob_start();mka_support_navigation($db,(object)array('name'=>'Inicio','version'=>'7.85'),'ana','installations');$nav=ob_get_clean();
+    check_install(substr_count($nav,'<a ')===10&&strpos($nav,'href="instalacoes.php" aria-label="Instalações" title="Instalações" class="is-active"')!==false&&strpos($nav,'relcontratos.php')!==false,'support menu matches ticket links and highlights installations');
+    ob_start();mka_support_navigation($db,(object)array('name'=>'Inicio','version'=>'7.85'),'joao','attendance');$nav=ob_get_clean();
+    check_install(strpos($nav,'href="instalacoes.php"')===false&&strpos($nav,'href="atendimentos.php" aria-label="Atendimentos" title="Atendimentos" class="is-active"')!==false,'support menu respects installation permission and attendance active state');
     check_install(!mka_installation_permission($db,'ana','perm_instAlterar')&&!mka_installation_permission($db,'ana','perm_instTodosUsuarios')&&!mka_installation_permission($db,'','perm_instalacao'),'denied, missing and other-user permissions stay denied');
     $db->query("CREATE TABLE sis_solic(id INT PRIMARY KEY,uuid_solic VARCHAR(48),nome VARCHAR(255),login VARCHAR(64),tecnico VARCHAR(255),visita DATETIME,status VARCHAR(20),tipo VARCHAR(20),login_atend VARCHAR(64)) ENGINE=InnoDB");
     $db->query("INSERT INTO sis_solic VALUES(1,'uuid1','Cliente teste','teste','Equipe A','2026-10-16 09:00:00','aberto','instalacao','ana'),(2,'uuid2','Compartilhado','outro','Equipe B','2026-10-17 10:00:00','pendente','instalacao','full_users'),(3,'uuid3','Privado','privado','Equipe C','2026-10-17 10:00:00','aberto','instalacao','joao'),(4,'uuid4','Concluido','fim','Equipe A',NULL,'concluido','instalacao','ana'),(5,'uuid5','Assinatura','web','Equipe A',NULL,'aberto','assinatura','ana')");
