@@ -20,7 +20,8 @@ try {
     if (!isset($mkaActivityDecoded) || !is_string($mkaActivityDecoded)) throw new RuntimeException('Native activity decoding failed.');
     $patched=mka_activity_patch_body($mkaActivityDecoded);
     if (substr_count($mkaActivityDecoded,"include('sessao_admin.hhvm')")!==1 || strpos($mkaActivityDecoded,'$_SESSION')!==false) throw new RuntimeException('Native authentication shape not supported.');
-    $db=new mysqli(getenv('MYSQL_HOST')?:'127.0.0.1',getenv('MYSQL_USER')?:'root',getenv('MYSQL_PASS')?:'vertrigo',getenv('MYSQL_DB')?:'mkradius');
+    require_once __DIR__.'/installer-database.php';
+    $db=mka_installer_database_connect();
     $db->set_charset('utf8mb4');
     $view=$db->query('SHOW CREATE VIEW vtab_ativ')->fetch_row();
     $definition=$view[1];

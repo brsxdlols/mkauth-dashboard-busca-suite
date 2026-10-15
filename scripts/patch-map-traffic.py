@@ -85,6 +85,21 @@ def migrate_monitor_menu(admin,backup):
     import os
     stat=menu.stat();os.chown(staged,stat.st_uid,stat.st_gid);os.replace(staged,menu)
     print('[mapa] Menu aponta para /monitor/.')
+def monitor_mysql_read(env,db,sql):
+    import time
+    configured=env.get('MYSQL_HOST')
+    hosts=[configured]*3 if configured else ['127.0.0.1','localhost','127.0.0.1','localhost']
+    for index,host in enumerate(hosts):
+        args=['mysql','--connect-timeout=3','-h',host,'-u',env.get('MYSQL_USER','root'),'-N','-B',db]
+        if env.get('MYSQL_PORT'):args+=['--port',env['MYSQL_PORT']]
+        if env.get('MYSQL_SOCKET'):args+=['--socket',env['MYSQL_SOCKET']]
+        try:
+            result=subprocess.run(args+['-e',sql],env=env,check=True,capture_output=True,text=True)
+            return result.stdout,args
+        except subprocess.CalledProcessError as error:
+            if index==len(hosts)-1 or not re.search(r'ERROR (2002|2003|2006|2013)\b',error.stderr or ''):raise
+            time.sleep(0.3)
+
 def migrate_monitor_links(backup):
     # Only change the monitoring URL; keep all other configured shortcuts intact.
     if shutil.which('mysql') is None:return
@@ -92,9 +107,9 @@ def migrate_monitor_links(backup):
     env=dict(os.environ);env['MYSQL_PWD']=env.get('MYSQL_PASS','vertrigo')
     db=env.get('MYSQL_DB','mkradius')
     if not re.fullmatch('[A-Za-z0-9_]+',db):raise ValueError('Invalid database name.')
-    args=['mysql','-h',env.get('MYSQL_HOST','127.0.0.1'),'-u',env.get('MYSQL_USER','root'),'-N','-B',db]
     try:
-        rows=subprocess.run(args+['-e',"SELECT id,HEX(link) FROM dashboard_am_sis_cfg"],env=env,check=True,capture_output=True,text=True).stdout.splitlines()
+        output,args=monitor_mysql_read(env,db,"SELECT id,HEX(link) FROM dashboard_am_sis_cfg")
+        rows=output.splitlines()
         changes=[]
         for row in rows:
             key,hexlink=row.split('\t',1)
@@ -108,7 +123,10 @@ def migrate_monitor_links(backup):
                 sql="UPDATE dashboard_am_sis_cfg SET link=0x"+new+" WHERE id="+key+" AND HEX(link)='"+old+"'"
                 subprocess.run(args+['-e',sql],env=env,check=True,capture_output=True)
         print('[mapa] Atalhos de monitoramento migrados:',len(changes))
-    except subprocess.CalledProcessError:print('[aviso] Atalhos do banco nao migrados; URL antiga permanece compativel.')
+    except subprocess.CalledProcessError as error:
+        match=re.search(r'ERROR ([0-9]+)',error.stderr or '')
+        code=match.group(1) if match else str(error.returncode)
+        print('[aviso] Atalhos do banco nao migrados (mysql codigo '+code+'); URL antiga permanece compativel.')
 def main():
     admin=pathlib.Path(sys.argv[1] if len(sys.argv)>1 else '/opt/mk-auth/admin')
     backup=pathlib.Path(sys.argv[2]);target=admin/'addons/mapa-clientes/maps.hhvm'

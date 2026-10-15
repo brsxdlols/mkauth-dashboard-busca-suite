@@ -36,7 +36,8 @@ function install_perf_measure($db,$predicate,$allowBaselineTimeout=false) {
 $report=array('measurement'=>'SQL only: full client projection and first 25 rows; excludes HTTP, assets and browser rendering');
 $changed=false;$db=null;$previous='';
 try {
-    $db=new mysqli(getenv('MYSQL_HOST')?:'127.0.0.1',getenv('MYSQL_USER')?:'root',getenv('MYSQL_PASS')?:'vertrigo',getenv('MYSQL_DB')?:'mkradius');
+    require_once __DIR__.'/installer-database.php';
+    $db=mka_installer_database_connect();
     if(stripos(mysqli_get_server_info($db),'MariaDB')===false)throw new RuntimeException('MariaDB necessario para timeout validado.');
     perf_query($db,'SET SESSION max_statement_time=15');
     $lock=fopen(mka_perf_dir().'/optimization.lock','c');

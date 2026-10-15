@@ -118,3 +118,8 @@ Validacao de empacotamento: `python3 scripts/test-install-dependencies.py` em Li
 ### Pacote completo Radius Logs
 
 A suite instala/atualiza `brsxdlols/mkauth-radius-logs` pelo bootstrap oficial antes de copiar a integracao do modal. O instalador oficial substitui a pasta `radius/`, cria a integracao nativa e registra o menu; por isso a ordem e obrigatoria. Depois a suite instala seu `live.php`, os endpoints do monitor e `suite-live.css`, preservando o `index.php` e o CSS do pacote completo. Falha no download ou pacote incompleto interrompe a instalacao com log no backup. O painel IPv4/IPv6 e uma dependencia separada e nao substitui o Radius Logs.
+
+
+### Reconexao do banco durante a instalacao
+
+Os otimizadores SQL e a migracao dos atalhos fazem tentativas limitadas em erros de conexao (2002/2003/2006/2013). Na conexao local padrao, tentam TCP e socket; `MYSQL_HOST` explicitamente configurado nunca e redirecionado para outro servidor. Erros de senha ou SQL nao sao repetidos. A otimizacao continua condicionada a equivalencia e ganho; banco indisponivel nao e registrado como analise concluida. Testes: `php scripts/test-installer-database.php` e `python3 scripts/test-monitor-database.py`.
