@@ -68,6 +68,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'suite_header_spacing' => "INT NOT NULL DEFAULT 0",
             'suite_live_search' => "VARCHAR(1) NOT NULL DEFAULT 's'",
             'suite_support_destination' => "VARCHAR(8) NOT NULL DEFAULT 'native'",
+            'suite_dashboard_support_destination' => "VARCHAR(8) NOT NULL DEFAULT 'busca'",
             'trust_unlock_mode' => "VARCHAR(12) NOT NULL DEFAULT 'date'",
             'trust_unlock_fixed_days' => "INT NOT NULL DEFAULT 1",
             'trust_unlock_recent_days' => "INT NOT NULL DEFAULT 7",
@@ -386,4 +387,18 @@ function mka_suite_support_url($destination,$name,$login,$extension) {
     if($destination==='busca')return '/admin/addons/busca_inteligente/chamados_abertos.php?'.http_build_query(array('busca'=>$name));
     $extension=$extension==='php'?'php':'hhvm';
     return '/admin/suporte_ins.'.$extension.'?'.http_build_query(array('login'=>$login));
+}
+function mka_suite_get_dashboard_support_destination($conn) {
+    mka_suite_ensure_layout_column($conn);
+    $query=mysqli_query($conn,'SELECT suite_dashboard_support_destination FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1');
+    $row=$query?mysqli_fetch_assoc($query):null;
+    return $row&&$row['suite_dashboard_support_destination']==='native'?'native':'busca';
+}
+function mka_suite_set_dashboard_support_destination($conn,$value) {
+    mka_suite_ensure_layout_column($conn);$value=$value==='native'?'native':'busca';
+    $statement=$conn->prepare('UPDATE dashboard_am_sis_cfg SET suite_dashboard_support_destination=? WHERE id=1');
+    if(!$statement)return false;$statement->bind_param('s',$value);return $statement->execute();
+}
+function mka_suite_dashboard_support_url($destination,$extension) {
+    return $destination==='native'?'/admin/suporte_aberto.'.($extension==='php'?'php':'hhvm'):'/admin/addons/busca_inteligente/chamados_abertos.php';
 }

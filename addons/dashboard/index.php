@@ -1813,7 +1813,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     <h2 class="dashboard-section-title">Atendimentos</h2>
                     <div class="dashboard-section-body">
                         <div class="dashboard-attendance-grid">
-                            <a href="/admin/suporte_aberto.hhvm" class="dashboard-stat-card is-primary text-light text-decoration-none">
+                            <?php $dashboardSupportUrl=mka_suite_dashboard_support_url(mka_suite_get_dashboard_support_destination($conn),ltrim($ext_mk,'.')); ?>
+                            <a href="<?= htmlspecialchars($dashboardSupportUrl,ENT_QUOTES,'UTF-8'); ?>" class="dashboard-stat-card is-primary text-light text-decoration-none">
                                 <div class="dashboard-stat-head">Chamados</div>
                                 <span class="dashboard-stat-icon"><i class="bi bi-headset"></i></span>
                                 <div class="dashboard-stat-value" id="tot_chamados"><?php
@@ -1958,7 +1959,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             $indice = 0;
                             foreach ($links as $k) {
                                 if ($k != "") {
-                                    if (startsWith($k, strtolower("http"))) {
+                                    if (preg_match('~^(?:/admin/)?suporte_aberto\.(?:hhvm|php)$~D',$k)) {
+                                        $supportQuickUrl=mka_suite_dashboard_support_url(mka_suite_get_dashboard_support_destination($conn),ltrim($ext_mk,'.'));
+                                        echo '<a href="'.htmlspecialchars($supportQuickUrl,ENT_QUOTES,'UTF-8').'" class="dashboard-quick-link is-secondary">'.htmlspecialchars($textos[$indice],ENT_QUOTES,'UTF-8').'</a>';
+                                    } elseif (startsWith($k, strtolower("http"))) {
                                         echo "<a href='$k' target='_blank' class='dashboard-quick-link is-success'>$textos[$indice]</a>";
                                     } else {
                                         echo "<a href='/admin/$k' class='dashboard-quick-link is-secondary'>$textos[$indice]</a>";

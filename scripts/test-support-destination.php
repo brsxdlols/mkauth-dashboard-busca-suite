@@ -16,4 +16,9 @@ try{
  support_check(mka_suite_get_support_destination($db)==='native','new preference preserves the existing native behavior');
  support_check(mka_suite_set_support_destination($db,'busca') && mka_suite_get_support_destination($db)==='busca','search preference saves and reloads');
  support_check(mka_suite_set_support_destination($db,'unexpected') && mka_suite_get_support_destination($db)==='native','unknown submitted preference is normalized');
+ support_check(mka_suite_get_dashboard_support_destination($db)==='busca','dashboard defaults to new ticket center');
+ support_check(mka_suite_set_dashboard_support_destination($db,'native')&&mka_suite_get_dashboard_support_destination($db)==='native','dashboard native preference persists');
+ support_check(mka_suite_get_support_destination($db)==='native','dashboard preference does not alter per-client search preference');
+ support_check(mka_suite_dashboard_support_url('busca','hhvm')==='/admin/addons/busca_inteligente/chamados_abertos.php','dashboard new route has no unintended client filter');
+ support_check(mka_suite_dashboard_support_url('native','php')==='/admin/suporte_aberto.php'&&mka_suite_dashboard_support_url('native','hhvm')==='/admin/suporte_aberto.hhvm','dashboard native route respects extension');
 }finally{$db->query('DROP DATABASE `'.$schema.'`');$db->close();}

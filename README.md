@@ -158,4 +158,8 @@ A guia Atendimentos (`busca_inteligente/atendimentos.php`) abre nos registros cr
 
 O bloco do modal e identificado como ate 20 registros mais recentes, de todos os dias e atendentes, com link para a guia completa. Ver/editar registro usa o mesmo modal, com as permissoes existentes de autor/administrador para edicao e reabertura. O historico atualiza apos salvar, mantendo os filtros. `php scripts/test-attendance-history.php` valida datas, filtros, grupos e paginacao em schema isolado.
 
+### Destino de Chamados na Dashboard
+
+O card Chamados da Dashboard e os atalhos locais `suporte_aberto.hhvm/php` usam a Central de chamados por padrao. Em Configuracoes da Dashboard, Abrir Chamados da Dashboard em permite selecionar Central de chamados (novo) ou Sistema nativo do MK-AUTH. A preferencia `suite_dashboard_support_destination` e criada aditivamente, persiste nas atualizacoes e respeita a extensao PHP/HHVM ao abrir o nativo. E independente da opcao da Busca para o icone de chamados de cada cliente.
+
 Validacao: `php scripts/test-support-attendance.php` usa schema isolado para testar prazos, grupos e reenvios. Interface validada em 1360px e 400px, incluindo filtros, registro resolvido e continuacao para OS, com API simulada sem dados reais.

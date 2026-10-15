@@ -146,6 +146,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <?php
     mka_suite_ensure_layout_column($conn);
     $suite_layout_mode = mka_suite_get_layout_mode($conn);
+    $suite_dashboard_support_destination=mka_suite_get_dashboard_support_destination($conn);
     $radius_alert_enabled = mka_suite_get_radius_alert_enabled($conn);
 
     $query_atual_cfg = mysqli_query($conn, "SELECT * FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
@@ -197,6 +198,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     $popup_clientes_sessao = isset($_POST['popup_clientes_sessao']) ? $_POST['popup_clientes_sessao'] : $popup_clientes_sessao;
     $popup_clientes_sessao_duracao = isset($_POST['popup_clientes_sessao_duracao']) ? $_POST['popup_clientes_sessao_duracao'] : $popup_clientes_sessao_duracao;
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
+    $suite_dashboard_support_destination=isset($_POST['suite_dashboard_support_destination'])&&$_POST['suite_dashboard_support_destination']==='native'?'native':(isset($_POST['suite_dashboard_support_destination'])?'busca':$suite_dashboard_support_destination);
     $radius_alert_enabled = isset($_POST['radius_alert_enabled']) ? ($_POST['radius_alert_enabled'] === 'n' ? 'n' : 's') : $radius_alert_enabled;
 
     $qtd_meses_graficos = isset($_POST['qtd_meses_graficos']) ? $_POST['qtd_meses_graficos'] : $qtd_meses_graficos;
@@ -270,6 +272,10 @@ if (isset($_SESSION['MM_Usuario'])) {
                             ?>
                         </select>
                         <label for="suite_layout_mode">Layout Dashboard + Busca</label>
+                    </div>
+                    <div class="form-floating col-12 col-md-6 col-lg-4">
+                        <select class="form-select" name="suite_dashboard_support_destination" id="suite_dashboard_support_destination"><option value="busca" <?= $suite_dashboard_support_destination==='busca'?'selected':''; ?>>Central de chamados (novo)</option><option value="native" <?= $suite_dashboard_support_destination==='native'?'selected':''; ?>>Sistema nativo do MK-AUTH</option></select>
+                        <label for="suite_dashboard_support_destination">Abrir Chamados da Dashboard em</label>
                     </div>
                     <div class="col-4 form-floating mb-2 g-1">
                         <select class="form-select" name="exb_ticket_medio" id="floatingSelect" aria-label="">
@@ -659,6 +665,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 }
 
                 mka_suite_set_layout_mode($conn, $suite_layout_mode);
+                mka_suite_set_dashboard_support_destination($conn,$suite_dashboard_support_destination);
                 mka_suite_set_radius_alert_enabled($conn, $radius_alert_enabled);
             }
             if (isset($conn) && $conn instanceof mysqli) {
