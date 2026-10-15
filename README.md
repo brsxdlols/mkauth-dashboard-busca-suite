@@ -113,3 +113,8 @@ Isso sincroniza a base isolada sem liberar o Mapa completo nos demais servidores
 - A correcao encontrada no Uplink para `tig_brl_pag` foi incluida: reconhece apenas o trigger BRL original, preserva suas condicoes de cliente/data e atualiza a mesma fila `brl_pago` quando um titulo estornado e recebido novamente. Gera backup e rollback, nao altera titulos existentes nem instala BRL onde ele nao existe. Triggers personalizados desconhecidos sao preservados com aviso. O fluxo original e a correcao foram reproduzidos em banco isolado; o operador tambem confirmou o fluxo no Visual Net.
 
 Validacao de empacotamento: `python3 scripts/test-install-dependencies.py` em Linux e `node scripts/test-receive-notice.js`. A migracao BRL e validada em schema isolado com `php scripts/test-payment-trigger.php`.
+
+
+### Pacote completo Radius Logs
+
+A suite instala/atualiza `brsxdlols/mkauth-radius-logs` pelo bootstrap oficial antes de copiar a integracao do modal. O instalador oficial substitui a pasta `radius/`, cria a integracao nativa e registra o menu; por isso a ordem e obrigatoria. Depois a suite instala seu `live.php`, os endpoints do monitor e `suite-live.css`, preservando o `index.php` e o CSS do pacote completo. Falha no download ou pacote incompleto interrompe a instalacao com log no backup. O painel IPv4/IPv6 e uma dependencia separada e nao substitui o Radius Logs.

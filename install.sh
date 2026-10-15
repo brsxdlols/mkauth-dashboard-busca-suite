@@ -238,6 +238,10 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
   cp -a "${TARGET_ADDONS_DIR}/shared" "${BACKUP_DIR}/addons/shared"
 fi
 
+# Install the complete Radius addon first; it replaces radius/ and must not erase
+# the suite live.php/current_state.php/suite-live.css overlay installed below.
+bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
+
 echo "[3/8] Instalando arquivos"
 for addon in rel_clientes rel_caixa graf_faturamento radius; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
@@ -246,7 +250,7 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
   mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
   if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ] && ! grep -Fq "require __DIR__.'/live.php';" "${TARGET_ADDONS_DIR}/radius/index.php"; then
     # Preserve the standalone Radius Logs addon and its existing settings/API.
-    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/current_state.php" "${SCRIPT_DIR}/addons/radius/client_links.php" "${SCRIPT_DIR}/addons/radius/client_status.php" "${SCRIPT_DIR}/addons/radius/client_status.js" "${TARGET_ADDONS_DIR}/radius/"
+    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/current_state.php" "${SCRIPT_DIR}/addons/radius/preferences.php" "${TARGET_ADDONS_DIR}/radius/"
     if [ ! -f "${TARGET_ADDONS_DIR}/radius/radius_lib.php" ]; then
       cp -a "${SCRIPT_DIR}/addons/radius/radius_lib.php" "${TARGET_ADDONS_DIR}/radius/"
     fi
