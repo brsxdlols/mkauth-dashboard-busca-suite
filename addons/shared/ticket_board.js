@@ -4,7 +4,7 @@
  const status=document.getElementById('ticket-filter-status'),empty=document.getElementById('ticket-empty');
  const calendar=document.getElementById('ticket-calendar'),grid=document.getElementById('ticket-calendar-grid'),list=document.querySelector('.ticket-list');
  const viewButtons=Array.from(document.querySelectorAll('[data-ticket-view]'));
- let calendarView=false,start=new Date(),dragged=null,busy=false,editor=null,moveEditor=null,moveSequence=0;
+ let calendarView=false,start=new Date(),dragged=null,busy=false,editor=null,moveEditor=null,moveSequence=0,showFilteredWeeks=false;
  const endpoint='/admin/addons/busca_inteligente/ticket_schedule_api.php';
  function announce(message,error){const notice=document.getElementById('ticket-calendar-notice');if(notice){notice.textContent=message;notice.classList.toggle('is-error',!!error);}}
  async function api(id,payload,query=''){const response=await fetch(endpoint+(payload?'':'?id='+encodeURIComponent(id)+query),{credentials:'same-origin',cache:'no-store',...(payload?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}:{})});let data;try{data=await response.json();}catch(e){throw Error('Não foi possível acessar o agendamento. Confira sua sessão.');}if(!response.ok){const error=Error(data.error||'Não foi possível salvar.');error.bookingConflicts=Number(data.booking_conflicts)||0;throw error;}return data;}
@@ -59,9 +59,18 @@
  function setView(value){calendarView=value==='calendar';if(calendar)calendar.hidden=!calendarView;if(list)list.hidden=calendarView;for(const b of viewButtons)b.setAttribute('aria-pressed',String((b.dataset.ticketView==='calendar')===calendarView));renderCalendar();}
  function renderCalendar(){
   if(!grid)return;grid.replaceChildren();const end=new Date(start);end.setDate(end.getDate()+13);
-  document.getElementById('ticket-calendar-range').textContent=start.toLocaleDateString('pt-BR')+' a '+end.toLocaleDateString('pt-BR');
-  for(let i=0;i<14;i++){
-   const day=new Date(start);day.setDate(day.getDate()+i);const cell=document.createElement('section');cell.className='ticket-calendar-day';
+  let days=Array.from({length:14},(_,i)=>{const day=new Date(start);day.setDate(day.getDate()+i);return day;});
+  if(showFilteredWeeks){
+   const weeks=new Map();
+   for(const ticket of tickets.filter(t=>!t.hidden&&t.dataset.visit)){
+    const day=new Date(ticket.dataset.visit.slice(0,10)+'T00:00:00');if(isNaN(day))continue;
+    day.setDate(day.getDate()-day.getDay());weeks.set(day.getTime(),day);
+   }
+   days=Array.from(weeks.values()).sort((a,b)=>a-b).flatMap(week=>Array.from({length:7},(_,i)=>{const day=new Date(week);day.setDate(day.getDate()+i);return day;}));
+  }
+  document.getElementById('ticket-calendar-range').textContent=showFilteredWeeks?'Todas as semanas com visitas atrasadas':start.toLocaleDateString('pt-BR')+' a '+end.toLocaleDateString('pt-BR');
+  for(const day of days){
+   const cell=document.createElement('section');cell.className='ticket-calendar-day';
    const heading=document.createElement('h3');heading.textContent=day.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});cell.append(heading);
    const key=day.getFullYear()+'-'+String(day.getMonth()+1).padStart(2,'0')+'-'+String(day.getDate()).padStart(2,'0');
    cell.dataset.calendarDay=key;cell.addEventListener('dragover',e=>{if(dragged&&!busy){e.preventDefault();e.dataTransfer.dropEffect='move';cell.classList.add('is-drop-target');}});cell.addEventListener('dragleave',e=>{if(!cell.contains(e.relatedTarget))cell.classList.remove('is-drop-target');});cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('is-drop-target');const ticket=dragged;dragged=null;move(ticket,key);});
@@ -76,9 +85,10 @@
  }
  for(const b of viewButtons)b.addEventListener('click',()=>setView(b.dataset.ticketView));
  for(const b of document.querySelectorAll('[data-edit-ticket]'))b.addEventListener('click',()=>edit(b.closest('[data-ticket-id]')));
- for(const b of document.querySelectorAll('[data-calendar-step]'))b.addEventListener('click',()=>{const step=Number(b.dataset.calendarStep);if(step===0)resetDate();else start.setDate(start.getDate()+step*14);renderCalendar();});
+ for(const b of document.querySelectorAll('[data-calendar-step]'))b.addEventListener('click',()=>{showFilteredWeeks=false;const step=Number(b.dataset.calendarStep);if(step===0)resetDate();else start.setDate(start.getDate()+step*14);renderCalendar();});
  for(const button of buttons)button.addEventListener('click',()=>{
   const filter=button.dataset.ticketFilter;
+  showFilteredWeeks=filter==='late';
   for(const item of buttons)item.setAttribute('aria-pressed',String(item===button));
   let shown=0;
   for(const ticket of tickets){ticket.hidden=!(filter==='all'||(filter==='unassigned'?ticket.dataset.unassigned==='1':ticket.dataset.ticketState===filter));if(!ticket.hidden)shown++;}
