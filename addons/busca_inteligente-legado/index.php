@@ -103,7 +103,7 @@
             porta_acesso2 INT,
             porta_acesso3 INT,
             link_whats VARCHAR(255) DEFAULT 'https://api.whatsapp.com/send?phone=55',
-            links_ext VARCHAR(10) DEFAULT 'php',
+            links_ext VARCHAR(10) DEFAULT 'hhvm',
             check_online VARCHAR(10) DEFAULT 'mkauth',
             PRIMARY KEY (id)
         )");
@@ -116,7 +116,7 @@
             ADD porta_acesso2 INT, 
             ADD porta_acesso3 INT, 
             ADD link_whats VARCHAR(255) DEFAULT 'https://api.whatsapp.com/send?phone=55',
-            ADD links_ext VARCHAR(10) DEFAULT 'php',
+            ADD links_ext VARCHAR(10) DEFAULT 'hhvm',
             ADD check_online VARCHAR(10) DEFAULT 'mkauth' 
             AFTER porta_acesso");
 
@@ -131,7 +131,7 @@
         $query_alterar_table = mysqli_query($link, "ALTER TABLE busca_inteligente_cfg 
             ADD porta_acesso3 INT, 
             ADD link_whats VARCHAR(255) DEFAULT 'https://api.whatsapp.com/send?phone=55',
-            ADD links_ext VARCHAR(10) DEFAULT 'php',
+            ADD links_ext VARCHAR(10) DEFAULT 'hhvm',
             ADD check_online VARCHAR(10) DEFAULT 'mkauth' 
             AFTER porta_acesso2");
 
@@ -166,7 +166,7 @@
 
     $verifica_tabela_vazia = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg");
     if (mysqli_num_rows($verifica_tabela_vazia) == 0) {
-        $ins_table_busca_inteligente_cfg = mysqli_query($link, "INSERT INTO busca_inteligente_cfg VALUES ('1', '50', '60', '80', '', '', 'https://api.whatsapp.com/send?phone=55', 'php', 'mkauth')");
+        $ins_table_busca_inteligente_cfg = mysqli_query($link, "INSERT INTO busca_inteligente_cfg VALUES ('1', '50', '60', '80', '', '', 'https://api.whatsapp.com/send?phone=55', 'hhvm', 'mkauth')");
         if (!$ins_table_busca_inteligente_cfg) {
             echo mysqli_error($link);
         }

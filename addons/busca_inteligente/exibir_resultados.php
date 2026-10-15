@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__.'/../shared/layout_mode.php';
+$suite_support_destination=mka_suite_get_support_destination($link);
 // Failed or timed-out list queries must not reach mysqli result readers.
 if ($result === false || $result_limit === false) {
     echo '<div role="alert" class="alert alert-warning">Não foi possível concluir a consulta da busca. Tente novamente ou consulte o diagnóstico de desempenho.</div>';
@@ -1668,7 +1670,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             <a class="client-action-btn" href='det_conn.php?login=<?= $login_cliente; ?>' title='CONEXÕES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-router"></i>
                                                             </a>
-                                                            <a class="client-action-btn" href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn" href='<?= htmlspecialchars(mka_suite_support_url($suite_support_destination,$nome_cliente,$login_cliente,$links_ext), ENT_QUOTES, 'UTF-8'); ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset"></i>
                                                             </a>
 <?php if ($bloqueado == "sim") { ?>

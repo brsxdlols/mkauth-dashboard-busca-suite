@@ -54,6 +54,8 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
     mka_suite_ensure_layout_column($link);
     $suite_layout_mode = mka_suite_get_layout_mode($link);
+    $suite_support_destination = mka_suite_get_support_destination($link);
+    if(isset($_POST['suite_support_destination']))$suite_support_destination=$_POST['suite_support_destination']==='busca'?'busca':'native';
     $suite_live_search = mka_suite_get_live_search($link);
     $trust_unlock_settings = mka_suite_get_trust_unlock_settings($link);
     $trust_unlock_mode = $trust_unlock_settings['mode'];
@@ -231,6 +233,14 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
                         </tr>
                         <tr>
+                            <td class="">Abrir “Ver chamados” em
+                                <select name="suite_support_destination" aria-label="Destino de Ver chamados">
+                                    <option value="native" <?= $suite_support_destination==='native'?'selected':''; ?>>Sistema nativo</option>
+                                    <option value="busca" <?= $suite_support_destination==='busca'?'selected':''; ?>>Chamados da Busca</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
                             <td class="">Formato de Arquivos MK-AUTH 
                                 <select class="" name="links_ext">
                                     <?php
@@ -404,6 +414,7 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         }
 
         mka_suite_set_layout_mode($link, $suite_layout_mode);
+        mka_suite_set_support_destination($link, $suite_support_destination);
         mka_suite_set_live_search($link, $suite_live_search);
         mka_suite_set_trust_unlock_settings($link, $trust_unlock_mode, $trust_unlock_fixed_days, $trust_unlock_recent_days);
         mka_suite_set_top_spacing($link, $suite_top_spacing);

@@ -22,6 +22,8 @@
     });
 </script>
 <?php
+require_once __DIR__.'/../shared/layout_mode.php';
+$suite_support_destination=mka_suite_get_support_destination($link);
 
 //Contagem dos clientes adicionais na pesquisa
 
@@ -618,7 +620,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             <a href='det_conn.php?login=<?= $login_cliente; ?>' title='CONXÕES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-globe fs-5"></i>
                                                             </a> |
-                                                            <a href='../../suporte_ins.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
+                                                            <a href='<?= htmlspecialchars(mka_suite_support_url($suite_support_destination,$nome_cliente,$login_cliente,$links_ext), ENT_QUOTES, 'UTF-8'); ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset fs-5"></i>
                                                             </a> |
 

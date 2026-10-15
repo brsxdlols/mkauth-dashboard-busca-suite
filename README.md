@@ -123,3 +123,8 @@ A suite instala/atualiza `brsxdlols/mkauth-radius-logs` pelo bootstrap oficial a
 ### Reconexao do banco durante a instalacao
 
 Os otimizadores SQL e a migracao dos atalhos fazem tentativas limitadas em erros de conexao (2002/2003/2006/2013). Na conexao local padrao, tentam TCP e socket; `MYSQL_HOST` explicitamente configurado nunca e redirecionado para outro servidor. Erros de senha ou SQL nao sao repetidos. A otimizacao continua condicionada a equivalencia e ganho; banco indisponivel nao e registrado como analise concluida. Testes: `php scripts/test-installer-database.php` e `python3 scripts/test-monitor-database.py`.
+
+
+### Formato nativo e destino de chamados
+
+Configuracoes novas da Busca iniciam com `links_ext=hhvm`; valores ja salvos sao preservados, inclusive PHP escolhido manualmente. Em Configuracoes da Busca, `Abrir Ver chamados em` seleciona Sistema nativo (comportamento anterior) ou Chamados da Busca. A segunda opcao abre `/admin/addons/busca_inteligente/chamados_abertos.php?busca=<nome>` no mesmo servidor, com o nome codificado no filtro. A preferencia e compartilhada pelos layouts novo e legado e nao altera os botoes gerais da navegacao. Abertura de atendimento/chamado e revisao de layout ficam para outra etapa.
