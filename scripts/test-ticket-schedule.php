@@ -24,6 +24,21 @@ try{
  $cleared=mka_ticket_schedule_save($db,1,$scope,'fixture_operator',mka_ticket_schedule_version($edited),'edit',array('visit'=>'','subject'=>'Visita de revisão','priority'=>'alta'));
  schedule_check($cleared['visita']===null,'editor can remove schedule without closing ticket');
  schedule_check((int)$db->query('SELECT COUNT(*) FROM suite_ticket_schedule_changes')->fetch_row()[0]===3,'successful changes retain audit history only once');
+ $db->query("INSERT INTO sis_suporte VALUES(3,'789','fixture','Cliente exemplo','Outra visita','2026-10-15 10:00:00','2026-11-04 11:30:00','normal',7,'aberto','A'),(4,'790','other','Outro grupo','Invisivel','2026-10-15 10:00:00','2026-11-04 11:00:00','normal',8,'aberto','B'),(5,'791','fixture','Fechado','Fechado','2026-10-15 10:00:00','2026-11-04 11:00:00','normal',7,'fechado','C'),(6,'792','fixture','Outro horario','Combinado','2026-10-15 10:00:00','2026-11-04 20:00:00','normal',7,'aberto','D')");
+ $slots=mka_ticket_schedule_slots($db,1,$scope,'2026-11-04');
+ schedule_check(count($slots['slots'])===11&&$slots['slots'][0]['time']==='08:00'&&$slots['slots'][10]['time']==='18:00','fixed hourly choices run from 08 to 18 inclusive');
+ schedule_check($slots['hours'][11]===1&&$slots['hours'][20]===1,'availability counts only visible open tickets, including custom hours');
+ $version=mka_ticket_schedule_version($cleared);$payload=array('visit'=>'2026-11-04 11:00:00','subject'=>'Visita de revisão','priority'=>'alta');
+ try{mka_ticket_schedule_save($db,1,$scope,'fixture_operator',$version,'edit',$payload);throw new LogicException('Expected overlap confirmation');}catch(MkaTicketBookingConflict $expected){schedule_check($expected->visits===1,'overlap requests confirmation instead of rejecting occupied slot');}
+ $payload['conflicts_confirmed']=1;$sameHour=mka_ticket_schedule_save($db,1,$scope,'fixture_operator',$version,'edit',$payload);
+ schedule_check($sameHour['visita']==='2026-11-04 11:00:00','confirmed overlap is allowed for separate teams');
+ $version=mka_ticket_schedule_version($sameHour);$payload=array('day'=>'2026-11-05','time'=>'07:00');
+ try{mka_ticket_schedule_save($db,1,$scope,'fixture_operator',$version,'move',$payload);throw new LogicException('Expected outside-hours confirmation');}catch(InvalidArgumentException $expected){schedule_check(true,'outside office hours requires explicit confirmation');}
+ $payload['outside_confirmed']=true;$early=mka_ticket_schedule_save($db,1,$scope,'fixture_operator',$version,'move',$payload);
+ schedule_check($early['visita']==='2026-11-05 07:00:00','agreed custom early time is accepted after confirmation');
+ $payload=array('day'=>'2026-11-04','time'=>'20:00','outside_confirmed'=>true,'conflicts_confirmed'=>1);$late=mka_ticket_schedule_save($db,1,$scope,'fixture_operator',mka_ticket_schedule_version($early),'move',$payload);
+ schedule_check($late['visita']==='2026-11-04 20:00:00','late custom time and overlap can both be confirmed');
+ schedule_check(!mka_ticket_schedule_outside_hours('2026-11-04 08:00:00')&&!mka_ticket_schedule_outside_hours('2026-11-04 18:00:00')&&mka_ticket_schedule_outside_hours('2026-11-04 18:01:00'),'business-hour boundaries are explicit');
  $db->query("UPDATE sis_suporte SET status='fechado' WHERE id=1");
  try{mka_ticket_schedule_save($db,1,$scope,'fixture_operator',mka_ticket_schedule_version($cleared),'move',array('day'=>'2026-10-21'));throw new LogicException('Expected closed denial');}catch(DomainException $expected){schedule_check(true,'closed ticket cannot be rescheduled');}
 }finally{$db->query('DROP DATABASE `'.$schema.'`');$db->close();}

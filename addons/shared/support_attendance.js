@@ -16,7 +16,7 @@
   notice.append(node('p','',record.client_name+' · '+record.login),node('strong','',record.subject),node('p','attendance-notes',record.notes),node('p','attendance-hint','Registrado em '+date(record.created_at)+' por '+record.operator+(record.updated_at?' · Atualizado em '+date(record.updated_at)+' por '+record.updated_by:'')));
   const actions=node('div','attendance-result-actions');actions.append(button('Voltar aos chamados',()=>modal.close(),'attendance-primary'));
   if(record.can_edit){actions.append(button('Editar registro',()=>edit(record)));actions.append(button(record.outcome==='open'?'Continuar atendimento':'Reabrir atendimento',()=>record.outcome==='open'?edit(record):mutate('reopen',record)));}
-  if(record.outcome==='service'){const link=node('a','attendance-primary','Abrir ordem de serviço');link.href=record.service_url;link.target='_blank';link.rel='noopener';actions.append(link);notice.append(node('p','','Revise e grave a ordem de serviço no formulário nativo.'));}
+  if(record.outcome==='service'){const link=node('a','attendance-primary','Abrir ordem de serviço');link.href=record.service_url;link.dataset.openNativeTicket='';link.target='_blank';link.rel='noopener';actions.append(link);notice.append(node('p','','Revise e grave a ordem de serviço no formulário nativo.'));}
   notice.append(actions);top();actions.querySelector('button').focus();loadHistory();
  }
  function edit(record){

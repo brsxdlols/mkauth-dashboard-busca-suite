@@ -12,6 +12,7 @@ if(empty($_SESSION['suite_schedule_csrf']))$_SESSION['suite_schedule_csrf']=bin2
 $csrf=$_SESSION['suite_schedule_csrf'];session_write_close();$conn->set_charset('utf8mb4');
 try{
     $scope=mka_attendance_scope($conn,$operator);$method=$_SERVER['REQUEST_METHOD']??'GET';
+    if($method==='GET' && ($_GET['action']??'')==='slots')ticket_schedule_reply(200,array_merge(mka_ticket_schedule_slots($conn,(int)($_GET['id']??0),$scope,$_GET['day']??''),array('csrf'=>$csrf)));
     if($method==='GET')$row=mka_ticket_schedule_row($conn,(int)($_GET['id']??0),$scope);
     elseif($method==='POST'){
         $data=json_decode(file_get_contents('php://input',false,null,0,8192),true);
@@ -20,7 +21,8 @@ try{
     }else ticket_schedule_reply(405,array('error'=>'Método não permitido.'));
     $row['version']=mka_ticket_schedule_version($row);$row['timing']=mka_ticket_timing($row['visita']);
     ticket_schedule_reply(200,array('record'=>$row,'csrf'=>$csrf));
-}catch(DomainException $e){ticket_schedule_reply(403,array('error'=>$e->getMessage()));}
+}catch(MkaTicketBookingConflict $e){ticket_schedule_reply(409,array('error'=>$e->getMessage(),'booking_conflicts'=>$e->visits));}
+catch(DomainException $e){ticket_schedule_reply(403,array('error'=>$e->getMessage()));}
 catch(UnexpectedValueException $e){ticket_schedule_reply(409,array('error'=>$e->getMessage()));}
 catch(InvalidArgumentException $e){ticket_schedule_reply(422,array('error'=>$e->getMessage()));}
 catch(Throwable $e){ticket_schedule_reply(503,array('error'=>'Não foi possível salvar o agendamento. Tente novamente.'));}
