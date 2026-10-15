@@ -352,6 +352,10 @@ lint_file "${TARGET_ADDONS_DIR}/dashboard/delete_installation_request.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/mkauth_dashboard_top.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/exibir_resultados.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/chamados_abertos.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/attendance_api.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/ticket_board.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/support_attendance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/search_stats.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_connections.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_pdf.php"
@@ -366,6 +370,7 @@ install_reconcile
 check_online_offline
 
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
+bash "${SCRIPT_DIR}/scripts/install-support-attendance.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/support-attendance"
 
 php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"
 bash "${SCRIPT_DIR}/scripts/install-receive-notice.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/receive-notice"

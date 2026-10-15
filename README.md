@@ -127,4 +127,19 @@ Os otimizadores SQL e a migracao dos atalhos fazem tentativas limitadas em erros
 
 ### Formato nativo e destino de chamados
 
-Configuracoes novas da Busca iniciam com `links_ext=hhvm`; valores ja salvos sao preservados, inclusive PHP escolhido manualmente. Em Configuracoes da Busca, `Abrir Ver chamados em` seleciona Sistema nativo (comportamento anterior) ou Chamados da Busca. A segunda opcao abre `/admin/addons/busca_inteligente/chamados_abertos.php?busca=<nome>` no mesmo servidor, com o nome codificado no filtro. A preferencia e compartilhada pelos layouts novo e legado e nao altera os botoes gerais da navegacao. Abertura de atendimento/chamado e revisao de layout ficam para outra etapa.
+Configuracoes novas da Busca iniciam com `links_ext=hhvm`; valores ja salvos sao preservados, inclusive PHP escolhido manualmente. Em Configuracoes da Busca, `Abrir Ver chamados em` seleciona Sistema nativo (comportamento anterior) ou Chamados da Busca. A segunda opcao abre `/admin/addons/busca_inteligente/chamados_abertos.php?busca=<nome>` no mesmo servidor, com o nome codificado no filtro. A preferencia e compartilhada pelos layouts novo e legado e nao altera os botoes gerais da navegacao.
+
+
+### Central de chamados e registro de atendimentos
+
+A pagina nova de chamados usa tipografia maior e cards clicaveis: Todos abertos, Atrasados, Proximas 24h, Sem agendamento e Sem tecnico. Os cards filtram os chamados ja retornados pelos filtros da pagina e pelos grupos do operador; nao alteram nenhum chamado. Qualquer visita vencida fica vermelha, as proximas 24 horas amarelas e visitas futuras azuis. Datas nativas zeradas sao tratadas como sem agendamento.
+
+O resumo mostra a prioridade cadastrada no MK-AUTH e a data/hora de abertura. O calendario apresenta duas semanas de visitas e permite navegar por periodos, mantendo os filtros atuais. Cada visita mostra cliente, assunto, prioridade e abertura; clicar abre os detalhes do chamado na lista. A navegacao nao reagenda visitas.
+
+Registrar atendimento abre um modal com selecao de cliente permitido, assunto e relato. Ao concluir, o operador escolhe Resolvido, Finalizar sem OS ou Continuar para ordem de servico. O historico e salvo em `suite_support_attendance`, com operador, data, resultado e chave que impede duplicacao por reenvio. A API exige a sessao nativa, `perm_chamados`, acesso ao grupo do cliente e token CSRF para gravacao.
+
+A confirmacao oferece Voltar aos chamados, Editar registro e Reabrir atendimento. O historico permite retornar aos registros anteriores. O autor ou operador com `perm_config` pode editar/reabrir dentro dos grupos permitidos; editar preserva o resultado e reabrir permite concluir novamente no mesmo registro. Alteracoes guardam os dados anteriores e posteriores em `suite_support_attendance_changes`, com controle de versao para impedir sobrescritas concorrentes. A migracao preserva atendimentos existentes.
+
+Continuar para OS registra o encaminhamento e oferece o formulario nativo de chamado com cliente e relato preenchidos. A OS so e criada quando o operador revisa e grava o formulario nativo; o preenchimento nao envia o formulario automaticamente. Os registros de atendimento nao encerram chamados existentes. O instalador cria a tabela aditivamente e instala o carregador do preenchimento com backup de `scripts/mk-auth.js`.
+
+Validacao: `php scripts/test-support-attendance.php` usa schema isolado para testar prazos, grupos e reenvios. Interface validada em 1360px e 400px, incluindo filtros, registro resolvido e continuacao para OS, com API simulada sem dados reais.

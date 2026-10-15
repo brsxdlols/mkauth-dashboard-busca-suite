@@ -1,4 +1,4 @@
-<?php include('nav/header.php'); ?>
+<?php include('nav/header.php'); require_once __DIR__.'/../shared/ticket_board.php'; require_once __DIR__.'/../shared/support_attendance.php'; ?>
 
 <body class="">
 
@@ -42,6 +42,9 @@
         @media(max-width:600px) { .ticket-toolbar span { display:none; } .ticket-search { grid-template-columns:1fr; margin-inline:8px; } .ticket-list,.ticket-count { margin-inline:8px; } .ticket-item summary { grid-template-columns:1fr 26px; } .ticket-summary-address,.ticket-summary-tech { display:none; } .ticket-detail-grid { grid-template-columns:1fr; } }
     </style>
 
+    <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-2">
+    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-2">
+    <main class="ticket-board">
     <nav class="ticket-toolbar no_print mka-suite-content-start" aria-label="Navegação de chamados">
         <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
         <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
@@ -57,8 +60,8 @@
 
     $busca = isset($_GET['busca']) ? $_GET['busca'] : '';
 
-    $busca=trim($busca);		
-    $busca = str_replace(" ","%", $busca);	
+    $busca=trim($busca);
+    $busca = str_replace(" ","%", $busca);
 
     $organizar = isset($_GET['organizar']) ? $_GET['organizar'] : 'endereco';
 
@@ -72,7 +75,7 @@
         $organizar = 'endereco';
     }
 
-    
+
     $query_motivo_chamado = mysqli_query($link, "SELECT DISTINCT assunto FROM sis_suporte ORDER BY assunto");
     $motivo_chamado["%"] = "TODOS";
     while ($row2 = mysqli_fetch_array($query_motivo_chamado)){
@@ -101,6 +104,11 @@
 
     ?>
 
+    <header class="ticket-page-heading">
+        <div><h1>Central de chamados</h1><p>Selecione um card para filtrar os chamados. Abra os detalhes para consultar os relatos.</p></div>
+        <div class="ticket-heading-actions"><button type="button" class="ticket-create" data-open-attendance="">Registrar atendimento</button>
+        <a class="ticket-create" href="../../suporte_ins<?= htmlspecialchars($ext_mk, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="bi bi-plus-circle" aria-hidden="true"></i> Abrir chamado</a></div>
+    </header>
     <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
             <label>Pesquisar
                 <input type="search" name="busca" placeholder="Busque por nome ou endereço" value="<?php echo htmlspecialchars(str_replace('%', ' ', $busca), ENT_QUOTES, 'UTF-8'); ?>">
@@ -148,7 +156,7 @@
         echo "error!";
     }*/
     //echo $comando;  'ip firewall address-list add address=10.10.150.3 list=test3
-  // \"ipv6 firewall address-list add list=BloqV6 comment=$usuario address=[/ipv6 pool used get [find info=$usuario] prefix]\" 
+  // \"ipv6 firewall address-list add list=BloqV6 comment=$usuario address=[/ipv6 pool used get [find info=$usuario] prefix]\"
 ?>
 
 
@@ -156,7 +164,7 @@
         //$lista_chamados = mysqli_query($link, "SELECT * FROM sis_suporte WHERE status = 'aberto' AND login IN (SELECT login FROM sis_cliente WHERE cli_ativado = 's' ORDER BY endereco)");
 
 
-        
+
         // Carrega as configuracoes do banco
         $ler_busca_inteligente_cfg = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg");
         while($cfg = mysqli_fetch_array($ler_busca_inteligente_cfg)){
@@ -172,18 +180,20 @@
             return $mascara;
         }
 
+        $ticket_user=(string)(!empty($_SESSION['MKA_Usuario'])?$_SESSION['MKA_Usuario']:($_SESSION['MM_Usuario']??''));
+        $ticket_scope=mka_attendance_scope($link,$ticket_user);
         $busca_sql = mysqli_real_escape_string($link, $busca);
         $assunto_sql = mysqli_real_escape_string($link, $assunto);
         $tecnico_sql = mysqli_real_escape_string($link, $tecnico);
         $lista_chamados = mysqli_query($link, "
             SELECT c.endereco, c.numero, c.bairro, c.cidade, c.complemento, c.estado,
                    c.plano, c.login, c.senha, c.celular, c.celular2,
-                   sup.nome, sup.assunto, sup.abertura, sup.chamado, sup.visita, sup.tecnico,
+                   sup.nome, sup.assunto, sup.abertura, sup.prioridade, sup.chamado, sup.visita, sup.tecnico,
                    func.nome AS tecnico_nome
             FROM sis_cliente c
             LEFT JOIN sis_suporte sup ON c.login = sup.login
             LEFT JOIN sis_func func ON func.id = sup.tecnico
-            WHERE c.cli_ativado = 's'
+            WHERE ($ticket_scope) AND c.cli_ativado = 's'
               AND (c.nome LIKE '%$busca_sql%'
                    OR c.endereco LIKE '%$busca_sql%'
                    OR c.bairro LIKE '%$busca_sql%'
@@ -194,16 +204,33 @@
             ORDER BY $organizar
         ");
 
-        $tot_chamados_abertos = $lista_chamados ? mysqli_num_rows($lista_chamados) : 0;
+        $ticket_rows=$lista_chamados ? mysqli_fetch_all($lista_chamados,MYSQLI_ASSOC) : array();
+        $tot_chamados_abertos=count($ticket_rows);
+        $ticket_counts=array('all'=>$tot_chamados_abertos,'late'=>0,'upcoming'=>0,'unscheduled'=>0,'unassigned'=>0);
+        $ticket_now=time();
+        foreach($ticket_rows as &$ticket_row){
+            $ticket_row['_timing']=mka_ticket_timing($ticket_row['visita'],$ticket_now);
+            $state=$ticket_row['_timing']['state'];
+            if(isset($ticket_counts[$state]))$ticket_counts[$state]++;
+            if(empty($ticket_row['tecnico']))$ticket_counts['unassigned']++;
+        }
+        unset($ticket_row);
         ?>
-        <div class="ticket-count no_print">Total de chamados: <?= $tot_chamados_abertos; ?></div>
+        <nav class="ticket-overview no_print" aria-label="Filtrar chamados por atenção necessária">
+        <?php foreach(array('all'=>'Todos abertos','late'=>'Atrasados','upcoming'=>'Próximas 24h','unscheduled'=>'Sem agendamento','unassigned'=>'Sem técnico') as $filter=>$label){ ?>
+            <button type="button" data-ticket-filter="<?= $filter; ?>" data-label="<?= $label; ?>" aria-pressed="<?= $filter==='all'?'true':'false'; ?>"><span><?= $label; ?></span><strong><?= $ticket_counts[$filter]; ?></strong></button>
+        <?php } ?>
+        </nav>
+        <div class="ticket-count no_print" id="ticket-filter-status" role="status"><?= $tot_chamados_abertos; ?> chamados · Todos abertos</div>
+        <div class="ticket-view-controls no_print"><button type="button" data-ticket-view="list" aria-pressed="true">Lista de chamados</button><button type="button" data-ticket-view="calendar" aria-pressed="false">Calendário de visitas</button></div>
+        <section id="ticket-calendar" class="ticket-calendar" hidden aria-label="Calendário de visitas"><div class="ticket-calendar-toolbar"><button type="button" data-calendar-step="-1">Anterior</button><button type="button" data-calendar-step="0">Hoje</button><button type="button" data-calendar-step="1">Próximo</button><strong id="ticket-calendar-range" role="status"></strong></div><p>Selecione uma visita para abrir os detalhes do chamado.</p><div id="ticket-calendar-grid" class="ticket-calendar-grid"></div></section>
         <div class="ticket-list">
         <?php
         if (!$lista_chamados) {
             echo '<div class="alert alert-danger">Não foi possível carregar os chamados.</div>';
         }
 
-        while ($lista_chamados && ($row_cli = mysqli_fetch_assoc($lista_chamados))) {
+        foreach ($ticket_rows as $row_cli) {
             $login = (string) $row_cli['login'];
             $pass_cli = (string) $row_cli['senha'];
             $plano_cli = (string) $row_cli['plano'];
@@ -219,35 +246,17 @@
                 $tecnico_nome = empty($row_cli['tecnico']) ? 'Não definido' : 'Técnico #' . $row_cli['tecnico'];
             }
             $abertura = !empty($row_cli['abertura']) ? date('d/m/Y H:i', strtotime($row_cli['abertura'])) : '--';
+            $prioridade = trim((string)($row_cli['prioridade'] ?? ''));
+            if ($prioridade === '') $prioridade = 'Não informada';
+            $priority_class = in_array(strtolower($prioridade), array('baixa','normal','alta','urgente'), true) ? strtolower($prioridade) : 'other';
             $visita = !empty($row_cli['visita']) ? date('d/m/Y H:i', strtotime($row_cli['visita'])) : 'Não agendada';
-            $sla_class = 'is-neutral';
-            $sla_text = 'Sem agendamento';
-            if (!empty($row_cli['visita'])) {
-                $visita_ts = strtotime($row_cli['visita']);
-                $agora_ts = time();
-                $diferenca = $visita_ts - $agora_ts;
-                $horas = (int) floor(abs($diferenca) / 3600);
-                $dias = (int) floor($horas / 24);
-                $horas_restantes = $horas % 24;
-                $tempo_sla = ($dias > 0 ? $dias . 'd ' : '') . $horas_restantes . 'h';
-                if ($diferenca < -86400) {
-                    $sla_class = 'is-red';
-                    $sla_text = 'Atrasado há ' . $tempo_sla;
-                } elseif ($diferenca < 0) {
-                    $sla_class = 'is-orange';
-                    $sla_text = 'Atrasado há ' . $tempo_sla;
-                } elseif ($diferenca <= 86400) {
-                    $sla_class = 'is-orange';
-                    $sla_text = 'Visita em ' . $tempo_sla;
-                } else {
-                    $sla_class = 'is-green';
-                    $sla_text = 'Em dia · ' . $tempo_sla;
-                }
-            }
+            $timing=$row_cli['_timing'];
+            $sla_class=$timing['class'];$sla_text=$timing['text'];
+            if($timing['state']==='unscheduled')$visita='Não agendada';
             $chamado_sql = mysqli_real_escape_string($link, $chamado);
             $query_texto_chamado = mysqli_query($link, "SELECT msg, msg_data FROM sis_msg WHERE chamado = '$chamado_sql' ORDER BY msg_data");
             ?>
-            <details class="ticket-item">
+            <details class="ticket-item" data-ticket-state="<?= $timing['state']; ?>" data-unassigned="<?= empty($row_cli['tecnico'])?'1':'0'; ?>" data-visit="<?= $timing['state']==='unscheduled'?'':htmlspecialchars((string)$row_cli['visita'],ENT_QUOTES,'UTF-8'); ?>" data-client="<?= htmlspecialchars($nome,ENT_QUOTES,'UTF-8'); ?>" data-subject="<?= htmlspecialchars($assunto_ticket,ENT_QUOTES,'UTF-8'); ?>" data-priority="<?= htmlspecialchars($prioridade,ENT_QUOTES,'UTF-8'); ?>" data-opening="<?= htmlspecialchars($abertura,ENT_QUOTES,'UTF-8'); ?>">
                 <summary>
                     <div class="ticket-summary-cell">
                         <small>Cliente</small>
@@ -256,6 +265,8 @@
                     <div class="ticket-summary-cell ticket-summary-address">
                         <small>Chamado / assunto</small>
                         <strong>#<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars($assunto_ticket, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span class="ticket-opening">Aberto em <?= htmlspecialchars($abertura,ENT_QUOTES,'UTF-8'); ?></span>
+                        <span class="ticket-priority priority-<?= $priority_class; ?>">Prioridade: <?= htmlspecialchars($prioridade,ENT_QUOTES,'UTF-8'); ?></span>
                     </div>
                     <div class="ticket-summary-cell ticket-summary-tech">
                         <small>Técnico</small>
@@ -265,8 +276,8 @@
                         <small>Visita</small>
                         <span><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
-                    <div class="ticket-summary-cell ticket-summary-sla"><small>SLA da visita</small><span class="ticket-sla <?= $sla_class; ?>"><?= htmlspecialchars($sla_text, ENT_QUOTES, 'UTF-8'); ?></span></div>
-                    <i class="bi bi-chevron-down ticket-chevron" aria-hidden="true"></i>
+                    <div class="ticket-summary-cell ticket-summary-sla"><small>Prazo da visita</small><span class="ticket-sla <?= $sla_class; ?>"><?= htmlspecialchars($sla_text, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                    <i class="bi bi-chevron-down ticket-chevron" aria-hidden="true"></i><span class="visually-hidden">Ver detalhes do chamado</span>
                 </summary>
                 <div class="ticket-details">
                     <div class="ticket-detail-grid">
@@ -289,11 +300,13 @@
                     </div>
                     <div class="ticket-signature"><strong>Assinatura:</strong> ______________________________________________</div>
                     <div class="ticket-actions no_print">
+                        <button type="button" class="ticket-create" data-open-attendance="<?= htmlspecialchars($login, ENT_QUOTES, 'UTF-8'); ?>">Registrar atendimento deste cliente</button>
                         <a class="ticket-close" href="../../suporte_fechar.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>?chamado=<?= urlencode($chamado); ?>" target="_blank"><i class="bi bi-check-circle-fill"></i> Fechar chamado #<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?></a>
                     </div>
                 </div>
             </details>
         <?php } ?>
+        <p id="ticket-empty" class="ticket-empty" <?= $tot_chamados_abertos>0?'hidden':''; ?>>Nenhum chamado encontrado neste filtro.</p>
         </div>
         <?php
         mysqli_close($link);
@@ -301,6 +314,9 @@
 
 
 
+    </main>
+    <script src="../shared/ticket_board.js?v=20261015-2"></script>
+    <script src="../shared/support_attendance.js?v=20261015-2"></script>
 <?php include('../../baixo.php'); ?>
 
         <script src="../../menu.js.php"></script>
