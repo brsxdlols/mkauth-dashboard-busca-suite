@@ -13,36 +13,7 @@
         .score-table-wrap{margin:0 15px;border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.score-table{margin:0!important}.score-table thead th{padding:13px 12px;background:#27313d;color:#fff;border:0}.score-table td{padding:11px 12px;vertical-align:middle}.score-table .lead{font-weight:700;text-align:center}.score-table .historico_cliente{margin:3px 0 0}
         @media(max-width:800px){.score-search{grid-template-columns:1fr 1fr}.score-search button{width:100%}}@media(max-width:520px){.suite-toolbar span{display:none}.score-search{grid-template-columns:1fr;margin-inline:8px}.score-table-wrap{margin-inline:8px;overflow-x:auto}}
     </style>
-    <nav class="suite-toolbar no_print mka-suite-content-start" aria-label="Navegação do score">
-        <li class="nav-item">
-            <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="index.php"><i class="fa-solid fa-house"></i><span><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></span></a>
-        </li>
-        <li class="nav-item">
-            <a href="chamados_abertos.php"><i class="fa-solid fa-headset"></i><span>Chamados</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="score.php" class="is-active"><i class="fa-solid fa-ranking-star"></i><span>Score</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="relcontratos.php"><i class="fa-solid fa-file-signature"></i><span>Contratos</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="cfg.php"><i class="fa-solid fa-gear"></i><span>Configurações</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" onClick="window.print()"><i class="fa-solid fa-print"></i><span>Imprimir</span>
-            </a>
-        </li>
-
-    </nav>
+    <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'score'); ?>
 
         <?php
 

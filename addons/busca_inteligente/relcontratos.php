@@ -3,16 +3,7 @@
 <?php include('../../topo.php'); ?>
 <?php require_once __DIR__ . '/../shared/layout_mode.php'; mka_suite_render_top_spacing_style($link); ?>
 
-<nav class="contract-toolbar mka-suite-content-start" aria-label="Navegação de contratos">
-    <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
-    <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= mka_contract_escape($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}); ?></span></a>
-    <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
-    <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
-    <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
-    <a href="relcontratos.php" class="is-active"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
-    <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
-    <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
-</nav>
+<?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'contracts'); ?>
 
 <?php
 mka_contract_ensure_schema($link);

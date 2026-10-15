@@ -14,41 +14,13 @@ require_once __DIR__ . '/../shared/layout_mode.php';
         .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 15px 20px}.config-card{padding:18px;border:1px solid #dbe5f0;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.config-card legend{width:auto;margin:0 0 14px;font-size:18px;font-weight:750;color:#27364a}.config-card table{margin:0}.config-card td{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 0!important;border-color:#edf2f7}.config-card input,.config-card select{width:min(210px,48%);height:40px;padding:0 10px;border:1px solid #cbd8e6;border-radius:9px;background:#fff}.config-card input:focus,.config-card select:focus{outline:0;border-color:#1268db;box-shadow:0 0 0 3px rgba(18,104,219,.12)}.config-save{display:inline-flex!important;width:auto!important;height:42px!important;padding:0 20px!important;border:0!important;border-radius:10px!important;background:#1268db!important;color:#fff!important;font-weight:700}.command-box{margin-bottom:18px;padding:14px;border-radius:12px;background:#f5f8fc;color:#475569}.command-box strong{display:block;margin-bottom:6px;color:#27364a}
         @media(max-width:900px){.config-grid{grid-template-columns:1fr}}@media(max-width:520px){.suite-toolbar span{display:none}.config-grid{margin-inline:8px}.config-card td{align-items:flex-start;flex-direction:column}.config-card input,.config-card select{width:100%}}
     </style>
-    <nav class="suite-toolbar no_print mka-suite-content-start" aria-label="Navegação das configurações">
-        <li class="nav-item"><a href="performance.php" data-mka-performance><i class="fa-solid fa-gauge-high"></i><span>Desempenho</span></a></li>
-        <li class="nav-item">
-            <a href="#" onClick="window.history.back()"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="index.php"><i class="fa-solid fa-house"></i><span><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></span></a>
-        </li>
-        <li class="nav-item">
-            <a href="cli_conn_alerta.php"><i class="fa-solid fa-circle-exclamation"></i><span>Alertas</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="chamados_abertos.php"><i class="fa-solid fa-headset"></i><span>Chamados</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="score.php"><i class="fa-solid fa-ranking-star"></i><span>Score</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="relcontratos.php"><i class="fa-solid fa-file-signature"></i><span>Contratos</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="cfg.php" class="is-active"><i class="fa-solid fa-gear"></i><span>Configurações</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" onClick="window.print()"><i class="fa-solid fa-print"></i><span>Imprimir</span>
-            </a>
-        </li>
+    <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'settings'); ?>
+    <section class="config-card no_print" id="config-performance" style="margin:0 15px 20px">
+        <h2 style="font-size:18px;font-weight:750;color:#27364a">Desempenho do sistema</h2>
+        <p>Consulte o tempo das consultas e verifique possíveis pontos de lentidão.</p>
+        <a href="performance.php" data-mka-performance class="config-save" style="align-items:center;text-decoration:none">Executar análise de desempenho</a>
+    </section>
 
-    </nav>
 
     <?php
 

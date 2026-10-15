@@ -12,40 +12,7 @@
         .alert-count{margin:0 15px 10px;font-weight:700;color:#334155}.alert-table-wrap{margin:0 15px 18px;border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}.alert-table{margin:0!important}.alert-table thead th{padding:13px 12px;background:#27313d;color:#fff;border:0}.alert-table td{padding:11px 12px;vertical-align:middle}.alert-table a{color:#193755;text-decoration:none;font-weight:700}.alert-table a:hover{color:#1268db;text-decoration:underline}
         @media(max-width:1100px){.alert-search{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.alert-search{grid-template-columns:1fr 1fr}.alert-table-wrap{overflow-x:auto}}@media(max-width:520px){.alert-toolbar span{display:none}.alert-search{grid-template-columns:1fr;margin-inline:8px}.alert-count,.alert-table-wrap{margin-inline:8px}}
     </style>
-    <nav class="alert-toolbar no_print mka-suite-content-start" aria-label="Navegação de alertas">
-        <li class="nav-item">
-            <a href="#" onClick="window.history.back();return false;"><i class="fa-solid fa-circle-chevron-left"></i><span>Voltar</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="index.php"><i class="fa-solid fa-house"></i><span><?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'}; ?></span></a>
-        </li>
-        <li class="nav-item">
-            <a href="cli_conn_alerta.php" class="is-active"><i class="fa-solid fa-circle-exclamation"></i><span>Alertas</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="chamados_abertos.php"><i class="fa-solid fa-headset"></i><span>Chamados</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="score.php"><i class="fa-solid fa-ranking-star"></i><span>Score</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="relcontratos.php"><i class="fa-solid fa-file-signature"></i><span>Contratos</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="cfg.php"><i class="fa-solid fa-gear"></i><span>Configurações</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" onClick="window.print();return false;"><i class="fa-solid fa-print"></i><span>Imprimir</span>
-            </a>
-        </li>
-
-    </nav>
+    <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'alerts'); ?>
 <?php
 
     function formatBytes($size, $precision = 2)
