@@ -51,6 +51,7 @@
         <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
         <a href="chamados_abertos.php" class="is-active"><i class="bi bi-headset"></i><span>Chamados</span></a>
         <a href="atendimentos.php"><i class="bi bi-chat-left-text"></i><span>Atendimentos</span></a>
+        <?php if(permissao('perm_instalacao')){ ?><a href="instalacoes.php"><i class="bi bi-tools"></i><span>Instalações</span></a><?php } ?>
         <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
         <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
         <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
@@ -317,9 +318,9 @@
 
 
     </main>
-    <script src="../shared/ticket_board.js?v=20261015-5"></script>
+    <script src="../shared/ticket_board.js?v=20261015-6"></script>
     <script src="../shared/support_attendance.js?v=20261015-8"></script>
-    <script src="../shared/ticket_native_modal.js?v=20261015-7"></script>
+    <script src="../shared/ticket_native_modal.js?v=20261015-8"></script>
 <?php include('../../baixo.php'); ?>
 
         <script src="../../menu.js.php"></script>

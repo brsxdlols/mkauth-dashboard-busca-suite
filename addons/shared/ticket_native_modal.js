@@ -2,6 +2,15 @@
  'use strict';
  let modal,frame,submitted=false,trigger=null;
  function styleForm(doc){
+  const installationForm=doc.querySelector('form[action*="executar_instalacao"]');
+  if(installationForm){
+   installationForm.classList.add('suite-ticket-form');
+   for(const block of installationForm.querySelectorAll('.block')){if(block.querySelector('.field.is-horizontal'))block.classList.add('suite-ticket-section','suite-installation-fields');}
+   for(const row of installationForm.querySelectorAll('.field.is-horizontal')){const control=row.querySelector('input:not([type=hidden]),select,textarea'),label=row.querySelector('.field-label label');if(label&&control&&control.id)label.htmlFor=control.id;if(row.querySelector('textarea,[type=submit]'))row.classList.add('suite-ticket-wide');}
+   const root=doc.createElement('main');root.id='suite-ticket-root';root.append(installationForm);
+   for(const overlay of Array.from(doc.querySelectorAll('.modal,.quickview,.ui-autocomplete,.autocomplete-sugestoes,.autocomplete-suggestions,.ui-helper-hidden-accessible')))if(!installationForm.contains(overlay))doc.body.append(overlay);
+   doc.body.append(root);doc.body.classList.add('suite-ticket-body');return true;
+  }
   const form=doc.querySelector('form#form[action*="executar_suporte"],form[action*="ins.chamado"]');
   if(!form||!form.querySelector('#cliente')||!form.querySelector('#uuid_cliente')||!form.querySelector('#msg'))return false;
   const rows=Array.from(form.querySelectorAll(':scope > .field.is-horizontal'));
@@ -38,17 +47,18 @@
     const doc=frame.contentDocument;if(!doc)return;
     const style=doc.createElement('style');style.textContent='html.has-navbar-fixed-top{padding-top:0!important}nav.navbar,footer.footer,#sistema-rodape{display:none!important}';doc.head.append(style);
     const styled=styleForm(doc);
-    if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-7';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
+    if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-8';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
     if(!modal.open||frame.contentDocument!==doc)return;frame.style.visibility='visible';
     for(const form of doc.querySelectorAll('form'))form.addEventListener('submit',()=>{submitted=true;});
-    modal.querySelector('[role=status]').textContent=submitted?'Após concluir a gravação, feche este modal para atualizar o calendário.':'Selecione o cliente, organize a visita e descreva o atendimento.';
+    modal.querySelector('[role=status]').textContent=submitted?'Após concluir a gravação, feche este modal para atualizar o calendário.':modal.dataset.installation==='1'?'Preencha os dados e organize a visita. A gravação usa as regras do MK-AUTH.':'Selecione o cliente, organize a visita e descreva o atendimento.';
    }catch(error){frame.style.visibility='visible';modal.querySelector('[role=status]').textContent='Confira o formulário e feche o modal ao concluir.';}
   });
   modal.addEventListener('close',()=>{frame.src='about:blank';if(trigger&&trigger.isConnected)trigger.focus();if(submitted){document.dispatchEvent(new CustomEvent('mka-ticket-native-refresh'));location.reload();}});
  }
  document.addEventListener('click',event=>{
-  const link=event.target.closest('a[data-open-native-ticket]');if(!link)return;
-  const url=new URL(link.href,location.href);if(url.origin!==location.origin||!/^\/admin\/suporte_ins\.(hhvm|php)$/.test(url.pathname))return;
-  event.preventDefault();if(!modal)build();trigger=link;submitted=false;modal.querySelector('[role=status]').textContent='Carregando formulário…';frame.style.visibility='hidden';frame.src=url.href;modal.showModal();
+  const link=event.target.closest('a[data-open-native-ticket],a[data-open-native-installation]');if(!link)return;
+  const installation=link.hasAttribute('data-open-native-installation');
+  const url=new URL(link.href,location.href);if(url.origin!==location.origin||!(installation?/^\/admin\/instalar_(ins|alt)\.(hhvm|php)$/:/^\/admin\/suporte_ins\.(hhvm|php)$/).test(url.pathname))return;
+  event.preventDefault();if(!modal)build();trigger=link;submitted=false;modal.dataset.installation=installation?'1':'0';modal.querySelector('h2').textContent=installation?(url.pathname.includes('instalar_alt')?'Editar instalação':'Nova instalação'):'Abrir chamado';frame.title=installation?'Formulário de instalação':'Formulário de abertura de chamado';modal.querySelector('[role=status]').textContent='Carregando formulário…';frame.style.visibility='hidden';frame.src=url.href;modal.showModal();
  });
 })();

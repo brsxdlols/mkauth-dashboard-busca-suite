@@ -158,7 +158,15 @@ A guia Atendimentos (`busca_inteligente/atendimentos.php`) abre nos registros cr
 
 O bloco do modal e identificado como ate 20 registros mais recentes, de todos os dias e atendentes, com link para a guia completa. Ver/editar registro usa o mesmo modal, com as permissoes existentes de autor/administrador para edicao e reabertura. O historico atualiza apos salvar, mantendo os filtros. `php scripts/test-attendance-history.php` valida datas, filtros, grupos e paginacao em schema isolado.
 
-### Destino de Chamados na Dashboard
+### Central de instalacoes
+
+A guia `busca_inteligente/instalacoes.php` usa calendario como abertura, lista, pesquisa por nome/login/endereco, situacao e tecnico. Os cards mostram todas em aberto, visitas atrasadas (inclusive semanas anteriores), proximas 24h, sem agendamento e sem tecnico. Criar e editar abrem os formularios reais do MK-AUTH em modal com cards, preservando campos, validacoes, botoes de itens e gravacao nativa.
+
+As consultas usam `perm_instalacao` e o escopo nativo de `perm_instTodosUsuarios`: sem essa permissao, somente registros do operador e de `full_users`. Excluem `tipo=assinatura` e `status=concluido`. Reagendamento requer `perm_instAlterar`, CSRF, versao atual e auditoria propria; altera somente `visita`. Horarios de hora em hora das 08h as 18h, horarios alternativos com confirmacao e sobreposicoes permitidas mediante aviso de equipes diferentes. Contagens de disponibilidade incluem somente instalacoes visiveis ao operador.
+
+O card Instalacoes da Dashboard usa o mesmo total e abre a nova Central por padrao. Configuracoes permite alternar para o nativo, independentemente da preferencia de Chamados. O instalador inclui pagina, API e arquivos compartilhados automaticamente. `php scripts/test-installations.php` valida escopo, sobreposicao, versao, auditoria e horarios em banco descartavel.
+
+### Destino de Chamados na Dashboard (preferencia)
 
 O card Chamados da Dashboard e os atalhos locais `suporte_aberto.hhvm/php` usam a Central de chamados por padrao. Em Configuracoes da Dashboard, Abrir Chamados da Dashboard em permite selecionar Central de chamados (novo) ou Sistema nativo do MK-AUTH. A preferencia `suite_dashboard_support_destination` e criada aditivamente, persiste nas atualizacoes e respeita a extensao PHP/HHVM ao abrir o nativo. E independente da opcao da Busca para o icone de chamados de cada cliente.
 

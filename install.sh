@@ -322,6 +322,9 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/installations.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/instalacoes.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/installation_schedule_api.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/online_rule.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/search_performance.php"

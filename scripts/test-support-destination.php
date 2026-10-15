@@ -17,6 +17,11 @@ try{
  support_check(mka_suite_set_support_destination($db,'busca') && mka_suite_get_support_destination($db)==='busca','search preference saves and reloads');
  support_check(mka_suite_set_support_destination($db,'unexpected') && mka_suite_get_support_destination($db)==='native','unknown submitted preference is normalized');
  support_check(mka_suite_get_dashboard_support_destination($db)==='busca','dashboard defaults to new ticket center');
+ support_check(mka_suite_get_dashboard_installations_destination($db)==='busca','dashboard defaults to installation center');
+ support_check(mka_suite_set_dashboard_installations_destination($db,'native')&&mka_suite_get_dashboard_installations_destination($db)==='native','native installation preference saves');
+ support_check(mka_suite_dashboard_installations_url('native','hhvm')==='/admin/instalacoes_abertas.hhvm'&&mka_suite_dashboard_installations_url('native','php')==='/admin/instalacoes_abertas.php','native installation route respects format');
+ support_check(mka_suite_dashboard_installations_url('busca','hhvm')==='/admin/addons/busca_inteligente/instalacoes.php','installation center route');
+ support_check(mka_suite_get_dashboard_support_destination($db)==='busca','installation preference does not alter ticket destination');
  support_check(mka_suite_set_dashboard_support_destination($db,'native')&&mka_suite_get_dashboard_support_destination($db)==='native','dashboard native preference persists');
  support_check(mka_suite_get_support_destination($db)==='native','dashboard preference does not alter per-client search preference');
  support_check(mka_suite_dashboard_support_url('busca','hhvm')==='/admin/addons/busca_inteligente/chamados_abertos.php','dashboard new route has no unintended client filter');

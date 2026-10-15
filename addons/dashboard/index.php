@@ -1827,10 +1827,20 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 ?></div>
                                 <div class="dashboard-stat-foot" id="perc_chamados">0.00</div>
                             </a>
-                            <a href="/admin/instalacoes_abertas.hhvm" class="dashboard-stat-card is-warning text-dark text-decoration-none">
+                            <a href="<?= htmlspecialchars(mka_suite_dashboard_installations_url(mka_suite_get_dashboard_installations_destination($conn),ltrim($ext_mk,'.')),ENT_QUOTES,'UTF-8'); ?>" class="dashboard-stat-card is-warning text-dark text-decoration-none">
                                 <div class="dashboard-stat-head">Instalações</div>
                                 <span class="dashboard-stat-icon"><i class="bi bi-tools"></i></span>
-                                <div class="dashboard-stat-value" id="tot_instalacoes"></div>
+                                <div class="dashboard-stat-value" id="tot_instalacoes"><?php
+                                $dashboardInstallationsCount='—';
+                                if(permissao('perm_totais')&&permissao('perm_instalacao')){
+                                    require_once __DIR__.'/../shared/installations.php';
+                                    $installationOperator=(string)(!empty($_SESSION['MKA_Usuario'])?$_SESSION['MKA_Usuario']:($_SESSION['MM_Usuario']??''));
+                                    $installationScope=mka_installation_scope($conn,$installationOperator,permissao('perm_instTodosUsuarios'));
+                                    $installationCountQuery=$conn->query('SELECT COUNT(*) FROM sis_solic s WHERE '.mka_installation_where($installationScope));
+                                    if($installationCountQuery)$dashboardInstallationsCount=(int)$installationCountQuery->fetch_row()[0];
+                                }
+                                echo $dashboardInstallationsCount;
+                                ?></div>
                                 <div class="dashboard-stat-foot" id="perc_instalacoes">0.00</div>
                             </a>
 
@@ -2145,7 +2155,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             $perc_instalacoes = $tot_atendimento > 0 ? number_format($tot_instalacoes / $tot_atendimento * 100, 2) : '0.00';
 
                             if (permissao('perm_totais')) {
-                                echo "<script>$('#tot_instalacoes').html(\"$tot_instalacoes\")</script>";
+                                // The card above counts scoped installation visits, independently of website requests below.
                             }
                             echo "<script>$('#perc_instalacoes').html(\"$perc_instalacoes%\")</script>";
                             echo "<script>$('#perc_chamados').html(\"$perc_chamados%\")</script>";
