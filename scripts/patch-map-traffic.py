@@ -60,7 +60,7 @@ def patch_v4(source):
 
 def patch(source):
     source=patch_v4(source)
-    return re.sub(r'(map_monitor\.(?:css|js)\?v=)[^\"<\s]+',r'\g<1>20261014-12',source)
+    return re.sub(r'(map_monitor\.(?:css|js)\?v=)[^\"<\s]+',r'\g<1>20261015-1',source)
 
 def install_monitor_route(admin,backup):
     template=pathlib.Path(__file__).with_name('map-monitor-entry.php')

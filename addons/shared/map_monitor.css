@@ -120,3 +120,10 @@ body.mka-monitor-embedded .traffic-monitor-btn{display:none!important}
 .mka-search-traffic-modal button{border:0;border-radius:7px;padding:8px 12px;background:#edf3f8;color:#183142;cursor:pointer}
 .mka-search-traffic-modal iframe{display:block;width:100%;height:calc(100% - 50px);border:0}
 @media(max-width:820px){.mka-search-traffic-modal{width:calc(100vw - 12px);height:96dvh;max-width:none;max-height:96dvh}.mka-search-traffic-modal header{font-size:12px;padding:8px 10px}}
+
+/* Long addresses must grow the details card instead of clipping session rows. */
+@media(min-width:821px){
+body.monitor-client>.leaflet-popup .popup{height:auto!important;min-height:100%!important;grid-template-rows:auto minmax(210px,1fr)!important;align-content:start!important}
+body.monitor-client>.leaflet-popup .popup-grid{height:auto!important;min-height:min-content!important;align-content:start!important;grid-auto-rows:minmax(min-content,auto)!important}
+body.monitor-client>.leaflet-popup .popup-grid>[data-info]{min-width:0;overflow-wrap:anywhere}
+}

@@ -254,6 +254,8 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
     cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
   fi
 done
+# Keep the suite modal stylesheet separate from a standalone Radius addon.
+cp "${SCRIPT_DIR}/addons/radius/radius.css" "${TARGET_ADDONS_DIR}/radius/suite-live.css"
 # Grant only the web user's read access to the RADIUS log, including rotation.
 for web_user in www-data apache; do
   id "$web_user" >/dev/null 2>&1 || continue
@@ -360,6 +362,10 @@ install_reconcile
 check_online_offline
 
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
+
+php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"
+bash "${SCRIPT_DIR}/scripts/install-receive-notice.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/receive-notice"
+bash "${SCRIPT_DIR}/scripts/install-ipv6-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/ipv6"
 
 echo "[8/8] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"

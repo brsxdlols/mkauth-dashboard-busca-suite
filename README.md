@@ -101,3 +101,15 @@ O atualizador permanente fica em `/opt/mk-auth/scripts/mkauth-suite-monitor/inst
 O instalador do projeto Mapa pode invocá-lo como root após instalar uma release
 publicada, passando o diretório administrativo e um diretório novo de backup.
 Isso sincroniza a base isolada sem liberar o Mapa completo nos demais servidores.
+
+
+## Dependencias e correcoes de instalacao (15/10/2026)
+
+- `graf_faturamento` e os arquivos de graficos da Dashboard sao incluidos mesmo em MK-AUTH sem esses addons. A exibicao continua dependente das permissoes financeiras e das configuracoes.
+- O modal RADIUS usa `radius/suite-live.css`, copiado em toda instalacao. O `index.php`, o CSS e as configuracoes do addon RADIUS independente existente sao preservados.
+- O instalador atualiza o painel IPv4/IPv6 pelo bootstrap oficial de `brsxdlols/mkauth-ipv6-addon`, com download separado, validacao de sintaxe e log no backup. Esse painel nao substitui o addon de logs RADIUS. O instalador oficial usa destino fixo; destinos alternativos da suite nao executam essa dependencia.
+- O monitor permite que enderecos longos aumentem o card de dados, sem cortar Sessoes abertas e os campos seguintes.
+- A pagina nativa `receber.hhvm`/`receber.php` deixa de mostrar o aviso de valor calculado por dias bloqueados. A remocao e visual e restrita a esse aviso; nao altera multa, juros, descontos, valor do titulo, baixa ou estorno.
+- A correcao encontrada no Uplink para `tig_brl_pag` foi incluida: reconhece apenas o trigger BRL original, preserva suas condicoes de cliente/data e atualiza a mesma fila `brl_pago` quando um titulo estornado e recebido novamente. Gera backup e rollback, nao altera titulos existentes nem instala BRL onde ele nao existe. Triggers personalizados desconhecidos sao preservados com aviso. O fluxo original e a correcao foram reproduzidos em banco isolado; o operador tambem confirmou o fluxo no Visual Net.
+
+Validacao de empacotamento: `python3 scripts/test-install-dependencies.py` em Linux e `node scripts/test-receive-notice.js`. A migracao BRL e validada em schema isolado com `php scripts/test-payment-trigger.php`.
