@@ -1,4 +1,4 @@
-<?php include('nav/header.php'); require_once __DIR__.'/../shared/ticket_board.php'; require_once __DIR__.'/../shared/support_attendance.php'; ?>
+<?php include('nav/header.php'); require_once __DIR__.'/../shared/ticket_board.php'; require_once __DIR__.'/../shared/support_attendance.php'; require_once __DIR__.'/../shared/installations.php'; ?>
 
 <body class="">
 
@@ -51,7 +51,7 @@
         <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
         <a href="chamados_abertos.php" class="is-active"><i class="bi bi-headset"></i><span>Chamados</span></a>
         <a href="atendimentos.php"><i class="bi bi-chat-left-text"></i><span>Atendimentos</span></a>
-        <?php if(permissao('perm_instalacao')){ ?><a href="instalacoes.php"><i class="bi bi-tools"></i><span>Instalações</span></a><?php } ?>
+        <?php if(mka_installation_permission($link,(string)$usuario_logado,'perm_instalacao')){ ?><a href="instalacoes.php"><i class="bi bi-tools"></i><span>Instalações</span></a><?php } ?>
         <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
         <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
         <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>

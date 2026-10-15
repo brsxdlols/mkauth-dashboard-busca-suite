@@ -1,9 +1,9 @@
 <?php
 include('nav/header.php');require_once __DIR__.'/../shared/installations.php';
-if(!permissao('perm_instalacao')){http_response_code(403);exit('Sem permissão para instalações.');}
+if(!mka_installation_permission($link,(string)$usuario_logado,'perm_instalacao')){http_response_code(403);exit('Sem permissão para instalações.');}
 $link->set_charset('utf8mb4');
 $operator=(string)(!empty($_SESSION['MKA_Usuario'])?$_SESSION['MKA_Usuario']:($_SESSION['MM_Usuario']??''));
-$scope=mka_installation_scope($link,$operator,permissao('perm_instTodosUsuarios'));$canEdit=permissao('perm_instAlterar');
+$scope=mka_installation_scope($link,$operator,mka_installation_permission($link,$operator,'perm_instTodosUsuarios'));$canEdit=mka_installation_permission($link,$operator,'perm_instAlterar');
 function installation_h($value){return htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function installation_date($value){return !$value||substr($value,0,4)==='0000'?'Não informada':date('d/m/Y H:i',strtotime($value));}
 $search=is_string($_GET['busca']??null)?trim($_GET['busca']):'';$state=is_string($_GET['status']??null)?$_GET['status']:'';$tech=is_string($_GET['tecnico']??null)?$_GET['tecnico']:'';
@@ -17,7 +17,7 @@ if($types!=='')$q->bind_param($types,...$params);$q->execute();$rows=$q->get_res
 $counts=array('all'=>count($rows),'late'=>0,'upcoming'=>0,'unscheduled'=>0,'unassigned'=>0);
 foreach($rows as &$row){$row['_timing']=mka_ticket_timing($row['visita']);$key=$row['_timing']['state'];if(isset($counts[$key]))$counts[$key]++;$row['_unassigned']=in_array(strtolower(trim((string)$row['tecnico'])),array('','0','nenhum','nenhuma'),true);if($row['_unassigned'])$counts['unassigned']++;}unset($row);
 ?>
-<body><?php include('../../topo.php'); ?>
+<body><?php include('../../topo.php');require_once __DIR__.'/../shared/layout_mode.php';mka_suite_render_top_spacing_style($link); ?>
 <link rel="stylesheet" href="../shared/installations.css?v=20261015-2">
 <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-4">
 <main class="ticket-board installation-board" data-installation-board data-can-edit="<?= $canEdit?'1':'0'; ?>">
@@ -38,4 +38,7 @@ foreach($rows as &$row){$row['_timing']=mka_ticket_timing($row['visita']);$key=$
 <p id="ticket-empty" class="ticket-empty" <?= count($rows)?'hidden':''; ?>>Nenhuma instalação em aberto nos filtros atuais. Novas instalações aparecerão aqui após a gravação.</p>
 </section></main>
 <script src="../shared/ticket_board.js?v=20261015-6"></script><script src="../shared/ticket_native_modal.js?v=20261015-8"></script>
+<?php include('../../baixo.php'); ?>
+<script src="../../menu.js.php"></script>
+<?php include('../../rodape.php'); ?>
 </body></html>

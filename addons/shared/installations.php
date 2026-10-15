@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__.'/ticket_schedule.php';
 require_once __DIR__.'/ticket_board.php';
+function mka_installation_permission($db,$operator,$permission) {
+    if($operator==='')return false;
+    $q=$db->prepare("SELECT 1 FROM sis_perm WHERE usuario=? AND nome=? AND permissao='sim' LIMIT 1");
+    $q->bind_param('ss',$operator,$permission);$q->execute();return (bool)$q->get_result()->fetch_row();
+}
 // Installation requests have their own native ownership permission; prospects may not be clients yet.
 function mka_installation_scope($db,$operator,$all) {
     if($operator==='')return '0=1';

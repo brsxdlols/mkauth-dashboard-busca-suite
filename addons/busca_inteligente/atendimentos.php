@@ -1,5 +1,5 @@
-<?php include('nav/header.php');
-if(!permissao('perm_chamados')){http_response_code(403);exit('Sem permissão para atendimentos.');}
+<?php include('nav/header.php');require_once __DIR__.'/../shared/installations.php';
+if(!mka_installation_permission($link,(string)$usuario_logado,'perm_chamados')){http_response_code(403);exit('Sem permissão para atendimentos.');}
 $attendanceToday=(new DateTimeImmutable('now',new DateTimeZone('America/Sao_Paulo')))->format('Y-m-d');
 ?>
 <body>

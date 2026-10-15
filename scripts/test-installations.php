@@ -6,8 +6,14 @@ mysqli_report(MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT);
 $admin=new mysqli('127.0.0.1','root','vertrigo');$schema='suite_install_test_'.bin2hex(random_bytes(5));
 $admin->query('CREATE DATABASE `'.$schema.'` CHARACTER SET utf8mb4');
 function check_install($condition,$label){if(!$condition)throw new RuntimeException($label);echo 'PASS '.$label.PHP_EOL;}
+$page=file_get_contents(__DIR__.'/../addons/busca_inteligente/instalacoes.php');
+check_install(strpos($page,'../../menu.js.php')!==false&&strpos($page,"include('../../baixo.php')")!==false&&strpos($page,"include('../../rodape.php')")!==false,'installation page includes native header/menu initialization');
 try {
     $db=new mysqli('127.0.0.1','root','vertrigo',$schema);$db->set_charset('utf8mb4');
+    $db->query('CREATE TABLE sis_perm(usuario VARCHAR(64),nome VARCHAR(64),permissao VARCHAR(3))');
+    $db->query("INSERT INTO sis_perm VALUES('ana','perm_instalacao','sim'),('ana','perm_instAlterar','nao'),('joao','perm_instTodosUsuarios','sim')");
+    check_install(!function_exists('permissao')&&mka_installation_permission($db,'ana','perm_instalacao'),'permission works without Dashboard-only function');
+    check_install(!mka_installation_permission($db,'ana','perm_instAlterar')&&!mka_installation_permission($db,'ana','perm_instTodosUsuarios')&&!mka_installation_permission($db,'','perm_instalacao'),'denied, missing and other-user permissions stay denied');
     $db->query("CREATE TABLE sis_solic(id INT PRIMARY KEY,uuid_solic VARCHAR(48),nome VARCHAR(255),login VARCHAR(64),tecnico VARCHAR(255),visita DATETIME,status VARCHAR(20),tipo VARCHAR(20),login_atend VARCHAR(64)) ENGINE=InnoDB");
     $db->query("INSERT INTO sis_solic VALUES(1,'uuid1','Cliente teste','teste','Equipe A','2026-10-16 09:00:00','aberto','instalacao','ana'),(2,'uuid2','Compartilhado','outro','Equipe B','2026-10-17 10:00:00','pendente','instalacao','full_users'),(3,'uuid3','Privado','privado','Equipe C','2026-10-17 10:00:00','aberto','instalacao','joao'),(4,'uuid4','Concluido','fim','Equipe A',NULL,'concluido','instalacao','ana'),(5,'uuid5','Assinatura','web','Equipe A',NULL,'aberto','assinatura','ana')");
     mka_installation_schema($db);$scope=mka_installation_scope($db,'ana',false);
