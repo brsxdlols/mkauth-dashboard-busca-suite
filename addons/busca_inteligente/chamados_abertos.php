@@ -42,8 +42,8 @@
         @media(max-width:600px) { .ticket-toolbar span { display:none; } .ticket-search { grid-template-columns:1fr; margin-inline:8px; } .ticket-list,.ticket-count { margin-inline:8px; } .ticket-item summary { grid-template-columns:1fr 26px; } .ticket-summary-address,.ticket-summary-tech { display:none; } .ticket-detail-grid { grid-template-columns:1fr; } }
     </style>
 
-    <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-2">
-    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-2">
+    <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-3">
+    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-3">
     <main class="ticket-board">
     <nav class="ticket-toolbar no_print mka-suite-content-start" aria-label="Navegação de chamados">
         <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
@@ -106,7 +106,7 @@
 
     <header class="ticket-page-heading">
         <div><h1>Central de chamados</h1><p>Selecione um card para filtrar os chamados. Abra os detalhes para consultar os relatos.</p></div>
-        <div class="ticket-heading-actions"><button type="button" class="ticket-create" data-open-attendance="">Registrar atendimento</button>
+        <div class="ticket-heading-actions"><button type="button" class="ticket-create" data-attendance-history>Histórico de atendimentos</button><button type="button" class="ticket-create" data-open-attendance="">Registrar atendimento</button>
         <a class="ticket-create" href="../../suporte_ins<?= htmlspecialchars($ext_mk, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="bi bi-plus-circle" aria-hidden="true"></i> Abrir chamado</a></div>
     </header>
     <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
@@ -188,7 +188,7 @@
         $lista_chamados = mysqli_query($link, "
             SELECT c.endereco, c.numero, c.bairro, c.cidade, c.complemento, c.estado,
                    c.plano, c.login, c.senha, c.celular, c.celular2,
-                   sup.nome, sup.assunto, sup.abertura, sup.prioridade, sup.chamado, sup.visita, sup.tecnico,
+                   sup.id AS ticket_id, sup.nome, sup.assunto, sup.abertura, sup.prioridade, sup.chamado, sup.visita, sup.tecnico,
                    func.nome AS tecnico_nome
             FROM sis_cliente c
             LEFT JOIN sis_suporte sup ON c.login = sup.login
@@ -223,7 +223,8 @@
         </nav>
         <div class="ticket-count no_print" id="ticket-filter-status" role="status"><?= $tot_chamados_abertos; ?> chamados · Todos abertos</div>
         <div class="ticket-view-controls no_print"><button type="button" data-ticket-view="list" aria-pressed="true">Lista de chamados</button><button type="button" data-ticket-view="calendar" aria-pressed="false">Calendário de visitas</button></div>
-        <section id="ticket-calendar" class="ticket-calendar" hidden aria-label="Calendário de visitas"><div class="ticket-calendar-toolbar"><button type="button" data-calendar-step="-1">Anterior</button><button type="button" data-calendar-step="0">Hoje</button><button type="button" data-calendar-step="1">Próximo</button><strong id="ticket-calendar-range" role="status"></strong></div><p>Selecione uma visita para abrir os detalhes do chamado.</p><div id="ticket-calendar-grid" class="ticket-calendar-grid"></div></section>
+        <p id="ticket-calendar-notice" role="status"></p>
+        <section id="ticket-calendar" class="ticket-calendar" hidden aria-label="Calendário de visitas"><div class="ticket-calendar-toolbar"><button type="button" data-calendar-step="-1">Anterior</button><button type="button" data-calendar-step="0">Hoje</button><button type="button" data-calendar-step="1">Próximo</button><strong id="ticket-calendar-range" role="status"></strong></div><p>Arraste uma visita para outro dia mantendo o horário, ou clique para editar o agendamento.</p><div id="ticket-calendar-grid" class="ticket-calendar-grid"></div></section>
         <div class="ticket-list">
         <?php
         if (!$lista_chamados) {
@@ -256,7 +257,7 @@
             $chamado_sql = mysqli_real_escape_string($link, $chamado);
             $query_texto_chamado = mysqli_query($link, "SELECT msg, msg_data FROM sis_msg WHERE chamado = '$chamado_sql' ORDER BY msg_data");
             ?>
-            <details class="ticket-item" data-ticket-state="<?= $timing['state']; ?>" data-unassigned="<?= empty($row_cli['tecnico'])?'1':'0'; ?>" data-visit="<?= $timing['state']==='unscheduled'?'':htmlspecialchars((string)$row_cli['visita'],ENT_QUOTES,'UTF-8'); ?>" data-client="<?= htmlspecialchars($nome,ENT_QUOTES,'UTF-8'); ?>" data-subject="<?= htmlspecialchars($assunto_ticket,ENT_QUOTES,'UTF-8'); ?>" data-priority="<?= htmlspecialchars($prioridade,ENT_QUOTES,'UTF-8'); ?>" data-opening="<?= htmlspecialchars($abertura,ENT_QUOTES,'UTF-8'); ?>">
+            <details class="ticket-item" data-ticket-id="<?= (int)$row_cli['ticket_id']; ?>" data-ticket-state="<?= $timing['state']; ?>" data-unassigned="<?= empty($row_cli['tecnico'])?'1':'0'; ?>" data-visit="<?= $timing['state']==='unscheduled'?'':htmlspecialchars((string)$row_cli['visita'],ENT_QUOTES,'UTF-8'); ?>" data-client="<?= htmlspecialchars($nome,ENT_QUOTES,'UTF-8'); ?>" data-subject="<?= htmlspecialchars($assunto_ticket,ENT_QUOTES,'UTF-8'); ?>" data-priority="<?= htmlspecialchars($prioridade,ENT_QUOTES,'UTF-8'); ?>" data-opening="<?= htmlspecialchars($abertura,ENT_QUOTES,'UTF-8'); ?>">
                 <summary>
                     <div class="ticket-summary-cell">
                         <small>Cliente</small>
@@ -274,7 +275,7 @@
                     </div>
                     <div class="ticket-summary-cell ticket-summary-date">
                         <small>Visita</small>
-                        <span><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span data-ticket-visit-label><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div class="ticket-summary-cell ticket-summary-sla"><small>Prazo da visita</small><span class="ticket-sla <?= $sla_class; ?>"><?= htmlspecialchars($sla_text, ENT_QUOTES, 'UTF-8'); ?></span></div>
                     <i class="bi bi-chevron-down ticket-chevron" aria-hidden="true"></i><span class="visually-hidden">Ver detalhes do chamado</span>
@@ -282,7 +283,7 @@
                 <div class="ticket-details">
                     <div class="ticket-detail-grid">
                         <div class="ticket-detail"><small>Endereço</small><span><?= htmlspecialchars($end_cli, ENT_QUOTES, 'UTF-8'); ?><br><?= htmlspecialchars($local_cli, ENT_QUOTES, 'UTF-8'); ?></span></div>
-                        <div class="ticket-detail"><small>Registro / visita</small><span><?= htmlspecialchars($abertura, ENT_QUOTES, 'UTF-8'); ?><br><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                        <div class="ticket-detail"><small>Registro / visita</small><span><?= htmlspecialchars($abertura, ENT_QUOTES, 'UTF-8'); ?><br><span data-ticket-visit-label><?= htmlspecialchars($visita, ENT_QUOTES, 'UTF-8'); ?></span></span></div>
                         <div class="ticket-detail"><small>Login / senha</small><span><?= htmlspecialchars($login, ENT_QUOTES, 'UTF-8'); ?> / <?= htmlspecialchars($pass_cli, ENT_QUOTES, 'UTF-8'); ?></span></div>
                         <div class="ticket-detail"><small>Contato / plano</small><span><?= htmlspecialchars(trim($fone_cli . ' ' . $fone2_cli), ENT_QUOTES, 'UTF-8'); ?><br><?= htmlspecialchars($plano_cli, ENT_QUOTES, 'UTF-8'); ?></span></div>
                     </div>
@@ -300,7 +301,7 @@
                     </div>
                     <div class="ticket-signature"><strong>Assinatura:</strong> ______________________________________________</div>
                     <div class="ticket-actions no_print">
-                        <button type="button" class="ticket-create" data-open-attendance="<?= htmlspecialchars($login, ENT_QUOTES, 'UTF-8'); ?>">Registrar atendimento deste cliente</button>
+                        <button type="button" class="ticket-create" data-edit-ticket>Editar agendamento</button><button type="button" class="ticket-create" data-open-attendance="<?= htmlspecialchars($login, ENT_QUOTES, 'UTF-8'); ?>">Registrar atendimento deste cliente</button>
                         <a class="ticket-close" href="../../suporte_fechar.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>?chamado=<?= urlencode($chamado); ?>" target="_blank"><i class="bi bi-check-circle-fill"></i> Fechar chamado #<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?></a>
                     </div>
                 </div>
@@ -315,8 +316,8 @@
 
 
     </main>
-    <script src="../shared/ticket_board.js?v=20261015-2"></script>
-    <script src="../shared/support_attendance.js?v=20261015-2"></script>
+    <script src="../shared/ticket_board.js?v=20261015-3"></script>
+    <script src="../shared/support_attendance.js?v=20261015-3"></script>
 <?php include('../../baixo.php'); ?>
 
         <script src="../../menu.js.php"></script>
