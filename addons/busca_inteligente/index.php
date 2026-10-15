@@ -145,15 +145,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         @media (max-width:575.98px) { .smart-toolbar span { display:none; } .smart-toolbar { margin-inline:8px; } .smart-search-form { margin-inline:8px; } .content-view-modal{padding:8px}.content-view-card{height:calc(100vh - 16px);border-radius:14px}.content-view-head{padding:9px 10px;gap:6px}.content-view-head strong{max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.content-view-action{width:34px;padding:0;justify-content:center}.content-view-action span{display:none}.content-view-head-actions{gap:5px} }
     </style>
 
-    <nav class="smart-toolbar no_print mka-suite-content-start" aria-label="Navegação da Busca Inteligente">
-        <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
-        <a href="index.php" class="is-active"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
-        <a href="chamados_abertos.php"><i class="bi bi-headset"></i><span>Chamados</span></a>
-        <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
-        <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
-        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
-        <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
-    </nav>
+    <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'home'); ?>
 
     <div class="score-modal no_print" id="clientScoreModal" hidden role="dialog" aria-modal="true" aria-labelledby="clientScoreModalTitle">
         <div class="score-modal-card">
