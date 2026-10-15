@@ -43,13 +43,14 @@
     </style>
 
     <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-4">
-    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-4">
+    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-8">
     <main class="ticket-board">
     <nav class="ticket-toolbar no_print mka-suite-content-start" aria-label="Navegação de chamados">
         <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
         <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
         <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
         <a href="chamados_abertos.php" class="is-active"><i class="bi bi-headset"></i><span>Chamados</span></a>
+        <a href="atendimentos.php"><i class="bi bi-chat-left-text"></i><span>Atendimentos</span></a>
         <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
         <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
         <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
@@ -106,7 +107,7 @@
 
     <header class="ticket-page-heading">
         <div><h1>Central de chamados</h1><p>Selecione um card para filtrar os chamados. Abra os detalhes para consultar os relatos.</p></div>
-        <div class="ticket-heading-actions"><button type="button" class="ticket-create" data-attendance-history>Histórico de atendimentos</button><button type="button" class="ticket-create" data-open-attendance="">Registrar atendimento</button>
+        <div class="ticket-heading-actions"><a class="ticket-create" href="atendimentos.php">Atendimentos de hoje</a><button type="button" class="ticket-create" data-open-attendance="">Registrar atendimento</button>
         <a class="ticket-create" data-open-native-ticket href="../../suporte_ins<?= htmlspecialchars($ext_mk, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="bi bi-plus-circle" aria-hidden="true"></i> Abrir chamado</a></div>
     </header>
     <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
@@ -317,8 +318,8 @@
 
     </main>
     <script src="../shared/ticket_board.js?v=20261015-4"></script>
-    <script src="../shared/support_attendance.js?v=20261015-4"></script>
-    <script src="../shared/ticket_native_modal.js?v=20261015-6"></script>
+    <script src="../shared/support_attendance.js?v=20261015-8"></script>
+    <script src="../shared/ticket_native_modal.js?v=20261015-7"></script>
 <?php include('../../baixo.php'); ?>
 
         <script src="../../menu.js.php"></script>

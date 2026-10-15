@@ -146,8 +146,16 @@ Continuar para OS registra o encaminhamento e oferece o formulario nativo de cha
 
 Abrir chamado e a continuacao para OS abrem o formulario nativo em um modal na mesma pagina. A autenticacao, os campos e a gravacao continuam sendo do MK-AUTH. Apos o envio do formulario, fechar o modal atualiza a pagina preservando seus filtros e o periodo do calendario; fechar sem enviar nao grava nem atualiza. O carregador de preenchimento do atendimento tambem funciona dentro desse modal.
 
-O formulario usa o layout da Central, organizado em Cliente e atendimento, Agendamento e equipe e Detalhes do chamado. O cabecalho do provedor, navegacao e paineis laterais nativos ficam ocultos dentro do modal. Os campos existentes sao reorganizados sem recriar o formulario: IDs, campos ocultos, valores, validacao, busca de cliente e destino de envio nativos sao preservados. A folha `ticket_native_form.css` aplica a tipografia e os cards responsivos somente nesse documento do modal.
+O formulario usa o layout da Central, organizado em Cliente e atendimento, Agendamento e equipe e Detalhes do chamado. O cabecalho do provedor, navegacao e paineis fixos nativos ficam ocultos dentro do modal. Os campos existentes sao reorganizados sem recriar o formulario: IDs, campos ocultos, valores, validacao, busca de cliente e destino de envio nativos sao preservados. A folha `ticket_native_form.css` aplica a tipografia e os cards responsivos somente nesse documento do modal.
 
 Os paineis auxiliares `quickview` e modais nativos continuam disponiveis sobre o formulario: os botoes + de assunto, prioridade e demais itens mantem os manipuladores originais e permitem inserir/selecionar valores sem sair da pagina. Somente a navegacao e os paineis fixos que cercavam o formulario ficam ocultos.
+
+A lista de clientes usa o componente autoComplete nativo e seus menus `autocomplete-sugestoes`, preservando a selecao de nome, UUID, login e ramal. Os menus nativos e jQuery UI ficam disponiveis mesmo quando o restante da pagina interna esta oculto.
+
+### Historico completo de atendimentos
+
+A guia Atendimentos (`busca_inteligente/atendimentos.php`) abre nos registros criados hoje, pela data de abertura, para todos os atendentes dos clientes permitidos ao usuario. Permite filtrar datas, usuario, cliente/login e resultado; Todo o periodo remove a restricao de datas. Meus atendimentos seleciona o usuario logado. Cada registro oferece Todos os atendimentos deste cliente, que usa o UUID e inclui todos os periodos. A consulta tem paginacao de 25 registros e respeita os grupos de clientes tambem nos totais e na lista de usuarios.
+
+O bloco do modal e identificado como ate 20 registros mais recentes, de todos os dias e atendentes, com link para a guia completa. Ver/editar registro usa o mesmo modal, com as permissoes existentes de autor/administrador para edicao e reabertura. O historico atualiza apos salvar, mantendo os filtros. `php scripts/test-attendance-history.php` valida datas, filtros, grupos e paginacao em schema isolado.
 
 Validacao: `php scripts/test-support-attendance.php` usa schema isolado para testar prazos, grupos e reenvios. Interface validada em 1360px e 400px, incluindo filtros, registro resolvido e continuacao para OS, com API simulada sem dados reais.
