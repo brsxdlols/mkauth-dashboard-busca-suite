@@ -1820,7 +1820,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 <div class="dashboard-stat-value" id="tot_chamados"><?php
                                 $tot_chamados = 0;
                                 if (permissao('perm_totais') && permissao('perm_chamados')) {
-                                    $countSupport = mysqli_query($conn, "SELECT COUNT(*) total FROM sis_suporte s LEFT JOIN sis_cliente c ON s.login=c.login WHERE $grupos s.visita <= '$nova_data_1' AND s.status='aberto' AND c.cli_ativado='s'");
+                                    $countSupport = mysqli_query($conn, "SELECT COUNT(*) total FROM sis_suporte s LEFT JOIN sis_cliente c ON s.login=c.login WHERE $grupos s.status='aberto' AND c.cli_ativado='s'");
                                     if ($countSupport) $tot_chamados = (int)mysqli_fetch_assoc($countSupport)['total'];
                                     echo $countSupport ? $tot_chamados : '—';
                                 } else { echo '—'; }
@@ -2062,7 +2062,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                             </div>
                             <?php
 
-                            $query_sis_suporte = mysqli_query($conn, "SELECT s.chamado, s.abertura, s.login, s.assunto, c.nome FROM sis_suporte s LEFT JOIN sis_cliente c ON s.login = c.login WHERE $grupos s.visita <= '$nova_data_1' AND s.status LIKE 'aberto' AND c.cli_ativado LIKE 's' ORDER BY s.abertura");
+                            $query_sis_suporte = mysqli_query($conn, "SELECT s.chamado, s.abertura, s.login, s.assunto, c.nome FROM sis_suporte s LEFT JOIN sis_cliente c ON s.login = c.login WHERE $grupos s.status = 'aberto' AND c.cli_ativado = 's' ORDER BY s.abertura");
 
                             $tot_chamados = mysqli_num_rows($query_sis_suporte);
 
