@@ -24,7 +24,7 @@
   const submit=form.querySelector('.suite-ticket-submit');if(submit)form.append(submit);
   const root=doc.createElement('main');root.id='suite-ticket-root';root.append(form);
   // Move the existing nodes so native validation, client lookup and hidden fields keep working.
-  for(const overlay of Array.from(doc.querySelectorAll('.modal,.ui-autocomplete,.ui-helper-hidden-accessible')))if(!form.contains(overlay))doc.body.append(overlay);
+  for(const overlay of Array.from(doc.querySelectorAll('.modal,.quickview,.ui-autocomplete,.ui-helper-hidden-accessible')))if(!form.contains(overlay))doc.body.append(overlay);
   doc.body.append(root);doc.body.classList.add('suite-ticket-body');
   return true;
  }
@@ -38,7 +38,7 @@
     const doc=frame.contentDocument;if(!doc)return;
     const style=doc.createElement('style');style.textContent='html.has-navbar-fixed-top{padding-top:0!important}nav.navbar,footer.footer,#sistema-rodape{display:none!important}';doc.head.append(style);
     const styled=styleForm(doc);
-    if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-5';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
+    if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-6';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
     if(!modal.open||frame.contentDocument!==doc)return;frame.style.visibility='visible';
     for(const form of doc.querySelectorAll('form'))form.addEventListener('submit',()=>{submitted=true;});
     modal.querySelector('[role=status]').textContent=submitted?'Após concluir a gravação, feche este modal para atualizar o calendário.':'Selecione o cliente, organize a visita e descreva o atendimento.';

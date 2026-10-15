@@ -148,4 +148,6 @@ Abrir chamado e a continuacao para OS abrem o formulario nativo em um modal na m
 
 O formulario usa o layout da Central, organizado em Cliente e atendimento, Agendamento e equipe e Detalhes do chamado. O cabecalho do provedor, navegacao e paineis laterais nativos ficam ocultos dentro do modal. Os campos existentes sao reorganizados sem recriar o formulario: IDs, campos ocultos, valores, validacao, busca de cliente e destino de envio nativos sao preservados. A folha `ticket_native_form.css` aplica a tipografia e os cards responsivos somente nesse documento do modal.
 
+Os paineis auxiliares `quickview` e modais nativos continuam disponiveis sobre o formulario: os botoes + de assunto, prioridade e demais itens mantem os manipuladores originais e permitem inserir/selecionar valores sem sair da pagina. Somente a navegacao e os paineis fixos que cercavam o formulario ficam ocultos.
+
 Validacao: `php scripts/test-support-attendance.php` usa schema isolado para testar prazos, grupos e reenvios. Interface validada em 1360px e 400px, incluindo filtros, registro resolvido e continuacao para OS, com API simulada sem dados reais.
