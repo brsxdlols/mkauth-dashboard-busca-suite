@@ -41,10 +41,15 @@ class Packaging(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             base=pathlib.Path(tmp);admin=base/'admin';(admin/'scripts').mkdir(parents=True)
             target=admin/'scripts/mk-auth.js';target.write_text('/* native */')
+            jquery=admin/'scripts/jquery.js';jquery.write_text('/* native jquery */')
             command=['bash',str(ROOT/'scripts/install-receive-notice.sh'),str(admin),str(base/'backup')]
             subprocess.run(command,check=True);first=target.read_bytes();subprocess.run(command,check=True)
             self.assertEqual(target.read_bytes(),first)
             self.assertEqual((base/'backup/mk-auth.js').read_text(),'/* native */')
+            self.assertEqual((base/'backup/jquery.js').read_text(),'/* native jquery */')
+            self.assertEqual(jquery.read_text().count('mka-receive-notice'),2)
+            self.assertIn('receive_notice.js?v=20261016-1',jquery.read_text())
+            self.assertTrue((admin/'addons/shared/receive_notice.js').is_file())
 
     def test_ipv6_official_installer_downloads_before_execution(self):
         with tempfile.TemporaryDirectory() as tmp:
