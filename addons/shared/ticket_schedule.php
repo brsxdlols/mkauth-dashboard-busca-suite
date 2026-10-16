@@ -1,9 +1,11 @@
 <?php
+require_once __DIR__.'/agenda_settings.php';
 class MkaTicketBookingConflict extends RuntimeException {
     public $visits;
     public function __construct($visits){$this->visits=(int)$visits;parent::__construct('Já há visitas nesta faixa de horário. Confirme a sobreposição e organize equipes diferentes para atender os chamados.');}
 }
 function mka_ticket_schedule_schema($db) {
+    mka_agenda_schema($db);
     $db->query("CREATE TABLE IF NOT EXISTS suite_ticket_schedule_changes (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, ticket_id INT NOT NULL,
         operator VARCHAR(64) NOT NULL, before_data TEXT NOT NULL, after_data TEXT NOT NULL,
@@ -64,9 +66,12 @@ function mka_ticket_schedule_save($db,$id,$scope,$operator,$version,$action,$dat
             if(!array_key_exists('visit',$data))throw new InvalidArgumentException('Informe o agendamento ou deixe a data vazia.');
             $subject=$data['subject']??null;$priority=$data['priority']??null;
             if(!is_string($subject)||trim($subject)===''||preg_match_all('/./us',$subject)>255)throw new InvalidArgumentException('Preencha o assunto com até 255 caracteres.');
-            if(!is_string($priority)||(!in_array($priority,array('baixa','normal','alta'),true)&&$priority!==(string)$before['prioridade']))throw new InvalidArgumentException('Prioridade inválida.');
+            if(!is_string($priority))throw new InvalidArgumentException('Prioridade inválida.');
+            if(!in_array($priority,array('baixa','normal','media','média','alta','urgente'),true)&&$priority!==(string)$before['prioridade']){$pq=$db->prepare('SELECT priority FROM suite_priority_colors WHERE priority=?');$pq->bind_param('s',$priority);$pq->execute();if(!$pq->get_result()->fetch_row())throw new InvalidArgumentException('Prioridade inválida.');}
             $after['assunto']=trim($subject);$after['prioridade']=$priority;$after['visita']=mka_ticket_schedule_date($data['visit']??null);
         }
+        if($after['visita']!==$before['visita']&&$after['visita']&&!mka_agenda_workday(mka_agenda_settings($db),substr($after['visita'],0,10)))throw new InvalidArgumentException('Este dia não está habilitado para ordens de serviço.');
+        if($after['visita']!==$before['visita']&&$after['visita']&&mka_agenda_lunch(mka_agenda_settings($db),substr($after['visita'],11,5)))throw new InvalidArgumentException('Este horário está reservado para almoço. Escolha outro horário.');
         if($after['visita']!==$before['visita'] && mka_ticket_schedule_outside_hours($after['visita']) && ($data['outside_confirmed']??false)!==true)throw new InvalidArgumentException('Horário fora do expediente (08h às 18h). Confirme que deseja agendar mesmo assim.');
         if($after['visita']!==$before['visita']){$conflicts=mka_ticket_schedule_conflicts($db,$id,$scope,$after['visita']);if($conflicts>0 && (!is_int($data['conflicts_confirmed']??null)||$data['conflicts_confirmed']<$conflicts))throw new MkaTicketBookingConflict($conflicts);}
         if($after['visita']===$before['visita']&&$after['assunto']===$before['assunto']&&$after['prioridade']===$before['prioridade']){$db->commit();return $before;}

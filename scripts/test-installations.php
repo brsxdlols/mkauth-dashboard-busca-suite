@@ -36,4 +36,8 @@ try {
     check_install((int)$db->query('SELECT COUNT(*) FROM suite_installation_schedule_changes')->fetch_row()[0]===2,'only successful moves create audit entries');
     check_install($after['nome']==='Cliente teste'&&$after['status']==='aberto'&&$after['tecnico']==='Equipe A','rescheduling preserves native fields');
     $slots=mka_installation_slots($db,1,$scope,'2026-10-17');check_install(count($slots['slots'])===11&&$slots['slots'][0]['time']==='08:00'&&$slots['slots'][10]['time']==='18:00','hourly slots from 08 to 18');
+    mka_agenda_settings_save($db,array('enabled'=>true,'start'=>'12:00','end'=>'13:00','days'=>array(1,2,3,4,5)),'installation');
+    try{mka_installation_move($db,1,$scope,'ana',array('version'=>$after['version'],'day'=>'2026-10-17','time'=>'09:00'));throw new RuntimeException('Saturday restriction bypassed');}catch(InvalidArgumentException $e){check_install(strpos($e->getMessage(),'dia')!==false,'disabled installation weekday blocks direct reschedule');}
+    try{mka_installation_move($db,1,$scope,'ana',array('version'=>$after['version'],'day'=>'2026-10-19','time'=>'12:00'));throw new RuntimeException('Lunch restriction bypassed');}catch(InvalidArgumentException $e){check_install(strpos($e->getMessage(),'almoço')!==false,'installation lunch blocks direct reschedule');}
+    check_install(mka_installation_row($db,1,$scope)['visita']===$after['visita'],'workday/lunch rejection preserves the previous installation');
 }finally{$admin->query('DROP DATABASE `'.$schema.'`');}

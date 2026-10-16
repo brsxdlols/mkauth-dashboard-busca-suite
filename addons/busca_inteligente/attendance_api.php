@@ -2,6 +2,7 @@
 require __DIR__.'/../shared/notification_bootstrap.php';
 require_once __DIR__.'/../shared/support_attendance.php';
 require_once __DIR__.'/../shared/attendance_history.php';
+require_once __DIR__.'/../shared/client_support.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
 function attendance_reply($status,$data){http_response_code($status);echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 if(!permissao('perm_chamados'))attendance_reply(403,array('error'=>'Sem permissao para chamados.'));
@@ -13,8 +14,12 @@ $method=$_SERVER['REQUEST_METHOD']??'GET';$action=$_GET['action']??'history';
 try {
     $scope=mka_attendance_scope($conn,$operator);
     $ext=is_file(__DIR__.'/../../suporte_ins.hhvm')?'hhvm':'php';
-    $decorate=function($row)use($operator,$canAdmin,$ext){$row['can_edit']=$row['operator']===$operator||$canAdmin;$row['service_url']='/admin/suporte_ins.'.$ext.'?'.http_build_query(array('login'=>$row['login'],'mka_atendimento'=>$row['id']));return $row;};
-    if($method==='GET' && $action==='report'){$report=mka_attendance_history_report($conn,$scope,$_GET);$report['records']=array_map($decorate,$report['records']);$report['csrf']=$csrf;$report['logged_user']=$operator;attendance_reply(200,$report);}
+    $decorate=function($row)use($operator,$canAdmin,$ext,$conn,$scope){
+        if(($row['kind']??'')==='ticket'){$row['can_edit']=false;$row['service_url']='/admin/suporte_info.'.$ext.'?'.http_build_query(array('login'=>$row['login'],'chamado'=>$row['reference']));return $row;}
+        $row['can_edit']=$row['operator']===$operator||$canAdmin;$row['service_ticket']=mka_client_support_service($conn,$row,$scope);
+        $row['service_url']=$row['service_ticket']?'/admin/suporte_info.'.$ext.'?'.http_build_query(array('login'=>$row['login'],'chamado'=>$row['service_ticket']['chamado'])):'/admin/suporte_ins.'.$ext.'?'.http_build_query(array('login'=>$row['login'],'mka_atendimento'=>$row['id']));return $row;
+    };
+    if($method==='GET' && $action==='report'){$report=isset($_GET['kind'])?mka_support_history_report($conn,$scope,$_GET):mka_attendance_history_report($conn,$scope,$_GET);$report['records']=array_map($decorate,$report['records']);$report['csrf']=$csrf;$report['logged_user']=$operator;attendance_reply(200,$report);}
     if($method==='GET' && $action==='clients') {
         $q=trim((string)($_GET['q']??''));if(strlen($q)<2 || strlen($q)>255)attendance_reply(200,array('clients'=>array(),'csrf'=>$csrf));
         $like='%'.$q.'%';$statement=$conn->prepare("SELECT c.uuid_cliente,c.nome,c.login FROM sis_cliente c WHERE ($scope) AND c.cli_ativado='s' AND (c.nome LIKE ? OR c.login LIKE ?) ORDER BY c.nome LIMIT 15");

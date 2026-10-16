@@ -4,6 +4,7 @@ admin="${1:-/opt/mk-auth/admin}"
 backup="${2:?Informe o diretorio de backup}"
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 php "$script_dir/install-visit-reminders.php"
+install -m 0700 "$script_dir/test-visit-reminder.php" /root/test-visit-reminder.php
 target="$admin/scripts/mk-auth.js"
 if [ -f "$target" ] && ! grep -Fq 'mka-visit-reminders-loader' "$target"; then
   mkdir -p "$backup";chmod 0700 "$backup";cp -a "$target" "$backup/mk-auth.js"

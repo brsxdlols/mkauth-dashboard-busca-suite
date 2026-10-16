@@ -1,4 +1,4 @@
-<?php include('nav/header.php'); require_once __DIR__.'/../shared/ticket_board.php'; require_once __DIR__.'/../shared/support_attendance.php'; require_once __DIR__.'/../shared/installations.php'; ?>
+<?php require_once __DIR__.'/../shared/visit_windows.php'; include('nav/header.php'); require_once __DIR__.'/../shared/ticket_board.php'; require_once __DIR__.'/../shared/support_attendance.php'; require_once __DIR__.'/../shared/installations.php'; ?>
 
 <body class="">
 
@@ -43,20 +43,9 @@
     </style>
 
     <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-4">
-    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-8">
+    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-15">
     <main class="ticket-board">
-    <nav class="ticket-toolbar no_print mka-suite-content-start" aria-label="Navegação de chamados">
-        <a href="#" onclick="window.history.back(); return false;"><i class="bi bi-arrow-left-circle-fill"></i><span>Voltar</span></a>
-        <a href="index.php"><i class="bi bi-house-door-fill"></i><span><?= htmlspecialchars($Manifest->{'name'} . ' - V ' . $Manifest->{'version'}, ENT_QUOTES, 'UTF-8'); ?></span></a>
-        <a href="cli_conn_alerta.php"><i class="bi bi-exclamation-circle-fill"></i><span>Alertas</span></a>
-        <a href="chamados_abertos.php" class="is-active"><i class="bi bi-headset"></i><span>Chamados</span></a>
-        <a href="atendimentos.php"><i class="bi bi-chat-left-text"></i><span>Atendimentos</span></a>
-        <?php if(mka_installation_permission($link,(string)$usuario_logado,'perm_instalacao')){ ?><a href="instalacoes.php"><i class="bi bi-tools"></i><span>Instalações</span></a><?php } ?>
-        <a href="score.php"><i class="bi bi-bar-chart-fill"></i><span>Score</span></a>
-        <a href="relcontratos.php"><i class="bi bi-file-earmark-text-fill"></i><span>Contratos</span></a>
-        <a href="cfg.php"><i class="bi bi-gear-fill"></i><span>Configurações</span></a>
-        <a href="#" onclick="window.print(); return false;"><i class="bi bi-printer-fill"></i><span>Imprimir</span></a>
-    </nav>
+    <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,(string)$usuario_logado,'tickets'); ?>
 
     <?php
 
@@ -108,7 +97,7 @@
 
     <header class="ticket-page-heading">
         <div><h1>Central de chamados</h1><p>Selecione um card para filtrar os chamados. Abra os detalhes para consultar os relatos.</p></div>
-        <div class="ticket-heading-actions"><a class="ticket-create" href="atendimentos.php">Atendimentos de hoje</a><button type="button" class="ticket-create" data-open-attendance="">Registrar atendimento</button>
+        <div class="ticket-heading-actions"><button type="button" class="ticket-settings-icon" data-support-settings="ticket" aria-label="Configurações dos chamados" title="Configurações dos chamados"><i class="bi bi-gear-fill" aria-hidden="true"></i></button>
         <a class="ticket-create" data-open-native-ticket href="../../suporte_ins<?= htmlspecialchars($ext_mk, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="bi bi-plus-circle" aria-hidden="true"></i> Abrir chamado</a></div>
     </header>
     <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
@@ -211,7 +200,9 @@
         $ticket_counts=array('all'=>$tot_chamados_abertos,'late'=>0,'upcoming'=>0,'unscheduled'=>0,'unassigned'=>0);
         $ticket_now=time();
         foreach($ticket_rows as &$ticket_row){
-            $ticket_row['_timing']=mka_ticket_timing($ticket_row['visita'],$ticket_now);
+            $ticket_row['_period']=mka_visit_period($link,$ticket_row['chamado'],$ticket_row['visita']);
+            $effective=$ticket_row['_period']?substr($ticket_row['visita'],0,10).($ticket_row['_period']==='manha'?' 11:59:59':' 18:00:00'):$ticket_row['visita'];
+            $ticket_row['_timing']=mka_ticket_timing($effective,$ticket_now);
             $state=$ticket_row['_timing']['state'];
             if(isset($ticket_counts[$state]))$ticket_counts[$state]++;
             if(empty($ticket_row['tecnico']))$ticket_counts['unassigned']++;
@@ -253,13 +244,14 @@
             if ($prioridade === '') $prioridade = 'Não informada';
             $priority_class = in_array(strtolower($prioridade), array('baixa','normal','alta','urgente'), true) ? strtolower($prioridade) : 'other';
             $visita = !empty($row_cli['visita']) ? date('d/m/Y H:i', strtotime($row_cli['visita'])) : 'Não agendada';
+            if($row_cli['_period'])$visita=date('d/m/Y',strtotime($row_cli['visita'])).' · '.($row_cli['_period']==='manha'?'Manhã':'Tarde').' · Sem horário definido';
             $timing=$row_cli['_timing'];
             $sla_class=$timing['class'];$sla_text=$timing['text'];
             if($timing['state']==='unscheduled')$visita='Não agendada';
             $chamado_sql = mysqli_real_escape_string($link, $chamado);
             $query_texto_chamado = mysqli_query($link, "SELECT msg, msg_data FROM sis_msg WHERE chamado = '$chamado_sql' ORDER BY msg_data");
             ?>
-            <details class="ticket-item" data-ticket-id="<?= (int)$row_cli['ticket_id']; ?>" data-ticket-state="<?= $timing['state']; ?>" data-unassigned="<?= empty($row_cli['tecnico'])?'1':'0'; ?>" data-visit="<?= $timing['state']==='unscheduled'?'':htmlspecialchars((string)$row_cli['visita'],ENT_QUOTES,'UTF-8'); ?>" data-client="<?= htmlspecialchars($nome,ENT_QUOTES,'UTF-8'); ?>" data-subject="<?= htmlspecialchars($assunto_ticket,ENT_QUOTES,'UTF-8'); ?>" data-priority="<?= htmlspecialchars($prioridade,ENT_QUOTES,'UTF-8'); ?>" data-opening="<?= htmlspecialchars($abertura,ENT_QUOTES,'UTF-8'); ?>">
+            <details data-period="<?= htmlspecialchars($row_cli['_period'],ENT_QUOTES,'UTF-8'); ?>" class="ticket-item" data-ticket-id="<?= (int)$row_cli['ticket_id']; ?>" data-ticket-state="<?= $timing['state']; ?>" data-unassigned="<?= empty($row_cli['tecnico'])?'1':'0'; ?>" data-visit="<?= $timing['state']==='unscheduled'?'':htmlspecialchars((string)$row_cli['visita'],ENT_QUOTES,'UTF-8'); ?>" data-client="<?= htmlspecialchars($nome,ENT_QUOTES,'UTF-8'); ?>" data-subject="<?= htmlspecialchars($assunto_ticket,ENT_QUOTES,'UTF-8'); ?>" data-priority="<?= htmlspecialchars($prioridade,ENT_QUOTES,'UTF-8'); ?>" data-opening="<?= htmlspecialchars($abertura,ENT_QUOTES,'UTF-8'); ?>">
                 <summary>
                     <div class="ticket-summary-cell">
                         <small>Cliente</small>
@@ -303,7 +295,7 @@
                     </div>
                     <div class="ticket-signature"><strong>Assinatura:</strong> ______________________________________________</div>
                     <div class="ticket-actions no_print">
-                        <button type="button" class="ticket-create" data-edit-ticket>Editar agendamento</button><button type="button" class="ticket-create" data-open-attendance="<?= htmlspecialchars($login, ENT_QUOTES, 'UTF-8'); ?>">Registrar atendimento deste cliente</button>
+                        <button type="button" class="ticket-create" data-edit-ticket>Editar agendamento</button><button type="button" class="ticket-create" data-ticket-note="<?= (int)$row_cli['ticket_id']; ?>">Incluir registro</button>
                         <a class="ticket-close" href="../../suporte_fechar.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>?chamado=<?= urlencode($chamado); ?>" target="_blank"><i class="bi bi-check-circle-fill"></i> Fechar chamado #<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?></a>
                     </div>
                 </div>
@@ -318,9 +310,10 @@
 
 
     </main>
-    <script src="../shared/ticket_board.js?v=20261015-6"></script>
-    <script src="../shared/support_attendance.js?v=20261015-8"></script>
-    <script src="../shared/ticket_native_modal.js?v=20261015-8"></script>
+    <script src="../shared/ticket_notes.js?v=20261015-23"></script>
+    <script src="../shared/ticket_board.js?v=20261015-24"></script>
+    <script src="../shared/support_attendance.js?v=20261015-15"></script>
+    <script src="../shared/ticket_native_modal.js?v=20261015-17"></script>
 <?php include('../../baixo.php'); ?>
 
         <script src="../../menu.js.php"></script>

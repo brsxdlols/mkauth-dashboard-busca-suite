@@ -160,6 +160,8 @@ O bloco do modal e identificado como ate 20 registros mais recentes, de todos os
 
 ### Lembretes de visitas
 
+Teste pelo Linux: `php /root/test-visit-reminder.php bruno chamado` ou `php /root/test-visit-reminder.php bruno instalacao`. O comando cria somente um aviso de demonstracao para o usuario informado; nao cria atendimento, instalacao ou OS. Instalacoes usam destaque azul; ordens de servico usam amarelo.
+
 O instalador inclui avisos globais no canto superior direito do MK-AUTH para visitas de chamados e instalacoes, a partir dos 10 minutos anteriores. A consulta ocorre a cada 30 segundos na pagina ativa. O aviso identifica cliente, tipo e horario, permanece depois do horario e ao navegar/recarregar, e so e dispensado pelo usuario no botao Fechar. A dispensa e individual e persistida em `suite_visit_reminders`, sem alterar chamados, instalacoes ou dados financeiros. Reagendamentos geram outro aviso para o novo horario; visitas alteradas/canceladas e dados fora das permissoes atuais deixam de ser apresentados. Sao respeitados os grupos de clientes e a propriedade/permissoes nativas de instalacoes. `php scripts/test-visit-reminders.php` valida limites de horario, persistencia, dispensa e escopos em schema descartavel.
 
 ### Central de instalacoes (calendario)
@@ -175,3 +177,16 @@ O card Instalacoes da Dashboard usa o mesmo total e abre a nova Central por padr
 O card Chamados da Dashboard e os atalhos locais `suporte_aberto.hhvm/php` usam a Central de chamados por padrao. Em Configuracoes da Dashboard, Abrir Chamados da Dashboard em permite selecionar Central de chamados (novo) ou Sistema nativo do MK-AUTH. A preferencia `suite_dashboard_support_destination` e criada aditivamente, persiste nas atualizacoes e respeita a extensao PHP/HHVM ao abrir o nativo. E independente da opcao da Busca para o icone de chamados de cada cliente.
 
 Validacao: `php scripts/test-support-attendance.php` usa schema isolado para testar prazos, grupos e reenvios. Interface validada em 1360px e 400px, incluindo filtros, registro resolvido e continuacao para OS, com API simulada sem dados reais.
+
+### Historico integrado de suporte
+
+A Busca oferece Registrar atendimento e Abrir ordem de servico em cada cliente, com formularios em modal. Atendimento sem OS permanece somente no registro do addon; a continuacao preenche a OS nativa com o relato e o marcador do atendimento. O historico reconhece a OS somente depois da gravacao real no MK-AUTH e evita oferecer outra criacao para um atendimento ja vinculado.
+
+A guia Atendimentos consulta registros do addon e OS nativas em conjunto, com filtros por tipo, dia/periodo, usuario, cliente e resultado. Nos detalhes nativos do cliente, a aba Suporte mostra o mesmo historico integrado, com os botoes de registro e OS. As acoes nativas anteriores continuam acessiveis em um bloco recolhivel. Leituras nao copiam ou recriam registros: as duas fontes sao consultadas com o escopo de grupos do usuario. `php scripts/test-client-support.php` valida vinculo, escopos, filtros e ausencia de duplicacoes em schema descartavel.
+
+
+### Pacote completo de suporte
+
+Inclui botoes de atendimento e OS na coluna Contato da Busca, historico integrado no Suporte do cliente e atalhos para a lista de chamados. Atendimentos abre somente atendimentos do dia. O fluxo oferece Resolvido, Manter em atendimento e Continuar para ordem de servico, levando o relato para a OS na mesma janela. Em uma OS existente, Incluir registro adiciona somente um relato.
+
+Chamados e Instalacoes compartilham a agenda semanal e miniagenda, com horarios livres em verde, destaque de hoje e configuracoes independentes de dias de trabalho e almoco. A engrenagem abre as opcoes em modais por camadas; etiquetas e cores podem ser adicionadas ou removidas em Chamados. Os avisos de visita tambem aparecem na Busca e Dashboard.

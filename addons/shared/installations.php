@@ -18,7 +18,7 @@ function mka_installation_version($row) {
 }
 function mka_installation_record($row) {
     $row['chamado']=$row['id'];$row['assunto']='Instalação';$row['prioridade']=$row['status'];
-    $row['version']=mka_installation_version($row);$row['timing']=mka_ticket_timing($row['visita']);return $row;
+    $row['version']=mka_installation_version($row);$row['timing']=mka_ticket_timing($row['visita']);$row['timing']['text']=str_replace(array('Visita','Atrasado'),array('Instalação','Atrasada'),$row['timing']['text']);return $row;
 }
 function mka_installation_row($db,$id,$scope,$lock=false) {
     $q=$db->prepare('SELECT s.id,s.uuid_solic,s.nome,s.login,s.tecnico,s.visita,s.status FROM sis_solic s WHERE s.id=? AND '.mka_installation_where($scope).($lock?' FOR UPDATE':''));
@@ -35,6 +35,7 @@ function mka_installation_slots($db,$id,$scope,$day) {
     $slots=array();for($i=8;$i<=18;$i++)$slots[]=array('time'=>sprintf('%02d:00',$i),'visits'=>$hours[$i]);return array('slots'=>$slots,'hours'=>$hours);
 }
 function mka_installation_schema($db) {
+    mka_agenda_schema($db);
     $db->query('CREATE TABLE IF NOT EXISTS suite_installation_schedule_changes (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,installation_id INT NOT NULL,operator VARCHAR(64) NOT NULL,before_data TEXT NOT NULL,after_data TEXT NOT NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,KEY installation_history(installation_id,id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
 }
 function mka_installation_move($db,$id,$scope,$operator,$data) {
@@ -45,6 +46,7 @@ function mka_installation_move($db,$id,$scope,$operator,$data) {
         if(!is_string($day)||!preg_match('/^\d{4}-\d{2}-\d{2}$/D',$day)||!$before['visita']||substr($before['visita'],0,4)==='0000'||!is_string($time)||!preg_match('/^\d{2}:\d{2}(?::\d{2})?$/D',$time))throw new InvalidArgumentException('Informe um dia e horário válidos.');
         if(strlen($time)===5)$time.=':00';$visit=mka_ticket_schedule_date($day.' '.$time);
         if($visit===$before['visita']){$db->commit();return $before;}
+        $schedule=mka_agenda_settings($db,'installation');if(!mka_agenda_workday($schedule,$day))throw new InvalidArgumentException('Este dia não está habilitado para instalações.');if(mka_agenda_lunch($schedule,substr($visit,11,5)))throw new InvalidArgumentException('Este horário está reservado para o almoço das instalações.');
         if(mka_ticket_schedule_outside_hours($visit)&&($data['outside_confirmed']??false)!==true)throw new InvalidArgumentException('Confirme o agendamento fora do expediente (08h às 18h).');
         $slots=mka_installation_slots($db,$id,$scope,$day);$count=$slots['hours'][(int)substr($time,0,2)];
         if($count>0&&(!is_int($data['conflicts_confirmed']??null)||$data['conflicts_confirmed']<$count))throw new MkaTicketBookingConflict($count);

@@ -1,0 +1,11 @@
+<?php
+require_once __DIR__.'/ticket_schedule.php';
+function mka_ticket_notes_schema($db){$db->query("CREATE TABLE IF NOT EXISTS suite_ticket_note_requests(operator VARCHAR(64) NOT NULL,request_key VARCHAR(96) NOT NULL,ticket_id INT NOT NULL,payload_hash CHAR(64) NOT NULL,note_id INT NULL,PRIMARY KEY(operator,request_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");}
+function mka_ticket_note_save($db,$id,$scope,$operator,$notes,$key){
+ if(!is_string($notes)||trim($notes)===''||preg_match_all('/./us',$notes)>8000||!is_string($key)||!preg_match('/^[A-Za-z0-9_-]{12,96}$/D',$key))throw new InvalidArgumentException('Preencha o registro com até 8.000 caracteres.');
+ $notes=trim($notes);$hash=hash('sha256',json_encode(array($id,$notes)));$db->begin_transaction();
+ try{$row=mka_ticket_schedule_row($db,$id,$scope,true);$q=$db->prepare('INSERT INTO suite_ticket_note_requests(operator,request_key,ticket_id,payload_hash) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE request_key=VALUES(request_key)');$q->bind_param('ssis',$operator,$key,$id,$hash);$q->execute();$q=$db->prepare('SELECT note_id,payload_hash FROM suite_ticket_note_requests WHERE operator=? AND request_key=? FOR UPDATE');$q->bind_param('ss',$operator,$key);$q->execute();$request=$q->get_result()->fetch_assoc();if(!hash_equals($request['payload_hash'],$hash))throw new UnexpectedValueException('O registro mudou. Feche e abra o formulário para tentar novamente.');
+  if(!$request['note_id']){$reference=(string)$row['chamado'];$q=$db->prepare("INSERT INTO sis_msg(login,atendente,chamado,msg,tipo,msg_data) VALUES(?,?,?,?,'provedor',NOW())");$q->bind_param('ssss',$operator,$operator,$reference,$notes);$q->execute();$noteId=(int)$db->insert_id;$q=$db->prepare('UPDATE suite_ticket_note_requests SET note_id=? WHERE operator=? AND request_key=?');$q->bind_param('iss',$noteId,$operator,$key);$q->execute();$q=$db->prepare("UPDATE sis_suporte SET reply='sim' WHERE id=?");$q->bind_param('i',$id);$q->execute();}else $noteId=(int)$request['note_id'];
+  $q=$db->prepare('SELECT id,msg AS notes,msg_data AS created_at,login AS operator FROM sis_msg WHERE id=?');$q->bind_param('i',$noteId);$q->execute();$note=$q->get_result()->fetch_assoc();$db->commit();return $note;
+ }catch(Throwable $e){$db->rollback();throw $e;}
+}

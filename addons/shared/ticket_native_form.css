@@ -1,6 +1,6 @@
 html.has-navbar-fixed-top{padding-top:0!important}
 body.suite-ticket-body{margin:0!important;padding:0!important;background:#f4f7fc!important;color:#17324f;font:15px/1.5 system-ui,sans-serif!important}
-body.suite-ticket-body>:not(#suite-ticket-root):not(.ui-autocomplete):not(.autocomplete-sugestoes):not(.autocomplete-suggestions):not(.modal):not(.quickview):not(.ui-helper-hidden-accessible){display:none!important}
+body.suite-ticket-body>:not(#suite-ticket-root):not(.suite-agenda-dialog):not(.ui-autocomplete):not(.autocomplete-sugestoes):not(.autocomplete-suggestions):not(.modal):not(.quickview):not(.ui-helper-hidden-accessible){display:none!important}
 #suite-ticket-root{box-sizing:border-box;max-width:1040px;width:100%;margin:0 auto;padding:22px}
 .suite-ticket-form{width:100%;margin:0;padding:0;font:15px/1.5 system-ui,sans-serif;color:#17324f}
 .suite-ticket-form>h4{display:none}
@@ -38,5 +38,25 @@ body.suite-ticket-body>:not(#suite-ticket-root):not(.ui-autocomplete):not(.autoc
 .suite-ticket-body .quickview{z-index:11000;max-width:100vw;font:15px/1.5 system-ui}.suite-ticket-body .quickview .input,.suite-ticket-body .quickview select{font:16px/1.4 system-ui}.suite-ticket-body .quickview .button{font:600 14px/1.4 system-ui}.suite-ticket-body .quickview-header{background:#edf4fd;color:#173d6b}.suite-ticket-body .quickview-body{color:#17324f;background:#fff}
 @media(max-width:650px){#suite-ticket-root{padding:12px}.suite-ticket-section{padding:15px}.suite-ticket-fields{grid-template-columns:minmax(0,1fr);gap:14px}.suite-ticket-metadata{grid-template-columns:minmax(0,1fr);gap:9px}.suite-ticket-form .suite-ticket-submit [type=submit]{width:100%}}
 .suite-installation-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.suite-booking-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px}.suite-booking-controls [hidden]{display:none!important}.suite-booking-hint{grid-column:1/-1;margin:0;font:12px/1.4 system-ui;color:#52677e}.suite-agenda-open{border:1px solid #b7cbe2;border-radius:7px;padding:7px 12px;background:#edf4fd;color:#1556a8;font:650 14px system-ui;cursor:pointer}
+.suite-agenda-dialog{box-sizing:border-box;width:min(1400px,98vw);max-width:98vw;max-height:94dvh;overflow:auto;border:1px solid #bccdde;border-radius:12px;padding:16px;background:white;color:#17324f;font:14px/1.4 system-ui}.suite-agenda-dialog::backdrop{background:#15283e99}.suite-agenda-dialog header,.suite-agenda-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px}.suite-agenda-dialog h2{font-size:18px}.suite-agenda-dialog button{border:1px solid #b7cbe2;border-radius:6px;padding:7px;cursor:pointer}.suite-agenda-grid{display:grid;grid-template-columns:repeat(7,minmax(135px,1fr));gap:7px;overflow:auto}.suite-agenda-grid h3{font-size:13px}.suite-agenda-grid section>button{display:block;width:100%;margin-bottom:5px;text-align:left;min-height:40px;font:600 13px/1.4 system-ui}.suite-agenda-grid .is-free{background:#e7f7ed;border-color:#81c99b;color:#176c37}.suite-agenda-grid .is-occupied{background:#fff6df;border-color:#ddb96b;color:#774900}.suite-agenda-grid small{display:block;margin-top:4px;padding-left:5px;font-weight:400;overflow-wrap:anywhere}.suite-agenda-grid button:focus-visible{outline:3px solid #1764d6}
 .suite-installation-fields>h1,.suite-installation-fields>h2,.suite-installation-fields>h3,.suite-installation-fields>.title,.suite-installation-fields>.notification{grid-column:1/-1}
 @media(max-width:600px){.suite-installation-fields{grid-template-columns:1fr}}
+
+@media(min-width:900px){
+ #suite-ticket-root{max-width:1440px;padding:14px}
+ .suite-ticket-form:not(:has(.suite-installation-fields)){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;align-items:start}
+ .suite-ticket-section{padding:14px;margin-bottom:0}
+ .suite-ticket-section h3{font-size:16px;margin-bottom:12px}
+ .suite-ticket-fields{gap:10px 12px}
+ .suite-ticket-form .input,.suite-ticket-form select{height:38px;font-size:14px;padding:7px 10px}
+ .suite-ticket-form .itens_listar{width:38px;height:38px}
+ .suite-ticket-form .field-label{margin-bottom:4px}
+ .suite-ticket-form .field-label .label{font-size:13px}
+ .suite-ticket-metadata{grid-template-columns:1fr;gap:6px;padding-top:9px}
+ .suite-ticket-readonly{display:flex!important;gap:8px;align-items:baseline}
+ .suite-ticket-readonly .field-label{min-width:105px;margin:0}
+ .suite-ticket-form>section:nth-of-type(n+3),.suite-ticket-form>.suite-ticket-submit{grid-column:1/-1}
+ .suite-ticket-form textarea{min-height:100px;height:100px;font-size:14px;padding:8px 10px}
+ .suite-ticket-form .suite-ticket-submit{padding:0}
+}

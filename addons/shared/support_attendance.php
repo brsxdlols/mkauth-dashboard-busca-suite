@@ -50,7 +50,7 @@ function mka_attendance_scope($db,$user) {
     return $quoted?'c.grupo IN ('.implode(',',$quoted).')':'1=0';
 }
 function mka_attendance_save($db,$client,$operator,$subject,$notes,$outcome,$key) {
-    if(!in_array($outcome,array('resolved','finished','service'),true) || !preg_match('/^[a-zA-Z0-9_-]{12,96}$/D',$key)
+    if(!in_array($outcome,array('open','resolved','finished','service'),true) || !preg_match('/^[a-zA-Z0-9_-]{12,96}$/D',$key)
         || trim($subject)==='' || preg_match_all('/./us',$subject)>255 || trim($notes)==='' || preg_match_all('/./us',$notes)>8000)
         throw new InvalidArgumentException('Preencha assunto e relato dentro dos limites indicados.');
     $hash=hash('sha256',json_encode(array($client['uuid_cliente'],$subject,$notes,$outcome)));

@@ -26,6 +26,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="js/jquery-3.6.0.js"></script>
 
     <script src="../../scripts/mk-auth.js"></script>
+<script src="/admin/addons/shared/visit_reminders.js?v=20261015-9" defer></script>
 
     <script src="js/highcharts.js"></script>
     <script src="js/exporting.js"></script>
@@ -35,4 +36,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="js/am_scripts.js"></script>
     <script src="js/all.min.js"></script>
 
+<script src="/admin/addons/shared/priority_colors.js?v=20261015-13" defer></script>
+<script src="/admin/addons/shared/visit_agenda.js?v=20261015-21" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/visit_agenda.css?v=20261015-20">
 </head>

@@ -1108,6 +1108,10 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
 
 
+    <link rel="stylesheet" href="../shared/support_attendance.css?v=20261015-15">
+    <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-4">
+    <script src="../shared/support_attendance.js?v=20261015-15"></script>
+    <script src="../shared/ticket_native_modal.js?v=20261015-17"></script>
     <?php include('../../baixo.php'); ?>
 
     <?php if ($suite_live_search === 's') { ?>

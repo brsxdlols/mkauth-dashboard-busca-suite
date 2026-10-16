@@ -39,6 +39,9 @@ try{
  $payload=array('day'=>'2026-11-04','time'=>'20:00','outside_confirmed'=>true,'conflicts_confirmed'=>1);$late=mka_ticket_schedule_save($db,1,$scope,'fixture_operator',mka_ticket_schedule_version($early),'move',$payload);
  schedule_check($late['visita']==='2026-11-04 20:00:00','late custom time and overlap can both be confirmed');
  schedule_check(!mka_ticket_schedule_outside_hours('2026-11-04 08:00:00')&&!mka_ticket_schedule_outside_hours('2026-11-04 18:00:00')&&mka_ticket_schedule_outside_hours('2026-11-04 18:01:00'),'business-hour boundaries are explicit');
+ mka_agenda_settings_save($db,array('enabled'=>true,'start'=>'12:00','end'=>'13:00'));
+ try{mka_ticket_schedule_save($db,1,$scope,'fixture_operator',mka_ticket_schedule_version($late),'move',array('day'=>'2026-11-04','time'=>'12:00'));throw new LogicException('Expected lunch block');}catch(InvalidArgumentException $expected){schedule_check(strpos($expected->getMessage(),'almoço')!==false,'reserved lunch cannot be bypassed by direct reschedule request');}
+ schedule_check(mka_ticket_schedule_row($db,1,$scope)['visita']===$late['visita'],'blocked lunch does not change the original visit');
  $db->query("UPDATE sis_suporte SET status='fechado' WHERE id=1");
  try{mka_ticket_schedule_save($db,1,$scope,'fixture_operator',mka_ticket_schedule_version($cleared),'move',array('day'=>'2026-10-21'));throw new LogicException('Expected closed denial');}catch(DomainException $expected){schedule_check(true,'closed ticket cannot be rescheduled');}
 }finally{$db->query('DROP DATABASE `'.$schema.'`');$db->close();}

@@ -1,11 +1,11 @@
 <?php
 function mka_attendance_history_filters($query,$today=null) {
     if($today===null)$today=(new DateTimeImmutable('now',new DateTimeZone('America/Sao_Paulo')))->format('Y-m-d');
-    foreach(array('from','to','all','q','operator','outcome','uuid','page') as $key)if(isset($query[$key])&&!is_string($query[$key])&&!is_int($query[$key]))throw new InvalidArgumentException('Filtro inválido.');
+    foreach(array('from','to','all','q','operator','outcome','uuid','page','kind') as $key)if(isset($query[$key])&&!is_string($query[$key])&&!is_int($query[$key]))throw new InvalidArgumentException('Filtro inválido.');
     $all=($query['all']??'')==='1';$from=$all?'':(string)($query['from']??$today);$to=$all?'':(string)($query['to']??$today);
     if(!$all){foreach(array($from,$to) as $value){$date=DateTimeImmutable::createFromFormat('!Y-m-d',$value);if(!$date||$date->format('Y-m-d')!==$value||$value<'2000-01-01'||$value>'2199-12-31')throw new InvalidArgumentException('Informe datas válidas para o período.');}if($from>$to)throw new InvalidArgumentException('A data inicial deve ser anterior ou igual à data final.');}
     $q=trim((string)($query['q']??''));$operator=trim((string)($query['operator']??''));$outcome=(string)($query['outcome']??'');$uuid=(string)($query['uuid']??'');
-    if(preg_match_all('/./us',$q)>255||strlen($operator)>64||!in_array($outcome,array('','open','resolved','finished','service'),true)||($uuid!==''&&!preg_match('/^[a-zA-Z0-9-]{16,64}$/D',$uuid)))throw new InvalidArgumentException('Filtro inválido.');
+    if(preg_match_all('/./us',$q)>255||strlen($operator)>64||!in_array($outcome,array('','open','resolved','finished','service','os_open','os_closed'),true)||($uuid!==''&&!preg_match('/^[a-zA-Z0-9-]{16,64}$/D',$uuid)))throw new InvalidArgumentException('Filtro inválido.');
     $page=filter_var($query['page']??1,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>1000000)));if($page===false)throw new InvalidArgumentException('Página inválida.');
     return array('from'=>$from,'to'=>$to,'all'=>$all,'q'=>$q,'operator'=>$operator,'outcome'=>$outcome,'uuid'=>$uuid,'page'=>$page,'today'=>$today);
 }

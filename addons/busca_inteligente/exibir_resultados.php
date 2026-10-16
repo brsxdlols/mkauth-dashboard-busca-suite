@@ -1472,7 +1472,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 ?>
                                     <p class='titulos_vencidos'>
 
-                                        <a href='../../suporte_aberto.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='CHAMADOS ABERTOS: <?= $login_cliente; ?>'>
+                                        <a href='<?= htmlspecialchars($suite_support_destination==='busca'?mka_suite_support_url('busca',$nome_cliente,$login_cliente,$links_ext):'/admin/suporte_aberto.'.($links_ext==='php'?'php':'hhvm').'?'.http_build_query(array('login'=>$login_cliente)),ENT_QUOTES,'UTF-8'); ?>' title='CHAMADOS ABERTOS: <?= $login_cliente; ?>'>
                                             <i class="fa-solid fa-headset fs-4"></i> <?= $num_chamados_aberto; ?></a>
                                     </p>
 
@@ -1575,7 +1575,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                     ?>
                                                         <p class='titulos_vencidos'>
 
-                                                            <a href='../../suporte_aberto.<?= $links_ext; ?>?login=<?= $login_cliente; ?>' title='CHAMADOS ABERTOS: <?= $login_cliente; ?>'>
+                                                            <a href='<?= htmlspecialchars($suite_support_destination==='busca'?mka_suite_support_url('busca',$nome_cliente,$login_cliente,$links_ext):'/admin/suporte_aberto.'.($links_ext==='php'?'php':'hhvm').'?'.http_build_query(array('login'=>$login_cliente)),ENT_QUOTES,'UTF-8'); ?>' title='CHAMADOS ABERTOS: <?= $login_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset fs-4"></i> <?= $num_chamados_aberto; ?>
                                                             </a>
                                                         </p>
@@ -1831,6 +1831,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         }
                                                                         ?>
 
+<div class="client-support-actions no_print" style="display:flex;flex-direction:column;align-items:stretch;margin-top:12px;gap:5px">                                                                        <?php if(!isset($suite_can_client_support))$suite_can_client_support=mka_installation_permission($link,(string)$usuario_logado,'perm_chamados');if($suite_can_client_support){ ?>
+                                                                        <button type="button" class="connection-diagnostic-btn" data-open-attendance="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-attendance-uuid="<?= htmlspecialchars($uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" data-attendance-name="<?= htmlspecialchars($nome_cliente,ENT_QUOTES,'UTF-8'); ?>"><i class="fa-solid fa-comments"></i> Registrar atendimento</button>
+                                                                        <a class="connection-diagnostic-btn" data-open-native-ticket href="/admin/suporte_ins.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>?login=<?= urlencode($login_cliente); ?>"><i class="fa-solid fa-headset"></i> Abrir ordem de serviço</a>
+                                                                        <?php } ?></div>
                                                                     </div>
                                                                 </div>
 
@@ -1939,6 +1943,7 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
                                                                     </p>
                                                                     <div class="connection-actions no_print">
+
                                                                         <a class="connection-diagnostic-btn" href="../radius/live.php?login=<?= urlencode($login_cliente); ?>" data-radius-login="<?= htmlspecialchars($login_cliente, ENT_QUOTES, 'UTF-8'); ?>">LOG RADIUS</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>

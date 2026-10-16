@@ -1,5 +1,6 @@
 (function(){
  'use strict';
+ if(window.mkaTicketNativeLoaded)return;window.mkaTicketNativeLoaded=true;
  let modal,frame,submitted=false,trigger=null;
  function styleForm(doc){
   const installationForm=doc.querySelector('form[action*="executar_instalacao"]');
@@ -37,6 +38,12 @@
   doc.body.append(root);doc.body.classList.add('suite-ticket-body');
   return true;
  }
+ window.mkaPrepareTicketDoc=async function(doc){
+  const styled=styleForm(doc);if(!styled)return false;
+  const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-11';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});
+  for(const [file,ready]of [['priority_colors.js',()=>window.mkaPriorityColors],['ticket_booking.js',()=>window.mkaTicketBooking]])if(!ready())await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/admin/addons/shared/'+file+'?v=20261015-17';script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  if(window.mkaTicketBooking)await window.mkaTicketBooking(doc);return true;
+ };
  function build(){
   modal=document.createElement('dialog');modal.className='ticket-native-modal';modal.setAttribute('aria-labelledby','ticket-native-title');
   modal.innerHTML='<header><h2 id="ticket-native-title">Abrir chamado</h2><button type="button" data-native-close>Fechar</button></header><p class="ticket-native-status" role="status">Carregando formulário…</p><iframe title="Formulário de abertura de chamado"></iframe>';
@@ -47,7 +54,11 @@
     const doc=frame.contentDocument;if(!doc)return;
     const style=doc.createElement('style');style.textContent='html.has-navbar-fixed-top{padding-top:0!important}nav.navbar,footer.footer,#sistema-rodape{display:none!important}';doc.head.append(style);
     const styled=styleForm(doc);
-    if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-8';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
+    if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-11';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
+    if(styled){
+     for(const file of ['priority_colors.js','ticket_booking.js'])if(!document.querySelector('script[data-suite-booking-asset="'+file+'"]')){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.dataset.suiteBookingAsset=file;script.src='/admin/addons/shared/'+file+'?v=20261015-17';script.onload=resolve;script.onerror=()=>reject(Error('Não foi possível carregar a agenda.'));document.head.append(script);});}
+     if(window.mkaTicketBooking)await window.mkaTicketBooking(doc);
+    }
     if(!modal.open||frame.contentDocument!==doc)return;frame.style.visibility='visible';
     for(const form of doc.querySelectorAll('form'))form.addEventListener('submit',()=>{submitted=true;});
     modal.querySelector('[role=status]').textContent=submitted?'Após concluir a gravação, feche este modal para atualizar o calendário.':modal.dataset.installation==='1'?'Preencha os dados e organize a visita. A gravação usa as regras do MK-AUTH.':'Selecione o cliente, organize a visita e descreva o atendimento.';

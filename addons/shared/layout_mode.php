@@ -385,7 +385,7 @@ function mka_suite_set_support_destination($conn,$value) {
     return $statement->execute();
 }
 function mka_suite_support_url($destination,$name,$login,$extension) {
-    if($destination==='busca')return '/admin/addons/busca_inteligente/chamados_abertos.php?'.http_build_query(array('busca'=>$name));
+    if($destination==='busca')return '/admin/addons/busca_inteligente/chamados_abertos.php?'.http_build_query(array('busca'=>$name,'view'=>'list'));
     $extension=$extension==='php'?'php':'hhvm';
     return '/admin/suporte_ins.'.$extension.'?'.http_build_query(array('login'=>$login));
 }

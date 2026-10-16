@@ -4,6 +4,7 @@
  fetch('/admin/addons/busca_inteligente/attendance_api.php?action=detail&id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'}).then(async response=>{if(!response.ok)throw Error();return response.json();}).then(data=>{
   const record=data.records[0],uuid=document.querySelector('#uuid_cliente'),client=document.querySelector('#cliente'),notes=document.querySelector('#msg'),subject=document.querySelector('#assunto');
   if(!uuid||!client||!notes)return;
+  if(record.service_ticket){const form=uuid.closest('form');if(form){for(const submit of form.querySelectorAll('[type=submit]'))submit.disabled=true;form.addEventListener('submit',event=>event.preventDefault());const info=document.createElement('p');info.textContent='Este atendimento já possui a OS #'+record.service_ticket.chamado+'. ';const link=document.createElement('a');link.href=record.service_url;link.textContent='Ver ordem de serviço existente';info.append(link);form.prepend(info);}return;}
   if(uuid.value&&uuid.value!==record.client_uuid)return;
   uuid.value=record.client_uuid;client.value=record.client_name;
   if(!notes.value.trim())notes.value='[Atendimento #'+record.id+']\nAssunto: '+record.subject+'\n\n'+record.notes;

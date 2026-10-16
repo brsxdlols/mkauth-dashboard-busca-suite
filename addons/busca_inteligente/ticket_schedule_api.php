@@ -2,7 +2,9 @@
 require __DIR__.'/../shared/notification_bootstrap.php';
 require_once __DIR__.'/../shared/support_attendance.php';
 require_once __DIR__.'/../shared/ticket_schedule.php';
+require_once __DIR__.'/../shared/ticket_notes.php';
 require_once __DIR__.'/../shared/ticket_board.php';
+require_once __DIR__.'/../shared/visit_windows.php';
 header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
 function ticket_schedule_reply($status,$data){http_response_code($status);echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 if(!permissao('perm_chamados'))ticket_schedule_reply(403,array('error'=>'Sem permissão para chamados.'));
@@ -17,9 +19,10 @@ try{
     elseif($method==='POST'){
         $data=json_decode(file_get_contents('php://input',false,null,0,8192),true);
         if(!is_array($data)||!is_string($data['csrf']??null)||!hash_equals($csrf,$data['csrf']))ticket_schedule_reply(403,array('error'=>'Sessão expirada. Recarregue a página.'));
+        if(($data['action']??'')==='note')ticket_schedule_reply(200,array('note'=>mka_ticket_note_save($conn,(int)($data['id']??0),$scope,$operator,$data['notes']??null,$data['key']??null),'csrf'=>$csrf));
         $row=mka_ticket_schedule_save($conn,(int)($data['id']??0),$scope,$operator,$data['version']??null,$data['action']??null,$data);
     }else ticket_schedule_reply(405,array('error'=>'Método não permitido.'));
-    $row['version']=mka_ticket_schedule_version($row);$row['timing']=mka_ticket_timing($row['visita']);
+    $row['version']=mka_ticket_schedule_version($row);$row['period']=mka_visit_period($conn,$row['chamado'],$row['visita']);$effective=$row['period']?substr($row['visita'],0,10).($row['period']==='manha'?' 11:59:59':' 18:00:00'):$row['visita'];$row['timing']=mka_ticket_timing($effective);
     ticket_schedule_reply(200,array('record'=>$row,'csrf'=>$csrf));
 }catch(MkaTicketBookingConflict $e){ticket_schedule_reply(409,array('error'=>$e->getMessage(),'booking_conflicts'=>$e->visits));}
 catch(DomainException $e){ticket_schedule_reply(403,array('error'=>$e->getMessage()));}
