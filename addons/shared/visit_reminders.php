@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/ticket_viability.php';
 require_once __DIR__.'/installations.php';
 require_once __DIR__.'/support_attendance.php';
 function mka_visit_reminders_schema($db) {
@@ -13,7 +14,7 @@ function mka_visit_reminders_collect($db,$operator,$ticketAllowed,$installationA
     if($operator==='')throw new DomainException('Sessão administrativa necessária.');
     $now=$now??date('Y-m-d H:i:s');$until=(new DateTimeImmutable($now))->modify('+10 minutes')->format('Y-m-d H:i:s');
     $sources=array();
-    if($ticketAllowed)$sources[]=array('ticket','sis_suporte s INNER JOIN sis_cliente c ON c.login=s.login',"s.status='aberto' AND c.cli_ativado='s' AND (".mka_attendance_scope($db,$operator).')','s.nome','s.chamado','chamados_abertos.php');
+    if($ticketAllowed)$sources[]=array('ticket','sis_suporte s LEFT JOIN sis_cliente c ON c.login=s.login',"s.status='aberto' AND ((c.cli_ativado='s' AND (".mka_attendance_scope($db,$operator).')) OR '.mka_viability_scope($db,'s',$operator).')','s.nome','s.chamado','chamados_abertos.php');
     if($installationAllowed)$sources[]=array('installation','sis_solic s',mka_installation_where(mka_installation_scope($db,$operator,$allInstallations)),'s.nome','s.id','instalacoes.php');
     foreach($sources as &$source)if($source[0]==='ticket')$source[2].=" AND NOT (TIME(s.visita)='00:00:15' AND EXISTS(SELECT 1 FROM sis_msg pm WHERE pm.chamado=s.chamado AND pm.msg LIKE '%[Periodo da visita:%sem horario definido]%'))";unset($source);
     $events=array();

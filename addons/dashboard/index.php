@@ -1428,12 +1428,30 @@ if (isset($_SESSION['MM_Usuario'])) {
             </datalist>
 
             <style>.dashboard-main-search .form-control,.dashboard-main-search button{height:58px!important}.dashboard-main-search label{white-space:normal;overflow-wrap:break-word}</style>
+            <style>
+                .dashboard-portal-search-row{display:flex;align-items:stretch;gap:14px;margin-bottom:16px}.dashboard-portal-entry{display:flex;flex:0 0 360px;margin:0}.dashboard-portal-search-row>.dashboard-main-search{flex:1;min-width:0;margin:0}.dashboard-portal-search-row .dashboard-main-search .mb-3{margin-bottom:0!important}.dashboard-portal-search-row .dashboard-main-search>.row{height:100%}
+                .dashboard-portal-link{display:inline-flex;width:100%;min-height:58px;box-sizing:border-box;align-items:center;gap:12px;padding:8px 14px;border:1px solid #1d62db;border-radius:12px;background:#1565e8;color:#fff!important;text-decoration:none!important;box-shadow:0 4px 12px #1565e81a;transition:background .15s,box-shadow .15s}
+                .dashboard-config-entry{display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;box-sizing:border-box;padding:10px 16px;border:1px solid #cbd9ec;border-radius:10px;background:#f4f7fc;color:#23476d!important;text-decoration:none!important;font-size:13px;font-weight:600;white-space:nowrap}.dashboard-config-entry:hover{background:#e8f0fc}.dashboard-quick-links button.dashboard-quick-link{border:0;cursor:pointer}
+                .dashboard-portal-link:hover{background:#1154c5;box-shadow:0 6px 16px #1565e82b}
+                .dashboard-portal-link:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+                .dashboard-portal-link>.bi{font-size:22px}.dashboard-portal-copy{display:flex;flex-direction:column;gap:3px}.dashboard-portal-copy strong{font-size:14px;line-height:1.3}.dashboard-portal-copy small{font-size:12px;line-height:1.4;color:#e4eeff}.dashboard-portal-arrow{font-size:20px;margin-left:8px}
+                @media(max-width:900px){.dashboard-portal-search-row{flex-direction:column}.dashboard-portal-entry{flex-basis:auto}}
+                @media(max-width:575px){.dashboard-portal-link{width:100%;justify-content:center;padding:12px}.dashboard-portal-copy small{font-size:11px}}
+            </style>
+            <div class="dashboard-portal-search-row">
+            <div class="dashboard-portal-entry">
+                <a class="dashboard-portal-link" href="/admin/addons/busca_inteligente/index.php">
+                    <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
+                    <span class="dashboard-portal-copy"><strong>Acessar portal do sistema</strong><small>Clientes, atendimentos, chamados e instalações</small></span>
+                    <span class="dashboard-portal-arrow" aria-hidden="true">→</span>
+                </a>
+            </div>
             <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline dashboard-main-search">
                 <div class="row g-1">
 
                     <div class="col form-floating mb-3">
-                        <input type="search" name="busca" class="form-control" id="floatingInput" placeholder="Busca Inteligente" value="<?php echo $busca; ?>" list="sugestoes">
-                        <label for="floatingInput">(Busca Inteligente) Digite o que procura:</label>
+                        <input type="search" name="busca" class="form-control" id="floatingInput" placeholder="Digite para procurar o cliente" value="<?php echo $busca; ?>" list="sugestoes">
+                        <label for="floatingInput">Digite para procurar o cliente</label>
                     </div>
                     <div class="col-auto mb-3">
                         <div class="d-grid">
@@ -1442,6 +1460,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                     </div>
                 </div>
             </form>
+            <?php if (permissao('perm_config')) { ?><a href="cfg.php" class="dashboard-config-entry"><i class="bi bi-gear-fill" aria-hidden="true"></i> Configurações</a><?php } ?>
+            </div>
 
             <?php
             $dashboard_session_toasts = array();
@@ -1953,13 +1973,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
             <!-- Acesso Rápido -->
             <div class='col-12 col-md-12 col-lg-12'>
                 <div class='dashboard-surface mb-2'>
-                    <h2 class="dashboard-section-title">Acesso Rápido</h2>
+                    
                     <div class="dashboard-section-body">
                         <div class="dashboard-quick-links">
 
                             <?php if (permissao('perm_config')) {
                             ?>
-                                <a href='cfg.php' class='dashboard-quick-link is-primary'><img src='img/icon_config.png' class='align-middle icon_sm_2 me-1' title='Configurações Dash Board' /> Configurações</a>
+                                <button type="button" class="dashboard-quick-link is-primary" data-dashboard-shortcuts><i class="bi bi-link-45deg" aria-hidden="true"></i> Atalhos</button>
                             <?php } ?>
 
                             <?php
@@ -2951,6 +2971,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 });
             })();
         </script>
+<script src="shortcuts_modal.js?v=20261016-1"></script>
 </body>
 
 </html>

@@ -190,3 +190,9 @@ A guia Atendimentos consulta registros do addon e OS nativas em conjunto, com fi
 Inclui botoes de atendimento e OS na coluna Contato da Busca, historico integrado no Suporte do cliente e atalhos para a lista de chamados. Atendimentos abre somente atendimentos do dia. O fluxo oferece Resolvido, Manter em atendimento e Continuar para ordem de servico, levando o relato para a OS na mesma janela. Em uma OS existente, Incluir registro adiciona somente um relato.
 
 Chamados e Instalacoes compartilham a agenda semanal e miniagenda, com horarios livres em verde, destaque de hoje e configuracoes independentes de dias de trabalho e almoco. A engrenagem abre as opcoes em modais por camadas; etiquetas e cores podem ser adicionadas ou removidas em Chamados. Os avisos de visita tambem aparecem na Busca e Dashboard.
+
+### Viabilidade sem cliente cadastrado
+
+Ao abrir um chamado, a chave Suporte de viabilidade permite coletar nome, contato, endereco, bairro, cidade, complemento e observacao, todos opcionais. A OS e criada no suporte nativo, sem criar um cliente ficticio; os dados ficam no relato e na tabela propria suite_ticket_viability. Chamados sem cliente ficam visiveis na lista, agenda e avisos do operador que os abriu. Reagendamento e novos relatos mantem esse mesmo escopo. O instalador cria a tabela aditivamente.
+
+A Dashboard inclui Acessar portal do sistema ao lado da pesquisa e Configuracoes no canto direito. Atalhos abre um editor separado de links. Novos chamados iniciam com a data de hoje em America/Sao_Paulo, prioridade Normal e selecao explicita de tecnico ou Nao informar; a miniagenda mostra a semana e destaca hoje.

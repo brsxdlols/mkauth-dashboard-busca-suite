@@ -196,6 +196,10 @@
         ");
 
         $ticket_rows=$lista_chamados ? mysqli_fetch_all($lista_chamados,MYSQLI_ASSOC) : array();
+        require_once __DIR__.'/../shared/ticket_viability.php';mka_viability_schema($link);$owner=mka_viability_scope($link,'sup',$ticket_user);
+        $vq=$link->query("SELECT sup.id AS ticket_id,sup.nome,sup.assunto,sup.abertura,sup.prioridade,sup.chamado,sup.visita,sup.tecnico,func.nome AS tecnico_nome,v.details FROM sis_suporte sup INNER JOIN suite_ticket_viability v ON v.ticket_id=sup.id LEFT JOIN sis_func func ON func.id=sup.tecnico WHERE ($owner) AND sup.status='aberto' AND sup.assunto LIKE '$assunto_sql' AND (sup.tecnico LIKE '$tecnico_sql' OR sup.tecnico IS NULL)");
+        if($vq)foreach($vq->fetch_all(MYSQLI_ASSOC) as $vr){$d=json_decode($vr['details'],true)?:array();$needle=str_replace('%',' ',trim($busca));if($needle!==''&&stripos($vr['nome'].' '.implode(' ',$d),$needle)===false)continue;$vr+=array('endereco'=>$d['address']??'','numero'=>'','bairro'=>$d['district']??'','cidade'=>$d['city']??'','complemento'=>$d['complement']??'','estado'=>'','plano'=>'Viabilidade','login'=>'','senha'=>'','celular'=>$d['contact']??'','celular2'=>'');$vr['_viability']=true;$ticket_rows[]=$vr;}
+
         $tot_chamados_abertos=count($ticket_rows);
         $ticket_counts=array('all'=>$tot_chamados_abertos,'late'=>0,'upcoming'=>0,'unscheduled'=>0,'unassigned'=>0);
         $ticket_now=time();
@@ -296,7 +300,7 @@
                     <div class="ticket-signature"><strong>Assinatura:</strong> ______________________________________________</div>
                     <div class="ticket-actions no_print">
                         <button type="button" class="ticket-create" data-edit-ticket>Editar agendamento</button><button type="button" class="ticket-create" data-ticket-note="<?= (int)$row_cli['ticket_id']; ?>">Incluir registro</button>
-                        <a class="ticket-close" href="../../suporte_fechar.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>?chamado=<?= urlencode($chamado); ?>" target="_blank"><i class="bi bi-check-circle-fill"></i> Fechar chamado #<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?></a>
+                        <?php if(!empty($row_cli['_viability'])){ ?><button type="button" class="ticket-close" data-close-viability="<?= (int)$row_cli['ticket_id']; ?>">Fechar chamado de viabilidade</button><?php }else{ ?>                        <a class="ticket-close" href="../../suporte_fechar.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>?chamado=<?= urlencode($chamado); ?>" target="_blank"><i class="bi bi-check-circle-fill"></i> Fechar chamado #<?= htmlspecialchars($chamado, ENT_QUOTES, 'UTF-8'); ?></a><?php } ?>
                     </div>
                 </div>
             </details>
@@ -320,3 +324,5 @@
 <?php include('../../rodape.php'); ?>
     </body>
 </html>
+
+<script src="/admin/addons/shared/ticket_viability.js?v=20261016-1"></script>

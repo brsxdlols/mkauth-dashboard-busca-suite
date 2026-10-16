@@ -7,6 +7,7 @@ try {
  $db=new mysqli('127.0.0.1','root','vertrigo',$schema);$db->set_charset('utf8mb4');mka_visit_reminders_schema($db);
  $db->query('CREATE TABLE sis_acesso(login VARCHAR(64),cli_grupos VARCHAR(255))');$db->query("INSERT INTO sis_acesso VALUES('ana','A'),('joao','full_clientes')");
  $db->query('CREATE TABLE sis_cliente(login VARCHAR(64),grupo VARCHAR(64),cli_ativado VARCHAR(1))');$db->query("INSERT INTO sis_cliente VALUES('a','A','s'),('b','B','s')");
+ $db->query('CREATE TABLE sis_msg(chamado VARCHAR(64),msg TEXT)');
  $db->query('CREATE TABLE sis_suporte(id INT PRIMARY KEY,chamado VARCHAR(64),nome VARCHAR(255),login VARCHAR(64),status VARCHAR(20),visita DATETIME)');
  $db->query("INSERT INTO sis_suporte VALUES(1,'001','Cliente A','a','aberto','2026-10-15 10:10:00'),(2,'002','Outro grupo','b','aberto','2026-10-15 10:05:00'),(3,'003','Ainda cedo','a','aberto','2026-10-15 10:10:01'),(4,'004','Fechado','a','fechado','2026-10-15 10:06:00')");
  $db->query('CREATE TABLE sis_solic(id INT PRIMARY KEY,nome VARCHAR(255),tipo VARCHAR(20),status VARCHAR(20),login_atend VARCHAR(64),visita DATETIME)');
@@ -20,4 +21,6 @@ try {
  reminder_check(count(mka_visit_reminders_collect($db,'ana',false,false,false,'2026-10-15 10:00:00'))===0,'revoked permissions hide details');
  $db->query("UPDATE sis_suporte SET visita='2026-10-15 10:09:00' WHERE id=1");$changed=mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:00');reminder_check(count($changed)===1&&$changed[0]['id']!==$events[1]['id'],'rescheduling creates a distinct reminder and hides stale schedule');
  $all=mka_visit_reminders_collect($db,'joao',true,true,true,'2026-10-15 10:00:00');reminder_check(count($all)===4,'all-clients and all-installations permissions use native scopes');
+ $db->query("INSERT INTO sis_suporte VALUES(5,'005','Viabilidade sem cliente','','aberto','2026-10-15 10:05:00')");$db->query("INSERT INTO suite_ticket_viability(ticket_id,operator,request_key,payload_hash,details) VALUES(5,'ana','fixture_viability_123','hash','{}')");
+ $own=mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:00');reminder_check(in_array(5,array_column($own,'record_id')),'feasibility reminder includes owner without fake client');$other=mka_visit_reminders_collect($db,'joao',true,false,false,'2026-10-15 10:00:00');reminder_check(!in_array(5,array_column($other,'record_id')),'full client access does not expose another operator feasibility');
 }finally{$admin->query('DROP DATABASE `'.$schema.'`');}
