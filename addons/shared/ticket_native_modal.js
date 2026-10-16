@@ -41,7 +41,7 @@
  window.mkaPrepareTicketDoc=async function(doc){
   const styled=styleForm(doc);if(!styled)return false;
   const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-11';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});
-  for(const [file,ready]of [['priority_colors.js',()=>window.mkaPriorityColors],['ticket_booking.js',()=>window.mkaTicketBooking]])if(!ready())await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/admin/addons/shared/'+file+'?v=20261016-5';script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  for(const [file,ready]of [['priority_colors.js',()=>window.mkaPriorityColors],['ticket_booking.js',()=>window.mkaTicketBooking]])if(!ready())await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/admin/addons/shared/'+file+'?v=20261016-6';script.onload=resolve;script.onerror=reject;document.head.append(script);});
   if(window.mkaTicketBooking)await window.mkaTicketBooking(doc);return true;
  };
  function build(){
@@ -56,7 +56,7 @@
     const styled=styleForm(doc);
     if(styled){const css=doc.createElement('link');css.rel='stylesheet';css.href='/admin/addons/shared/ticket_native_form.css?v=20261015-11';await new Promise(resolve=>{css.onload=resolve;css.onerror=resolve;doc.head.append(css);setTimeout(resolve,4000);});}
     if(styled){
-     for(const file of ['priority_colors.js','ticket_booking.js'])if(!document.querySelector('script[data-suite-booking-asset="'+file+'"]')){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.dataset.suiteBookingAsset=file;script.src='/admin/addons/shared/'+file+'?v=20261016-5';script.onload=resolve;script.onerror=()=>reject(Error('Não foi possível carregar a agenda.'));document.head.append(script);});}
+     for(const file of ['priority_colors.js','ticket_booking.js'])if(!document.querySelector('script[data-suite-booking-asset="'+file+'"]')){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.dataset.suiteBookingAsset=file;script.src='/admin/addons/shared/'+file+'?v=20261016-6';script.onload=resolve;script.onerror=()=>reject(Error('Não foi possível carregar a agenda.'));document.head.append(script);});}
      if(window.mkaTicketBooking)await window.mkaTicketBooking(doc);
     }
     if(!modal.open||frame.contentDocument!==doc)return;frame.style.visibility='visible';

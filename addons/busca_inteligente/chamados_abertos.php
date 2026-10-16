@@ -98,6 +98,7 @@
     <header class="ticket-page-heading">
         <div><h1>Central de chamados</h1><p>Selecione um card para filtrar os chamados. Abra os detalhes para consultar os relatos.</p></div>
         <div class="ticket-heading-actions"><button type="button" class="ticket-settings-icon" data-support-settings="ticket" aria-label="Configurações dos chamados" title="Configurações dos chamados"><i class="bi bi-gear-fill" aria-hidden="true"></i></button>
+        <button type="button" class="ticket-create" data-open-viability style="background:#087f8c"><i class="bi bi-geo-alt" aria-hidden="true"></i> Viabilidade</button>
         <a class="ticket-create" data-open-native-ticket href="../../suporte_ins<?= htmlspecialchars($ext_mk, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="bi bi-plus-circle" aria-hidden="true"></i> Abrir chamado</a></div>
     </header>
     <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
@@ -325,4 +326,4 @@
     </body>
 </html>
 
-<script src="/admin/addons/shared/ticket_viability.js?v=20261016-1"></script>
+<script src="/admin/addons/shared/ticket_viability.js?v=20261016-2"></script>

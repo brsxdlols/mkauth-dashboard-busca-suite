@@ -12,18 +12,6 @@
    const priority=doc.getElementById('prioridade');if(priority){let normal=Array.from(priority.options).find(o=>o.value.toLowerCase()==='normal');if(!normal){normal=new Option('Normal','normal');priority.add(normal);}priority.value=normal.value;}
    const technician=doc.getElementById('tecnico');if(technician){const nativeNone=Array.from(technician.options).find(o=>!o.value||o.value==='0'||/^nenhum$/i.test(o.textContent.trim()));const noneValue=nativeNone?nativeNone.value:'0';if(nativeNone)nativeNone.remove();const placeholder=new Option('Selecione o técnico','');placeholder.disabled=true;technician.prepend(placeholder);technician.add(new Option('Não informar',noneValue||'0'));technician.value='';technician.required=true;}
   }
-  let viability=null;
-  if(!installation){
-   const client=doc.getElementById('cliente'),box=doc.querySelector('.suite-ticket-client .suite-ticket-fields');
-   if(client&&box){
-    const toggleLabel=doc.createElement('label');toggleLabel.style.cssText='grid-column:1/-1;display:flex;align-items:center;gap:9px;padding:12px;background:#edf5ff;border-radius:9px;font-weight:600';const toggle=doc.createElement('input');toggle.type='checkbox';toggle.style.width='auto';toggleLabel.append(toggle,doc.createTextNode('Suporte de viabilidade · sem cliente cadastrado'));box.prepend(toggleLabel);
-    const fields=doc.createElement('div');fields.hidden=true;fields.style.cssText='grid-column:1/-1';const grid=doc.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';fields.append(grid);box.append(fields);
-    const values={};for(const [key,label] of Object.entries({name:'Nome',contact:'Contato',address:'Endereço',district:'Bairro',city:'Cidade',complement:'Complemento',observation:'Observação'})){const wrap=doc.createElement('label');wrap.style.cssText='display:grid;gap:5px;font-size:12px';wrap.textContent=label+' (opcional)';const input=doc.createElement(key==='observation'?'textarea':'input');input.className='input';input.maxLength=key==='observation'?8000:255;input.style.cssText='width:100%;min-width:0;box-sizing:border-box';if(key==='observation')wrap.style.gridColumn='1/-1';wrap.append(input);grid.append(wrap);values[key]=input;}
-    const originalRequired={client:client.required,message:message.required};const clientRow=client.closest('.field.is-horizontal');
-    toggle.onchange=()=>{fields.hidden=!toggle.checked;client.disabled=toggle.checked;client.required=toggle.checked?false:originalRequired.client;if(clientRow){clientRow.hidden=toggle.checked;if(toggle.checked)clientRow.style.setProperty('display','none','important');else clientRow.style.removeProperty('display');}message.required=toggle.checked?false:originalRequired.message;};
-    viability={active:()=>toggle.checked,values,key:'viability_'+Date.now()+'_'+Math.random().toString(36).slice(2)};
-   }
-  }
   const originalTime=time.value;
   if(ramal&&!installation){if(!Array.from(ramal.options).some(o=>o.value===''))ramal.prepend(new Option('Não informar',''));ramal.value='';ramal.required=false;}
   const row=time.closest('.field.is-horizontal'),controls=doc.createElement('div');controls.className='suite-booking-controls';
@@ -51,12 +39,6 @@
    try{await load();if(Array.isArray(lunch.days)&&!lunch.days.includes(new Date(date.value+'T12:00:00').getDay()))throw Error('Este dia não está habilitado para '+(installation?'instalações.':'ordens de serviço.'));if(loadedDay!==date.value)throw Error('Confirme a agenda antes de gravar.');if(time.value&&lunch.enabled&&time.value>=lunch.start&&time.value<lunch.end)throw Error('Este horário está reservado para almoço ('+lunch.start+'–'+lunch.end+'). Escolha outro horário.');if(time.value&&(time.value<'08:00'||time.value>'18:00')&&!window.confirm('Este horário está fora do expediente das 08h às 18h. Foi combinado com o cliente e deseja continuar?'))return;
     const count=time.value?conflicts(time.value).length:0;if(count&&!window.confirm('Já existem '+count+' visitas nesta faixa. Organize '+(count+1)+' equipes para atender simultaneamente. Deseja gravar mesmo assim?'))return;
     message.value=message.value.replace(/\n?\[Periodo da visita: (manha|tarde); sem horario definido\]/g,'');if(!time.value){if(installation)throw Error('Selecione o horário da instalação.');if(!['manha','tarde'].includes(period.value))throw Error('Escolha manhã, tarde ou informe o horário.');message.value+='\n[Periodo da visita: '+period.value+'; sem horario definido]';time.value='00:00';}
-    if(viability&&viability.active()){
-     const endpoint='/admin/addons/busca_inteligente/ticket_viability_api.php';let response=await fetch(endpoint,{credentials:'same-origin',cache:'no-store'}),session=await response.json();if(!response.ok)throw Error(session.error);
-     const data={csrf:session.csrf,key:viability.key,day:date.value,time:time.value,period:period.value,technician:doc.getElementById('tecnico').value,priority:doc.getElementById('prioridade').value};for(const [key,input] of Object.entries(viability.values))data[key]=input.value;
-     if(message.value.trim())data.observation=(data.observation?data.observation+'\n':'')+message.value.replace(/\n?\[Periodo da visita: (manha|tarde); sem horario definido\]/g,'').trim();
-     response=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw Error(result.error);hint.textContent='Chamado de viabilidade registrado.';for(const control of form.querySelectorAll('input,select,textarea,button'))control.disabled=true;const link=doc.createElement('a');link.href='/admin/addons/busca_inteligente/chamados_abertos.php?view=list';link.target='_top';link.textContent='Ver na lista de chamados';hint.append(doc.createElement('br'),link);return;
-    }
     approved=true;form.requestSubmit(event.submitter||undefined);
    }catch(error){hint.textContent=error.message;}
   },true);

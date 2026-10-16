@@ -193,6 +193,6 @@ Chamados e Instalacoes compartilham a agenda semanal e miniagenda, com horarios 
 
 ### Viabilidade sem cliente cadastrado
 
-Ao abrir um chamado, a chave Suporte de viabilidade permite coletar nome, contato, endereco, bairro, cidade, complemento e observacao, todos opcionais. A OS e criada no suporte nativo, sem criar um cliente ficticio; os dados ficam no relato e na tabela propria suite_ticket_viability. Chamados sem cliente ficam visiveis na lista, agenda e avisos do operador que os abriu. Reagendamento e novos relatos mantem esse mesmo escopo. O instalador cria a tabela aditivamente.
+O botao Viabilidade, ao lado de Abrir chamado, abre um formulario proprio para coletar nome, contato, endereco, bairro, cidade, complemento e observacao, todos opcionais. A OS e criada no suporte nativo, sem criar um cliente ficticio; os dados ficam no relato e na tabela propria suite_ticket_viability. Chamados sem cliente ficam visiveis na lista, agenda e avisos do operador que os abriu. Reagendamento e novos relatos mantem esse mesmo escopo. O instalador cria a tabela aditivamente.
 
 A Dashboard inclui Acessar portal do sistema ao lado da pesquisa e Configuracoes no canto direito. Atalhos abre um editor separado de links. Novos chamados iniciam com a data de hoje em America/Sao_Paulo, prioridade Normal e selecao explicita de tecnico ou Nao informar; a miniagenda mostra a semana e destaca hoje.
