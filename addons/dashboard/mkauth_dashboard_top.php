@@ -97,10 +97,6 @@ html.has-navbar-fixed-top {
 #systopo.is-invisible {
     visibility: visible !important;
 }
-#systopo {
-    margin-top: 8px !important;
-    margin-bottom: 12px !important;
-}
 nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
     display: none !important;
 }
