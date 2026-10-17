@@ -1540,7 +1540,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                         }
                                     } else {
 
-                                        $query_cliente_off = mysqli_query($link, "SELECT DISTINCT acctstoptime FROM radacct WHERE username = '$login_cliente' ORDER BY acctstoptime DESC");
+                                        $offline_history_login = mysqli_real_escape_string($link, $login_cliente);
+                                        $query_cliente_off = mysqli_query($link, "SELECT MAX(acctstoptime) FROM radacct WHERE username = '$offline_history_login'");
 
                                         $row3 = mysqli_fetch_row($query_cliente_off);
                                         $final_conn = date('d/m/Y - H:i:s', strtotime($row3[0]));
