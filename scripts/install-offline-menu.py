@@ -9,17 +9,11 @@ source = path.read_bytes().decode('utf-8') if path.exists() else ''
 start, end = '/* MKA-SUITE-OFFLINE-MENU-START */', '/* MKA-SUITE-OFFLINE-MENU-END */'
 source = re.sub(re.escape(start) + r'.*?' + re.escape(end) + r'\r?\n?', '', source, flags=re.S)
 block = '''/* MKA-SUITE-OFFLINE-MENU-START */
-(function () {
-    if (typeof add_menu === 'undefined' || typeof add_menu.clientes !== 'function') return;
-    add_menu.clientes(JSON.stringify({
-        plink: window.location.origin + '/admin/addons/rel_cli_offline/',
-        ptext: 'Relatório de clientes offline'
-    }));
-})();
+add_menu.clientes('{"plink": "' + window.location.origin + '/admin/addons/rel_cli_offline/", "ptext": "<b>Clientes offline</b>"}');
 /* MKA-SUITE-OFFLINE-MENU-END */
 '''
-# Existing installations can already have this link in their own menu section.
-if not re.search(r'addons/rel_cli_offline(?:/|[\x27\x22`])', source):
+# A link in a custom ADDONS menu is not a Clients menu shortcut.
+if not re.search(r'add_menu\.clientes\s*\([^;]*addons/rel_cli_offline(?:/|[\x27\x22`])', source):
     source = source.rstrip() + '\n' + block
 path.parent.mkdir(parents=True, exist_ok=True)
 path.write_bytes(source.encode('utf-8'))
