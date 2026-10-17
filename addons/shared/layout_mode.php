@@ -267,7 +267,8 @@ if (!function_exists('mka_suite_render_top_spacing_style')) {
     {
         $spacing = mka_suite_get_header_spacing($conn);
         $contentSpacing = mka_suite_get_top_spacing($conn);
-        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px;--mka-suite-content-spacing:' . $contentSpacing . 'px}#systopo{position:relative;top:var(--mka-suite-header-spacing)}.mka-suite-content-start{margin-top:var(--mka-suite-content-spacing)!important}body:not(.mka-suite-dashboard-page) #sistema-corpo1 .navbar-brand{margin-right:0!important}</style>';
+        // Native topo.php relies on paragraph margins; addon resets must not collapse its spacing.
+        echo '<style id="mka-suite-top-spacing">:root{--mka-suite-header-spacing:' . $spacing . 'px;--mka-suite-content-spacing:' . $contentSpacing . 'px}body:not(.mka-suite-dashboard-page) #systopo p{margin:1em 0;padding:0}#systopo{position:relative;top:var(--mka-suite-header-spacing)}.mka-suite-content-start{margin-top:var(--mka-suite-content-spacing)!important}body:not(.mka-suite-dashboard-page) #sistema-corpo1 .navbar-brand{margin-right:0!important}</style>';
     }
 }
 
