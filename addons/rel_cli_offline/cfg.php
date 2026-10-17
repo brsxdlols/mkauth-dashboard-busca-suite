@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!doctype html><?php echo isset($_SESSION['MM_Usuario']) ? '<html lang="pt-BR">' : '<html lang="pt-BR" class="has-navbar-fixed-top">'; ?><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clientes offline · Configurações</title><link rel="stylesheet" href="../../estilos/mk-auth.css"><link rel="stylesheet" href="../../estilos/font-awesome.css"><script src="../../scripts/jquery.js"></script><script src="../../scripts/mk-auth.js"></script><link rel="stylesheet" href="offline-clean.css?v=20261017-1"></head><body>
+<!doctype html><?php echo isset($_SESSION['MM_Usuario']) ? '<html lang="pt-BR">' : '<html lang="pt-BR" class="has-navbar-fixed-top">'; ?><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clientes offline · Configurações</title><link rel="stylesheet" href="../../estilos/mk-auth.css"><link rel="stylesheet" href="../../estilos/font-awesome.css"><script src="../../scripts/jquery.js"></script><script src="../../scripts/mk-auth.js"></script><link rel="stylesheet" href="offline-clean.css?v=20261017-2"></head><body>
 <?php include('../../topo.php'); ?>
 <main id="offline-report" class="off-config"><header class="off-heading"><div><span>RELATÓRIO DE CONEXÕES</span><h1>Configurações</h1><p>Defina quando uma desconexão merece mais atenção.</p></div><div class="off-tools"><a href="index.php">Voltar ao relatório</a></div></header>
 <?php if ($message): ?><p role="status" class="off-success"><?= off_h($message) ?></p><?php endif; ?>

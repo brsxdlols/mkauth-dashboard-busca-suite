@@ -27,7 +27,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 
-    <link href="css/css.css" rel="stylesheet" type="text/css" /><link href="offline-clean.css?v=20261017-1" rel="stylesheet" />
+    <link href="css/css.css" rel="stylesheet" type="text/css" /><link href="offline-clean.css?v=20261017-2" rel="stylesheet" />
 
 
 </head>
@@ -301,7 +301,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <dialog id="off-analysis-modal" class="off-analysis-modal no_print" aria-labelledby="off-analysis-title"><header><div><h2 id="off-analysis-title">Análise das desconexões</h2><p data-off-analysis-client></p></div><button type="button" data-off-analysis-close>Fechar ×</button></header><div id="off-analysis-body"></div></dialog>
     </main><?php if (!$off_fragment) include('../../baixo.php'); ?>
 
-    <script src="../../menu.js.php"></script><script src="offline-live.js?v=20261017-1"></script>
+    <script src="../../menu.js.php"></script><script src="offline-live.js?v=20261017-2"></script>
 
 </body>
 

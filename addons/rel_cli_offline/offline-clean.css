@@ -19,3 +19,6 @@
 #offline-report .off-client-tools .off-ticket-chip,#offline-report .off-client-tools .off-analysis-entry>.off-reconnect-chip.is-warning{background:#d90c22;border-color:#d90c22;color:#fff;font-weight:700;gap:0}
 #offline-report .off-client-tools .off-ticket-chip:hover,#offline-report .off-client-tools .off-analysis-entry>.off-reconnect-chip.is-warning:hover{background:#be0a1d;border-color:#be0a1d;color:#fff}
 .off-warning-sign{background:#d90c22;border-color:#d90c22;color:#fff}
+
+/* Preserve the native header spacing even when legacy report styles reset paragraphs. */
+#systopo p{margin:1em 0;padding:0}

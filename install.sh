@@ -255,7 +255,8 @@ for addon in rel_clientes rel_caixa graf_faturamento radius rel_cli_offline; do
       cp -a "${SCRIPT_DIR}/addons/radius/radius_lib.php" "${TARGET_ADDONS_DIR}/radius/"
     fi
   else
-    cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
+    # Replace addon symlinks themselves; never write through them into native MK-AUTH files.
+    cp -a --remove-destination "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
     if [ "$addon" = rel_cli_offline ] && [ -f "${BACKUP_DIR}/addons/${addon}/config.php" ]; then
       cp -a "${BACKUP_DIR}/addons/${addon}/config.php" "${TARGET_ADDONS_DIR}/${addon}/config.php"
     fi
