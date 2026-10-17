@@ -9,7 +9,7 @@ source = path.read_bytes().decode('utf-8') if path.exists() else ''
 start, end = '/* MKA-SUITE-OFFLINE-MENU-START */', '/* MKA-SUITE-OFFLINE-MENU-END */'
 source = re.sub(re.escape(start) + r'.*?' + re.escape(end) + r'\r?\n?', '', source, flags=re.S)
 block = '''/* MKA-SUITE-OFFLINE-MENU-START */
-add_menu.clientes('{"plink": "' + window.location.origin + '/admin/addons/rel_cli_offline/", "ptext": "<b>Clientes offline</b>"}');
+add_menu.clientes('{"plink": "' + window.location.origin + '/admin/addons/rel_cli_offline/", "ptext": "&#128268;&nbsp; <b>Clientes offline</b>"}');
 /* MKA-SUITE-OFFLINE-MENU-END */
 '''
 # A link in a custom ADDONS menu is not a Clients menu shortcut.
