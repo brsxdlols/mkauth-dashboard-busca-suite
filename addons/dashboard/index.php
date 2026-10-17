@@ -1602,7 +1602,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                         ? "Foi solicitada uma nova instalação pelo site e ela está aguardando atendimento."
                         : "Foram solicitadas $total_alerta_instalacao novas instalações pelo site e elas estão aguardando atendimento.";
             ?>
-                    <div class="row mb-2">
+                    <div class="row mb-2" id="installation-alert-wrap" data-total="<?= (int)$total_alerta_instalacao; ?>" data-uuid="<?= htmlspecialchars($alerta_instalacao['uuid_solic'],ENT_QUOTES,'UTF-8'); ?>">
                         <div class="col-12">
                             <a href="#solicitacoes-instalacao" class="installation-alert-link" id="installation-alert-link">
                                 <div class="installation-alert-main">
@@ -2354,6 +2354,23 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                 }
             });
             // abre link excluir
+            var installationAlertSequence = 0;
+            function refreshInstallationAlert(deletedUuid) {
+                var sequence = ++installationAlertSequence;
+                var wrapper = document.getElementById('installation-alert-wrap');
+                if (!wrapper) return;
+                if (deletedUuid && wrapper.dataset.uuid === deletedUuid && Number(wrapper.dataset.total) === 1) { wrapper.hidden = true;wrapper.style.display = 'none'; }
+                jQuery.ajax({url:'installation_alert.php',dataType:'json',cache:false}).done(function(data) {
+                    if (sequence !== installationAlertSequence || !data || data.success !== true) return;
+                    wrapper.dataset.total = String(data.total);wrapper.hidden = data.total < 1;wrapper.style.display = data.total < 1 ? 'none' : '';
+                    if (!data.latest) return;
+                    wrapper.dataset.uuid = data.latest.uuid;
+                    var copy = wrapper.querySelector('.installation-alert-copy');
+                    copy.textContent = data.total === 1 ? 'Foi solicitada uma nova instalação pelo site e ela está aguardando atendimento. Último cadastro: ' : 'Foram solicitadas ' + data.total + ' novas instalações pelo site e elas estão aguardando atendimento. Último cadastro: ';
+                    var identity = document.createElement('strong');identity.textContent = data.latest.name + ' [' + data.latest.login + ']';
+                    copy.appendChild(identity);copy.appendChild(document.createTextNode(' em ' + data.latest.date + '.'));
+                });
+            }
             jQuery(document).on('click', '#link_excluir, .delete-installation-request', function() {
                 var button = jQuery(this);
                 var uuid_solic = button.attr("data-solic");
@@ -2372,6 +2389,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         }
                         var deletedRow = button.closest('tr');
                         deletedRow.fadeOut(220);
+                        refreshInstallationAlert(uuid_solic);
                         jQuery('#mka-delete-undo-notice').remove();
                         var notice = jQuery('<div id="mka-delete-undo-notice" role="status" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#17324d;color:#fff;padding:13px 16px;border-radius:9px;box-shadow:0 8px 28px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-weight:600">Solicitação excluída. <button type="button" style="border:0;border-radius:7px;padding:8px 13px;background:#fff;color:#0b66d4;font-weight:700;cursor:pointer">Desfazer</button><button type="button" aria-label="Fechar" style="border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer">&times;</button></div>');
                         jQuery('body').append(notice);
@@ -2393,6 +2411,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 window.clearTimeout(closeTimer);
                                 notice.html('Solicitação restaurada com sucesso.').css('background', '#16834b');
                                 deletedRow.fadeIn(220);
+                                button.css('pointer-events', '').removeAttr('aria-disabled').html(button.data('original-html'));
+                                refreshInstallationAlert();
                                 window.setTimeout(function() { notice.fadeOut(180, function() { notice.remove(); }); }, 2500);
                             }).fail(function(xhr) {
                                 undoButton.prop('disabled', false).text('Desfazer');
