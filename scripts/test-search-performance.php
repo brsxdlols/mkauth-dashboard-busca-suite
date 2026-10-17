@@ -43,4 +43,9 @@ try {
  sql($db,"INSERT INTO radacct VALUES('child-spaced',NULL),('empty-parent',NULL),('',NULL),('   ',NULL),(NULL,NULL)");
  $equivalent=mka_perf_reference_sql();$r=$db->query("SELECT id,($reference) original_on,($equivalent) reference_on,($set) optimized_on FROM sis_cliente c ORDER BY id");
  while($row=$r->fetch_assoc())check($row['original_on']===$row['optimized_on'] && $row['original_on']===$row['reference_on'],'spaces, empty and null edge case '.$row['id']);
+ $flag=json_encode(array('mode'=>'direct','version'=>'previous-page-hash','schema'=>mka_perf_schema($db)));$st=$db->prepare("UPDATE sis_opcao SET valor=?");$st->bind_param('s',$flag);$st->execute();
+ $migrated=mka_perf_revalidate_approved($db);check($migrated['status']==='revalidated'&&mka_perf_set_enabled($db),'approved optimization migrates after classification validation');
+ check(mka_perf_revalidate_approved($db)['status']==='current','revalidation is idempotent');
+ $flag=json_encode(array('mode'=>'direct','version'=>'previous-page-hash','schema'=>'changed'));$st->execute();check(mka_perf_revalidate_approved($db)['status']==='schema_changed'&&!mka_perf_set_enabled($db),'schema changes cannot inherit approval');
+ $flag=json_encode(array('mode'=>'pending','until'=>time()-1,'version'=>'previous-page-hash','schema'=>mka_perf_schema($db)));$st->execute();check(mka_perf_revalidate_approved($db)['status']==='not_approved','expired provisional validation is never approved by installer');
 } finally { $db->close(); }

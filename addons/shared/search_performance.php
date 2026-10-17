@@ -26,7 +26,8 @@ function mka_perf_set_enabled($db) {
     $flag=json_decode(mka_perf_flag($db),true);
     return is_array($flag) && ($flag['version'] ?? '')===mka_perf_version() && in_array($flag['mode'] ?? '',array('direct','pending'),true) && mka_perf_mode($db)==='direct';
 }
-function mka_perf_version() { return hash('sha256',hash_file('sha256',__FILE__).hash_file('sha256',__DIR__.'/online_rule.php').hash_file('sha256',__DIR__.'/../busca_inteligente/index.php')); }
+// Only query logic invalidates approval; presentation changes in index.php do not.
+function mka_perf_version() { return hash('sha256',hash_file('sha256',__FILE__).hash_file('sha256',__DIR__.'/online_rule.php')); }
 function mka_perf_schema($db) {
     $q=mysqli_query($db,"SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,COLLATION_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND ((TABLE_NAME='sis_cliente' AND COLUMN_NAME='login') OR (TABLE_NAME='sis_adicional' AND COLUMN_NAME IN ('login','username')) OR (TABLE_NAME='radacct' AND COLUMN_NAME='username')) ORDER BY TABLE_NAME,COLUMN_NAME");
     if(!$q)return ''; $rows=array();while($r=mysqli_fetch_assoc($q))$rows[]=$r;
@@ -100,4 +101,25 @@ function mka_perf_emit() {
     $line=json_encode($p);$file=mka_perf_dir().'/'.$p['id'].'.runs';
     if ($line===false || file_put_contents($file,$line."\n",FILE_APPEND|LOCK_EX)===false) $p['failed']=true;
     echo '<script type="application/json" id="mka-perf-metrics">'.json_encode($p,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
+}
+
+// Installer-only migration: keep prior approval only after schema and classification checks.
+function mka_perf_revalidate_approved($db) {
+    $raw=mka_perf_flag($db);$flag=json_decode($raw,true);
+    if(!is_array($flag)||($flag['mode']??'')!=='direct')return array('status'=>'not_approved');
+    if(($flag['schema']??'')!==mka_perf_schema($db))return array('status'=>'schema_changed');
+    if(($flag['version']??'')===mka_perf_version())return array('status'=>'current');
+    if(stripos(mysqli_get_server_info($db),'MariaDB')===false)return array('status'=>'unsupported');
+    $timeout=$db->query('SELECT @@SESSION.max_statement_time')->fetch_row()[0];
+    $db->query('SET SESSION max_statement_time=10');
+    try {
+        $db->begin_transaction(MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT);
+        $candidate=$db->query('SELECT c.id,('.mka_perf_set_sql().') AS online FROM sis_cliente c ORDER BY c.id')->fetch_all(MYSQLI_ASSOC);
+        $reference=$db->query('SELECT c.id,('.mka_perf_reference_sql().') AS online FROM sis_cliente c ORDER BY c.id')->fetch_all(MYSQLI_ASSOC);
+        if($candidate!==$reference)throw new RuntimeException('Classificação divergente; aprovação preservada sem migração.');
+        $db->commit();$flag['version']=mka_perf_version();$next=json_encode($flag);
+        $q=$db->prepare("UPDATE sis_opcao SET valor=? WHERE nome='suite_search_optimization' AND valor=?");$q->bind_param('ss',$next,$raw);$q->execute();
+        return array('status'=>$q->affected_rows===1?'revalidated':'concurrent_change','clients'=>count($candidate));
+    }catch(Throwable $e){$db->rollback();throw $e;}
+    finally{$db->query('SET SESSION max_statement_time='.(float)$timeout);}
 }

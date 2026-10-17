@@ -416,6 +416,7 @@ fi
 touch /var/lib/mkauth-suite-performance/optimization.lock
 chmod 0660 /var/lib/mkauth-suite-performance/optimization.lock
 if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-suite-performance/optimization.lock; fi
+php "${SCRIPT_DIR}/scripts/revalidate-search-optimization.php" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/search-optimization" || echo '[aviso] Otimizacao anterior requer nova analise; detalhes preservados no backup.'
 cp "${SCRIPT_DIR}/scripts/search-performance.py" /opt/mk-auth/scripts/mkauth-search-performance.py
 chmod 0700 /opt/mk-auth/scripts/mkauth-search-performance.py
 echo "[desempenho] Validando e otimizando consultas Online/Offline automaticamente"
