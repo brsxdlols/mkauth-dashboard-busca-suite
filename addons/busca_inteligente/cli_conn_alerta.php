@@ -88,9 +88,11 @@
 <?php
 
     $alerta = 0;
+    $quedas_cli_ = array();
+    $tot_clientes = 0;
     
-    while ($row = mysqli_fetch_array($query_conn)) {
-        $quedas_cli_[$row['username']] += 1;
+    while ($query_conn && ($row = mysqli_fetch_array($query_conn))) {
+        $quedas_cli_[$row['username']] = ($quedas_cli_[$row['username']] ?? 0) + 1;
     }
 
     arsort($quedas_cli_); // Ordenando do Maior p/ Menor
@@ -147,6 +149,7 @@
             $tot_clientes += 1;
         }
     }
+    if ($tot_clientes === 0) echo '<tr><td colspan="4" style="padding:24px;text-align:center;color:#64748b">Nenhum cliente com desconexões nos filtros informados.</td></tr>';
     mysqli_close($link);
 
     echo "<script>document.getElementById('alert-total').textContent='" . (int)$tot_clientes . "';</script>";
