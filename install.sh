@@ -191,7 +191,7 @@ check_online_offline() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
-for addon in rel_clientes rel_caixa graf_faturamento radius; do
+for addon in rel_clientes rel_caixa graf_faturamento radius rel_cli_offline; do
   test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
@@ -243,7 +243,7 @@ fi
 bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
 
 echo "[3/8] Instalando arquivos"
-for addon in rel_clientes rel_caixa graf_faturamento radius; do
+for addon in rel_clientes rel_caixa graf_faturamento radius rel_cli_offline; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
@@ -256,6 +256,9 @@ for addon in rel_clientes rel_caixa graf_faturamento radius; do
     fi
   else
     cp -a "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
+    if [ "$addon" = rel_cli_offline ] && [ -f "${BACKUP_DIR}/addons/${addon}/config.php" ]; then
+      cp -a "${BACKUP_DIR}/addons/${addon}/config.php" "${TARGET_ADDONS_DIR}/${addon}/config.php"
+    fi
   fi
 done
 # Keep the suite modal stylesheet separate from a standalone Radius addon.
@@ -396,6 +399,7 @@ check_online_offline
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
 bash "${SCRIPT_DIR}/scripts/install-visit-reminders.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/visit-reminders"
 bash "${SCRIPT_DIR}/scripts/install-support-attendance.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/support-attendance"
+bash "${SCRIPT_DIR}/scripts/install-offline-report.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/offline-report"
 bash "${SCRIPT_DIR}/scripts/install-client-support.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/client-support"
 
 php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"
