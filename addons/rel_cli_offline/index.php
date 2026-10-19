@@ -5,7 +5,7 @@
     EMAIL: meyknho@gmail.com  
     @AJF TELECOM - TODOS DIREITOS RESERVADOS.
 -->
-<?php require_once('config.php'); require_once('offline-filters.php'); require_once('offline-settings.php'); require_once('offline-tickets.php'); require_once('offline-disconnect.php'); $off_display = off_display_settings($link); $off_fragment = off_arg('_fragment') === '1'; if ($off_fragment && session_status() === PHP_SESSION_ACTIVE) session_write_close(); ?>
+<?php require_once('config.php'); require_once('offline-filters.php'); require_once __DIR__.'/offline-navigation.php'; require_once('offline-settings.php'); require_once('offline-tickets.php'); require_once('offline-disconnect.php'); $off_display = off_display_settings($link); $off_fragment = off_arg('_fragment') === '1'; if ($off_fragment && session_status() === PHP_SESSION_ACTIVE) session_write_close(); ?>
 
 <!DOCTYPE html>
 <?php
@@ -27,10 +27,10 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 
-    <link href="css/css.css" rel="stylesheet" type="text/css" /><link href="offline-clean.css?v=20261017-2" rel="stylesheet" />
+    <link href="/admin/addons/rel_cli_offline/css/css.css" rel="stylesheet" type="text/css" /><link href="/admin/addons/rel_cli_offline/offline-clean.css?v=20261017-2" rel="stylesheet" />
 
 
-</head>
+<link rel="stylesheet" href="/admin/estilos/bi-icons.css"></head>
 
 <body>
     <?php
@@ -78,7 +78,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     ?>
 
     <?php
-    if (!$off_fragment) include('../../topo.php');
+    if (!$off_fragment) { include('../../topo.php'); off_suite_navigation($link, $usuario_logado); }
 
     ?>
 
@@ -143,8 +143,8 @@ if (isset($_SESSION['MM_Usuario'])) {
     if ($organizar === 'reconexoes_desc') $offRows = off_metric_order($offRows,'_reconnections');
     if ($organizar === 'chamados_desc') $offRows = off_metric_order($offRows,'_recent_calls');
     ?>
-    <main id="offline-report"><header class="off-heading"><div><span>RELATÓRIO DE CONEXÕES</span><h1>Clientes offline</h1><p>Encontre quem desconectou por região e período.</p></div><div class="off-tools no_print"><a href="cfg.php">Configurações</a><button type="button" onclick="window.print()">Imprimir</button></div></header>
-    <p class="off-alert-caption"><?php if ($off_display['enabled']): ?>Destaque vermelho: offline há <?= off_h($off_display['hours']) ?> horas ou mais.<?php else: ?>Destaque vermelho por tempo desativado.<?php endif; ?> <a href="cfg.php">Configurar destaque</a></p>
+    <main id="offline-report"><header class="off-heading"><div><span>RELATÓRIO DE CONEXÕES</span><h1>Clientes offline</h1><p>Encontre quem desconectou por região e período.</p></div><div class="off-tools no_print"><a href="<?= off_h(off_report_route(true)) ?>">Configurações</a><button type="button" onclick="window.print()">Imprimir</button></div></header>
+    <p class="off-alert-caption"><?php if ($off_display['enabled']): ?>Destaque vermelho: offline há <?= off_h($off_display['hours']) ?> horas ou mais.<?php else: ?>Destaque vermelho por tempo desativado.<?php endif; ?> <a href="<?= off_h(off_report_route(true)) ?>">Configurar destaque</a></p>
     <div id="off-query-error"><?php if ($off_error !== '') echo '<p class="off-error" role="alert">'.off_h($off_error).'</p>'; ?></div>
     <div class="off-cards"><?php foreach(array('%'=>array('Clientes encontrados', $offTotals['nao']+$offTotals['sim']), 'nao'=>array('Ativos e offline',$offTotals['nao']), 'sim'=>array('Bloqueados e offline',$offTotals['sim'])) as $cardStatus=>$card): ?><a class="off-card <?= $status_cap === $cardStatus ? 'is-selected' : '' ?>" href="<?= off_h(off_card_url($cardStatus)) ?>" data-off-status="<?= off_h($cardStatus) ?>" aria-current="<?= $status_cap === $cardStatus ? 'true' : 'false' ?>"><span><?= $card[0] ?></span><strong><?= $card[1] ?></strong></a><?php endforeach; ?></div>
     <form action="" method="get" class="off-filters">
@@ -266,11 +266,11 @@ if (isset($_SESSION['MM_Usuario'])) {
     echo "
 
     </table></div>
-    <input type='image' src='img/icon_menu_editar_cliente.png'  class='icon_menu' name='editar_clientes' id='btn_enviar' title='Editar os clientes selecionados' formaction='../../clientes_upd$ext_mk' />
+    <input type='image' src='/admin/addons/rel_cli_offline/img/icon_menu_editar_cliente.png'  class='icon_menu' name='editar_clientes' id='btn_enviar' title='Editar os clientes selecionados' formaction='../../clientes_upd$ext_mk' />
   
-    <input type='image' src='img/icon_menu_email.png'  class='icon_menu' name='mensagem_para_clientes' id='btn_enviar' title='Enviar mensagem para os clientes selecionados' formaction='../../send_cliente$ext_mk' />
+    <input type='image' src='/admin/addons/rel_cli_offline/img/icon_menu_email.png'  class='icon_menu' name='mensagem_para_clientes' id='btn_enviar' title='Enviar mensagem para os clientes selecionados' formaction='../../send_cliente$ext_mk' />
 
-    <input type='image' src='img/icon_menu_reparar_2.png' class='icon_menu' name='reparar_clientes' id='btn_enviar' title='Reparar os clientes selecionados' />
+    <input type='image' src='/admin/addons/rel_cli_offline/img/icon_menu_reparar_2.png' class='icon_menu' name='reparar_clientes' id='btn_enviar' title='Reparar os clientes selecionados' />
 
     
     </form>
@@ -301,7 +301,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <dialog id="off-analysis-modal" class="off-analysis-modal no_print" aria-labelledby="off-analysis-title"><header><div><h2 id="off-analysis-title">Análise das desconexões</h2><p data-off-analysis-client></p></div><button type="button" data-off-analysis-close>Fechar ×</button></header><div id="off-analysis-body"></div></dialog>
     </main><?php if (!$off_fragment) include('../../baixo.php'); ?>
 
-    <script src="../../menu.js.php"></script><script src="offline-live.js?v=20261017-2"></script>
+    <script src="../../menu.js.php"></script><script src="/admin/addons/rel_cli_offline/offline-live.js?v=20261017-2"></script>
 
 </body>
 

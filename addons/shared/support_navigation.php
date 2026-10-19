@@ -5,6 +5,7 @@ function mka_support_navigation($db,$manifest,$operator,$active) {
     $items=array(
         array('home','index.php','bi-house-door-fill',($manifest->name??'Início').' - V '.($manifest->version??'')),
         array('alerts','cli_conn_alerta.php','bi-exclamation-circle-fill','Alertas'),
+        array('offline','clientes_offline.php','bi-plug','Clientes offline'),
         array('attendance','atendimentos.php','bi-chat-left-text','Atendimentos'),
         array('tickets','chamados_abertos.php','bi-headset','Chamados')
     );

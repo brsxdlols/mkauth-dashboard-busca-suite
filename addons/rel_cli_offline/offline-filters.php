@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/offline-navigation.php';
 function off_h($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 function off_arg($name, $default = '') { return isset($_GET[$name]) && is_string($_GET[$name]) ? trim($_GET[$name]) : $default; }
 $off_periods = array('todos'=>'Todo o período','hoje'=>'Desconectou hoje','ultimas'=>'Nas últimas X horas','mais'=>'Offline há X horas ou mais','ultimos_dias'=>'Nos últimos X dias','mais_dias'=>'Offline há X dias ou mais','intervalo'=>'Período personalizado');
@@ -36,7 +37,7 @@ function off_filter_form() {
  <div class="off-period-fields no_print"><label>Desconexão<select name="periodo" id="off-period"><?php foreach($off_periods as $key=>$label): ?><option value="<?= $key ?>" <?= $key === $off_period ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></label>
  <label data-off-hours>Quantidade de horas<input name="horas" type="number" min="0.01" max="876000" step="any" value="<?= off_h($off_hours) ?>"></label>
  <label data-off-days>Quantidade de dias<input name="dias" type="number" min="0.01" max="36500" step="any" value="<?= off_h($off_days) ?>"></label>
- <label data-off-range>De<input name="inicio" type="datetime-local" value="<?= off_h($off_start) ?>"></label><label data-off-range>Até<input name="fim" type="datetime-local" value="<?= off_h($off_end) ?>"></label><button type="submit" class="off-apply">Aplicar filtros</button><a href="index.php">Limpar</a></div>
+ <label data-off-range>De<input name="inicio" type="datetime-local" value="<?= off_h($off_start) ?>"></label><label data-off-range>Até<input name="fim" type="datetime-local" value="<?= off_h($off_end) ?>"></label><button type="submit" class="off-apply">Aplicar filtros</button><a href="<?= off_h(off_report_route()) ?>">Limpar</a></div>
  <p class="off-help no_print">Hoje: desde a meia-noite do servidor. Últimas X horas: quedas recentes. X horas ou mais: desconexões mais antigas. Cada dia equivale a 24 horas. Digite nome, rua, bairro ou cidade para buscar automaticamente.</p>
  <?php
 }
@@ -45,7 +46,7 @@ function off_card_url($status) {
  $query = array();
  foreach (array('busca','organizar','periodo','horas','dias','inicio','fim','reconexoes','chamados') as $key) if (isset($_GET[$key]) && is_string($_GET[$key])) $query[$key] = $_GET[$key];
  $query['status'] = $status;
- return 'index.php?'.http_build_query($query);
+ return off_report_route().'?'.http_build_query($query);
 }
 
 function off_attention_icon() { return ''; }
