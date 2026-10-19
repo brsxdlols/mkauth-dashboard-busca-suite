@@ -199,3 +199,10 @@ A Dashboard inclui Acessar portal do sistema ao lado da pesquisa e Configuracoes
 
 
 O instalador inclui o relatório de clientes offline (`rel_cli_offline`), com filtros de tempo, configurações de destaque e acesso no menu **Clientes → Relatório de clientes offline**. Reinstalações preservam as configurações salvas e a conexão personalizada do addon, sem duplicar o atalho.
+
+
+### Correção isolada para Dashboard personalizada
+
+`python3 scripts/patch-dashboard-calculations.py /opt/mk-auth/admin/addons/dashboard --dry-run` valida uma versão legada conhecida sem instalar a suíte. Retire `--dry-run` para aplicar somente `graf_periodo.php` e `cli_periodo.php`, com backup e preservação de permissões. O script recusa arquivos com cálculos personalizados ou versões desconhecidas; não altera `index.php`, configurações, estilos, atalhos ou addons de busca. Execute a partir deste pacote, para disponibilizar os dois arquivos de cálculo em `addons/dashboard/`. A otimização da consulta nativa de atividades é separada e exige sua própria validação em `scripts/optimize-native-activity-install.php`.
+
+O instalador completo já entrega os cálculos agregados de clientes por mês e financeiro em `addons/dashboard/cli_periodo.php` e `graf_periodo.php`, e valida a sintaxe dos dois arquivos. A correção não depende da quantidade de clientes: evita repetir as consultas mensais ao histórico. Dashboards personalizadas devem usar o patch isolado acima, após validação, para preservar suas páginas.

@@ -325,6 +325,9 @@ echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
+# Validate the maintained aggregate calculations shipped by this installer.
+lint_file "${TARGET_ADDONS_DIR}/dashboard/cli_periodo.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/graf_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/installations.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_support.php"
