@@ -160,7 +160,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <div id="off-results">
     <form action="../../reparar<?php echo $ext_mk; ?>" method='post'>
 
-    <div class="off-map-actions no_print" data-off-map-action="../../clientes_map.osm<?= off_h($ext_mk) ?>"><button type="button" data-off-select-all>Selecionar todos</button><button type="button" data-off-map-selected disabled>Mostrar selecionados no mapa</button><span data-off-selection role="status" aria-live="polite">0 selecionados</span></div>
+    <div class="off-map-actions no_print" data-off-map-action="/admin/addons/rel_cli_offline/mapa.php"><button type="button" data-off-select-all>Selecionar todos</button><button type="button" data-off-map-selected disabled>Mostrar selecionados no mapa</button><span data-off-selection role="status" aria-live="polite">0 selecionados</span></div>
     <div class='off-table-scroll'><table id='lista' class='width-100'>
 
 
@@ -297,11 +297,11 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 
     </div>
-    <dialog id="off-map-modal" class="off-map-modal no_print" aria-labelledby="off-map-title"><header><div><h2 id="off-map-title">Localização do cliente</h2><p>OpenStreetMap · coordenadas do cadastro</p></div><button type="button" data-off-map-close aria-label="Fechar mapa">Fechar ×</button></header><iframe id="off-map-frame" title="Localização do cliente no OpenStreetMap" referrerpolicy="no-referrer" loading="lazy"></iframe><footer><a id="off-map-external" target="_blank" rel="noopener noreferrer">Abrir no OpenStreetMap</a></footer></dialog>
+    <dialog id="off-map-modal" class="off-map-modal no_print" aria-labelledby="off-map-title"><header><div><h2 id="off-map-title">Localização do cliente</h2><p>Mapa de clientes · tempo desconectado e coordenadas do cadastro</p></div><button type="button" data-off-map-close aria-label="Fechar mapa">Fechar ×</button></header><iframe id="off-map-frame" title="Localização do cliente no OpenStreetMap" referrerpolicy="no-referrer" loading="lazy"></iframe><footer><a id="off-map-external" target="_blank" rel="noopener noreferrer">Abrir no OpenStreetMap</a></footer></dialog>
     <dialog id="off-analysis-modal" class="off-analysis-modal no_print" aria-labelledby="off-analysis-title"><header><div><h2 id="off-analysis-title">Análise das desconexões</h2><p data-off-analysis-client></p></div><button type="button" data-off-analysis-close>Fechar ×</button></header><div id="off-analysis-body"></div></dialog>
     </main><?php if (!$off_fragment) include('../../baixo.php'); ?>
 
-    <script src="../../menu.js.php"></script><script src="/admin/addons/rel_cli_offline/offline-live.js?v=20261017-2"></script>
+    <script src="../../menu.js.php"></script><script src="/admin/addons/rel_cli_offline/offline-live.js?v=20261019-8"></script>
 
 </body>
 

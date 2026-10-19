@@ -328,6 +328,7 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Validate the maintained aggregate calculations shipped by this installer.
 lint_file "${TARGET_ADDONS_DIR}/dashboard/cli_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/graf_periodo.php"
+lint_file "${TARGET_ADDONS_DIR}/rel_cli_offline/mapa.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/installations.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_support.php"

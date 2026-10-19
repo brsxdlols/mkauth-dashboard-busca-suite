@@ -6,7 +6,7 @@
   var search = document.getElementById('pesquisar');
   var period = document.getElementById('off-period');
   var notice = document.getElementById('off-live-status');
-  var timer, pending, generation = 0, loadedKey;
+  var timer, pending, generation = 0, loadedKey, mapRequest, mapGeneration = 0;
   function filterKey() { var data = new URLSearchParams(new FormData(form)); data.delete('status'); data.sort(); return data.toString(); }
   function visibleChecks() { return Array.from(root.querySelectorAll('.checkbox1')).filter(function (check) { return !check.closest('.linha_resultados').hidden; }); }
   function applyStatus() {
@@ -41,27 +41,43 @@
     if (all) { all.checked = checks.length > 0 && selected.length === checks.length; all.indeterminate = selected.length > 0 && selected.length < checks.length; }
     if (toggle) { toggle.disabled = !checks.length; toggle.textContent = all && all.checked ? 'Desmarcar todos' : 'Selecionar todos'; }
     if (caption) caption.textContent = selected.length + ' selecionados · ' + mapped.length + ' com coordenadas' + (selected.length > mapped.length ? ' · ' + (selected.length - mapped.length) + ' sem coordenadas' : '');
-    if (map) map.disabled = !mapped.length || document.getElementById('off-results').getAttribute('aria-busy') === 'true';
+    if (map) map.disabled = !selected.length || document.getElementById('off-results').getAttribute('aria-busy') === 'true';
   }
   function showIndividualMap(button) {
     if (document.getElementById('off-results').getAttribute('aria-busy') === 'true') return;
     var lat = Number(button.getAttribute('data-off-map-lat')), lon = Number(button.getAttribute('data-off-map-lon'));
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180 || (lat === 0 && lon === 0)) return;
     var dialog = document.getElementById('off-map-modal'), frame = document.getElementById('off-map-frame');
-    var embed = new URL('https://www.openstreetmap.org/export/embed.html');
-    embed.searchParams.set('bbox', [Math.max(-180,lon-.006),Math.max(-90,lat-.004),Math.min(180,lon+.006),Math.min(90,lat+.004)].join(','));
-    embed.searchParams.set('layer','mapnik'); embed.searchParams.set('marker',lat+','+lon);
     document.getElementById('off-map-title').textContent = button.getAttribute('data-off-map-name') || 'Localização do cliente';
-    document.getElementById('off-map-external').href = 'https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'#map=17/'+lat+'/'+lon;
-    frame.src = embed.href; dialog.showModal();
+    var external = document.getElementById('off-map-external'); external.hidden = false;
+    external.href = 'https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'#map=17/'+lat+'/'+lon;
+    showMap([button.getAttribute('data-off-map-login')], true);
   }
-  function showMap(logins) {
+  async function showMap(logins, individual) {
     if (!logins.length || document.getElementById('off-results').getAttribute('aria-busy') === 'true') return;
     var map = root.querySelector('[data-off-map-action]');
-    var post = document.createElement('form'); post.method = 'post'; post.target = '_blank'; post.rel = 'noopener'; post.hidden = true;
-    post.action = map.getAttribute('data-off-map-action');
-    logins.forEach(function (login) { var input = document.createElement('input'); input.type = 'hidden'; input.name = 'login[]'; input.value = login; post.appendChild(input); });
-    document.body.appendChild(post); post.submit(); post.remove();
+    if (!individual) {
+      var post = document.createElement('form');post.method='POST';post.action=map.getAttribute('data-off-map-action');post.target='_self';
+      logins.forEach(function(login){var input=document.createElement('input');input.type='hidden';input.name='login[]';input.value=login;post.appendChild(input);});
+      document.body.appendChild(post);post.submit();return;
+    }
+    var dialog = document.getElementById('off-map-modal'), frame = document.getElementById('off-map-frame');
+    if (!individual) { document.getElementById('off-map-title').textContent = 'Clientes selecionados no mapa'; document.getElementById('off-map-external').hidden = true; }
+    if (mapRequest) mapRequest.abort();
+    mapRequest = new AbortController(); var mapTicket = ++mapGeneration;
+    frame.removeAttribute('src'); frame.srcdoc = '<p style="font:14px Arial;padding:20px">Carregando mapa…</p>';
+    dialog.showModal();
+    var target = new URL(map.getAttribute('data-off-map-action'), location.href); target.searchParams.set('embed','1');
+    var data = new URLSearchParams(); logins.forEach(function(login){data.append('login[]',login);});
+    try {
+      var response = await fetch(target.href,{method:'POST',body:data,credentials:'same-origin',cache:'no-store',signal:mapRequest.signal});
+      if (!response.ok) throw new Error('map');
+      var html = await response.text();
+      if (mapTicket !== mapGeneration || !dialog.open) return;
+      frame.srcdoc = html.replace('<head>', '<head><base href="'+new URL('./',target.href).href+'">');
+    } catch (error) {
+      if (error.name !== 'AbortError' && mapTicket === mapGeneration) frame.srcdoc = '<p style="font:14px Arial;padding:20px">Não foi possível carregar o mapa. Feche e tente novamente.</p>';
+    }
   }
   function busy(value) {
     var results = document.getElementById('off-results');
@@ -101,7 +117,7 @@
   analysisDialog.addEventListener('click', function(event) { if (event.target === analysisDialog || event.target.closest('[data-off-analysis-close]')) analysisDialog.close(); });
   analysisDialog.addEventListener('close', function() { document.getElementById('off-analysis-body').replaceChildren(); });
   var mapDialog = document.getElementById('off-map-modal');
-  mapDialog.addEventListener('close', function () { document.getElementById('off-map-frame').src = 'about:blank'; });
+  mapDialog.addEventListener('close', function () { mapGeneration++; if(mapRequest)mapRequest.abort(); var frame=document.getElementById('off-map-frame'); frame.removeAttribute('srcdoc'); frame.src='about:blank'; });
   mapDialog.addEventListener('click', function (event) { if (event.target === mapDialog || event.target.closest('[data-off-map-close]')) mapDialog.close(); });
   visibility(); loadedKey = filterKey(); applyStatus();
   form.addEventListener('submit', function (event) { event.preventDefault(); refresh(); });
@@ -115,7 +131,7 @@
     if (analysis) { event.preventDefault(); document.getElementById('off-analysis-title').textContent = 'Análise das desconexões'; var dialog = document.getElementById('off-analysis-modal'); var body = document.getElementById('off-analysis-body'); body.replaceChildren(analysis.closest('.off-analysis-entry').querySelector('template').content.cloneNode(true)); dialog.querySelector('[data-off-analysis-client]').textContent = analysis.getAttribute('data-off-analysis-name'); dialog.showModal(); return; }
     var one = event.target.closest('[data-off-map-login]');
     if (one) { event.preventDefault(); showIndividualMap(one); return; }
-    if (event.target.closest('[data-off-map-selected]')) { event.preventDefault(); showMap(Array.from(root.querySelectorAll('.checkbox1:checked[data-off-has-coords="1"]')).map(function (check) { return check.value; })); return; }
+    if (event.target.closest('[data-off-map-selected]')) { event.preventDefault(); showMap(Array.from(root.querySelectorAll('.checkbox1:checked')).map(function (check) { return check.value; })); return; }
     if (event.target.closest('[data-off-select-all]')) { event.preventDefault(); var all = root.querySelector('#selecctall'); if (all) { all.checked = !all.checked; all.dispatchEvent(new Event('change', {bubbles:true})); } return; }
     var card = event.target.closest('[data-off-status]');
     if (!card || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
