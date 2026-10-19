@@ -57,7 +57,7 @@ if ($canTotals) {
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard Multiempresas</title>
 <link href="css/bootstrap.css" rel="stylesheet"><link href="../../estilos/mk-auth.css" rel="stylesheet"><link href="../../estilos/font-awesome.css" rel="stylesheet">
 <script src="../../scripts/jquery.js"></script><script src="../../scripts/mk-auth.js"></script>
-<script src="/admin/addons/shared/visit_reminders.js?v=20261015-9" defer></script>
+<script src="/admin/addons/shared/visit_reminders.js?v=20261019-1" defer></script>
 <script src="js/highcharts.js"></script><script src="js/exporting.js"></script>
 <link href="../../estilos/bi-icons.css" rel="stylesheet">
 <style>

@@ -60,12 +60,21 @@
             echo mysqli_error();
         }*/
 
-    $query_conn = mysqli_query($link, "SELECT username, acctstarttime, acctsessiontime  FROM radacct 
-    WHERE username IN (SELECT login FROM sis_cliente WHERE cli_ativado = 's' AND bloqueado = 'nao') 
-    AND acctstarttime BETWEEN '$data_inicial' AND '$data_final 23:59:59' 
-    AND acctsessiontime < $tempo_conn * 60
-    AND username LIKE '%$busca_sql%'
-    ORDER BY username");
+    $tempo_conn = max(1, min(240, (int)$tempo_conn));
+    $qtd_quedas = max(1, min(1000, (int)$qtd_quedas));
+    $data_inicial_sql = mysqli_real_escape_string($link, (string)$data_inicial);
+    $data_final_sql = mysqli_real_escape_string($link, (string)$data_final);
+    // Read the date range first; avoid probing the entire accounting history per client.
+    // BINARY preserves the separate username keys previously counted by PHP.
+    $query_conn = mysqli_query($link, "SELECT r.username, COUNT(*) AS quedas FROM radacct r
+    STRAIGHT_JOIN (SELECT DISTINCT login FROM sis_cliente WHERE cli_ativado = 's' AND bloqueado = 'nao') eligible
+        ON eligible.login = r.username
+    WHERE r.acctstarttime BETWEEN '$data_inicial_sql' AND '$data_final_sql 23:59:59'
+    AND r.acctsessiontime < $tempo_conn * 60
+    AND r.username LIKE '%$busca_sql%'
+    GROUP BY BINARY r.username
+    HAVING COUNT(*) >= $qtd_quedas
+    ORDER BY quedas DESC, r.username");
 
     if (!$query_conn){
         echo mysqli_error($link);
@@ -92,7 +101,7 @@
     $tot_clientes = 0;
     
     while ($query_conn && ($row = mysqli_fetch_array($query_conn))) {
-        $quedas_cli_[$row['username']] = ($quedas_cli_[$row['username']] ?? 0) + 1;
+        $quedas_cli_[$row['username']] = (int)$row['quedas'];
     }
 
     arsort($quedas_cli_); // Ordenando do Maior p/ Menor
@@ -109,7 +118,8 @@
 <?php
     foreach ($quedas_cli_ as $key => $value) {
         if ($value >= $qtd_quedas){
-            $query_cli = mysqli_query($link, "SELECT nome, endereco, bairro, complemento, cidade, estado FROM sis_cliente WHERE login = '$key'");
+            $key_sql = mysqli_real_escape_string($link, (string)$key);
+            $query_cli = mysqli_query($link, "SELECT nome, endereco, bairro, complemento, cidade, estado FROM sis_cliente WHERE login = '$key_sql'");
             while($row = mysqli_fetch_array($query_cli)){
                 $nome_cli = $row['nome'];
 

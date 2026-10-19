@@ -8,5 +8,12 @@ install -m 0700 "$script_dir/test-visit-reminder.php" /root/test-visit-reminder.
 target="$admin/scripts/mk-auth.js"
 if [ -f "$target" ] && ! grep -Fq 'mka-visit-reminders-loader' "$target"; then
   mkdir -p "$backup";chmod 0700 "$backup";cp -a "$target" "$backup/mk-auth.js"
-  printf '\n%s\n' ';(function(){function load(){if(window.top!==window||document.getElementById("mka-visit-reminders-loader"))return;var s=document.createElement("script");s.id="mka-visit-reminders-loader";s.src="/admin/addons/shared/visit_reminders.js?v=20261015-1";document.head.appendChild(s);}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();})();' >> "$target"
+  printf '\n%s\n' ';(function(){function load(){if(window.top!==window||document.getElementById("mka-visit-reminders-loader"))return;var s=document.createElement("script");s.id="mka-visit-reminders-loader";s.src="/admin/addons/shared/visit_reminders.js?v=20261019-1";document.head.appendChild(s);}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();})();' >> "$target"
+fi
+
+# Refresh the existing native loader without replacing any other admin scripts.
+if [ -f "$target" ]; then
+  mkdir -p "$backup";chmod 0700 "$backup"
+  [ -f "$backup/mk-auth.js" ] || cp -a "$target" "$backup/mk-auth.js"
+  sed -i -E 's@(visit_reminders\.js\?v=)[0-9-]+@\120261019-1@g' "$target"
 fi

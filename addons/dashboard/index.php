@@ -43,7 +43,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
-<script src="/admin/addons/shared/visit_reminders.js?v=20261015-9" defer></script>
+<script src="/admin/addons/shared/visit_reminders.js?v=20261019-1" defer></script>
 
     <link href="css/estilo.css" rel="stylesheet" type="text/css" />
 

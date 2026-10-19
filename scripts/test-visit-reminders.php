@@ -23,4 +23,19 @@ try {
  $all=mka_visit_reminders_collect($db,'joao',true,true,true,'2026-10-15 10:00:00');reminder_check(count($all)===4,'all-clients and all-installations permissions use native scopes');
  $db->query("INSERT INTO sis_suporte VALUES(5,'005','Viabilidade sem cliente','','aberto','2026-10-15 10:05:00')");$db->query("INSERT INTO suite_ticket_viability(ticket_id,operator,request_key,payload_hash,details) VALUES(5,'ana','fixture_viability_123','hash','{}')");
  $own=mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:00');reminder_check(in_array(5,array_column($own,'record_id')),'feasibility reminder includes owner without fake client');$other=mka_visit_reminders_collect($db,'joao',true,false,false,'2026-10-15 10:00:00');reminder_check(!in_array(5,array_column($other,'record_id')),'full client access does not expose another operator feasibility');
+ // Preferences belong to each operator and visit kind, and schema upgrades never reset them.
+ reminder_check(mka_visit_reminder_preferences($db,'new','ticket')===array('enabled'=>true,'advance_minutes'=>10),'new installation defaults to enabled and 10 minutes');
+ mka_visit_reminder_preferences_save($db,'ana','ticket',array('enabled'=>false,'advance_minutes'=>5));
+ mka_visit_reminders_schema($db);
+ reminder_check(mka_visit_reminder_preferences($db,'ana','ticket')===array('enabled'=>false,'advance_minutes'=>5),'reinstall preserves disabled and advance choice');
+ reminder_check(count(mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:00'))===0,'disabled ticket popups hide pending reminders');
+ reminder_check(mka_visit_reminder_preferences($db,'ana','installation')['enabled']&&mka_visit_reminder_preferences($db,'joao','ticket')['enabled'],'other kind and user remain independent');
+ mka_visit_reminder_preferences_save($db,'ana','ticket',array('enabled'=>true,'advance_minutes'=>5));
+ $five=mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:00');reminder_check(count($five)===1&&$five[0]['record_id']==5,'5-minute preference does not show existing earlier reminders prematurely');
+ mka_visit_reminder_preferences_save($db,'ana','ticket',array('enabled'=>true,'advance_minutes'=>0));
+ reminder_check(count(mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:00'))===0,'exact-time preference never alerts in advance');
+ $db->query("INSERT INTO sis_suporte VALUES(6,'006','Hora exata','a','aberto','2026-10-15 10:00:00')");
+ $exact=mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:20');reminder_check(count($exact)===1&&$exact[0]['record_id']==6&&$exact[0]['advance_minutes']===0,'first poll after exact time creates reminder');
+ mka_visit_reminder_dismiss($db,'ana',(int)$exact[0]['id']);mka_visit_reminders_schema($db);reminder_check(count(mka_visit_reminders_collect($db,'ana',true,false,false,'2026-10-15 10:00:30'))===0,'Entendido dismissal remains closed after schema reinstall');
+ try{mka_visit_reminder_preferences_save($db,'ana','ticket',array('enabled'=>true,'advance_minutes'=>3));throw new RuntimeException('Invalid preference accepted');}catch(InvalidArgumentException $expected){reminder_check(true,'unsupported advance rejected');}
 }finally{$admin->query('DROP DATABASE `'.$schema.'`');}
