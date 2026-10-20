@@ -1483,7 +1483,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                 ?>
                                 <div class="billing-alert-stack">
                                 <?php if ($tem_titulo_vencido) { ?>
-                                    <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
+                                    <a class="overdue-title-action" href='#faturas-em-aberto' data-invoices-uuid="<?= htmlspecialchars((string)$uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" title='Ver faturas em aberto' >
                                         <i class="fa-solid fa-file-invoice-dollar"></i>
                                         <?= $quantidade_titulos_vencidos; ?>
                                     </a>
@@ -1587,7 +1587,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                     ?>
                                                     <div class="billing-alert-stack">
                                                     <?php if ($tem_titulo_vencido) { ?>
-                                                        <a class="overdue-title-action" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Ver títulos vencidos no financeiro de <?= $nome_cliente; ?>'>
+                                                        <a class="overdue-title-action" href='#faturas-em-aberto' data-invoices-uuid="<?= htmlspecialchars((string)$uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" title='Ver faturas em aberto' >
                                                             <i class="fa-solid fa-file-invoice-dollar"></i>
                                                             <?= $quantidade_titulos_vencidos; ?>
                                                         </a>
@@ -1661,7 +1661,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
-                                                            <a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : ''; ?>" href='../../cliente_det.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='Número de parcelas em aberto: <?= $nome_cliente; ?>'>
+                                                            <a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : ''; ?>" href='#faturas-em-aberto' data-invoices-uuid="<?= htmlspecialchars((string)$uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" aria-haspopup="dialog" title='Ver faturas em aberto'>
                                                                 <i class="fa-solid fa-file-invoice"></i>
                                                                 <span class="badge-parcelas-inline" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
                                                             </a>

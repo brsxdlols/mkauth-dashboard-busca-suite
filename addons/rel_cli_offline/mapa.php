@@ -9,7 +9,7 @@ $points = array();
 if ($logins) {
     $quoted = array();
     foreach ($logins as $login) $quoted[] = "'".mysqli_real_escape_string($link, $login)."'";
-    $sql = "SELECT cli.login,cli.nome,cli.coordenadas,cli.ramal,cli.celular,cli.fone,cli.email,cli.tipo,cli.plano,cli.ssid,cli.porta_olt,cli.caixa_herm,cli.porta_splitter,cli.onu_ont,cli.bloqueado,
+    $sql = "SELECT cli.login,cli.nome,cli.endereco,cli.numero,cli.bairro,cli.cidade,cli.coordenadas,cli.ramal,cli.celular,cli.fone,cli.email,cli.tipo,cli.plano,cli.ssid,cli.porta_olt,cli.caixa_herm,cli.porta_splitter,cli.onu_ont,cli.bloqueado,
         recent.acctstoptime,
         EXISTS(SELECT 1 FROM radacct live WHERE live.username=cli.login AND live.acctstoptime IS NULL LIMIT 1) AS online,
         TIMESTAMPDIFF(SECOND,recent.acctstoptime,NOW()) AS offline_seconds
@@ -27,10 +27,10 @@ if ($logins) {
 }
 mysqli_close($link);
 ?>
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clientes offline · Mapa</title><link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="offline-map.css?v=20261019-8"></head><body class="<?= isset($_GET['embed']) && $_GET['embed'] === '1' ? 'off-map-embedded' : '' ?>">
-<div id="offline-map" aria-label="Mapa dos clientes selecionados"></div>
-<aside class="off-client-panel" aria-label="Clientes selecionados"><header class="off-panel-heading"><span>MONITORAMENTO DE CLIENTES</span><strong>Clientes do mapa</strong><p>Localização e tempo de desconexão</p><button type="button" id="off-map-return">← Voltar ao MK-AUTH</button></header><label for="off-client-search">Buscar por nome ou login</label><input id="off-client-search" type="search" placeholder="Digite nome ou login" autocomplete="off"><span id="off-client-count" role="status"></span><div id="off-client-list" tabindex="0" aria-label="Lista de clientes"></div><div id="off-client-details" aria-live="polite"></div></aside>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clientes offline · Mapa</title><link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="offline-map.css?v=20261019-12"></head><body class="<?= isset($_GET['embed']) && $_GET['embed'] === '1' ? 'off-map-embedded' : '' ?>">
+<div id="off-map-selection-hint" class="off-map-selection-hint" role="status" aria-live="polite">Segure o espaço para arrastar seleção para a região dentro do mapa.</div><div id="offline-map" aria-label="Mapa dos clientes selecionados"></div>
+<aside class="off-client-panel" aria-label="Clientes selecionados"><header class="off-panel-heading"><span>MONITORAMENTO DE CLIENTES</span><strong>Clientes do mapa</strong><p>Localização e tempo de desconexão</p><button type="button" id="off-map-return">← Voltar ao MK-AUTH</button></header><label for="off-client-search">Buscar por nome ou login</label><input id="off-client-search" type="search" placeholder="Digite nome ou login" autocomplete="off"><div class="off-client-sort" role="group" aria-label="Organizar clientes"><button type="button" id="off-sort-time">Tempo desconectado</button><button type="button" id="off-sort-name">Nome</button><button type="button" id="off-sort-address">Endereço</button></div><div class="off-area-tools"><span id="off-area-status" role="status">Segure Espaço e arraste no mapa para selecionar uma área.</span><button type="button" id="off-area-clear" hidden>Limpar área · Esc</button></div><span id="off-client-count" role="status"></span><div id="off-client-list" tabindex="0" aria-label="Lista de clientes"></div><div id="off-client-details" aria-live="polite"></div></aside>
 <aside class="off-map-caption"><strong>Mapa de clientes</strong><span><?= count($points) ?> com coordenadas válidas</span><small>Verde: online · Vermelho: offline · Cinza: bloqueado</small><button type="button" id="off-map-back">Voltar ao relatório</button></aside>
 <?php if (!$points): ?><p class="off-map-empty" role="status">Selecione clientes no relatório para mostrar nesta tela.</p><?php endif; ?>
 <script type="application/json" id="off-map-data"><?= json_encode($points, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE) ?></script>
-<script src="vendor/leaflet.js"></script><script src="offline-map.js?v=20261019-8"></script></body></html>
+<script src="vendor/leaflet.js"></script><script src="offline-map.js?v=20261019-12"></script></body></html>

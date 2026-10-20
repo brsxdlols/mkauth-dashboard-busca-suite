@@ -329,6 +329,8 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/cli_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/graf_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/rel_cli_offline/mapa.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/client_invoices.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_invoices_api.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/installations.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_support.php"
@@ -446,4 +448,9 @@ if command -v python3 >/dev/null 2>&1; then
   done
   python3 "${MONITOR_UPDATER_DIR}/install-map-monitor.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/monitor-package" || echo '[aviso] Monitor preservado ou indisponivel; confira o acesso ao GitHub e o log acima.'
   python3 "${SCRIPT_DIR}/scripts/patch-map-traffic.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/map-traffic" || echo '[aviso] Grafico do Mapa preservado; patch nao aplicado. Consulte o log.'
+fi
+
+# Reuse an existing Applications menu when the verified legacy injector is present.
+if command -v python3 >/dev/null 2>&1; then
+  python3 "${SCRIPT_DIR}/scripts/reconcile-applications-menu.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/applications-menu"
 fi

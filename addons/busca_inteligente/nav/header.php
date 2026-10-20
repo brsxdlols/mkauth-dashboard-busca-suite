@@ -39,4 +39,6 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/priority_colors.js?v=20261015-13" defer></script>
 <script src="/admin/addons/shared/visit_agenda.js?v=20261019-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/visit_agenda.css?v=20261019-1">
+<link rel="stylesheet" href="/admin/addons/shared/client_invoices.css?v=20261020-6">
+<script src="/admin/addons/shared/client_invoices.js?v=20261020-9" defer></script>
 </head>
