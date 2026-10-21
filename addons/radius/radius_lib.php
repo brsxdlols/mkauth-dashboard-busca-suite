@@ -154,16 +154,12 @@ function radius_read_logs($filter, $linesLimit)
     $logLines = array();
     $logError = '';
 
-    if (is_readable($logPath)) {
-        $command = 'tail -n ' . (int)$linesLimit . ' ' . escapeshellarg($logPath) . ' 2>/dev/null';
-        $result = shell_exec($command);
-        if ($result === null) {
-            $logError = 'Não foi possível executar a leitura do log.';
-        } elseif ($result !== '') {
-            $logLines = preg_split('/\r\n|\r|\n/', rtrim($result));
-        }
-    } else {
-        $logError = 'O arquivo de log do FreeRADIUS não está acessível para leitura: ' . $logPath;
+    // MKA-SUITE-NATIVE-LOG-READER
+    try {
+        require_once __DIR__.'/../shared/radius_log_reader.php';
+        $logLines=mka_radius_tail($logPath,$linesLimit);
+    } catch (Throwable $e) {
+        $logError='Não foi possível ler o arquivo de log do FreeRADIUS.';
     }
 
     $counts = array(

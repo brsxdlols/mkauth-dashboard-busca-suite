@@ -1199,6 +1199,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
     <?php
 
+    require_once __DIR__.'/../shared/invoice_financial_notes.php';
+    $noteClientUuids=array();while($noteClient=mysqli_fetch_assoc($result_limit))$noteClientUuids[]=$noteClient['uuid_cliente'];
+    if(mysqli_num_rows($result_limit)>0)mysqli_data_seek($result_limit,0);
+    $financialNoteCounts=mka_invoice_note_counts($link,$noteClientUuids);
     $cont = 1;
 
     while ($row = mysqli_fetch_assoc($result_limit)) {
@@ -1661,6 +1665,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             </div>
 
                                                         <div class='op_cliente no_print client-action-toolbar'>
+                                                            <?php if(!empty($financialNoteCounts[$uuid_cliente])) { ?><a class="financial-note-badge" href="#faturas-em-aberto" data-invoices-uuid="<?= htmlspecialchars((string)$uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" title="Há avisos financeiros nas mensalidades">⚑ Aviso financeiro · <?= (int)$financialNoteCounts[$uuid_cliente]; ?></a><?php } ?>
                                                             <a class="client-action-btn has-counter<?= $tem_titulo_vencido ? ' is-danger' : ''; ?>" href='#faturas-em-aberto' data-invoices-uuid="<?= htmlspecialchars((string)$uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" aria-haspopup="dialog" title='Ver faturas em aberto'>
                                                                 <i class="fa-solid fa-file-invoice"></i>
                                                                 <span class="badge-parcelas-inline" title="Número de parcelas em aberto"><?= $num_parcelas; ?></span>
@@ -1726,14 +1731,14 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                     if (isset($username_on[trim(strtolower($username_cli_adicional))])) {
                                                             ?>
-                                                                    <a class='client-add-status is-online' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
+                                                                    <a class='client-add-status is-online' data-additional-uuid='<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
                                                                         <i class="fa-solid fa-circle-check"></i><?= $username_cli_adicional; ?></a>
 
 
                                                                 <?php
                                                                     } else {
                                                                 ?>
-                                                                    <a class='client-add-status is-offline' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cli_adicional; ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
+                                                                    <a class='client-add-status is-offline' data-additional-uuid='<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
                                                                         <i class="fa-solid fa-circle-minus"></i><?= $username_cli_adicional; ?></a> <?= $conn_add; ?>
                                                             <?php
                                                                     }
@@ -1944,6 +1949,7 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
                                                                     </p>
                                                                     <div class="connection-actions no_print">
+                                                                        <button type="button" class="connection-diagnostic-btn" data-connection-tools data-connection-tools-login="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>">IP / MAC</button>
 
                                                                         <a class="connection-diagnostic-btn" href="../radius/live.php?login=<?= urlencode($login_cliente); ?>" data-radius-login="<?= htmlspecialchars($login_cliente, ENT_QUOTES, 'UTF-8'); ?>">LOG RADIUS</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
@@ -1990,7 +1996,7 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
                                                         //echo "</table>";
 
-                                                        $url = "?busca=$busca2&organizar=$organizar&num_registros=$registros_por_pagina";
+                                                        $url = "?busca=$busca2&organizar=$organizar&num_registros=$registros_por_pagina&filtro=" . rawurlencode((string)$filtro);
                                                         if (!empty($disabledScope)) $url .= '&disabled_q=' . rawurlencode($disabledSearchTerm);
 
 

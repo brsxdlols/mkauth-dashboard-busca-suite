@@ -264,6 +264,9 @@ for addon in rel_clientes rel_caixa graf_faturamento radius rel_cli_offline; do
 done
 # Keep the suite modal stylesheet separate from a standalone Radius addon.
 cp "${SCRIPT_DIR}/addons/radius/radius.css" "${TARGET_ADDONS_DIR}/radius/suite-live.css"
+cp "${SCRIPT_DIR}/addons/radius/connection_settings_api.php" "${TARGET_ADDONS_DIR}/radius/"
+python3 "${SCRIPT_DIR}/scripts/patch-radius-reader.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-reader-tools"
+python3 "${SCRIPT_DIR}/scripts/install-radius-menu.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-menu"
 # Grant only the web user's read access to the RADIUS log, including rotation.
 for web_user in www-data apache; do
   id "$web_user" >/dev/null 2>&1 || continue
@@ -329,6 +332,13 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/cli_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/graf_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/rel_cli_offline/mapa.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/ip_conflicts.php"
+lint_file "${TARGET_ADDONS_DIR}/dashboard/ip_conflicts.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/additional_connection.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/additional_connection_api.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_diagnostic.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/invoice_financial_notes.php"
+lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/invoice_notes_api.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_invoices.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_invoices_api.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/layout_mode.php"
@@ -352,6 +362,9 @@ lint_file "${TARGET_ADDONS_DIR}/radius/logs_data.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/client_links.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/client_status.php"
 lint_file "${TARGET_ADDONS_DIR}/radius/preferences.php"
+lint_file "${TARGET_ADDONS_DIR}/radius/connection_settings_api.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/connection_settings.php"
+lint_file "${TARGET_ADDONS_DIR}/shared/radius_log_reader.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_update_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/manual_block_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/client_action_access.php"
@@ -454,3 +467,5 @@ fi
 if command -v python3 >/dev/null 2>&1; then
   python3 "${SCRIPT_DIR}/scripts/reconcile-applications-menu.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/applications-menu"
 fi
+
+php "${SCRIPT_DIR}/scripts/install-invoice-notes.php"

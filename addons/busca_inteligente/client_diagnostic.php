@@ -5,27 +5,41 @@ ob_end_clean();
 if (!isset($link) && isset($conn)) $link = $conn;
 if (!isset($link) || !$link) { http_response_code(500); exit('Não foi possível conectar ao banco de dados.'); }
 
+$additionalUuid=isset($_GET['additional'])&&is_string($_GET['additional'])?$_GET['additional']:'';
+$additional=null;$additionalCsrf='';
+if($additionalUuid!==''){
+ require_once __DIR__.'/../shared/installations.php';require_once __DIR__.'/../shared/support_attendance.php';require_once __DIR__.'/../shared/additional_connection.php';
+ $operator=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
+ if(!mka_installation_permission($link,$operator,'perm_altadicional')&&!mka_installation_permission($link,$operator,'perm_adicionais')){http_response_code(403);exit('Sem permissão para consultar adicionais.');}
+ try{$additional=mka_additional_connection($link,$additionalUuid,mka_attendance_scope($link,$operator));}catch(DomainException $e){http_response_code(404);exit('Adicional não encontrado.');}
+ if(empty($_SESSION['suite_additional_csrf']))$_SESSION['suite_additional_csrf']=bin2hex(random_bytes(24));$additionalCsrf=$_SESSION['suite_additional_csrf'];
+}
 $login = isset($_GET['login']) ? trim((string) $_GET['login']) : '';
+if($additional)$login=$additional['username'];
 if ($login === '' || strlen($login) > 64) { http_response_code(422); exit('Cliente inválido.'); }
 
 function diag_h($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); }
-function diag_row($label, $value, $state, $detail) {
+function diag_row($label, $value, $state, $detail, $id="") {
     $icon = $state === 'ok' ? '✓' : ($state === 'warn' ? '!' : '×');
-    echo '<div class="check ' . $state . '"><span class="state">' . $icon . '</span><div><strong>' . diag_h($label) . '</strong><div class="value">' . diag_h($value) . '</div><small>' . diag_h($detail) . '</small></div></div>';
+    echo '<div id="' . diag_h($id) . '" class="check ' . $state . '"><span class="state">' . $icon . '</span><div><strong>' . diag_h($label) . '</strong><div class="value">' . diag_h($value) . '</div><small>' . diag_h($detail) . '</small></div></div>';
 }
 
 $client = null;
+if($additional)$client=array('nome'=>$additional['nome'],'login'=>$additional['username'],'plano'=>$additional['plano'],'planodown'=>'','plano15'=>'','cli_ativado'=>$additional['cli_ativado']);
+if(!$additional){
 $stmt = mysqli_prepare($link, "SELECT nome, login, plano, planodown, plano15, cli_ativado FROM sis_cliente WHERE login = ? LIMIT 1");
 if ($stmt) { mysqli_stmt_bind_param($stmt, 's', $login); mysqli_stmt_execute($stmt); $res = mysqli_stmt_get_result($stmt); $client = $res ? mysqli_fetch_assoc($res) : null; mysqli_stmt_close($stmt); }
+}
 if (!$client) { http_response_code(404); exit('Cliente não encontrado.'); }
 
 $session = null;
-$stmt = mysqli_prepare($link, "SELECT framedipaddress, nasipaddress, acctstarttime, callingstationid FROM radacct WHERE LOWER(TRIM(username)) = LOWER(TRIM(?)) AND acctstoptime IS NULL ORDER BY acctstarttime DESC LIMIT 1");
+$stmt = mysqli_prepare($link, "SELECT radacctid, framedipaddress, nasipaddress, acctstarttime, callingstationid FROM radacct WHERE LOWER(TRIM(username)) = LOWER(TRIM(?)) AND acctstoptime IS NULL ORDER BY acctstarttime DESC LIMIT 1");
 if ($stmt) { mysqli_stmt_bind_param($stmt, 's', $login); mysqli_stmt_execute($stmt); $res = mysqli_stmt_get_result($stmt); $session = $res ? mysqli_fetch_assoc($res) : null; mysqli_stmt_close($stmt); }
 
+$financeLogin=$additional?$additional['parent_login']:$login;
 $overdue = 0; $open = 0;
 $stmt = mysqli_prepare($link, "SELECT SUM(CASE WHEN status NOT LIKE 'pago' AND deltitulo = 0 THEN 1 ELSE 0 END) total_abertos, SUM(CASE WHEN status NOT LIKE 'pago' AND deltitulo = 0 AND datavenc < CURDATE() THEN 1 ELSE 0 END) total_vencidos FROM sis_lanc WHERE login = ?");
-if ($stmt) { mysqli_stmt_bind_param($stmt, 's', $login); mysqli_stmt_execute($stmt); $res = mysqli_stmt_get_result($stmt); $finance = $res ? mysqli_fetch_assoc($res) : array(); $open = (int) $finance['total_abertos']; $overdue = (int) $finance['total_vencidos']; mysqli_stmt_close($stmt); }
+if ($stmt) { mysqli_stmt_bind_param($stmt, 's', $financeLogin); mysqli_stmt_execute($stmt); $res = mysqli_stmt_get_result($stmt); $finance = $res ? mysqli_fetch_assoc($res) : array(); $open = (int) $finance['total_abertos']; $overdue = (int) $finance['total_vencidos']; mysqli_stmt_close($stmt); }
 
 $qosValue = ''; $qosGroup = '';
 $stmt = mysqli_prepare($link, "SELECT rug.groupname, rgr.value FROM radusergroup rug LEFT JOIN radgroupreply rgr ON rgr.groupname = rug.groupname AND rgr.attribute = 'Mikrotik-Rate-Limit' WHERE LOWER(TRIM(rug.username)) = LOWER(TRIM(?)) ORDER BY rug.priority, rgr.id LIMIT 1");
@@ -72,17 +86,13 @@ if ($session && !empty($session['acctstarttime'])) { $seconds = max(0, time() - 
 <?php
 $speed = trim((string) $client['planodown']) !== '' ? $client['planodown'] : $client['plano15'];
 diag_row('Plano contratado', $client['plano'] . ($speed !== '' ? ' — ' . $speed : ''), $client['cli_ativado'] === 's' ? 'ok' : 'warn', $client['cli_ativado'] === 's' ? 'Cadastro do cliente está ativo.' : 'Cadastro do cliente está desativado.');
-diag_row('Sessão e uptime', $uptime, $session ? 'ok' : 'warn', $session ? 'Online no IP ' . $session['framedipaddress'] . ' pelo concentrador ' . $session['nasipaddress'] . '.' : 'Nenhuma sessão ativa foi encontrada no RADIUS.');
+diag_row('Sessão e uptime', $uptime, $session ? 'ok' : 'warn', $session ? 'Online no IP ' . $session['framedipaddress'] . ' pelo concentrador ' . $session['nasipaddress'] . '.' : 'Nenhuma sessão ativa foi encontrada no RADIUS.', 'diagnostic-session');
 diag_row('QoS / Queue de banda', $queueValue, $queueState, $queueDetail);
-diag_row('Financeiro', $overdue > 0 ? $overdue . ' título(s) vencido(s)' : 'Financeiro OK', $overdue > 0 ? 'warn' : 'ok', $open . ' título(s) em aberto; ' . $overdue . ' vencido(s).');
+diag_row($additional?'Financeiro do titular':'Financeiro', $overdue > 0 ? $overdue . ' título(s) vencido(s)' : 'Financeiro OK', $overdue > 0 ? 'warn' : 'ok', $open . ' título(s) em aberto; ' . $overdue . ' vencido(s).');
 ?>
 </section><div class="actions" style="justify-content:space-between"><span style="color:#52677b;font-size:13px"><strong>Aviso:</strong> o reparo derrubará a conexão do cliente e aguardará a reconexão PPPoE.</span><span style="display:flex;gap:10px;flex:none"><button class="cancel" type="button" onclick="parent.postMessage({type:'mka-content-modal-close'},'*')">Fechar</button><button class="repair" id="runRepair" type="button">Executar reparo</button></span></div><div class="repair-progress" id="repairProgress"><span class="pulse"></span><strong id="repairTitle">Executando reparo...</strong><div id="repairMessage" style="margin-top:7px">Aguarde enquanto o cadastro é atualizado.</div></div></main>
 <div class="wrap" style="padding-top:0"><button class="repair" style="width:100%;transition:filter .18s" type="button" data-radius-login="<?= diag_h($login) ?>">LOG RADIUS DESTE CLIENTE</button></div>
 <style>.repair:hover:not(:disabled){filter:brightness(.92)}.repair:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}</style>
 <script src="../shared/radius_modal.js?v=20261006"></script>
-<script>
-(function(){var button=document.getElementById('runRepair'),box=document.getElementById('repairProgress'),title=document.getElementById('repairTitle'),message=document.getElementById('repairMessage'),tries=0;
-function poll(){fetch('client_connection_status.php?login='+encodeURIComponent(<?= json_encode($login); ?>),{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(s){tries++;if(s.online){box.classList.add('ok');title.textContent='Cliente conectado';message.textContent='IP '+s.ip+' • uptime '+s.uptime+' • concentrador '+s.nas+'. Atualizado em tempo real.';button.disabled=false;button.textContent='Executar reparo novamente';return;}title.textContent='Reparo concluído — aguardando reconexão';message.textContent='Cliente offline. Verificando novamente em 3 segundos... ('+tries+'/30)';if(tries<30)setTimeout(poll,3000);else{title.textContent='Reparo concluído';message.textContent='O cliente ainda não reconectou. Você pode fechar o modal e verificar novamente mais tarde.';button.disabled=false;}}).catch(function(){if(tries++<30)setTimeout(poll,3000);else button.disabled=false;});}
-button.addEventListener('click',function(){if(!confirm('Deseja executar agora o reparo deste cliente?'))return;button.disabled=true;box.className='repair-progress show';title.textContent='Executando reparo...';message.textContent='Aguarde enquanto o cadastro é atualizado.';var data=new FormData();data.append('login[]',<?= json_encode($login); ?>);fetch('../../reparar.<?= diag_h(isset($links_ext) ? $links_ext : 'hhvm'); ?>',{method:'POST',credentials:'same-origin',body:data}).then(function(r){if(!r.ok)throw new Error();title.textContent='Reparo executado — verificando conexão';message.textContent='Aguardando o cliente conectar novamente...';tries=0;setTimeout(poll,2000);}).catch(function(){title.textContent='Não foi possível executar o reparo';message.textContent='Tente novamente.';button.disabled=false;});});
-}());
-</script></body></html>
+<?php $repairConfig=array('login'=>$login,'additional'=>$additionalUuid,'csrf'=>$additionalCsrf,'baseline_session'=>$session?$session['radacctid']:null,'repair_url'=>$additional?'additional_connection_api.php':'../../reparar.'.(isset($links_ext)?$links_ext:'hhvm')); ?>
+<script src="../shared/repair_progress.js?v=20261020-1" data-repair-config="<?= htmlspecialchars(json_encode($repairConfig),ENT_QUOTES,'UTF-8'); ?>"></script></body></html>

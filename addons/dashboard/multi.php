@@ -91,7 +91,9 @@ if ($canTotals) {
 .multi-stat.outline-danger{border:1px solid rgba(248,113,113,.72)}
 .multi-stat.outline-danger small{border-top-color:rgba(248,113,113,.22)}
 .multi-stat.outline-danger .multi-stat-icon{background:#fff0f2}
-</style></head><body class="multi-page mka-suite-dashboard-page">
+</style><link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
+<script src="/admin/addons/shared/ip_conflicts.js?v=20261020-1" defer></script>
+</head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); include __DIR__.'/mkauth_dashboard_top.php'; mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
 <header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div></header>

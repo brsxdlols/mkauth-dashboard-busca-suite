@@ -512,10 +512,14 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     $lista_filtro = array(
         "" => "Nenhum",
+        "avisos_financeiros" => "Com aviso financeiro",
         "pessoa = 'fisica' AND" => "Pessoa Física",
         "pessoa = 'juridica' AND" => "Pessoa Jurídica",
     );
 
+    if(!is_string($filtro)||!array_key_exists($filtro,$lista_filtro))$filtro='';
+    $financialNotesOnly=$filtro==='avisos_financeiros';
+    $effectiveClientFilter=$financialNotesOnly?'':$filtro;
     $busca = trim($busca);
     $disabledScope = strtolower($busca) === 'desativado';
     $disabledSearchTerm = isset($_GET['disabled_q']) && is_string($_GET['disabled_q']) ? trim($_GET['disabled_q']) : '';
@@ -755,6 +759,9 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 
     require_once __DIR__.'/../shared/online_rule.php';
     $onlineClientSql = mka_search_online_family_sql($link);
+    require_once __DIR__.'/../shared/invoice_financial_notes.php';
+    $financialNotePredicate=$financialNotesOnly?mka_invoice_note_filter_sql($link):'';
+    if($financialNotesOnly){require_once __DIR__.'/../shared/support_attendance.php';$noteOperator=(string)(!empty($_SESSION['MKA_Usuario'])?$_SESSION['MKA_Usuario']:($_SESSION['MM_Usuario']??''));$financialNotePredicate='('.$financialNotePredicate.') AND ('.mka_attendance_scope($link,$noteOperator).')';}
     $query_default = "
             $query_base     
             FROM sis_cliente c
@@ -762,7 +769,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         LEFT JOIN sis_adicional c2
         ON c.login = c2.login
         $audit_join
-        WHERE $filtro $grupos";
+        WHERE $effectiveClientFilter $grupos";
 
     // echo $query_default ."<br>";
     
@@ -775,6 +782,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cli_ativado LIKE 's' AND c2.login = c.login
             $group ORDER BY $organizar ";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         /*if(!$result || !$result_limit){
@@ -789,6 +797,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             $onlineClientSql
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -800,6 +809,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             AND c.cli_ativado LIKE 's' AND c.ramal LIKE '$partes[1]' 
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -810,6 +820,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cli_ativado LIKE 's' AND c.ramal LIKE '$partes[1]' 
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -819,6 +830,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.conta = '$partes[1]'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -828,6 +840,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.dias_corte = '$partes[1]'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -838,6 +851,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             AND c.cli_ativado LIKE 's'  
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -849,6 +863,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.tipo_cob LIKE 'titulo'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -860,6 +875,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.tipo_cob LIKE 'carne'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -869,6 +885,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             (c.fone IS NULL AND c.celular IS NULL AND c.celular2 IS NULL)
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
 
         if (!$result) {
@@ -883,6 +900,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.bloqueado LIKE 'sim'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -896,6 +914,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_nome%')
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -910,6 +929,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_end%')
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -920,6 +940,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.observacao LIKE 'sim'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -939,6 +960,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $cond_offline 
         $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -957,6 +979,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
         $cond_offline 
         $group ORDER BY $organizar";
             
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         // if(!$result || !$result_limit){
@@ -970,6 +993,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.parc_abertas = '$partes[1]'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -984,6 +1008,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.cli_ativado LIKE 'n' $disabledSearchCondition
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -997,6 +1022,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_nome%')
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -1010,6 +1036,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_end%')
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -1019,6 +1046,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.venc LIKE '%$string_end%'
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -1033,6 +1061,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 			c.plano LIKE '%$string_end%')
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -1042,6 +1071,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             $onlineClientSql
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -1052,6 +1082,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             AND c.cli_ativado LIKE 's' $cond_offline  
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
         include('exibir_resultados.php');
@@ -1091,6 +1122,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c2.username LIKE '%$busca%')
             $group ORDER BY $organizar";
 
+        if($financialNotesOnly)$query_ok=mka_invoice_note_filter_query($query_ok,$financialNotePredicate);
         $result = mka_perf_query($link, "$query_ok", 'list-total');
         $result_limit = mka_perf_query($link, "$query_ok LIMIT $inicio,$registros_por_pagina", 'list-page');
 

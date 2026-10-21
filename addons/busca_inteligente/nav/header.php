@@ -39,6 +39,12 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/priority_colors.js?v=20261015-13" defer></script>
 <script src="/admin/addons/shared/visit_agenda.js?v=20261019-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/visit_agenda.css?v=20261019-1">
-<link rel="stylesheet" href="/admin/addons/shared/client_invoices.css?v=20261020-6">
-<script src="/admin/addons/shared/client_invoices.js?v=20261020-9" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/client_invoices.css?v=20261020-8">
+<script src="/admin/addons/shared/client_invoices.js?v=20261020-15" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/additional_connection.css?v=20261020-1">
+<script src="/admin/addons/shared/additional_connection.js?v=20261020-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
+<script src="/admin/addons/shared/ip_conflicts.js?v=20261020-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261020-2">
+<script src="/admin/addons/shared/connection_settings.js?v=20261020-3" defer></script>
 </head>

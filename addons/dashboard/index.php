@@ -1193,6 +1193,8 @@ if (isset($_SESSION['MM_Usuario'])) {
     </style>
 
 
+<link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
+<script src="/admin/addons/shared/ip_conflicts.js?v=20261020-1" defer></script>
 </head>
 
 <body class="mka-suite-dashboard-page">
