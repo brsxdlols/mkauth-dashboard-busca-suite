@@ -411,7 +411,7 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_manual_block_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
-echo '[info] sincronizacao adicional existente preservada; nao instalar novos workers durante o diagnostico de desempenho.'
+install_additional_block_patch
 remove_manual_block_guard
 install_reconcile
 check_online_offline

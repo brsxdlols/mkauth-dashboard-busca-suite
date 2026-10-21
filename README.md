@@ -210,3 +210,7 @@ O instalador completo já entrega os cálculos agregados de clientes por mês e 
 O mapa dos clientes selecionados no relatório offline fica em `addons/rel_cli_offline/mapa.php`, com bibliotecas locais, mapa/satélite e tempo desconectado no popup. O instalador copia a rota e seus recursos junto com o addon; não modifica `clientes_map.osm.hhvm` do MK-AUTH. As imagens de mapa continuam sendo carregadas dos serviços OpenStreetMap e Esri.
 
 O mapa possui busca por nome/login, lista lateral com os selecionados inclusive sem coordenadas, detalhes em duas colunas, tempo desconectado com atualização visual a cada 30 segundos e preferência de camada salva no navegador. “Mostrar selecionados no mapa” abre na mesma aba; “Ver no mapa” usa o modal individual. O botão “Voltar ao MK-AUTH” retorna ao relatório. O status vem das sessões abertas no RADIUS no carregamento; o contador de tempo não faz uma nova consulta ao RADIUS a cada 30 segundos. Clientes que reconectaram continuam na seleção e aparecem como online.
+
+### Bloqueio dos adicionais na instalação
+
+O instalador executa `install_additional_block_patch`: instala a propagação do bloqueio/desbloqueio do principal para os adicionais, a fila de desconexão e o processamento a cada minuto. O patch verifica o esquema e as dependências antes de alterar o banco e guarda backup. Se o download ou a instalação falhar, a dashboard permanece instalada e o instalador apresenta um aviso explícito; nesse caso, a propagação não deve ser considerada instalada.
