@@ -9,7 +9,7 @@ BLOCK=r'''
  function addRadius(){
   var groups=Array.from(document.querySelectorAll('.navbar-start .has-dropdown'));
   function groupMenu(pattern){var group=groups.find(function(n){var label=n.querySelector('.navbar-link');return label&&pattern.test(label.textContent);});return group?group.querySelector('.navbar-dropdown'):null;}
-  var applications=document.getElementById('menu_amsis')||groupMenu(/APLICATIVOS|ADDONS/i),provider=groupMenu(/PROVEDOR/i);
+  var applications=document.getElementById('menu_amsis')||groupMenu(/APLICATIVOS|ADDONS/i),provider=document.getElementById('menu_provedor')||groupMenu(/PROVEDOR/i);
   function ensure(menu){if(!menu)return false;if(Array.from(menu.querySelectorAll('a')).some(function(a){return /\/addons\/radius\/?(?:[?#]|$)/.test(a.getAttribute('href')||'');}))return true;var link=document.createElement('a');link.className='navbar-item';link.href='/admin/addons/radius/';link.textContent='LOG RADIUS';menu.appendChild(link);return true;}
   var appReady=ensure(applications),providerReady=ensure(provider);return appReady&&providerReady;
  }
