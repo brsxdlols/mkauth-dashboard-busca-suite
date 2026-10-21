@@ -1,11 +1,18 @@
 <?php
-require_once('database/db_connect.php');
+require __DIR__.'/../shared/notification_bootstrap.php';
+require_once __DIR__.'/../shared/installations.php';
+require_once __DIR__.'/../shared/support_attendance.php';
+$operator=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
+if(!mka_installation_permission($conn,$operator,'perm_observacao')){http_response_code(403);exit('Sem permissão para conceder prazo.');}
+if(empty($_SESSION['suite_trust_csrf']))$_SESSION['suite_trust_csrf']=bin2hex(random_bytes(24));
 require_once __DIR__ . '/../shared/layout_mode.php';
 if (!isset($_GET['login'])) {
     die("Login do cliente não fornecido.");
 }
 
 $login_cliente = $_GET['login'];
+if(!is_string($login_cliente)||strlen($login_cliente)>64){http_response_code(422);exit('Login inválido.');}
+$scope=mka_attendance_scope($conn,$operator);$q=$conn->prepare("SELECT id FROM sis_cliente c WHERE c.login=? AND ($scope) LIMIT 1");$q->bind_param('s',$login_cliente);$q->execute();if(!$q->get_result()->fetch_row()){http_response_code(404);exit('Cliente não disponível.');}
 $trust_settings = mka_suite_get_trust_unlock_settings($conn);
 $unlock_mode = $trust_settings['mode'];
 $fixed_days = $trust_settings['fixed_days'];
@@ -162,6 +169,7 @@ $is_embed = isset($_GET['embed']) && $_GET['embed'] === '1';
                     <p>Último desbloqueio por <b><?= htmlspecialchars($recent_unlock['performed_by'], ENT_QUOTES, 'UTF-8'); ?></b> em <b><?= date('d/m/Y H:i', strtotime($recent_unlock['created_at'])); ?></b>. Deseja prosseguir com um novo desbloqueio?</p>
                 </div>
             <?php } ?>
+            <?php if(!empty($recent_unlock['reason'])){ ?><p><b>Último motivo:</b> <?= htmlspecialchars($recent_unlock['reason'],ENT_QUOTES,'UTF-8'); ?></p><?php } ?>
             <form action="processar_obs.php" method="POST">
                 <input type="hidden" name="login" value="<?= htmlspecialchars($login_cliente); ?>">
                 <input type="hidden" name="embed" value="<?= $is_embed ? '1' : '0'; ?>">
@@ -197,6 +205,9 @@ $is_embed = isset($_GET['embed']) && $_GET['embed'] === '1';
                     <label for="data_desbloqueio">Data final do desbloqueio</label>
                     <input type="date" id="data_desbloqueio" name="data_desbloqueio" value="<?= date('Y-m-d', strtotime('+1 day')); ?>" min="<?= date('Y-m-d'); ?>" required>
                 <?php } ?>
+                <label for="unlock_reason">Motivo do desbloqueio</label>
+                <textarea id="unlock_reason" name="reason" rows="3" maxlength="2000" required placeholder="Ex.: cliente combinou pagamento para amanhã." style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;font:inherit"></textarea>
+                <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['suite_trust_csrf'],ENT_QUOTES,'UTF-8'); ?>">
                 <div class="unlock-actions">
                     <?php if ($recent_unlock) { ?><button type="button" class="unlock-cancel" onclick="if(window.parent!==window){window.parent.postMessage({type:'mka-trust-unlock-close'},'*')}else{window.close()}">Cancelar</button><?php } ?>
                     <button type="submit"><?= $recent_unlock ? 'Prosseguir com novo desbloqueio' : 'Confirmar desbloqueio'; ?></button>

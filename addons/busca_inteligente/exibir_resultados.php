@@ -1408,7 +1408,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
     ?>
 
-        <div class='row client-row small <?= $bgColor; ?>'>
+        <div class='row client-row small <?= $bgColor; ?>' data-live-client="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-live-port="<?= (int)$porta_acesso; ?>">
 
             <div class='col-auto client-check-col'>
                 <input type='checkbox' name='login[]' class='login_select' value='<?= $login_cliente; ?>'>
@@ -1859,7 +1859,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                         <b>Senha:</b> <?= $senha_cliente; ?> 
                                                                     </p>
 
-                                                                    <p class='dados_cliente <?= $color ?>'>
+                                                                    <p class='dados_cliente <?= $color ?>' data-live-ip>
 
                                                                     <?php
                                                                                                                                                 $access_ip = trim((string)($ip_conn[strtolower($login_cliente)] ?? ''));

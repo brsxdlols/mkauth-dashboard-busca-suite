@@ -47,4 +47,5 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261020-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261020-2">
 <script src="/admin/addons/shared/connection_settings.js?v=20261021-1" defer></script>
+<script src="/admin/addons/shared/live_client_states.js?v=20261021-1" defer></script>
 </head>

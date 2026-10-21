@@ -1,5 +1,13 @@
 <?php
-require_once('database/db_connect.php');
+require __DIR__.'/../shared/notification_bootstrap.php';
+require_once __DIR__.'/../shared/installations.php';require_once __DIR__.'/../shared/support_attendance.php';
+$operator=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
+if(!mka_installation_permission($conn,$operator,'perm_observacao')){http_response_code(403);exit('Sem permissão para conceder prazo.');}
+if(!is_string($_POST['csrf']??null)||empty($_SESSION['suite_trust_csrf'])||!hash_equals($_SESSION['suite_trust_csrf'],$_POST['csrf'])){http_response_code(403);exit('Sessão expirada. Reabra o desbloqueio.');}
+$reason=$_POST['reason']??'';if(!is_string($reason)||trim($reason)===''||preg_match_all('/./us',$reason)>2000){http_response_code(422);exit('Informe o motivo com até 2000 caracteres.');}$reason=trim($reason);
+if(!is_string($_POST['login']??null)){http_response_code(422);exit('Login inválido.');}
+$scope=mka_attendance_scope($conn,$operator);$allowed=$conn->prepare("SELECT c.id FROM sis_cliente c WHERE c.login=? AND ($scope) LIMIT 1");$allowed->bind_param('s',$_POST['login']);$allowed->execute();if(!$allowed->get_result()->fetch_row()){http_response_code(404);exit('Cliente não disponível.');}
+
 require_once __DIR__ . '/../shared/layout_mode.php';
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
@@ -46,6 +54,7 @@ if (isset($_POST['login'])) {
     // Formata a data para exibição em DD/MM/YYYY
     $dataBr = date('d/m/Y', strtotime($dataDesbloqueio));
 
+    if(!mka_suite_ensure_trust_unlock_audit($conn)){http_response_code(503);exit('Não foi possível preparar o histórico.');}
     // Captura o ID e nome do cliente com base no login (exemplo de query).
     $query = "SELECT id, nome FROM sis_cliente WHERE login = '{$login}'";
     $result = mysqli_query($conn, $query);
@@ -78,19 +87,23 @@ if (isset($_POST['login'])) {
         // Atualiza no banco com a data no formato YYYY-MM-DD
         $sql = "UPDATE sis_cliente SET rem_obs = '{$dataDesbloqueio}', observacao = 'sim' WHERE id = '{$id}'";
 
+        mysqli_begin_transaction($conn);
         if (mysqli_query($conn, $sql)) {
-            mka_suite_ensure_trust_unlock_audit($conn);
+
             $nomeSql = mysqli_real_escape_string($conn, $nome);
             $usuarioSql = mysqli_real_escape_string($conn, $performedBy);
-            mysqli_query($conn, "INSERT INTO dashboard_am_trust_unlock_audit
-                (client_id, client_login, client_name, unlocked_until, performed_by, created_at)
-                VALUES (" . (int) $id . ", '" . $login . "', '" . $nomeSql . "', '" . $dataDesbloqueio . "', '" . $usuarioSql . "', NOW())");
+            $reasonSql=mysqli_real_escape_string($conn,$reason);
+            $auditSaved=mysqli_query($conn, "INSERT INTO dashboard_am_trust_unlock_audit
+                (client_id, client_login, client_name, unlocked_until, performed_by, reason, created_at)
+                VALUES (" . (int) $id . ", '" . $login . "', '" . $nomeSql . "', '" . $dataDesbloqueio . "', '" . $usuarioSql . "', '" . $reasonSql . "', NOW())");
+            if(!$auditSaved){mysqli_rollback($conn);http_response_code(503);exit('Não foi possível registrar o motivo. Nenhum prazo foi concedido.');}mysqli_commit($conn);
             echo "Desbloqueio confirmado com sucesso!<br>";
             echo "Cliente <strong>{$nome}</strong> estará desbloqueado até <strong>{$dataBr}</strong>.<br>";
             if ($isEmbed) {
                 echo "<script>if(window.parent!==window){window.parent.postMessage({type:'mka-trust-unlock-success',login:" . json_encode($loginRaw) . "},'*');}</script>";
             }
         } else {
+            mysqli_rollback($conn);
             echo "Erro ao atualizar o desbloqueio: " . mysqli_error($conn);
         }
 

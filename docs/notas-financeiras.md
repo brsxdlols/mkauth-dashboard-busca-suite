@@ -21,3 +21,7 @@ Salvar apenas uma nota não altera bloqueios. A opção **Não bloquear por atra
 `scripts/install-invoice-notes.php` cria a tabela própria `suite_invoice_financial_notes`, sem alterar valores ou vencimentos de títulos. Gravações usam sessão administrativa, CSRF, grupos do operador, validação de titularidade, transação e chave de repetição da operação.
 
 Testes: `scripts/test-invoice-financial-notes.php` usa somente tabelas temporárias; `scripts/test-client-invoices.js` verifica o modal e o envio explícito da opção de confiança.
+
+## Motivo do desbloqueio de confiança
+
+O formulário de desbloqueio de confiança exige o motivo (até 2000 caracteres) e grava o texto com operador, cliente, prazo e data no histórico `dashboard_am_trust_unlock_audit.reason`. Registros anteriores permanecem válidos sem motivo retroativo. O formulário mostra o último motivo recente quando disponível. O servidor valida sessão administrativa, permissão de observação, grupo do cliente e CSRF.

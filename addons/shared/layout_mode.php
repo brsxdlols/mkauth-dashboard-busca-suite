@@ -130,17 +130,22 @@ if (!function_exists('mka_suite_ensure_trust_unlock_audit')) {
     function mka_suite_ensure_trust_unlock_audit($conn)
     {
         if (!($conn instanceof mysqli)) return false;
-        return (bool) @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_trust_unlock_audit (
+        $created=(bool) @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_trust_unlock_audit (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             client_id INT NULL,
             client_login VARCHAR(191) NOT NULL,
             client_name VARCHAR(255) NULL,
             unlocked_until DATE NOT NULL,
             performed_by VARCHAR(191) NOT NULL,
+            reason TEXT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY idx_trust_login_created (client_login, created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+        if(!$created)return false;
+        $column=mysqli_query($conn,"SHOW COLUMNS FROM dashboard_am_trust_unlock_audit LIKE 'reason'");
+        if(!$column||!mysqli_num_rows($column))return (bool)mysqli_query($conn,'ALTER TABLE dashboard_am_trust_unlock_audit ADD COLUMN reason TEXT NULL');
+        return true;
     }
 }
 
