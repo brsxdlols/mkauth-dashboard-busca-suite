@@ -19,9 +19,9 @@ def patch_reader(text):
 '''
     return text[:start]+replacement+text[end:]
 def patch_index(text):
-    if '/shared/connection_settings.js' in text:return text.replace('connection_settings.js?v=20261020-2','connection_settings.js?v=20261020-3').replace('connection_settings.css?v=20261020-1','connection_settings.css?v=20261020-2').replace('connection_settings.js?v=20261020-1','connection_settings.js?v=20261020-3')
+    if '/shared/connection_settings.js' in text:return text.replace('connection_settings.js?v=20261020-3','connection_settings.js?v=20261021-1').replace('connection_settings.js?v=20261020-2','connection_settings.js?v=20261021-1').replace('connection_settings.css?v=20261020-1','connection_settings.css?v=20261020-2').replace('connection_settings.js?v=20261020-1','connection_settings.js?v=20261021-1')
     if '</body>' not in text:raise ValueError('Página Radius sem ponto de integração conhecido.')
-    assets='<link rel="stylesheet" href="../shared/connection_settings.css?v=20261020-2">\n<script src="../shared/connection_settings.js?v=20261020-3"></script>\n'
+    assets='<link rel="stylesheet" href="../shared/connection_settings.css?v=20261020-2">\n<script src="../shared/connection_settings.js?v=20261021-1"></script>\n'
     return text.replace('</body>',assets+'</body>',1)
 def install(admin,backup):
     root=Path(admin)/'addons/radius';backup=Path(backup);backup.mkdir(parents=True,exist_ok=True)

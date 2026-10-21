@@ -29,3 +29,24 @@ function mka_connection_settings_execute($db,$operator,$scope,$preview){
   $db->commit();return array('operation_id'=>$operation,'changed'=>$total);
  }catch(Throwable $e){$db->rollback();throw $e;}
 }
+
+function mka_simultaneous_rows($db,$scope,$login=null,$lock=false){
+ $result=array();foreach(array('principal','adicional') as $type){
+ $sql=$type==='principal'?"SELECT c.id,c.login,c.simultaneo FROM sis_cliente c":"SELECT a.id,a.username login,a.simultaneo FROM sis_adicional a INNER JOIN sis_cliente c ON c.login=a.login";
+ $sql.=" WHERE ($scope)".($login!==null?' AND c.login=?':'').' ORDER BY '.($type==='principal'?'c':'a').'.id'.($lock?' FOR UPDATE':'');
+ $q=$db->prepare($sql);if($login!==null)$q->bind_param('s',$login);$q->execute();foreach($q->get_result()->fetch_all(MYSQLI_ASSOC) as $row){$row['type']=$type;$result[]=$row;}
+ }return $result;
+}
+function mka_simultaneous_execute($db,$operator,$scope,$preview){
+ $db->query("CREATE TABLE IF NOT EXISTS suite_simultaneous_operation_items(operation_id BIGINT UNSIGNED NOT NULL,record_type VARCHAR(12) NOT NULL,record_id INT NOT NULL,login VARCHAR(64) NOT NULL,previous_value VARCHAR(3) NULL,PRIMARY KEY(operation_id,record_type,record_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+ $db->begin_transaction();try{
+ $q=$db->prepare('SELECT id,changed_count FROM suite_connection_operations WHERE operator=? AND request_key=? LIMIT 1');$q->bind_param('ss',$operator,$preview['key']);$q->execute();$old=$q->get_result()->fetch_assoc();if($old){$db->commit();return array('operation_id'=>(int)$old['id'],'changed'=>(int)$old['changed_count']);}
+ $rows=mka_simultaneous_rows($db,$scope,$preview['login'],true);if(!hash_equals($preview['snapshot'],mka_connection_settings_snapshot($rows)))throw new UnexpectedValueException('Os cadastros mudaram desde a prévia. Gere uma nova prévia.');
+ $value=$preview['options']['simultaneous'];if(!in_array($value,array('sim','nao'),true))throw new InvalidArgumentException('Valor inválido.');
+ $changed=array_values(array_filter($rows,function($row)use($value){return $row['simultaneo']!==$value;}));$total=count($changed);$json=json_encode($preview['options']);$selection=$preview['login']===null?'all':'client';
+ $q=$db->prepare('INSERT INTO suite_connection_operations(operator,request_key,selection,client_login,options_json,changed_count) VALUES(?,?,?,?,?,?)');$q->bind_param('sssssi',$operator,$preview['key'],$selection,$preview['login'],$json,$total);$q->execute();$operation=(int)$db->insert_id;
+ $audit=$db->prepare('INSERT INTO suite_simultaneous_operation_items(operation_id,record_type,record_id,login,previous_value) VALUES(?,?,?,?,?)');
+ foreach($changed as $row){$audit->bind_param('isiss',$operation,$row['type'],$row['id'],$row['login'],$row['simultaneo']);$audit->execute();$table=$row['type']==='principal'?'sis_cliente':'sis_adicional';$q=$db->prepare('UPDATE '.$table.' SET simultaneo=? WHERE id=?');$q->bind_param('si',$value,$row['id']);$q->execute();}
+ $db->commit();return array('operation_id'=>$operation,'changed'=>$total);
+ }catch(Throwable $e){$db->rollback();throw $e;}
+}

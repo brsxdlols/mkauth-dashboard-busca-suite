@@ -19,3 +19,7 @@ O instalador integra os controles ao pacote completo do RADIUS, preservando seu 
 Testes: `test-connection-settings.php`, `test-connection-settings.js`, `test-radius-log-reader.php` e `test-radius-menu.js`. Os testes de gravação usam tabelas temporárias.
 
 No escopo **Um cadastro**, digite pelo menos dois caracteres do nome ou login e selecione um resultado. A busca retorna até 15 cadastros dentro dos grupos permitidos ao operador.
+
+## Acessos simultâneos
+
+Na mesma ferramenta, a seção **Acessos simultâneos** permite escolher **Sim** ou **Não** para os titulares e seus adicionais. Usa o escopo escolhido acima: todos os cadastros ou um titular e seus adicionais. Exige permissão de configuração e acesso a todos os grupos, com prévia e confirmação. A operação altera somente `simultaneo`, guarda valores anteriores por tipo e ID e não configura padrões para futuros cadastros. Não modifica IP/MAC nem executa desconexões diretamente.

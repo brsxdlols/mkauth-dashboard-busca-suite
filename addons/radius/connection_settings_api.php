@@ -21,7 +21,7 @@ try{
  if($action==='preview'){
   $selection=$_POST['selection']??'client';if(!in_array($selection,array('all','client'),true))throw new InvalidArgumentException('Escopo inválido.');if($selection==='all'&&!$global)connection_reply(403,array('error'=>'Operação global requer permissão de configuração e acesso a todos os grupos.'));
   $login=$selection==='all'?null:trim($_POST['login']??'');if($login!==null&&($login===''||strlen($login)>64))throw new InvalidArgumentException('Informe o login do cadastro principal.');
-  $options=mka_connection_settings_options($_POST);$rows=mka_connection_settings_rows($conn,$scope,$login);if(!$rows)throw new DomainException('Nenhum cadastro disponível.');$changed=0;foreach($rows as $row)if(mka_connection_settings_changed($row,$options))$changed++;
+  $sim=($_POST['operation']??'')==='simultaneous';if($sim&&!$global)connection_reply(403,array('error'=>'Acessos simultâneos requerem permissão de configuração e acesso a todos os grupos.'));if($sim){$value=$_POST['simultaneous']??'';if(!in_array($value,array('sim','nao'),true))throw new InvalidArgumentException('Escolha Sim ou Não.');$options=array('simultaneous'=>$value);$rows=mka_simultaneous_rows($conn,$scope,$login);}else{$options=mka_connection_settings_options($_POST);$rows=mka_connection_settings_rows($conn,$scope,$login);}if(!$rows)throw new DomainException('Nenhum cadastro disponível.');$changed=0;foreach($rows as $row)if($sim?$row['simultaneo']!==$value:mka_connection_settings_changed($row,$options))$changed++;
   $preview=array('key'=>bin2hex(random_bytes(24)),'snapshot'=>mka_connection_settings_snapshot($rows),'login'=>$login,'options'=>$options,'created'=>time());$_SESSION['suite_connection_preview']=$preview;
   connection_reply(200,array('preview_key'=>$preview['key'],'matched'=>count($rows),'changed'=>$changed,'selection'=>$selection,'login'=>$login,'options'=>$options));
  }
@@ -29,7 +29,7 @@ try{
   $preview=$_SESSION['suite_connection_preview']??null;
   if(!$preview||!hash_equals($preview['key'],$_POST['preview_key']??'')||time()-$preview['created']>900)throw new UnexpectedValueException('Prévia expirada. Gere uma nova prévia.');
   if(($_POST['confirm']??'')!=='1')throw new InvalidArgumentException('Confirme a prévia para executar.');if($preview['login']===null&&!$global)connection_reply(403,array('error'=>'Sem permissão para operação global.'));
-  mka_connection_settings_schema($conn);$result=mka_connection_settings_execute($conn,$operator,$scope,$preview);connection_reply(200,array('ok'=>true)+$result);
+  if(isset($preview['options']['simultaneous'])&&!$global)connection_reply(403,array('error'=>'Sem permissão para alterar acessos simultâneos.'));mka_connection_settings_schema($conn);$result=isset($preview['options']['simultaneous'])?mka_simultaneous_execute($conn,$operator,$scope,$preview):mka_connection_settings_execute($conn,$operator,$scope,$preview);connection_reply(200,array('ok'=>true)+$result);
  }
  throw new InvalidArgumentException('Operação inválida.');
 }catch(UnexpectedValueException $e){connection_reply(409,array('error'=>$e->getMessage()));}catch(InvalidArgumentException $e){connection_reply(422,array('error'=>$e->getMessage()));}catch(DomainException $e){connection_reply(403,array('error'=>$e->getMessage()));}catch(Throwable $e){error_log('Connection settings: '.$e->getMessage());connection_reply(503,array('error'=>'Não foi possível aplicar as alterações.'));}

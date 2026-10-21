@@ -651,7 +651,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
 }());
 </script>
 <link rel="stylesheet" href="../shared/connection_settings.css?v=20261020-2">
-<script src="../shared/connection_settings.js?v=20261020-3"></script>
+<script src="../shared/connection_settings.js?v=20261021-1"></script>
 </body>
 <script src="../shared/compact_notice.js?v=20261008"></script><script src="../shared/radius_preferences.js?v=20261013-global"></script>
 <script src="client_status.js?v=20261013-global"></script></html>

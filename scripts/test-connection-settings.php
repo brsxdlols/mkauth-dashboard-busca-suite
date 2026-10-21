@@ -15,3 +15,19 @@ $rows=$db->query('SELECT * FROM sis_cliente ORDER BY id')->fetch_all(MYSQLI_ASSO
 $db->query("UPDATE sis_cliente SET ip='100.64.2.1' WHERE id=1");check_connection(mka_connection_settings_rows($db,$scope,'first')[0]['ip']==='100.64.2.1','Future manual fixation is allowed');
 try{mka_connection_settings_options(array('autoip'=>"nao'; DROP TABLE sis_cliente"));throw new RuntimeException('Unsafe option accepted');}catch(InvalidArgumentException $e){}
 echo "Connection settings: preview conflict detection, IP-only preservation, scoped bulk update, audit, idempotency and future manual fixation OK\n";
+
+$db->query("ALTER TABLE sis_cliente ADD simultaneo VARCHAR(3) DEFAULT 'nao'");
+$db->query('CREATE TEMPORARY TABLE sis_adicional(id INT PRIMARY KEY,login VARCHAR(64),username VARCHAR(64),simultaneo VARCHAR(3)) ENGINE=InnoDB');
+$db->query("INSERT INTO sis_adicional VALUES(1,'first','extra1','nao'),(2,'restricted','extra2','nao')");
+$db->query('CREATE TEMPORARY TABLE suite_simultaneous_operation_items(operation_id BIGINT UNSIGNED,record_type VARCHAR(12),record_id INT,login VARCHAR(64),previous_value VARCHAR(3),PRIMARY KEY(operation_id,record_type,record_id)) ENGINE=InnoDB');
+$preview=array('key'=>'simultaneous-fixture-1','login'=>null,'options'=>array('simultaneous'=>'sim'),'snapshot'=>mka_connection_settings_snapshot(mka_simultaneous_rows($db,$scope)));
+$result=mka_simultaneous_execute($db,'operator',$scope,$preview);check_connection($result['changed']===3,'Both principals and additional included');
+check_connection(mka_simultaneous_execute($db,'operator',$scope,$preview)===$result,'Simultaneous retry idempotent');
+check_connection($db->query("SELECT simultaneo FROM sis_adicional WHERE id=1")->fetch_row()[0]==='sim','Additional updated');
+check_connection($db->query("SELECT simultaneo FROM sis_adicional WHERE id=2")->fetch_row()[0]==='nao','Restricted additional preserved');
+check_connection($db->query("SELECT simultaneo FROM sis_cliente WHERE id=3")->fetch_row()[0]==='nao','Restricted principal preserved');
+check_connection($db->query('SELECT COUNT(*) FROM suite_simultaneous_operation_items')->fetch_row()[0]==3,'Previous simultaneous values audited');
+check_connection($db->query('SELECT ip FROM sis_cliente WHERE id=1')->fetch_row()[0]==='100.64.2.1','IP unchanged by simultaneous');
+$preview=array('key'=>'simultaneous-fixture-2','login'=>'first','options'=>array('simultaneous'=>'nao'),'snapshot'=>mka_connection_settings_snapshot(mka_simultaneous_rows($db,$scope,'first')));
+$db->query("UPDATE sis_adicional SET simultaneo='nao' WHERE id=1");try{mka_simultaneous_execute($db,'operator',$scope,$preview);throw new RuntimeException('Stale simultaneous accepted');}catch(UnexpectedValueException $e){}
+echo "Simultaneous: scoped principals/additionals, audit, IP preservation, stale preview and retry OK\n";
