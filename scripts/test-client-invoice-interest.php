@@ -1,6 +1,6 @@
 <?php
 mysqli_report(MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT);
-foreach(array('formatacao','data','math','titulo') as $library)require_once '/opt/mk-auth/libs/'.$library.'.class';
+foreach(array('formatacao','data','math','titulo') as $library){$root=is_file('/opt/mk-auth/classes/'.$library.'.class')?'/opt/mk-auth/classes/':'/opt/mk-auth/libs/';require_once $root.$library.'.class';}
 require $argv[1];$db=new mysqli('127.0.0.1','root','vertrigo','mkradius');
 $db->query('CREATE TEMPORARY TABLE sis_cliente(login VARCHAR(80),uuid_cliente VARCHAR(48),grupo VARCHAR(40),conta INT)');
 $db->query('CREATE TEMPORARY TABLE sis_lanc(id INT,login VARCHAR(80),status VARCHAR(20),deltitulo INT,datavenc DATE)');

@@ -11,6 +11,15 @@ function mka_client_open_invoices($db,$uuid,$scope,$page=1) {
     return array('client'=>$client,'invoices'=>$q->get_result()->fetch_all(MYSQLI_ASSOC),'total'=>$total,'page'=>$page,'pages'=>$pages);
 }
 
+function mka_client_invoice_interest_methods(){
+    $families=array(
+        array(array('MKAC_TITULO','FMMMHAKMKATKTMAAHMKKAKUAHMKAUMUKH'),array('MKAC_MATH','FMUKMAHKAAMKUMAAUKHAUAKMAAHMAMKKH'),array('MKAC_MATH','FMHMUKAKMMMKTMAATMUAHMHAMAHAHAUKT'),array('MKAC_DATA','FAUMTKAAMKUMMKMMAAUKHATKMMKAHKUAU'),array('MKAC_FORMATACAO','FMKKAMAATATAMATMUMHMUMTMAMHAKMTAU')),
+        array(array('MKAC_TITULO','FKTMTKTKTMMMUKTAKAHKUKUATAMAHMKKA'),array('MKAC_MATH','FAMAHAUKHMMMHMHMUKUMTMKAMKHAKMTAK'),array('MKAC_MATH','FMMKUMUMTAKMMMHAMAUKHAKMKKMKTMHKM'),array('MKAC_DATA','FMKATKUAKMTKTMKKUKUMTKTKHMTKAAMMK'),array('MKAC_FORMATACAO','FKMAHAMMAKHKHMUMUMHMKMAKHAMAKKMAM'))
+    );
+    foreach($families as $methods){$available=true;foreach($methods as $method)if(!is_callable($method)){$available=false;break;}if($available)return $methods;}
+    throw new DomainException('O cálculo de juros não está disponível nesta versão do MK-AUTH. Consulte o recebimento nativo.');
+}
+
 // Call only the native read-only financial methods used by receber.hhvm.
 function mka_client_invoice_interest($db,$uuid,$scope,$id) {
     $q=$db->prepare("SELECT l.id,l.datavenc,c.conta FROM sis_lanc l INNER JOIN sis_cliente c ON c.login=l.login WHERE c.uuid_cliente=? AND ($scope) AND l.id=? AND l.status IN ('aberto','vencido') AND COALESCE(l.deltitulo,0)=0 LIMIT 1");
@@ -19,8 +28,7 @@ function mka_client_invoice_interest($db,$uuid,$scope,$id) {
     $account=(int)$invoice['conta'];
     $q=$db->prepare('SELECT multa,juros FROM sis_boleto WHERE id=? LIMIT 1');$q->bind_param('i',$account);$q->execute();$rates=$q->get_result()->fetch_assoc();
     if(!$rates||$rates['multa']===null||$rates['juros']===null)throw new DomainException('A conta do cliente não possui taxas disponíveis para calcular.');
-    $methods=array(array('MKAC_TITULO','FMMMHAKMKATKTMAAHMKKAKUAHMKAUMUKH'),array('MKAC_MATH','FMUKMAHKAAMKUMAAUKHAUAKMAAHMAMKKH'),array('MKAC_MATH','FMHMUKAKMMMKTMAATMUAHMHAMAHAHAUKT'),array('MKAC_DATA','FAUMTKAAMKUMMKMMAAUKHATKMMKAHKUAU'),array('MKAC_FORMATACAO','FMKKAMAATATAMATMUMHMUMTMAMHAKMTAU'));
-    foreach($methods as $method)if(!is_callable($method))throw new RuntimeException('Native financial method unavailable');
+    $methods=mka_client_invoice_interest_methods();
     $today=date('Y-m-d');$due=substr((string)$invoice['datavenc'],0,10);
     if(!preg_match('/^\d{4}-\d{2}-\d{2}$/D',$due)||strtotime($due)===false)throw new DomainException('Vencimento inválido para o cálculo.');
     global $LOADMYSQL;$previous=$LOADMYSQL??null;$LOADMYSQL=$db;
