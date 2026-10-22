@@ -6,7 +6,7 @@ function mka_client_open_invoices($db,$uuid,$scope,$page=1) {
     $q=$db->prepare("SELECT COUNT(*) FROM sis_lanc WHERE login=? AND status IN ('aberto','vencido') AND COALESCE(deltitulo,0)=0");
     $q->bind_param('s',$client['login']);$q->execute();$total=(int)$q->get_result()->fetch_row()[0];
     $size=5;$pages=max(1,(int)ceil($total/$size));$page=min(max(1,(int)$page),$pages);$offset=($page-1)*$size;
-    $q=$db->prepare("SELECT l.id,l.uuid_lanc,l.recibo,l.datavenc,l.valor,l.obs,(l.status='vencido' OR l.datavenc<CURDATE()) AS overdue,EXISTS(SELECT 1 FROM sis_qrpix pix WHERE pix.titulo=l.id AND TRIM(pix.qrcode)<>'') AS has_pix FROM sis_lanc l WHERE l.login=? AND l.status IN ('aberto','vencido') AND COALESCE(l.deltitulo,0)=0 ORDER BY l.datavenc ASC,l.id ASC LIMIT $size OFFSET $offset");
+    $q=$db->prepare("SELECT l.id,l.uuid_lanc,l.recibo,l.datavenc,l.valor AS valor_original,(COALESCE((SELECT vt.valor FROM vtab_titulos vt WHERE vt.titulo=l.id LIMIT 1),l.valor)+COALESCE((SELECT SUM(CASE WHEN m.tipo='acrescimo' THEN m.valor WHEN m.tipo='desconto' THEN -m.valor ELSE 0 END) FROM sis_mlanc m WHERE m.idlanc=l.id AND COALESCE(m.deltitulo,0)=0),0)) AS valor,l.obs,(l.status='vencido' OR l.datavenc<CURDATE()) AS overdue,EXISTS(SELECT 1 FROM sis_qrpix pix WHERE pix.titulo=l.id AND TRIM(pix.qrcode)<>'') AS has_pix FROM sis_lanc l WHERE l.login=? AND l.status IN ('aberto','vencido') AND COALESCE(l.deltitulo,0)=0 ORDER BY l.datavenc ASC,l.id ASC LIMIT $size OFFSET $offset");
     $q->bind_param('s',$client['login']);$q->execute();
     return array('client'=>$client,'invoices'=>$q->get_result()->fetch_all(MYSQLI_ASSOC),'total'=>$total,'page'=>$page,'pages'=>$pages);
 }
