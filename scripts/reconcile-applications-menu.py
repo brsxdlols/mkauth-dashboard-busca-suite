@@ -5,7 +5,8 @@ from pathlib import Path
 BASELINE = '91358e9b8d9be1e4cb33774f759a139438b92c9dace8027c2d6a03d9d6e73518'
 MARKER = '/* MKA-SUITE-APPLICATIONS-REUSE-V1 */'
 def patch(source):
-    text=source.decode('utf-8').replace('\r','')
+    try:text=source.decode('utf-8').replace('\r','')
+    except UnicodeDecodeError:return None  # Unknown legacy menu: preserve its exact bytes.
     if MARKER in text:return source
     if hashlib.sha256(text.encode()).hexdigest()!=BASELINE:return None
     match=re.search(r"\$\('\.navbar-start'\)\.prepend\(`([\s\S]*?)`\);",text)

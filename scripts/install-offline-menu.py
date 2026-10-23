@@ -5,15 +5,16 @@ import sys
 from pathlib import Path
 
 path = Path(sys.argv[1]) / 'addons' / 'addon.js'
-source = path.read_bytes().decode('utf-8') if path.exists() else ''
-start, end = '/* MKA-SUITE-OFFLINE-MENU-START */', '/* MKA-SUITE-OFFLINE-MENU-END */'
-source = re.sub(re.escape(start) + r'.*?' + re.escape(end) + r'\r?\n?', '', source, flags=re.S)
-block = '''/* MKA-SUITE-OFFLINE-MENU-START */
+if path.is_symlink():raise ValueError('addon.js e link simbolico; preservado.')
+original = path.read_bytes() if path.exists() else b''
+start, end = b'/* MKA-SUITE-OFFLINE-MENU-START */', b'/* MKA-SUITE-OFFLINE-MENU-END */'
+source = re.sub(re.escape(start) + rb'.*?' + re.escape(end) + rb'\r?\n?', b'', original, flags=re.S)
+block = b'''/* MKA-SUITE-OFFLINE-MENU-START */
 add_menu.clientes('{"plink": "' + window.location.origin + '/admin/addons/rel_cli_offline/", "ptext": "&#128268;&nbsp; <b>Clientes offline</b>"}');
 /* MKA-SUITE-OFFLINE-MENU-END */
 '''
 # A link in a custom ADDONS menu is not a Clients menu shortcut.
-if not re.search(r'add_menu\.clientes\s*\([^;]*addons/rel_cli_offline(?:/|[\x27\x22`])', source):
-    source = source.rstrip() + '\n' + block
+if not re.search(rb'add_menu\.clientes\s*\([^;]*addons/rel_cli_offline(?:/|[\x27\x22`])', source):
+    source = source + (b'\n' if source and not source.endswith(b'\n') else b'') + block
 path.parent.mkdir(parents=True, exist_ok=True)
-path.write_bytes(source.encode('utf-8'))
+if source != original:path.write_bytes(source)
