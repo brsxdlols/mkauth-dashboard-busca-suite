@@ -5,7 +5,7 @@ from pathlib import Path
 MARKER='/* MKA-SUITE-RADIUS-APPLICATIONS-MENU */'
 BLOCK=r'''
 /* MKA-SUITE-RADIUS-APPLICATIONS-MENU */
-(function(){
+;(function(){
  function addRadius(){
   var groups=Array.from(document.querySelectorAll('.navbar-start .has-dropdown'));
   function groupMenu(pattern){var group=groups.find(function(n){var label=n.querySelector('.navbar-link');return label&&pattern.test(label.textContent);});return group?group.querySelector('.navbar-dropdown'):null;}
