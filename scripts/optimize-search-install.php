@@ -6,6 +6,7 @@ $backup = $argv[2] ?? '';
 if (!$backup || !is_dir($backup)) {fwrite(STDERR,"Backup indisponivel.\n");exit(1);}
 require $admin.'/addons/shared/search_performance.php';
 require $admin.'/addons/shared/performance_compatibility.php';
+require_once $admin.'/addons/shared/client_update_audit.php';
 if (strpos(file_get_contents($admin.'/addons/busca_inteligente/index.php'), "define('MKA_SEARCH_PREEXISTING_DIRECT',true)")!==false) define('MKA_SEARCH_PREEXISTING_DIRECT',true);
 function install_perf_median($v) {sort($v,SORT_NUMERIC);return $v[(int)floor(count($v)/2)];}
 function install_perf_flag($db,$flag) {
@@ -38,6 +39,8 @@ $changed=false;$db=null;$previous='';
 try {
     require_once __DIR__.'/installer-database.php';
     $db=mka_installer_database_connect();
+    // First installs have not visited the Search page that normally creates this table.
+    if(!mka_client_audit_ensure_table($db))throw new RuntimeException('Tabela auxiliar de auditoria indisponivel.');
     if(stripos(mysqli_get_server_info($db),'MariaDB')===false)throw new RuntimeException('MariaDB necessario para timeout validado.');
     perf_query($db,'SET SESSION max_statement_time=15');
     $lock=fopen(mka_perf_dir().'/optimization.lock','c');
@@ -69,7 +72,8 @@ try {
     }
 } catch(Throwable $e) {
     if($changed && $db) {install_perf_flag($db,$previous);$report['rollback']=true;}
-    $report['status']='not_applied';$report['reason']=$e->getMessage();echo '[aviso] '.$e->getMessage()."\n";
+    $report['status']='not_applied';$report['reason']=$e->getMessage();
+    if($db)$report['database_error_code']=(int)$db->errno;echo '[aviso] '.$e->getMessage()."\n";
 }
 file_put_contents($backup.'/performance-install.json',json_encode($report,JSON_PRETTY_PRINT),LOCK_EX);
 echo '[desempenho] Relatorio: '.$backup."/performance-install.json\n";
