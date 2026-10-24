@@ -341,9 +341,10 @@ if (isset($_SESSION['MM_Usuario'])) {
             padding: 8px;
         }
 
-        .dashboard-ramal-stats .dashboard-stat-card {
+        .dashboard-ramal-panel .dashboard-ramal-stats .dashboard-stat-card {
             min-height: 150px;
             height: auto;
+            max-height: none;
             padding: 12px 12px 14px;
             border-radius: 12px;
             aspect-ratio: auto;
