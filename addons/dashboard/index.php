@@ -342,7 +342,8 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-ramal-stats .dashboard-stat-card {
-            min-height: 132px;
+            min-height: 150px;
+            height: auto;
             padding: 12px 12px 14px;
             border-radius: 12px;
             aspect-ratio: auto;
@@ -353,9 +354,13 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
 
         .dashboard-ramal-stats .dashboard-stat-value {
-            margin-top: 14px;
+            margin-top: 6px;
             font-size: clamp(2rem, 0.8vw + 1.2rem, 2.45rem);
-            line-height: 0.94;
+            line-height: 1.2;
+            flex: 0 0 auto;
+            min-height: 1.25em;
+            padding-block: 2px;
+            overflow: visible;
             white-space: nowrap;
         }
 
