@@ -116,10 +116,17 @@ if (isset($_SESSION['MM_Usuario'])) {
             overflow: hidden;
         }
 
-        .dashboard-stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
-            filter: saturate(1.03);
+        @media (hover: hover) and (pointer: fine) {
+            .dashboard-stat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+                filter: saturate(1.03);
+            }
+        }
+        @media (hover: none), (pointer: coarse) {
+            .dashboard-stat-card {
+                transition: none;
+            }
         }
 
         .dashboard-stat-card::before {
@@ -1454,11 +1461,11 @@ if (isset($_SESSION['MM_Usuario'])) {
                     <span class="dashboard-portal-arrow" aria-hidden="true">→</span>
                 </a>
             </div>
-            <form action="/admin/addons/busca_inteligente/index.php" method="get" id="" class="form-inline dashboard-main-search">
+            <form action="/admin/addons/busca_inteligente/index.php" method="get" id="dashboard-client-search" class="form-inline dashboard-main-search">
                 <div class="row g-1">
 
                     <div class="col form-floating mb-3">
-                        <input type="search" name="busca" class="form-control" id="floatingInput" placeholder="Digite para procurar o cliente" value="<?php echo $busca; ?>" list="sugestoes">
+                        <input type="search" name="busca" form="dashboard-client-search" enterkeyhint="search" class="form-control" id="floatingInput" placeholder="Digite para procurar o cliente" value="<?php echo $busca; ?>" list="sugestoes">
                         <label for="floatingInput">Digite para procurar o cliente</label>
                     </div>
                     <div class="col-auto mb-3">
@@ -1468,6 +1475,20 @@ if (isset($_SESSION['MM_Usuario'])) {
                     </div>
                 </div>
             </form>
+            <script>
+            (function(){
+                const form=document.getElementById('dashboard-client-search');
+                const input=document.getElementById('floatingInput');
+                if(!form || !input)return;
+                input.addEventListener('keydown',function(event){
+                    if(event.key!=='Enter' || event.isComposing || event.keyCode===229)return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if(form.requestSubmit)form.requestSubmit();
+                    else form.querySelector('button[type="submit"]').click();
+                },true);
+            })();
+            </script>
             <?php if (permissao('perm_config')) { ?><a href="cfg.php" class="dashboard-config-entry"><i class="bi bi-gear-fill" aria-hidden="true"></i> Configurações</a><?php } ?>
             </div>
 

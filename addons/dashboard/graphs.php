@@ -41,15 +41,18 @@ if($hasFinance){
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gráficos do Dashboard</title><link rel="stylesheet" href="css/bootstrap.css"><link rel="stylesheet" href="css/estilo.css">
 <script src="js/highcharts.js"></script><script src="js/exporting.js"></script>
-<style>html,body{margin:0;padding:0;background:transparent}.row{margin-left:0;margin-right:0}.highcharts-figure{margin:0;min-width:0}.card{border-radius:16px;overflow:hidden}.highcharts-description{margin:0}</style>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}#dashboard-graphs-content{display:flow-root;width:100%}.row{margin-left:0;margin-right:0}.highcharts-figure{margin:0;min-width:0}.card{border-radius:16px;overflow:hidden}.highcharts-description{margin:0}</style>
 </head><body data-mka-graphs-ready>
+<main id="dashboard-graphs-content">
 <?php include __DIR__.'/graficos.php'; ?>
+</main>
 <script>
 (function(){
-    function report(){parent.postMessage({type:'mka-dashboard-graphs',height:document.querySelector('[id^="container-"]')?Math.max(document.body.scrollHeight,document.documentElement.scrollHeight):0},location.origin);}
+    const content=document.getElementById('dashboard-graphs-content');
+    function report(){parent.postMessage({type:'mka-dashboard-graphs',height:content.querySelector('[id^="container-"]')?Math.ceil(Math.max(content.scrollHeight,content.getBoundingClientRect().height)):0},location.origin);}
     window.addEventListener('load',report);
     window.addEventListener('resize',report);
-    if(window.ResizeObserver)new ResizeObserver(report).observe(document.body);
+    if(window.ResizeObserver)new ResizeObserver(report).observe(content);
     report();
 })();
 </script></body></html>

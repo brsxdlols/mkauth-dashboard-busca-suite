@@ -629,10 +629,10 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
                 <div class="form-floating">
                     <?php if ($disabledScope) { ?>
                     <input type="hidden" name="busca" value="desativado" />
-                    <input type="search" class="form-control" id="busca" name="disabled_q" placeholder="Nome ou login do cliente desativado" value="<?= htmlspecialchars($disabledSearchTerm, ENT_QUOTES, 'UTF-8'); ?>" />
+                    <input type="search" enterkeyhint="search" class="form-control" id="busca" name="disabled_q" placeholder="Nome ou login do cliente desativado" value="<?= htmlspecialchars($disabledSearchTerm, ENT_QUOTES, 'UTF-8'); ?>" />
                     <label for="busca">Buscar clientes desativados — nome ou login</label>
                     <?php } else { ?>
-                    <input type="search" class="form-control" id="busca" name="busca" placeholder="<?= $isMultiBusiness ? 'Busque por nome, documento, endereço, plano ou situação cadastral' : 'Busque por nome, login, endereço, plano, CPF, bloqueado, offline ou observação'; ?>" value="<?= htmlspecialchars($busca, ENT_QUOTES, 'UTF-8'); ?>" list="sugestoes" />
+                    <input type="search" enterkeyhint="search" class="form-control" id="busca" name="busca" placeholder="<?= $isMultiBusiness ? 'Busque por nome, documento, endereço, plano ou situação cadastral' : 'Busque por nome, login, endereço, plano, CPF, bloqueado, offline ou observação'; ?>" value="<?= htmlspecialchars($busca, ENT_QUOTES, 'UTF-8'); ?>" list="sugestoes" />
                     <label for="busca"> Digite o que procura:</label>
                     <?php } ?>
                 </div>
@@ -1146,6 +1146,22 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     <script src="../shared/ticket_native_modal.js?v=20261015-17"></script>
     <?php include('../../baixo.php'); ?>
 
+    <script>
+    (function(){
+        var input=document.getElementById('busca');
+        var form=input ? input.closest('form') : null;
+        if(!input || !form)return;
+        input.addEventListener('keydown',function(event){
+            if(event.key!=='Enter' || event.isComposing || event.keyCode===229)return;
+            event.preventDefault();
+            event.stopPropagation();
+            var button=form.querySelector('button[type="submit"]');
+            input.blur();
+            if(form.requestSubmit)form.requestSubmit(button);
+            else if(button)button.click();
+        },true);
+    })();
+    </script>
     <?php if ($suite_live_search === 's') { ?>
         <script>
             (function () {
@@ -1182,6 +1198,11 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
                             if (error && error.name !== 'AbortError') console.error(error);
                         });
                 }
+
+                form.addEventListener('submit', function () {
+                    window.clearTimeout(timer);
+                    if(controller)controller.abort();
+                });
 
                 input.addEventListener('input', function () {
                     window.clearTimeout(timer);
