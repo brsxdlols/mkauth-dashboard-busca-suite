@@ -144,6 +144,27 @@ if (isset($_SESSION['MM_Usuario'])) {
             .cfg-actions { position: static; flex-direction: column-reverse; }
             .cfg-actions .btn { width: 100%; }
         }
+
+        .cfg-topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+        .cfg-topic-grid>.form-floating{width:100%;margin:0!important;padding:0;min-width:0}
+        .cfg-topic-grid>.form-floating>label{white-space:normal;line-height:1.25;max-width:100%;height:auto;color:#52657d}
+        .cfg-topic-grid .form-select{cursor:pointer;padding-right:38px}
+        .cfg-topic-grid .form-control,.cfg-topic-grid .form-select{min-height:66px}
+        .cfg-router-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}
+        .cfg-router{position:relative;display:flex;align-items:center;gap:16px;justify-content:space-between;padding:18px;border:1px solid #d6e1ef;border-radius:14px;background:#f9fbfe;cursor:pointer;margin:0;min-width:0}
+        .cfg-router-copy{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
+        .cfg-router-copy strong{font-size:14px;color:#213d60}.cfg-router-copy small{color:#62758e;font-size:12px}
+        .cfg-router-on,.cfg-router-off{font-size:12px;font-weight:600;margin-top:4px}.cfg-router-on{color:#158052}.cfg-router-off{color:#62758e}
+        .cfg-router-input{position:absolute;width:1px;height:1px;opacity:0}
+        .cfg-router-switch{width:46px;height:26px;border-radius:20px;background:#a8b5c6;flex-shrink:0;position:relative}
+        .cfg-router-switch:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 3px #0002}
+        .cfg-router-input:checked~.cfg-router-switch{background:#1a73e8}.cfg-router-input:checked~.cfg-router-switch:after{left:23px}
+        .cfg-router-input:focus-visible~.cfg-router-switch{outline:3px solid #91bffc;outline-offset:4px}
+        .cfg-router-input:checked~.cfg-router-copy .cfg-router-off,.cfg-router-input:not(:checked)~.cfg-router-copy .cfg-router-on{display:none}
+        @media(max-width:680px){.cfg-topic-grid,.cfg-router-grid{grid-template-columns:minmax(0,1fr)}.cfg-actions{bottom:0;flex-wrap:wrap}.cfg-actions .btn{min-width:0;flex:1}.cfg-topic-grid .form-control,.cfg-topic-grid .form-select{min-height:72px}}
+        .cfg-topic-grid>.form-floating{display:flex;flex-direction:column}
+        .cfg-topic-grid>.form-floating>label{position:static!important;order:-1;transform:none!important;opacity:1!important;padding:0 0 7px!important;font-size:13px;font-weight:600;pointer-events:auto}
+        .cfg-topic-grid .form-control,.cfg-topic-grid .form-select{padding:12px 38px 12px 14px!important;min-height:48px;height:auto}
     </style>
 
 
@@ -271,14 +292,10 @@ if (isset($_SESSION['MM_Usuario'])) {
                     <div class="cfg-performance-actions"><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a><span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span></div>
                 </div>
 
-                <section class="cfg-card">
-                    <div class="cfg-card-head">
-                        <i class="fa fa-th-large"></i>
-                        <div><h2>Visualização e comportamento</h2><p>Escolha o que será exibido no Dashboard e como os dados serão apresentados.</p></div>
-                    </div>
-                <div class='row cfg-settings-grid'>
-
-                    <div class="col-4 form-floating mb-2 g-1">
+                <section class="cfg-card cfg-topic" id="cfg-topic-layout">
+                    <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Layout e navegação</h2><p>Escolha o layout e o destino dos atalhos de atendimento.</p></div></div>
+                    <div class="cfg-topic-grid">
+<div class="form-floating cfg-field">
                         <select class="form-select" name="suite_layout_mode" id="suite_layout_mode" aria-label="">
                             <?php
                             foreach (array('novo'=>'Nova', 'legado'=>'Legada', 'multi'=>'Multiempresas') as $mode=>$label) {
@@ -288,124 +305,16 @@ if (isset($_SESSION['MM_Usuario'])) {
                         </select>
                         <label for="suite_layout_mode">Layout Dashboard + Busca</label>
                     </div>
-                    <div class="form-floating col-12 col-md-6 col-lg-4">
+<div class="form-floating cfg-field">
                         <select class="form-select" name="suite_dashboard_support_destination" id="suite_dashboard_support_destination"><option value="busca" <?= $suite_dashboard_support_destination==='busca'?'selected':''; ?>>Central de chamados (novo)</option><option value="native" <?= $suite_dashboard_support_destination==='native'?'selected':''; ?>>Sistema nativo do MK-AUTH</option></select>
                         <label for="suite_dashboard_support_destination">Abrir Chamados da Dashboard em</label>
                     </div>
-                    <div class="form-floating mb-3">
+<div class="form-floating cfg-field">
                         <select class="form-select" name="suite_dashboard_installations_destination" id="suite_dashboard_installations_destination"><option value="busca" <?= $suite_dashboard_installations_destination==='busca'?'selected':''; ?>>Central de instalações (novo)</option><option value="native" <?= $suite_dashboard_installations_destination==='native'?'selected':''; ?>>Sistema nativo do MK-AUTH</option></select>
                         <label for="suite_dashboard_installations_destination">Abrir Instalações da Dashboard em</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_ticket_medio" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($exb_ticket_medio == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Ticket Medio</label>
-                    </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_saldo_conta" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($exb_saldo_conta == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Saldo em Conta</label>
-                    </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_clientes_ramal" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($exb_clientes_ramal == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Clientes Ramais</label>
-                    </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_balanco_faturamento" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($exb_balanco_faturamento == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Balanço Faturamento</label>
-                    </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_balanco_clientes" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($exb_balanco_clientes == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Balanço Clientes</label>
-                    </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_balanco_chamados" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($exb_balanco_chamados == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Balanco Chamados</label>
-                    </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_busca_inteligente" id="floatingSelect" aria-label="">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_busca_inteligente" id="cfg-exb_busca_inteligente" aria-label="">
                             <?php
                             if ($exb_busca_inteligente == 's') {
                                 echo "
@@ -420,10 +329,34 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="floatingSelect">Busca Inteligente Instalado?</label>
+                        <label for="cfg-exb_busca_inteligente">Busca Inteligente Instalado?</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="contabilizar_bloq_offline" id="floatingSelect" aria-label="">
+                    </div>
+                </section>
+
+                <section class="cfg-card cfg-topic" id="cfg-topic-clients">
+                    <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Clientes e indicadores</h2><p>Defina os indicadores e a classificação exibida no painel.</p></div></div>
+                    <div class="cfg-topic-grid">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_clientes_ramal" id="cfg-exb_clientes_ramal" aria-label="">
+                            <?php
+                            if ($exb_clientes_ramal == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-exb_clientes_ramal">Exibir Clientes Ramais</label>
+                    </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="contabilizar_bloq_offline" id="cfg-contabilizar_bloq_offline" aria-label="">
                             <?php
                             if ($contabilizar_bloq_offline == 's') {
                                 echo "
@@ -438,11 +371,88 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="floatingSelect">Contabilizar Clientes Bloqueados nos Offline?</label>
+                        <label for="cfg-contabilizar_bloq_offline">Contabilizar Clientes Bloqueados nos Offline?</label>
                     </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_balanco_clientes" id="cfg-exb_balanco_clientes" aria-label="">
+                            <?php
+                            if ($exb_balanco_clientes == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-exb_balanco_clientes">Exibir Balanço Clientes</label>
+                    </div>
+                    </div>
+                </section>
 
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="exb_graficos_em_baixo" id="floatingSelect" aria-label="">
+                <section class="cfg-card cfg-topic" id="cfg-topic-finance">
+                    <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Financeiro e gráficos</h2><p>Organize os gráficos, o período e os valores considerados.</p></div></div>
+                    <div class="cfg-topic-grid">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_ticket_medio" id="cfg-exb_ticket_medio" aria-label="">
+                            <?php
+                            if ($exb_ticket_medio == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-exb_ticket_medio">Exibir Ticket Medio</label>
+                    </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_saldo_conta" id="cfg-exb_saldo_conta" aria-label="">
+                            <?php
+                            if ($exb_saldo_conta == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-exb_saldo_conta">Exibir Saldo em Conta</label>
+                    </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_balanco_faturamento" id="cfg-exb_balanco_faturamento" aria-label="">
+                            <?php
+                            if ($exb_balanco_faturamento == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-exb_balanco_faturamento">Exibir Balanço Faturamento</label>
+                    </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_graficos_em_baixo" id="cfg-exb_graficos_em_baixo" aria-label="">
                             <?php
                             if ($exb_graficos_em_baixo == 's') {
                                 echo "
@@ -457,47 +467,28 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="floatingSelect">Exibir Graficos Abaixo?</label>
+                        <label for="cfg-exb_graficos_em_baixo">Exibir Graficos Abaixo?</label>
                     </div>
-                    
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="tbl_logs_sistema" id="floatingSelect" aria-label="">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="qtd_meses_graficos" id="cfg-qtd_meses_graficos" aria-label="">
                             <?php
-                            if ($tbl_logs_sistema == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
+                            for ($i = 1; $i <= 6; $i++) {
+                                if ($i == $qtd_meses_graficos) {
+                                    echo "<option value='$i' selected>$i</option>";
+                                } else {
+                                    echo "<option value='$i'>$i</option>";
+                                }
                             }
                             ?>
                         </select>
-                        <label for="floatingSelect">Exibir Tabela de Logs do Sistema</label>
+                        <label for="cfg-qtd_meses_graficos">Quantidade de Meses nos Gráficos</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="tbl_chamados_abertos" id="floatingSelect" aria-label="">
-                            <?php
-                            if ($tbl_chamados_abertos == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Exibir Tabela de Chamados Abertos</label>
+<div class="form-floating cfg-field">
+                        <input type="number" name="limite_ticket" class="form-control" id="limite_ticket" placeholder="Ticket" min="50" max="10000" step="50" value="<?php echo $limite_ticket; ?>">
+                        <label for="limite_ticket">Valor Máximo de Mensalidade para Considerar no Ticket Médio R$</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="tbl_contas_pagar" id="floatingSelect" aria-label="">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="tbl_contas_pagar" id="cfg-tbl_contas_pagar" aria-label="">
                             <?php
                             if ($tbl_contas_pagar == 's') {
                                 echo "
@@ -512,10 +503,76 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="floatingSelect">Exibir Tabela de Contas a Pagar</label>
+                        <label for="cfg-tbl_contas_pagar">Exibir Tabela de Contas a Pagar</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
-                        <select class="form-select" name="popup_clientes_sessao" id="floatingSelect" aria-label="">
+                    </div>
+                </section>
+
+                <section class="cfg-card cfg-topic" id="cfg-topic-support">
+                    <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Atendimentos e registros</h2><p>Escolha quais informações operacionais mostrar.</p></div></div>
+                    <div class="cfg-topic-grid">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="exb_balanco_chamados" id="cfg-exb_balanco_chamados" aria-label="">
+                            <?php
+                            if ($exb_balanco_chamados == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-exb_balanco_chamados">Exibir Balanco Chamados</label>
+                    </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="tbl_chamados_abertos" id="cfg-tbl_chamados_abertos" aria-label="">
+                            <?php
+                            if ($tbl_chamados_abertos == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-tbl_chamados_abertos">Exibir Tabela de Chamados Abertos</label>
+                    </div>
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="tbl_logs_sistema" id="cfg-tbl_logs_sistema" aria-label="">
+                            <?php
+                            if ($tbl_logs_sistema == 's') {
+                                echo "
+                        <option value='s' selected>Sim</option>
+                        <option value='n'>Não</option>
+                        ";
+                            } else {
+                                echo "
+                        <option value='s'>Sim</option>
+                        <option value='n' selected>Não</option>
+                    ";
+                            }
+                            ?>
+                        </select>
+                        <label for="cfg-tbl_logs_sistema">Exibir Tabela de Logs do Sistema</label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="cfg-card cfg-topic" id="cfg-topic-alerts">
+                    <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Alertas de conexão</h2><p>Controle os avisos de clientes e os alertas de rede.</p></div></div>
+                    <div class="cfg-topic-grid">
+<div class="form-floating cfg-field">
+                        <select class="form-select" name="popup_clientes_sessao" id="cfg-popup_clientes_sessao" aria-label="">
                             <?php
                             if ($popup_clientes_sessao == 's') {
                                 echo "
@@ -530,52 +587,42 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="floatingSelect">Popup de Clientes ao Logar/Deslogar?</label>
+                        <label for="cfg-popup_clientes_sessao">Popup de Clientes ao Logar/Deslogar?</label>
                     </div>
-                    <div class="col-2 form-floating mb-2 g-1">
+<div class="form-floating cfg-field">
                         <input type="number" name="popup_clientes_sessao_duracao" class="form-control" id="popup_clientes_sessao_duracao" placeholder="3" min="1" max="15" step="1" value="<?php echo (int) $popup_clientes_sessao_duracao; ?>">
                         <label for="popup_clientes_sessao_duracao">Tempo do Popup (s)</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
+<div class="form-floating cfg-field">
                         <select class="form-select" name="ip_conflict_alert_enabled" id="ip_conflict_alert_enabled">
                             <option value="n" <?= $ip_conflict_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
                             <option value="s" <?= $ip_conflict_alert_enabled === 's' ? 'selected' : ''; ?>>Sim</option>
                         </select>
                         <label for="ip_conflict_alert_enabled">Exibir alerta de IP duplicado?</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
+<div class="form-floating cfg-field">
                         <select class="form-select" name="radius_alert_enabled" id="radius_alert_enabled">
                             <option value="s" <?php echo $radius_alert_enabled === 's' ? 'selected' : ''; ?>>Sim</option>
                             <option value="n" <?php echo $radius_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
                         </select>
                         <label for="radius_alert_enabled">Exibir alerta de integração Radius?</label>
                     </div>
-                    <div class="col-4 form-floating mb-2 g-1">
+                    </div>
+                </section>
+
+                <section class="cfg-card cfg-topic" id="cfg-topic-payments">
+                    <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Notificações de pagamento</h2><p>Preferências de pagamento salvas automaticamente para seu usuário.</p></div></div>
+                    <div class="cfg-topic-grid">
+<div class="form-floating cfg-field">
                         <select class="form-select" id="payment_notifications_enabled" disabled><option value="1">Sim</option><option value="0">Não</option></select>
                         <label for="payment_notifications_enabled">Exibir notificações de pagamento?</label>
                         <small id="payment-preference-status" role="status">Salvo automaticamente para seu usuário.</small>
                         <script src="../shared/payment_preferences.js?v=20261007b" defer></script>
                     </div>
-                    <div class="col-6 form-floating mb-2 g-1">
-                        <select class="form-select" name="qtd_meses_graficos" id="floatingSelect" aria-label="">
-                            <?php
-                            for ($i = 1; $i <= 6; $i++) {
-                                if ($i == $qtd_meses_graficos) {
-                                    echo "<option value='$i' selected>$i</option>";
-                                } else {
-                                    echo "<option value='$i'>$i</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                        <label for="floatingSelect">Quantidade de Meses nos Gráficos</label>
                     </div>
-                    <div class="col-6 form-floating mb-2 g-1">
-                        <input type="number" name="limite_ticket" class="form-control" id="limite_ticket" placeholder="Ticket" min="50" max="10000" step="50" value="<?php echo $limite_ticket; ?>">
-                        <label for="limite_ticket">Valor Máximo de Mensalidade para Considerar no Ticket Médio R$</label>
-                    </div>
-                </div>
                 </section>
+
+
 
                 <section class="cfg-card cfg-diagnostic">
                     <div class="cfg-card-head">
@@ -586,12 +633,15 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <input type="hidden" name="router_monitoring_present" value="1">
                         <input type="hidden" name="router_monitoring_csrf" value="<?= htmlspecialchars($_SESSION['suite_router_monitoring_csrf'],ENT_QUOTES,'UTF-8'); ?>">
                         <p>Monitoramento de integração por ramal. Desmarque equipamentos de backup ou fora de uso para ignorá-los nos testes e alertas da Dashboard. Salve as configurações após alterar.</p>
+                        <div class="cfg-router-grid">
                         <?php foreach($routerMonitoringRouters as $monitorRouter): ?>
-                        <label class="d-block mb-2"><input type="checkbox" name="router_monitoring_enabled[]" value="<?= htmlspecialchars($monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?>" <?= !in_array($monitorRouter['nasname'],$routerMonitoringDisabled,true)?'checked':''; ?>>
-                            Monitorar <?= htmlspecialchars(($monitorRouter['shortname']?:$monitorRouter['nasname']).' — '.$monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?>
+                        <label class="cfg-router"><input class="cfg-router-input" type="checkbox" role="switch" name="router_monitoring_enabled[]" value="<?= htmlspecialchars($monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?>" <?= !in_array($monitorRouter['nasname'],$routerMonitoringDisabled,true)?'checked':''; ?>>
+                            <span class="cfg-router-copy"><strong><?= htmlspecialchars($monitorRouter['shortname']?:$monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?></strong><small><?= htmlspecialchars($monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?></small><span class="cfg-router-on">Monitoramento ativo</span><span class="cfg-router-off">Monitoramento desativado</span></span>
+                            <span class="cfg-router-switch" aria-hidden="true"></span>
                         </label>
                         <?php endforeach; ?>
-                        <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections" onclick="return testRadiusConnections(this);"><i class="fa fa-plug"></i> Testar conexões de todos os ramais</button>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections" onclick="return testRadiusConnections(this);"><i class="fa fa-plug"></i> Testar ramais monitorados</button>
                         <div id="radius-test-result" class="mt-2" aria-live="polite"></div>
                     </div>
                 </section>
@@ -725,7 +775,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         function testRadiusConnections(button) {
             var result = document.getElementById('radius-test-result');
             button.disabled = true;
-            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testando todos os ramais...';
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testando ramais monitorados...';
             result.innerHTML = '<div class="alert alert-info">Executando ping, porta e autenticação da API. Aguarde...</div>';
 
             var request = new XMLHttpRequest();
@@ -734,7 +784,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             request.onreadystatechange = function () {
                 if (request.readyState !== 4) return;
                 button.disabled = false;
-                button.innerHTML = '<i class="fa fa-plug"></i> Testar conexões de todos os ramais';
+                button.innerHTML = '<i class="fa fa-plug"></i> Testar ramais monitorados';
                 if (request.status < 200 || request.status >= 300) {
                     result.innerHTML = '<div class="alert alert-danger">Falha HTTP ' + request.status + '. Não foi possível executar o teste.</div>';
                     return;
@@ -757,7 +807,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             };
             request.onerror = function () {
                 button.disabled = false;
-                button.innerHTML = '<i class="fa fa-plug"></i> Testar conexões de todos os ramais';
+                button.innerHTML = '<i class="fa fa-plug"></i> Testar ramais monitorados';
                 result.innerHTML = '<div class="alert alert-danger">Falha de comunicação com o servidor.</div>';
             };
             request.send('action=test');
