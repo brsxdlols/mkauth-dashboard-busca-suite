@@ -839,6 +839,23 @@ if (isset($_SESSION['MM_Usuario'])) {
             height: 100%;
         }
 
+        /* Keep a single scrolling surface on touch-sized layouts. Hidden on
+           one axis makes the other axis auto, creating nested Safari scrollers. */
+        @media (max-width: 767.98px) {
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start,
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row,
+            body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row > [class*="col-"] {
+                overflow: visible !important;
+                overflow-x: clip !important;
+            }
+            .dashboard-summary-row > [class*="col-"] {
+                display: block;
+            }
+            .dashboard-summary-row > [class*="col-"] > .dashboard-surface {
+                height: auto;
+            }
+        }
+
         @media (min-width: 768px) {
             .dashboard-summary-row .dashboard-stat-card {
                 height: 112px;
