@@ -73,6 +73,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'trust_unlock_mode' => "VARCHAR(12) NOT NULL DEFAULT 'date'",
             'trust_unlock_fixed_days' => "INT NOT NULL DEFAULT 1",
             'trust_unlock_recent_days' => "INT NOT NULL DEFAULT 7",
+            'ip_conflict_alert_enabled' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
             'radius_alert_enabled' => "VARCHAR(1) NOT NULL DEFAULT 's'",
             'suite_layout_mode' => "VARCHAR(10) NOT NULL DEFAULT 'novo'"
         );
@@ -162,6 +163,25 @@ if (!function_exists('mka_suite_get_recent_trust_unlock')) {
               AND created_at >= DATE_SUB(NOW(), INTERVAL " . $recentDays . " DAY)
             ORDER BY created_at DESC LIMIT 1");
         return $query && ($row = mysqli_fetch_assoc($query)) ? $row : null;
+    }
+}
+
+if (!function_exists('mka_suite_get_ip_conflict_alert_enabled')) {
+    function mka_suite_get_ip_conflict_alert_enabled($conn = null)
+    {
+        if (!($conn instanceof mysqli)) $conn = mka_suite_connect_db();
+        if (!($conn instanceof mysqli)) return 'n';
+        mka_suite_ensure_layout_column($conn);
+        $query = @mysqli_query($conn, "SELECT ip_conflict_alert_enabled FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+        if ($query && ($row = mysqli_fetch_assoc($query))) return $row['ip_conflict_alert_enabled'] === 's' ? 's' : 'n';
+        return 'n';
+    }
+    function mka_suite_set_ip_conflict_alert_enabled($conn, $enabled)
+    {
+        if (!($conn instanceof mysqli)) return false;
+        mka_suite_ensure_layout_column($conn);
+        $enabled = $enabled === 's' ? 's' : 'n';
+        return (bool) @mysqli_query($conn, "UPDATE dashboard_am_sis_cfg SET ip_conflict_alert_enabled = '" . $enabled . "' WHERE id = 1");
     }
 }
 

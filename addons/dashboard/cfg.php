@@ -1,6 +1,17 @@
 <?php
 include('config.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
+require_once __DIR__ . '/../shared/router_monitoring.php';
+if(empty($_SESSION['suite_router_monitoring_csrf']))$_SESSION['suite_router_monitoring_csrf']=bin2hex(random_bytes(32));
+if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['router_monitoring_present'])) {
+    if(!permissao('perm_config') || !hash_equals($_SESSION['suite_router_monitoring_csrf'],(string)($_POST['router_monitoring_csrf']??''))) {
+        http_response_code(403);exit('Sessão inválida. Atualize a página.');
+    }
+    mka_router_monitoring_save($conn,$_POST['router_monitoring_enabled']??array());
+}
+$routerMonitoringDisabled=mka_router_monitoring_disabled($conn);
+$routerMonitoringRouters=mka_router_monitoring_routers($conn);
+
 ?>
 
 <!DOCTYPE html>
@@ -149,6 +160,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     $suite_dashboard_support_destination=mka_suite_get_dashboard_support_destination($conn);
     $suite_dashboard_installations_destination=mka_suite_get_dashboard_installations_destination($conn);
     $radius_alert_enabled = mka_suite_get_radius_alert_enabled($conn);
+    $ip_conflict_alert_enabled = mka_suite_get_ip_conflict_alert_enabled($conn);
 
     $query_atual_cfg = mysqli_query($conn, "SELECT * FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
     while ($cfg = mysqli_fetch_array($query_atual_cfg)) {
@@ -201,6 +213,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     $suite_layout_mode = isset($_POST['suite_layout_mode']) ? $_POST['suite_layout_mode'] : $suite_layout_mode;
     $suite_dashboard_support_destination=isset($_POST['suite_dashboard_support_destination'])&&$_POST['suite_dashboard_support_destination']==='native'?'native':(isset($_POST['suite_dashboard_support_destination'])?'busca':$suite_dashboard_support_destination);
     $suite_dashboard_installations_destination=isset($_POST['suite_dashboard_installations_destination'])&&$_POST['suite_dashboard_installations_destination']==='native'?'native':(isset($_POST['suite_dashboard_installations_destination'])?'busca':$suite_dashboard_installations_destination);
+    $ip_conflict_alert_enabled = isset($_POST['ip_conflict_alert_enabled']) ? ($_POST['ip_conflict_alert_enabled'] === 's' ? 's' : 'n') : $ip_conflict_alert_enabled;
     $radius_alert_enabled = isset($_POST['radius_alert_enabled']) ? ($_POST['radius_alert_enabled'] === 'n' ? 'n' : 's') : $radius_alert_enabled;
 
     $qtd_meses_graficos = isset($_POST['qtd_meses_graficos']) ? $_POST['qtd_meses_graficos'] : $qtd_meses_graficos;
@@ -524,6 +537,13 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <label for="popup_clientes_sessao_duracao">Tempo do Popup (s)</label>
                     </div>
                     <div class="col-4 form-floating mb-2 g-1">
+                        <select class="form-select" name="ip_conflict_alert_enabled" id="ip_conflict_alert_enabled">
+                            <option value="n" <?= $ip_conflict_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
+                            <option value="s" <?= $ip_conflict_alert_enabled === 's' ? 'selected' : ''; ?>>Sim</option>
+                        </select>
+                        <label for="ip_conflict_alert_enabled">Exibir alerta de IP duplicado?</label>
+                    </div>
+                    <div class="col-4 form-floating mb-2 g-1">
                         <select class="form-select" name="radius_alert_enabled" id="radius_alert_enabled">
                             <option value="s" <?php echo $radius_alert_enabled === 's' ? 'selected' : ''; ?>>Sim</option>
                             <option value="n" <?php echo $radius_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
@@ -563,6 +583,14 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <div><h2>Diagnóstico dos Ramais / NAS</h2><p>Valide conectividade, porta e autenticação de todos os concentradores cadastrados.</p></div>
                     </div>
                     <div>
+                        <input type="hidden" name="router_monitoring_present" value="1">
+                        <input type="hidden" name="router_monitoring_csrf" value="<?= htmlspecialchars($_SESSION['suite_router_monitoring_csrf'],ENT_QUOTES,'UTF-8'); ?>">
+                        <p>Monitoramento de integração por ramal. Desmarque equipamentos de backup ou fora de uso para ignorá-los nos testes e alertas da Dashboard. Salve as configurações após alterar.</p>
+                        <?php foreach($routerMonitoringRouters as $monitorRouter): ?>
+                        <label class="d-block mb-2"><input type="checkbox" name="router_monitoring_enabled[]" value="<?= htmlspecialchars($monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?>" <?= !in_array($monitorRouter['nasname'],$routerMonitoringDisabled,true)?'checked':''; ?>>
+                            Monitorar <?= htmlspecialchars(($monitorRouter['shortname']?:$monitorRouter['nasname']).' — '.$monitorRouter['nasname'],ENT_QUOTES,'UTF-8'); ?>
+                        </label>
+                        <?php endforeach; ?>
                         <button type="button" class="btn btn-outline-primary w-100" id="test-radius-connections" onclick="return testRadiusConnections(this);"><i class="fa fa-plug"></i> Testar conexões de todos os ramais</button>
                         <div id="radius-test-result" class="mt-2" aria-live="polite"></div>
                     </div>
@@ -674,6 +702,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 mka_suite_set_dashboard_support_destination($conn,$suite_dashboard_support_destination);
                 mka_suite_set_dashboard_installations_destination($conn,$suite_dashboard_installations_destination);
                 mka_suite_set_radius_alert_enabled($conn, $radius_alert_enabled);
+                mka_suite_set_ip_conflict_alert_enabled($conn, $ip_conflict_alert_enabled);
             }
             if (isset($conn) && $conn instanceof mysqli) {
                 mysqli_close($conn);

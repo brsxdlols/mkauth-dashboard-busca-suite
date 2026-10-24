@@ -92,7 +92,7 @@ if ($canTotals) {
 .multi-stat.outline-danger small{border-top-color:rgba(248,113,113,.22)}
 .multi-stat.outline-danger .multi-stat-icon{background:#fff0f2}
 </style><link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
-<script src="/admin/addons/shared/ip_conflicts.js?v=20261020-1" defer></script>
+<script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
 </head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); include __DIR__.'/mkauth_dashboard_top.php'; mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">

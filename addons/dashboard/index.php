@@ -1224,7 +1224,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
-<script src="/admin/addons/shared/ip_conflicts.js?v=20261020-1" defer></script>
+<script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
 </head>
 
 <body class="mka-suite-dashboard-page">
@@ -1672,6 +1672,8 @@ if (isset($_SESSION['MM_Usuario'])) {
             <?php
             $radius_state_file = '/var/lib/mkauth_radius_ppp_reconcile/status.json';
             $radius_manual_state_file = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'mkauth_dashboard_radius_test_status.json';
+            require_once __DIR__.'/../shared/router_monitoring.php';
+            $monitoringDisabled=mka_router_monitoring_disabled($conn);
             $radius_alert_items = array();
             $radius_alert_routers = array();
             $radius_alert_generated_at = '';
@@ -1700,6 +1702,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                         foreach ($radius_state['failed_routers'] as $failed_router) {
                             $router_name = trim((string) ($failed_router['name'] ?? ''));
                             $router_ip = trim((string) ($failed_router['router'] ?? ''));
+                            if(in_array($router_ip,$monitoringDisabled,true))continue;
                             if ($router_name === '' && $router_ip === '') {
                                 continue;
                             }

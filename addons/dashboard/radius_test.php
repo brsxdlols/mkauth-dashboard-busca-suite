@@ -18,6 +18,8 @@ if (!isset($conn) || !($conn instanceof mysqli) || !@mysqli_ping($conn)) {
     $conn = @mysqli_connect('127.0.0.1', 'root', 'vertrigo', 'mkradius');
 }
 
+require_once __DIR__.'/../shared/router_monitoring.php';
+$monitoringDisabled=$conn?mka_router_monitoring_disabled($conn):array();
 $routers = array();
 $routersOk = 0;
 $routersFail = 0;
@@ -26,6 +28,7 @@ $queryError = (!$query && $conn) ? trim((string) mysqli_error($conn)) : '';
 if ($query) {
     while ($row = mysqli_fetch_assoc($query)) {
         $ip = trim((string) $row['nasname']);
+        if(in_array($ip,$monitoringDisabled,true))continue;
         $routerName = '';
         foreach (array('shortname', 'descricao', 'nome') as $nameField) {
             if (isset($row[$nameField]) && trim((string) $row[$nameField]) !== '') {
