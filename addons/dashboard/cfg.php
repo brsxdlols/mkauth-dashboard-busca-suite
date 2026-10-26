@@ -2,15 +2,6 @@
 include('config.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
 require_once __DIR__ . '/../shared/router_monitoring.php';
-require_once __DIR__ . '/../shared/server_timezone.php';
-if(empty($_SESSION['suite_timezone_csrf']))$_SESSION['suite_timezone_csrf']=bin2hex(random_bytes(32));
-if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['server_timezone_apply'])) {
-    if(!permissao('perm_config')||!hash_equals($_SESSION['suite_timezone_csrf'],(string)($_POST['server_timezone_csrf']??''))){http_response_code(403);exit('Sessão inválida. Atualize a página.');}
-    mka_server_timezone_save($conn,(string)$_POST['server_timezone_mode'],(string)($_POST['server_timezone_zone']??''));
-}
-$serverTimeConfig=mka_server_timezone_config($conn);
-$serverTimeCatalog=mka_server_timezone_catalog();
-
 if(empty($_SESSION['suite_router_monitoring_csrf']))$_SESSION['suite_router_monitoring_csrf']=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['router_monitoring_present'])) {
     if(!permissao('perm_config') || !hash_equals($_SESSION['suite_router_monitoring_csrf'],(string)($_POST['router_monitoring_csrf']??''))) {
@@ -632,20 +623,6 @@ if (isset($_SESSION['MM_Usuario'])) {
                 </section>
 
 
-
-                <section class="cfg-card cfg-topic" id="cfg-topic-timezone">
-                    <div class="cfg-card-head"><i class="fa fa-clock-o" aria-hidden="true"></i><div><h2>Data, hora e fuso do servidor</h2><p>Confira o horário atual. A alteração de fuso é opcional e exige aplicação explícita.</p></div></div>
-                    <label style="display:block;margin:12px 0"><input type="checkbox" id="server_timezone_enable"> Habilitar ajuste opcional do horário</label>
-                    <div class="cfg-topic-grid">
-                        <div class="form-floating"><select disabled class="form-select" name="server_timezone_mode" id="server_timezone_mode"><option value="auto" <?= $serverTimeConfig['mode']==='auto'?'selected':''; ?>>Pelo endereço do provedor nesta solicitação</option><option value="manual" <?= $serverTimeConfig['mode']==='manual'?'selected':''; ?>>Escolher fuso manualmente</option></select><label for="server_timezone_mode">Modo de configuração</label></div>
-                        <div class="form-floating"><select disabled class="form-select" name="server_timezone_zone" id="server_timezone_zone"><?php foreach($serverTimeCatalog['zones'] as $zone=>$zoneLabel): ?><option value="<?= htmlspecialchars($zone,ENT_QUOTES,'UTF-8'); ?>" <?= ($serverTimeConfig['zone']??'America/Sao_Paulo')===$zone?'selected':''; ?>><?= htmlspecialchars($zoneLabel,ENT_QUOTES,'UTF-8'); ?></option><?php endforeach; ?></select><label for="server_timezone_zone">Fuso manual</label></div>
-                    </div>
-                    <input type="hidden" name="server_timezone_csrf" value="<?= htmlspecialchars($_SESSION['suite_timezone_csrf'],ENT_QUOTES,'UTF-8'); ?>">
-                    <div style="margin-top:18px;padding:18px;border:1px solid #d6e1ef;border-radius:12px;background:#f7faff"><strong id="server-time-clock" style="font-size:22px;display:block">Carregando horário do servidor…</strong><p id="server-time-details" style="margin:8px 0 0"></p><p id="server-time-state" role="status" style="margin:8px 0 0"></p></div>
-                    <p style="margin:12px 0 0;color:#62758e;font-size:12px">O MK-AUTH já possui ajuste nativo pelo estado do provedor. Este recurso adicional vem desativado. Salvar outras configurações não muda o horário. A troca de UTC é bloqueada com RADIUS ativo; use uma janela de manutenção. Não há desconexão automática de clientes. Cada solicitação é processada uma única vez, em até 1 minuto.</p>
-                    <button type="submit" class="btn btn-outline-primary" id="server_timezone_apply" name="server_timezone_apply" value="1" disabled style="margin-top:12px">Aplicar somente este ajuste de fuso</button>
-                    <script src="../shared/server_timezone.js?v=20261026-optional-1" defer></script>
-                </section>
 
                 <section class="cfg-card cfg-diagnostic">
                     <div class="cfg-card-head">
