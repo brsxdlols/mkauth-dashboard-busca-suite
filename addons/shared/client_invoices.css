@@ -64,3 +64,34 @@
 .is-invoice-info .invoice-info-pix h3{color:#08734f;padding:0;border:0}
 .is-invoice-info .invoice-info-pix button{background:#087f5b;color:#fff;border-color:#087f5b}
 .is-invoice-info .invoice-action-tools button:first-child{background:#2563eb;color:#fff;border-color:#2563eb}
+
+/* On phones each invoice becomes a card; actions never extend past the dialog. */
+@media(max-width:650px){
+ .client-invoices-modal[open]{position:fixed;inset:12px;margin:0;width:auto;min-width:0;max-width:none;height:auto;max-height:none;display:flex;flex-direction:column;overflow:hidden;transform:none}
+ .client-invoices-modal>header{padding:12px;gap:8px;align-items:flex-start;flex-shrink:0}
+ .client-invoices-modal>header>div{min-width:0;flex:1}
+ .client-invoices-modal h2{font-size:20px;line-height:1.25}
+ .client-invoices-modal header p{font-size:13px;overflow-wrap:anywhere}
+ .client-invoices-modal>header>button{flex:none;white-space:nowrap;font-size:13px;padding:7px 9px}
+ .client-invoices-modal>.client-invoices-body{flex:1;min-height:0;padding:12px;overflow-y:auto;overflow-x:hidden}
+ .client-invoices-modal table,.client-invoices-modal tbody{display:block;width:100%}
+ .client-invoices-modal thead{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .client-invoices-modal tbody>tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;margin-bottom:12px;padding:10px;border:1px solid #d6e1ef;border-radius:10px;background:#f8faff}
+ .client-invoices-modal table td{display:block;min-width:0;border:0;padding:3px 0;font-size:15px;overflow-wrap:anywhere}
+ .client-invoices-modal td:not([colspan])::before{display:block;font-size:11px;font-weight:650;color:#62758e;margin-bottom:2px}
+ .client-invoices-modal td:nth-child(1):not([colspan])::before{content:'Fatura'}
+ .client-invoices-modal td:nth-child(2):not([colspan])::before{content:'Vencimento'}
+ .client-invoices-modal td:nth-child(3):not([colspan])::before{content:'Valor a liquidar'}
+ .client-invoices-modal td:nth-child(4):not([colspan])::before{content:'Situação'}
+ .client-invoices-modal td:nth-child(5)::before{content:'Ações'}
+ .client-invoices-modal td.invoice-row-actions{grid-column:1/-1;min-width:0;max-width:none;display:flex;flex-wrap:wrap;gap:5px;padding-top:9px;border-top:1px solid #dce5f2}
+ .client-invoices-modal td.invoice-row-actions::before{flex-basis:100%}
+ .client-invoices-modal .invoice-row-actions a,.client-invoices-modal .invoice-row-actions button{margin:0;padding:7px 9px;font-size:12px;white-space:normal}
+ .client-invoices-modal td[colspan]{grid-column:1/-1}
+ .client-invoices-modal .invoice-pix textarea{width:100%;min-width:0}
+ .client-invoices-modal footer{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px;padding:10px 12px;flex-shrink:0}
+ .client-invoices-modal footer span{font-size:12px;text-align:center;overflow-wrap:anywhere}
+ .client-invoices-modal footer button{font-size:12px;padding:7px}
+ .client-invoices-modal .client-invoices-actions{padding:8px 12px;flex-shrink:0}
+ .client-invoices-modal .client-invoices-actions a{display:block;text-align:center;font-size:14px}
+}

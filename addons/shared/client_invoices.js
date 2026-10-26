@@ -163,11 +163,27 @@ function renderInvoiceInfo(doc,frame,invoice){
  if(invoice){[['Receber',invoice.receive_url,'receive'],['Alterar título',invoice.edit_url,'edit'],['Boleto / PDF',invoice.boleto_url,'boleto']].forEach(function(action){if(action[1])tool(action[0],function(){openNative(action[0],action[1],action[2],invoice);});});}
  return true;
 }
+function fitBoletoPreview(frame,doc){
+ if(doc.querySelector('embed[type="application/pdf"],object[type="application/pdf"]')||doc.getElementById('mka-boleto-sheet'))return;
+ var tables=Array.from(doc.querySelectorAll('table'));if(!tables.length)return;
+ var widths=tables.map(function(t){return Math.max(t.scrollWidth,t.getBoundingClientRect().width);});
+ var width=Math.max(frame.clientWidth,Math.ceil(Math.max.apply(null,widths)));
+ var sheet=doc.createElement('div');sheet.id='mka-boleto-sheet';sheet.style.width=width+'px';
+ Array.from(doc.body.childNodes).forEach(function(n){sheet.append(n);});doc.body.append(sheet);
+ var style=doc.createElement('style');style.textContent='@media screen{html{overflow-x:hidden!important}body{margin:0!important;padding:0!important;min-width:0!important;width:auto!important}#mka-boleto-sheet{position:absolute;top:0;left:0;transform-origin:top left;display:flow-root;box-sizing:border-box}#mka-boleto-sheet>table{margin-left:0!important;margin-right:0!important}}@media print{#mka-boleto-sheet{position:static!important;transform:none!important;width:auto!important}body{height:auto!important}}';doc.head.append(style);
+ function fit(){
+  if(frame.contentDocument!==doc)return;
+  var available=Math.max(1,doc.documentElement.clientWidth-8),scale=Math.min(1,available/width);
+  sheet.style.transform='scale('+scale+')';sheet.style.left=Math.max(0,(available-width*scale)/2)+'px';doc.body.style.height=Math.ceil(sheet.scrollHeight*scale)+'px';
+ }
+ fit();frame.contentWindow.addEventListener('resize',fit);if(doc.fonts)doc.fonts.ready.then(fit);
+ if(window.ResizeObserver){var observer=new ResizeObserver(fit);observer.observe(frame);if(childController)childController.signal.addEventListener('abort',function(){observer.disconnect();},{once:true});}
+}
 function openNative(title,url,kind,invoice){
  openChild(title+(invoice?' · Fatura '+(invoice.recibo||invoice.id):''));child.classList.add('is-native');childRefresh=kind==='receive'||kind==='edit';childStatus.textContent='Carregando tela do MK-AUTH…';
  var frame=node('iframe');childFrame=frame;frame.title=title;frame.setAttribute('sandbox','allow-forms allow-scripts allow-same-origin allow-downloads allow-modals');frame.addEventListener('load',function(){
   if(!child.open||childFrame!==frame)return;childStatus.textContent=childRefresh?'Conclua a operação no formulário e volte às faturas para atualizar a lista.':'';
-  try{var doc=frame.contentDocument;if(!doc||!doc.body)return;var style=doc.createElement('style');style.textContent='.navbar,#systopop,#systopo,#rodape,footer{display:none!important}html{padding-top:0!important}body{padding-top:12px!important}';doc.head.append(style);if(kind==='info'&&renderInvoiceInfo(doc,frame,invoice))return;doc.querySelectorAll('form').forEach(function(form){form.target='_self';});frame.contentWindow.open=function(next){if(next)frame.src=new URL(next,frame.contentWindow.location.href).href;return frame.contentWindow;};frame.contentWindow.close=function(){if(child.open&&childFrame===frame)child.close();};doc.addEventListener('click',function(event){var control=event.target.closest('button,a,input[type=button],input[type=submit]');if(!control)return;var label=String(control.value||control.textContent||'').trim(),code=String(control.getAttribute('onclick')||'')+' '+String(control.getAttribute('href')||'');if(/^fechar\s*[×x]?$/i.test(label)||/\b(?:window|self)\.close\s*\(/i.test(code)){event.preventDefault();event.stopImmediatePropagation();if(child.open&&childFrame===frame)child.close();}},true);doc.addEventListener('keydown',function(event){if(event.key==='Escape'){event.preventDefault();child.close();}});
+  try{var doc=frame.contentDocument;if(!doc||!doc.body)return;var style=doc.createElement('style');style.textContent='.navbar,#systopop,#systopo,#rodape,footer{display:none!important}html{padding-top:0!important}body{padding-top:12px!important}';doc.head.append(style);if(kind==='info'&&renderInvoiceInfo(doc,frame,invoice))return;if(kind==='boleto')fitBoletoPreview(frame,doc);doc.querySelectorAll('form').forEach(function(form){form.target='_self';});frame.contentWindow.open=function(next){if(next)frame.src=new URL(next,frame.contentWindow.location.href).href;return frame.contentWindow;};frame.contentWindow.close=function(){if(child.open&&childFrame===frame)child.close();};doc.addEventListener('click',function(event){var control=event.target.closest('button,a,input[type=button],input[type=submit]');if(!control)return;var label=String(control.value||control.textContent||'').trim(),code=String(control.getAttribute('onclick')||'')+' '+String(control.getAttribute('href')||'');if(/^fechar\s*[×x]?$/i.test(label)||/\b(?:window|self)\.close\s*\(/i.test(code)){event.preventDefault();event.stopImmediatePropagation();if(child.open&&childFrame===frame)child.close();}},true);doc.addEventListener('keydown',function(event){if(event.key==='Escape'){event.preventDefault();child.close();}});
   }catch(error){childStatus.textContent='Conteúdo do emissor exibido dentro do modal.';}
  });frame.src=url;childBody.append(frame);
  if(kind==='boleto'){
