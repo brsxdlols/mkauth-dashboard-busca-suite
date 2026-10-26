@@ -49,3 +49,5 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/connection_settings.js?v=20261021-1" defer></script>
 <script src="/admin/addons/shared/live_client_states.js?v=20261021-1" defer></script>
 </head>
+
+<script src="/admin/addons/shared/client_activation.js?v=20261026-1" defer></script>

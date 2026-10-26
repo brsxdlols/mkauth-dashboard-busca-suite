@@ -1,6 +1,17 @@
 <?php
 require_once __DIR__.'/../shared/layout_mode.php';
 $suite_support_destination=mka_suite_get_support_destination($link);
+$canActivateClients=false;
+$activationOperator=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
+if($activationOperator!=='') {
+    $activationPermission=$link->prepare("SELECT 1 FROM sis_perm WHERE usuario=? AND nome='perm_ativacao' AND permissao='sim' LIMIT 1");
+    if($activationPermission) {
+        $activationPermission->bind_param('s',$activationOperator);
+        if($activationPermission->execute())$canActivateClients=(bool)$activationPermission->get_result()->fetch_row();
+        $activationPermission->close();
+    }
+}
+
 // Failed or timed-out list queries must not reach mysqli result readers.
 if ($result === false || $result_limit === false) {
     echo '<div role="alert" class="alert alert-warning">Não foi possível concluir a consulta da busca. Tente novamente ou consulte o diagnóstico de desempenho.</div>';
@@ -1954,6 +1965,9 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                                         <a class="connection-diagnostic-btn" href="../radius/live.php?login=<?= urlencode($login_cliente); ?>" data-radius-login="<?= htmlspecialchars($login_cliente, ENT_QUOTES, 'UTF-8'); ?>">LOG RADIUS</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnosticar / reparar</a>
+                                                                        <?php if ($cli_ativado === 'n' && $canActivateClients) { ?>
+                                                                        <button type="button" class="connection-diagnostic-btn is-manual-unlock" data-activate-client="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-activate-name="<?= htmlspecialchars($nome_cliente,ENT_QUOTES,'UTF-8'); ?>" data-activate-url="../../executar_ativacao.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>?acao=ativacao"><i class="fa-solid fa-power-off"></i> Ativar cliente</button>
+                                                                        <?php } ?>
                                                                         <?php if (strtolower(trim((string) $bloqueado)) === 'sim') { ?>
                                                                         <a class="connection-diagnostic-btn is-manual-unlock" href="#" onclick="return mkaRunClientBlock(<?= htmlspecialchars(json_encode($uuid_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>, 'desbloqueio');" title="Desbloquear sem conceder prazo de confiança"><i class="fa-solid fa-lock-open"></i> Desbloquear</a>
                                                                         <?php } else { ?>
@@ -1969,12 +1983,16 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                     }
                                                         ?>
 
-                                                        <div class='opcoes no_print'>
+                                                        <div class='opcoes no_print' style='display:flex;align-items:center;flex-wrap:wrap;gap:8px'>
                                                             <input type='image' src='img/icon_menu_add_cliente.png' formaction='../../cliente_ins.<?= $links_ext; ?>' title='Adicionar Cliente' />
 
                                                             <input type='image' src='img/icon_menu_deletar.png' formaction='../../cliente_del.<?= $links_ext; ?>' title='Deletar Clientes' />
                                                             <input type='image' src='img/icon_menu_editar.png' formaction='../../clientes_upd.<?= $links_ext; ?>' title='Editar Clientes' />
+                                                            <?php if (!empty($disabledScope) && $canActivateClients) { ?>
+                                                            <button type="submit" class="client-activate-selected-icon" title="Ativar clientes selecionados" aria-label="Ativar clientes selecionados" style="border:0;background:transparent;color:#16a34a;padding:0;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;cursor:pointer;font-size:28px;line-height:1" formaction="../../executar_ativacao.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>?acao=ativacao" formtarget="_self" onclick="if(!this.form.querySelector('.login_select:checked')){alert('Selecione pelo menos um cliente para ativar.');return false;}return confirm('Deseja ativar os clientes selecionados?');"><i class="fa-solid fa-power-off" aria-hidden="true"></i></button>
+                                                            <?php } elseif (empty($disabledScope)) { ?>
                                                             <input type='image' src='img/icon_menu_desativar.png' formaction='../../cliente_onoff.<?= $links_ext; ?>' title='Desativar Clientes' />
+                                                            <?php } ?>
                                                             
                                                             <input type='image' src='img/icon_menu_mapa.png' formaction='../../clientes_map.google.<?= $links_ext; ?>' title='Ver no Mapa' />
                                                             <input type='image' src='img/icon_menu_email2.png' formaction='../../send_cliente.<?= $links_ext; ?>' title='Enviar Mensagem' />
