@@ -223,3 +223,13 @@ Ausencia da chave ou valor `nao` exige documento. Somente `sim` permite document
 A validacao nativa de documentos preenchidos e os demais campos obrigatorios permanecem ativos conforme a configuracao do provedor.
 Cada destino passa por verificacao dos hooks nativos e do metodo de permissao local; formatos desconhecidos sao preservados com relatorio.
 Consulte [integracao e reversao do patch](addons/nn_cpf_opcional/INTEGRACAO-SUITE.md).
+
+
+## Consulta e ajuste opcional de fuso
+
+A Dashboard mostra data/hora do servidor, PHP e banco, com previa do fuso selecionado.
+O MK-AUTH ja possui ajuste nativo pelo estado nos Dados do Provedor. O recurso adicional vem desativado e exige marcar Habilitar ajuste opcional e clicar em Aplicar somente este ajuste de fuso.
+Salvar as demais configuracoes nao solicita alteracao. O modo automatico apenas resolve o fuso a partir do cadastro no momento dessa solicitacao; alteracoes posteriores do endereco nao mudam o fuso pelo addon.
+O worker processa cada solicitacao uma unica vez e preserva o resultado nas reinstalacoes. Configuracoes de versoes anteriores sem uma nova solicitacao explicita nao sao aplicadas.
+Trocas de offset UTC com RADIUS ativo sao bloqueadas antes de modificar banco ou arquivos. O addon nao reinicia RADIUS, nao encerra conexoes PPP e nao altera registros de accounting. Correcao com sessoes antigas exige manutencao controlada; nao force uma troca em producao.
+Cada mudanca aceita gera backup em /opt/mk-auth/backups/server-timezone. O worker nao altera o instante UTC e registra a aplicacao ou a recusa em /var/lib/mkauth-suite-timezone/status.json.

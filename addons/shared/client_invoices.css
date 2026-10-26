@@ -15,3 +15,52 @@
 .client-invoice-action-modal.is-native{height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);width:min(1280px,97vw);overflow:hidden}.client-invoice-action-modal.is-native[open]{display:flex;flex-direction:column}.client-invoice-action-modal.is-native>header,.client-invoice-action-modal.is-native>.invoice-action-tools,.client-invoice-action-modal.is-native>p{flex-shrink:0}.invoice-action-tools:empty,.client-invoice-action-modal>p:empty{display:none}.is-native .invoice-action-body{flex:1;min-height:0;position:relative;overflow:auto;display:flex;flex-direction:column;padding:0 20px 16px}.is-native .invoice-action-body:has(>iframe:not(.invoice-native-info-source)){overflow:hidden}.is-native .invoice-action-body>iframe{flex:1;min-height:0;height:100%;border:0}.is-native .invoice-action-body>iframe.invoice-native-info-source{position:absolute;visibility:hidden;width:1px;height:1px;min-height:0;flex:none;border:0}.invoice-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:4px 0}.invoice-info-card{background:#f7faff;border:1px solid #d7e3f3;border-radius:11px;padding:15px 17px;min-width:0}.invoice-info-card h3{font:650 17px/1.4 system-ui;margin:0 0 12px;color:#244b77}.invoice-info-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}.invoice-info-field span{display:block;color:#64748b;font:600 12px/1.5 system-ui}.invoice-info-field strong{display:block;color:#29435e;font:500 15px/1.5 system-ui;overflow-wrap:anywhere}.invoice-info-fields p{grid-column:1/-1;font:15px/1.5 system-ui;overflow-wrap:anywhere;margin:0}.invoice-info-pix{grid-column:1/-1}.invoice-info-pix textarea{background:#fff;margin:0 0 12px;width:100%}@media(max-width:750px){.invoice-info-grid{grid-template-columns:1fr}.invoice-info-fields{grid-template-columns:1fr}.client-invoice-action-modal.is-native{height:calc(100dvh - 12px);max-height:calc(100dvh - 12px)}}
 .financial-note-badge{display:inline-flex;align-items:center;background:#fff7da;border:1px solid #e9bf51;color:#805600!important;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;text-decoration:none}.invoice-financial-note-label{display:block;margin-top:5px;color:#986900;font-size:13px;font-weight:700}.invoice-financial-note-button{background:#fff4ce!important;border-color:#d9b34a!important;color:#805600!important}.invoice-financial-note-form{display:grid;gap:14px;max-width:900px;margin:auto;font-size:16px}.invoice-financial-note-form label{display:block;font-weight:600}.invoice-financial-note-form textarea,.invoice-financial-note-form input[type=date]{display:block;box-sizing:border-box;width:100%;font:inherit;padding:12px;margin-top:7px;border:1px solid #b8cce6;border-radius:8px}.invoice-financial-note-form input[type=checkbox]{width:18px;height:18px;vertical-align:middle}.invoice-financial-note-form button{justify-self:start;padding:11px 18px;font:inherit;border:1px solid #aac4e9;border-radius:8px;background:#eff5ff;color:#174f99;cursor:pointer}.invoice-financial-note-form>p{line-height:1.5;color:#5a6b80;margin:0}.invoice-financial-note-history{margin:24px auto;max-width:900px}.invoice-financial-note-history article{margin:12px 0;padding:14px;border:1px solid #d4e0f1;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere}.invoice-financial-note-history p{margin:9px 0}.invoice-financial-note-form [hidden]{display:none}
 .client-invoice-action-modal.is-financial-note[open]{width:min(1050px,96vw);max-height:94dvh;overflow:hidden;display:flex;flex-direction:column}.is-financial-note .invoice-action-body{overflow:auto;min-height:0;padding:18px 24px}.is-financial-note .invoice-action-tools:empty{display:none}.is-financial-note .invoice-financial-note-form{gap:14px;max-width:none}.financial-current-note{padding:13px 16px;border:1px solid #ead18a;border-radius:10px;background:#fffae9;margin-bottom:16px}.financial-current-note p{margin:8px 0;white-space:pre-wrap}.financial-current-note span{font-size:14px;color:#795c12}.financial-note-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(180px,1fr);gap:18px}.financial-note-fields textarea{min-height:96px;resize:vertical}.financial-note-trust{display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;padding:13px 15px;background:#f4f8fe;border:1px solid #dbe6f4;border-radius:9px}.financial-note-trust small{flex-basis:100%;color:#65778a}.financial-trust-status{font-size:13px;color:#65778a}.financial-trust-status.is-active{color:#11633b;background:#e0f7e9;padding:6px 9px;border-radius:6px}.financial-recent-confirmation{flex-basis:100%;font-size:14px;color:#8b5c00}.financial-note-form-actions{display:flex;gap:10px}.financial-note-form-actions .is-primary{background:#2460df!important;color:#fff!important;border-color:#2460df!important}.is-financial-note .invoice-financial-note-history{max-width:none;margin:18px 0 0;border-top:1px solid #dde5ef;padding-top:14px}.invoice-financial-note-history summary{cursor:pointer;font-weight:600;color:#245ca4}@media(max-width:650px){.financial-note-fields{grid-template-columns:1fr}.is-financial-note .invoice-action-body{padding:14px}}
+
+/* Invoice details use the dialog scroll, without a nested content scrollbar. */
+.client-invoice-action-modal.is-native.is-invoice-info[open]{display:block;height:auto;overflow:auto;max-height:calc(100dvh - 24px)}
+.client-invoice-action-modal.is-native.is-invoice-info>.invoice-action-body{display:block;overflow:visible;min-height:0;flex:none}
+@media(max-width:750px){.client-invoice-action-modal.is-native.is-invoice-info[open]{max-height:calc(100dvh - 12px)}}
+
+/* Keep invoice details scrollable without showing an internal scrollbar. */
+.client-invoice-action-modal.is-native.is-invoice-info{scrollbar-width:none;-ms-overflow-style:none}
+.client-invoice-action-modal.is-native.is-invoice-info::-webkit-scrollbar{display:none;width:0;height:0}
+
+/* Compact overview: title, client and financial data share one row on desktop. */
+@media(min-width:1100px){
+ .client-invoice-action-modal.is-native.is-invoice-info[open]{width:min(1480px,97vw)}
+ .is-invoice-info>header{padding:10px 18px}
+ .is-invoice-info h2{font-size:20px}
+ .is-invoice-info .invoice-action-tools{padding:8px 18px}
+ .is-invoice-info>p{font-size:13px;margin-bottom:6px}
+ .is-invoice-info .invoice-action-body{padding:0 18px 14px}
+ .is-invoice-info .invoice-info-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr) minmax(220px,.65fr);gap:10px;align-items:start}
+ .is-invoice-info .invoice-info-card{padding:12px 14px}
+ .is-invoice-info .invoice-info-card h3{font-size:15px;margin-bottom:10px}
+ .is-invoice-info .invoice-info-fields{gap:8px 12px}
+ .is-invoice-info .invoice-info-field span{font-size:11px;line-height:1.35}
+ .is-invoice-info .invoice-info-field strong,.is-invoice-info .invoice-info-fields p{font-size:14px;line-height:1.35}
+ .is-invoice-info .invoice-info-pix{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:12px;align-items:center}
+ .is-invoice-info .invoice-info-pix h3{margin:0}
+ .is-invoice-info .invoice-info-pix textarea{height:64px;min-height:64px;margin:0;resize:none;padding:8px;font-size:12px}
+}
+
+/* Semantic accents guide scanning without coloring every value alike. */
+.is-invoice-info .invoice-info-card{background:#fff;border-color:#dce3ec;border-top:4px solid #2563eb}
+.is-invoice-info .invoice-info-card h3{padding-bottom:8px;border-bottom:1px solid #e4eaf2;color:#1e40af}
+.is-invoice-info .invoice-info-personal{border-top-color:#7c3aed;background:#fdfbff}
+.is-invoice-info .invoice-info-personal h3{color:#6d28d9}
+.is-invoice-info .invoice-info-financial{border-top-color:#08916b;background:#f4fcf8}
+.is-invoice-info .invoice-info-financial h3{color:#08734f}
+.is-invoice-info .invoice-info-field span{color:#5f6b7b}
+.is-invoice-info .invoice-info-field strong{color:#1f2937}
+.is-invoice-info .invoice-info-amount strong{font-size:20px;font-weight:750;color:#166534}
+.is-invoice-info .invoice-info-due strong{font-weight:700;color:#92400e}
+.is-invoice-info .invoice-info-financial .invoice-info-field strong{font-size:20px;font-weight:700}
+.is-invoice-info .invoice-info-paid-count strong{color:#08734f}
+.is-invoice-info .invoice-info-overdue-count strong{color:#b42332}
+.is-invoice-info .invoice-info-bill-line strong{font-family:ui-monospace,monospace;font-size:12px;line-height:1.45}
+.is-invoice-info .invoice-copy-bill-line{font-size:12px;padding:5px 8px;margin-top:7px;background:#eff6ff;color:#1d4ed8;border-color:#adc7f6}
+.is-invoice-info .invoice-info-pix{border-top-color:#059669;background:#f0fdf8}
+.is-invoice-info .invoice-info-pix h3{color:#08734f;padding:0;border:0}
+.is-invoice-info .invoice-info-pix button{background:#087f5b;color:#fff;border-color:#087f5b}
+.is-invoice-info .invoice-action-tools button:first-child{background:#2563eb;color:#fff;border-color:#2563eb}

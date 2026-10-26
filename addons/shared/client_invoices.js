@@ -126,14 +126,32 @@ function renderInvoiceInfo(doc,frame,invoice){
  var tables=Array.from(doc.querySelectorAll('table.table')).filter(function(table){return table.querySelector('tr.is-selected');});
  if(!tables.some(function(table){return /dados do t[ií]tulo/i.test(table.querySelector('tr.is-selected').textContent);}))return false;
  var grid=node('div');grid.className='invoice-info-grid';
+ async function copyLine(button,digits){
+  try{await navigator.clipboard.writeText(digits);button.textContent='Linha copiada';}
+  catch(error){
+   var fallback=node('textarea');fallback.value=digits;fallback.readOnly=true;fallback.setAttribute('aria-label','Linha digitável para copiar');button.parentNode.append(fallback);fallback.focus();fallback.select();
+   try{if(document.execCommand('copy')){fallback.remove();button.textContent='Linha copiada';return;}}catch(ignored){}
+   button.textContent='Selecione e copie a linha';
+  }
+ }
+
  tables.forEach(function(table){
   var heading=table.querySelector('tr.is-selected'),title=heading.textContent.trim();if(/c[oó]digo pix/i.test(title))return;
-  var card=node('section');card.className='invoice-info-card';card.append(node('h3',title));var fields=node('div');fields.className='invoice-info-fields';
+  var card=node('section');card.className='invoice-info-card '+(/financeir/i.test(title)?'invoice-info-financial':/pessoais|cliente/i.test(title)?'invoice-info-personal':'invoice-info-title');card.append(node('h3',title));var fields=node('div');fields.className='invoice-info-fields';
   Array.from(table.rows).forEach(function(row){
    if(row===heading||row.classList.contains('is-selected'))return;
    var cells=Array.from(row.cells);if(!cells.length||row.querySelector('button,input,select,textarea'))return;
    if(cells.length===1){var content=cells[0].textContent.trim();if(content&&!/^informa[çc][õo]es/i.test(content))fields.append(node('p',content));return;}
-   for(var i=0;i<cells.length;i+=2){if(!cells[i+1])break;var label=cells[i].textContent.trim(),value=cells[i+1].textContent.trim();if(!label&&!value)continue;var field=node('div');field.className='invoice-info-field';field.append(node('span',label),node('strong',value||'—'));fields.append(field);}
+   for(var i=0;i<cells.length;i+=2){if(!cells[i+1])break;var label=cells[i].textContent.trim(),value=cells[i+1].textContent.trim();if(!label&&!value)continue;var field=node('div');field.className='invoice-info-field';field.append(node('span',label),node('strong',value||'—'));
+    if(/^valor\s*:?$/i.test(label))field.classList.add('invoice-info-amount');
+    if(/^vencimento/i.test(label))field.classList.add('invoice-info-due');
+    if(/^vencidos/i.test(label))field.classList.add('invoice-info-overdue-count');
+    if(/^pagos/i.test(label))field.classList.add('invoice-info-paid-count');
+    if(/linha\s+digit[áa]vel/i.test(label)){
+     field.classList.add('invoice-info-bill-line');var digits=value.replace(/\D/g,'');
+     if(digits.length===47||digits.length===48){var copy=node('button','Copiar linha digitável');copy.type='button';copy.className='invoice-copy-bill-line';copy.setAttribute('aria-live','polite');copy.addEventListener('click',copyLine.bind(null,copy,digits));field.append(copy);}
+    }
+    fields.append(field);}
   });
   if(fields.children.length){card.append(fields);grid.append(card);}
  });
@@ -141,7 +159,7 @@ function renderInvoiceInfo(doc,frame,invoice){
  if(pix&&pix.value.trim()){
   var card=node('section');card.className='invoice-info-card invoice-info-pix';card.append(node('h3','PIX · Copia e cola'));var code=node('textarea');code.readOnly=true;code.rows=3;code.value=pix.value.trim();code.setAttribute('aria-label','Código PIX copia e cola');card.append(code);var copy=node('button','Copiar PIX');copy.type='button';copy.addEventListener('click',async function(){try{await navigator.clipboard.writeText(code.value);copy.textContent='PIX copiado';}catch(error){code.focus();code.select();copy.textContent='Selecione e copie o código';}});card.append(copy);grid.append(card);
  }
- frame.className='invoice-native-info-source';childBody.append(grid);childStatus.textContent='Informações do MK-AUTH, organizadas para consulta.';
+ child.classList.add('is-invoice-info');frame.className='invoice-native-info-source';childBody.append(grid);childStatus.textContent='Informações do MK-AUTH, organizadas para consulta.';
  if(invoice){[['Receber',invoice.receive_url,'receive'],['Alterar título',invoice.edit_url,'edit'],['Boleto / PDF',invoice.boleto_url,'boleto']].forEach(function(action){if(action[1])tool(action[0],function(){openNative(action[0],action[1],action[2],invoice);});});}
  return true;
 }
