@@ -214,3 +214,12 @@ O mapa possui busca por nome/login, lista lateral com os selecionados inclusive 
 ### Bloqueio dos adicionais na instalação
 
 O instalador executa `install_additional_block_patch`: instala a propagação do bloqueio/desbloqueio do principal para os adicionais, a fila de desconexão e o processamento a cada minuto. O patch verifica o esquema e as dependências antes de alterar o banco e guarda backup. Se o download ou a instalação falhar, a dashboard permanece instalada e o instalador apresenta um aviso explícito; nesse caso, a propagação não deve ser considerada instalada.
+
+
+## CPF/CNPJ opcional
+
+O instalador integra a opcao **Permitir cliente sem CPF/CNPJ** em **Opcoes > Recursos > SETUP**.
+Ausencia da chave ou valor `nao` exige documento. Somente `sim` permite documento vazio; escolhas existentes sao preservadas.
+A validacao nativa de documentos preenchidos e os demais campos obrigatorios permanecem ativos conforme a configuracao do provedor.
+Cada destino passa por verificacao dos hooks nativos e do metodo de permissao local; formatos desconhecidos sao preservados com relatorio.
+Consulte [integracao e reversao do patch](addons/nn_cpf_opcional/INTEGRACAO-SUITE.md).

@@ -310,6 +310,8 @@ cp -a "${SCRIPT_DIR}/addons/busca_inteligente-legado" "${TARGET_ADDONS_DIR}/busc
 rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 install_client_audit_hook
+# CPF policy installer backs up only affected files/options and preserves existing hooks.
+python3 "${SCRIPT_DIR}/scripts/install-cpf-policy.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cpf-opcional" || echo '[aviso] CPF/CNPJ opcional preservado sem alteracoes; consulte cpf-opcional/cpf-install-report.json.'
 install_branding
 apply_dashboard_online_additional_fix
 if [ -f "${BACKUP_DIR}/existing-online-rule" ] && [ "$(cat "${BACKUP_DIR}/existing-online-rule")" = direct ]; then
@@ -353,6 +355,8 @@ lint_file "${TARGET_ADDONS_DIR}/shared/attendance_map.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/online_rule.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/search_performance.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/router_monitoring.php"
+lint_file "${TARGET_ADDONS_DIR}/nn_cpf_opcional/policy.php"
+lint_file "${TARGET_ADDONS_DIR}/nn_cpf_opcional/runtime.php"
 lint_file "${TARGET_ADDONS_DIR}/shared/native_activity_performance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/performance_api.php"
