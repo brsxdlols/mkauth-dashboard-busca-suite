@@ -13,9 +13,11 @@ function mka_ip_conflict_groups($rows) {
     return $result;
 }
 function mka_ip_conflicts($db,$scope){
-    // Active accounting only; the same address on different NASes is not a collision.
+    // An unclosed historical row is not evidence of a current collision.
+    // Allow five missed 3-minute interim updates, including newly started sessions.
+    // The same address on different NASes is not a collision.
     // Keep both branches scoped to the owning client, including additional logins.
-    $sql="SELECT DISTINCT r.framedipaddress ip,r.nasipaddress nas,c.login login,c.nome name,c.ip fixed_ip,0 additional FROM radacct r INNER JOIN sis_cliente c ON c.login=r.username WHERE r.acctstoptime IS NULL AND ($scope)
-    UNION ALL SELECT DISTINCT r.framedipaddress ip,r.nasipaddress nas,a.username login,a.nome name,a.ip fixed_ip,1 additional FROM radacct r INNER JOIN sis_adicional a ON a.username=r.username INNER JOIN sis_cliente c ON c.login=a.login WHERE r.acctstoptime IS NULL AND ($scope)";
+    $sql="SELECT DISTINCT r.framedipaddress ip,r.nasipaddress nas,c.login login,c.nome name,c.ip fixed_ip,0 additional FROM radacct r INNER JOIN sis_cliente c ON c.login=r.username WHERE r.acctstoptime IS NULL AND COALESCE(r.acctupdatetime,r.acctstarttime)>=DATE_SUB(NOW(),INTERVAL 15 MINUTE) AND ($scope)
+    UNION ALL SELECT DISTINCT r.framedipaddress ip,r.nasipaddress nas,a.username login,a.nome name,a.ip fixed_ip,1 additional FROM radacct r INNER JOIN sis_adicional a ON a.username=r.username INNER JOIN sis_cliente c ON c.login=a.login WHERE r.acctstoptime IS NULL AND COALESCE(r.acctupdatetime,r.acctstarttime)>=DATE_SUB(NOW(),INTERVAL 15 MINUTE) AND ($scope)";
     $q=$db->query($sql);return mka_ip_conflict_groups($q->fetch_all(MYSQLI_ASSOC));
 }

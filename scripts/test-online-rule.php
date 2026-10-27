@@ -10,6 +10,8 @@ $db->query('CREATE TEMPORARY TABLE fixture_radacct (username VARCHAR(64),acctsto
 $db->query("INSERT INTO fixture_clients VALUES (' Alice ','s','A','R1'),('ALICE','s','A','R1'),('Carol','s','B','R2'),('inactive','n','A','R1')");
 $db->query("INSERT INTO fixture_additional VALUES ('alice',' Bob '),('ALICE','BOB'),('alice','alice'),('Carol','Dave'),('inactive','child'),('missing','orphan')");
 $db->query("INSERT INTO fixture_radacct VALUES ('alice',NULL),(' ALICE ',NULL),('bob',NULL),(' BOB ',NULL),('Dave',NULL),('Carol','2026-01-01'),('inactive',NULL),('child',NULL),('orphan',NULL),('unknown',NULL),('',NULL)");
+$db->query('ALTER TABLE fixture_radacct ADD acctstarttime DATETIME NULL, ADD acctupdatetime DATETIME NULL');
+$db->query('UPDATE fixture_radacct SET acctstarttime=NOW(),acctupdatetime=NOW()');
 function fixture_sql($sql){return str_replace(array('sis_cliente','sis_adicional','radacct'),array('fixture_clients','fixture_additional','fixture_radacct'),$sql);}
 foreach(array(''=>3,"c.grupo='A' AND "=>2,"c.grupo='B' AND "=>1) as $scope=>$expected){
  $actual=$db->query(fixture_sql(mka_online_sql($scope)))->num_rows;
@@ -19,4 +21,8 @@ $rows=$db->query(fixture_sql(mka_online_ramal_sql()))->fetch_all(MYSQLI_ASSOC);
 if(count($rows)!==2 || (int)$rows[0]['total_online']!==2 || (int)$rows[1]['total_online']!==1)throw new RuntimeException('NAS counts mismatch');
 $family=$db->query(fixture_sql("SELECT DISTINCT LOWER(TRIM(c.login)) FROM sis_cliente c WHERE c.cli_ativado='s' AND ".mka_online_family_sql()))->num_rows;
 if($family!==2)throw new RuntimeException('Additional-only family must appear in search');
+$db->query("UPDATE fixture_radacct SET acctupdatetime=NOW()-INTERVAL 1 DAY WHERE LOWER(TRIM(username))='bob'");
+if($db->query(fixture_sql(mka_online_sql()))->num_rows!==2)throw new RuntimeException('Stale open rows counted online');
+$db->query("UPDATE fixture_radacct SET acctstarttime=NOW(),acctupdatetime=NULL WHERE LOWER(TRIM(username))='bob'");
+if($db->query(fixture_sql(mka_online_sql()))->num_rows!==3)throw new RuntimeException('New connection without interim update excluded');
 echo "OK normalized distinct logins, duplicate sessions/registrations, additional-only online, inactive/orphan exclusion, group scope and NAS counts\n";
