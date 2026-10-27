@@ -5,3 +5,67 @@
 @media print{.suite-support-navigation{display:none!important}}
 
 .ticket-settings-menu{position:relative;margin:0}.ticket-settings-menu>summary,.ticket-heading-actions .ticket-settings-icon{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border:1px solid #c6d5e7;border-radius:9px;background:#f5f8fc;color:#48617e;font-size:18px;cursor:pointer;list-style:none}.ticket-settings-menu>summary::-webkit-details-marker{display:none}.ticket-settings-menu[open]>summary{background:#e9f1fc;border-color:#87ade1;color:#1764d6}.ticket-settings-menu>div{position:absolute;right:0;top:50px;z-index:50;width:250px;padding:6px;border:1px solid #d5e0ed;border-radius:10px;background:white;box-shadow:0 10px 30px #17324f22}.ticket-heading-actions .ticket-settings-menu>div>button{display:block;width:100%;padding:11px 12px;text-align:left;border:0;border-radius:6px;background:white;color:#294969;font:600 13px system-ui;cursor:pointer}.ticket-heading-actions .ticket-settings-menu>div>button:hover{background:#edf4ff;color:#1764d6}.ticket-settings-menu>summary:focus-visible,.ticket-heading-actions .ticket-settings-icon:focus-visible{outline:3px solid #bed8fc;outline-offset:2px}
+
+/* The native desktop wrapper must not widen addon pages on a phone. */
+@media screen and (max-width:900px){
+ #container-sistema{box-sizing:border-box;min-width:0!important;width:100%!important;max-width:100%;grid-template-columns:8px minmax(0,1fr) 8px}
+ #sistema-corpo2{min-width:0;max-width:100%}
+ #systopo,#systopop{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere}
+ #systopo .columns{display:flex;flex-wrap:wrap;margin-left:0;margin-right:0}
+ #systopo .column{min-width:0;flex:1 1 180px}
+ .suite-support-navigation{max-width:calc(100% - 16px);margin-left:8px;margin-right:8px;gap:4px;padding:8px}
+ .ticket-board,.ticket-board form,.ticket-search,.ticket-page-heading,.ticket-overview,.score-search,.score-field,.contract-search,.contract-search label{min-width:0;max-width:100%;box-sizing:border-box}
+ .ticket-search>label,.ticket-page-heading>div,.ticket-overview>button{min-width:0;overflow-wrap:anywhere}
+ .ticket-search input,.ticket-search select,.score-field input,.score-field select,.contract-search input{box-sizing:border-box;min-width:0!important;max-width:100%;width:100%}
+ .score-table-wrap,.contract-table-wrap{box-sizing:border-box;min-width:0;max-width:100%;overflow-x:auto}
+ .score-table{min-width:760px}
+ #offline-report{box-sizing:border-box;min-width:0;width:100%;max-width:100%;overflow:visible}
+ #offline-report .off-search-grid,#offline-report .off-extra-filters{grid-template-columns:minmax(0,1fr)}
+ #offline-report .off-search-grid>label,#offline-report .off-extra-filters>label,#offline-report .off-period-fields>label{min-width:0;max-width:100%}
+ #offline-report .off-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #offline-report .off-card{min-width:0;overflow-wrap:anywhere}
+ #offline-report .off-table-scroll{min-width:0;max-width:100%;overflow-x:auto}
+ #offline-report .off-map-actions>span{min-width:0;overflow-wrap:anywhere}
+}
+
+/* Mobile records are labeled cards rather than cropped desktop table columns. */
+@media screen and (max-width:650px){
+ .score-table-wrap,.contract-table-wrap,#offline-report .off-table-scroll{overflow:visible;border:0;background:transparent;box-shadow:none}
+ .score-table,.contract-table,#offline-report #lista{display:block;min-width:0!important;width:100%;max-width:100%;border:0}
+ .score-table>tbody,.contract-table>tbody,#offline-report #lista>tbody{display:block}
+ .score-table thead,.contract-table thead,#offline-report #lista .linha_titulo{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .score-table tbody>tr,.contract-table tbody>tr,#offline-report #lista .linha_resultados{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 14px;padding:14px;border:1px solid #d4dfec;border-radius:12px;background:#fff}
+ .score-table tbody>tr>td,.contract-table tbody>tr>td,#offline-report #lista .linha_resultados>td{display:block;min-width:0!important;max-width:none;padding:0;border:0;box-shadow:none;overflow-wrap:anywhere;text-align:left;white-space:normal}
+ .score-table tbody>tr>td::before,.contract-table tbody>tr>td::before,#offline-report #lista .linha_resultados>td::before{display:block;margin:0 0 5px;color:#64748b;font:650 11px/1.4 system-ui}
+ .score-table tbody>tr>td:first-child,.score-table tbody>tr>td:nth-child(2){grid-column:1/-1}
+ .score-table td:nth-child(1)::before{content:'Cliente / histórico'}
+ .score-table td:nth-child(2)::before{content:'Plano / valor'}
+ .score-table td:nth-child(3)::before{content:'Login'}
+ .score-table td:nth-child(4)::before{content:'Score'}
+ .score-table .historico_cliente{white-space:normal;overflow-wrap:anywhere}
+ .contract-table tbody>tr>td:nth-child(3){grid-column:1/-1;order:-1}
+ .contract-table tbody>tr>td:nth-child(6),.contract-table tbody>tr>td:nth-child(8),.contract-table tbody>tr>td:nth-child(9){grid-column:1/-1}
+ .contract-table td:nth-child(1)::before{content:'Início'}
+ .contract-table td:nth-child(2)::before{content:'Vencimento'}
+ .contract-table td:nth-child(3)::before{content:'Cliente'}
+ .contract-table td:nth-child(4)::before{content:'Tecnologia'}
+ .contract-table td:nth-child(5)::before{content:'Telefone'}
+ .contract-table td:nth-child(6)::before{content:'Plano'}
+ .contract-table td:nth-child(7)::before{content:'Valor do plano'}
+ .contract-table td:nth-child(8)::before{content:'Situação atual'}
+ .contract-table td:nth-child(9)::before{content:'Ações'}
+ .contract-table .contract-action-group{display:flex;flex-wrap:wrap;gap:7px}
+ .contract-table .contract-action-group>a{max-width:100%;white-space:normal}
+ .contract-table .contract-status-chip{max-width:100%;white-space:normal}
+ #offline-report #lista .linha_resultados>td:nth-child(2),#offline-report #lista .linha_resultados>td:nth-child(3){grid-column:1/-1}
+ #offline-report #lista .linha_resultados>td:nth-child(1)::before{content:'Selecionar'}
+ #offline-report #lista .linha_resultados>td:nth-child(2)::before{content:'Cliente / login'}
+ #offline-report #lista .linha_resultados>td:nth-child(3)::before{content:'Endereço'}
+ #offline-report #lista .linha_resultados>td:nth-child(4)::before{content:'Bairro'}
+ #offline-report #lista .linha_resultados>td:nth-child(5)::before{content:'Cidade / UF'}
+ #offline-report #lista .linha_resultados>td:nth-child(6)::before{content:'Desconectou em'}
+ #offline-report #lista .linha_resultados>td:nth-child(7)::before{content:'Tempo offline'}
+ #offline-report #lista .linha_resultados>td:nth-child(8)::before{content:'Mapa'}
+ #offline-report .off-disconnect,#offline-report .off-ticket-history,#offline-report .off-analysis-entry{min-width:0;max-width:100%}
+ #offline-report .off-table-scroll:not(:has(.linha_resultados)){display:none}
+}
