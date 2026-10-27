@@ -148,9 +148,8 @@ install_reconcile() {
     return 0
   fi
 
-  # Performance installation never invokes a writer against accounting.
-  # Existing reconciliation jobs are preserved; new ones require separate maintenance.
-  echo "[info] reconciliador disponivel no pacote; execucao e instalacao de cron nao realizadas nesta etapa."
+  # Upgrade existing API confirmation without running accounting writes at install time.
+  python3 "${SCRIPT_DIR}/scripts/upgrade-offline-confirmation.py" /opt/mk-auth/scripts "${BACKUP_DIR}/offline-confirmation"
   cp "${SCRIPT_DIR}/scripts/radacct-maintenance.sh" /opt/mk-auth/scripts/mkauth-radacct-maintenance.sh
   chmod 700 /opt/mk-auth/scripts/mkauth-radacct-maintenance.sh
 }

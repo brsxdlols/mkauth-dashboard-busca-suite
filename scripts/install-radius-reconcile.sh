@@ -11,13 +11,13 @@ if [ -f "$manifest" ] && [ -f "$manifest.installer" ] &&
    [ "$(cat "$manifest.configuration")" = "$configuration_id" ] &&
    [ ! -f /etc/cron.d/sistel-radius-ppp-reconcile ] &&
    sha256sum -c "$manifest" >/dev/null 2>&1; then
-  echo 'Reconciliador, guarda, status e cron conferidos: já aplicados; instalação ignorada.'
+  echo 'Reconciliador, guarda, status e cron conferidos: jÃ¡ aplicados; instalaÃ§Ã£o ignorada.'
   exit 0
 fi
 
 # Install log protection before the database backup or the first reconcile run.
 INSTALLER_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-test -f "$INSTALLER_DIR/radacct-maintenance.sh" || { echo 'Ferramenta de manutenção ausente.' >&2; exit 1; }
+test -f "$INSTALLER_DIR/radacct-maintenance.sh" || { echo 'Ferramenta de manutenÃ§Ã£o ausente.' >&2; exit 1; }
 bash -n "$INSTALLER_DIR/radacct-maintenance.sh"
 if [ ! -f "$INSTALLER_DIR/install-radius-log-cleanup.sh" ]; then
   echo "Erro: instalador de limpeza do log ausente." >&2
@@ -134,7 +134,7 @@ function offline_guard($db, $router, $active, $apply, $onlyLogin, &$stats) {
         if ($onlyLogin !== null && $login !== $onlyLogin) continue;
         $last = $row['acctupdatetime'] ?: $row['acctstarttime'];
         $lastTime = strtotime($last);
-        if (!$lastTime || $lastTime > $now - 600) continue;
+        if (!$lastTime || $lastTime > $now - 180) continue;
         $key = (string)$row['radacctid'];
         $signature = hash('sha256', json_encode(array($row['acctsessionid'], $row['acctstarttime'], $row['acctupdatetime'], $row['username'])));
         $prior = isset($previous[$key]) ? $previous[$key] : null;
@@ -422,16 +422,16 @@ foreach ($nasRows as $nas) {
         $pingCode = 1;
         @exec('ping -c 1 -W 1 ' . escapeshellarg($router) . ' 2>&1', $pingOutput, $pingCode);
         if ($pingCode !== 0) {
-            $reason = 'Sem ping até o IP';
+            $reason = 'Sem ping atÃ© o IP';
         } else {
             $socketError = 0;
             $socketMessage = '';
             $socket = @fsockopen($router, (int)$cfg['api_port'], $socketError, $socketMessage, 2);
             if (!is_resource($socket)) {
-                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indisponível';
+                $reason = 'Porta ' . (int)$cfg['api_port'] . ' fechada ou indisponÃ­vel';
             } else {
                 fclose($socket);
-                $reason = 'Usuário ou senha da API inválidos';
+                $reason = 'UsuÃ¡rio ou senha da API invÃ¡lidos';
             }
         }
         $stats['routers_fail']++;
@@ -663,13 +663,13 @@ if [ -f "$SCRIPT_DIR/mkauth-radacct-maintenance.sh" ]; then
 fi
 cp "$INSTALLER_DIR/radacct-maintenance.sh" "$SCRIPT_DIR/mkauth-radacct-maintenance.sh"
 chmod 700 "$SCRIPT_DIR/mkauth-radacct-maintenance.sh"
-echo "Manutenção opcional instalada, não executada: $SCRIPT_DIR/mkauth-radacct-maintenance.sh --check"
+echo "ManutenÃ§Ã£o opcional instalada, nÃ£o executada: $SCRIPT_DIR/mkauth-radacct-maintenance.sh --check"
 echo "Rodando aplicacao imediata..."
 if php "$SCRIPT_FILE" --apply > "$BACKUP_DIR/initial-run.log" 2>&1; then
   tail -n 25 "$BACKUP_DIR/initial-run.log"
 else
   tail -n 25 "$BACKUP_DIR/initial-run.log" >&2
-  echo 'Falha na execução inicial; instalação não marcada como concluída. Consulte o backup e o status.' >&2
+  echo 'Falha na execuÃ§Ã£o inicial; instalaÃ§Ã£o nÃ£o marcada como concluÃ­da. Consulte o backup e o status.' >&2
   exit 1
 fi
 echo "Para testar manual: php $SCRIPT_FILE"
