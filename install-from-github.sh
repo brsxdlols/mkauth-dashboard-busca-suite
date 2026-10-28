@@ -13,6 +13,16 @@ cleanup() {
   rm -rf "${TMP_DIR}"
 }
 trap cleanup EXIT
+report_failure() {
+  local status=$?
+  if { [ -t 2 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
+    printf '\033[31m[erro] Instalacao interrompida (codigo %s). Consulte a mensagem acima.\033[0m\n' "$status" >&2
+  else
+    printf '[erro] Instalacao interrompida (codigo %s). Consulte a mensagem acima.\n' "$status" >&2
+  fi
+  return "$status"
+}
+trap report_failure ERR
 
 fetch() {
   local url="$1"
@@ -43,6 +53,15 @@ fi
 
 echo "[3/4] Executando instalador local"
 chmod +x "${PACKAGE_DIR}/install.sh"
-"${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
+if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
+  # pipefail retains any installer failure; awk only colors its output.
+  "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}" 2>&1 | awk -f "${PACKAGE_DIR}/scripts/install-output-colors.awk"
+else
+  "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
+fi
 
-echo "[4/4] Instalacao remota concluida"
+if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
+  printf '\033[32m[4/4] Instalacao remota concluida\033[0m\n'
+else
+  echo "[4/4] Instalacao remota concluida"
+fi

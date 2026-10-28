@@ -53,7 +53,7 @@ try {
     $report['before']=install_perf_measure($db,$baseline,true);
     $report['candidate']=install_perf_measure($db,$candidate);
     $gain=false;
-    foreach(array('on','off') as $f){$b=$report['before'][$f]['sum'];$a=$report['candidate'][$f]['sum'];if($a>$b*1.10)throw new RuntimeException('Candidato apresentou piora; politica preservada.');if($b>0.5 && $a<$b*0.85)$gain=true;}
+    foreach(array('on','off') as $f){$b=$report['before'][$f]['sum'];$a=$report['candidate'][$f]['sum'];if($a>$b*1.10){$report['status']='unchanged';$report['reason']='Configuracao atual mantida: a alternativa testada ficou mais lenta.';echo '[desempenho] '.$report['reason'].PHP_EOL;file_put_contents($backup.'/performance-install.json',json_encode($report,JSON_PRETTY_PRINT),LOCK_EX);echo '[desempenho] Relatorio: '.$backup."/performance-install.json\n";exit(0);}if($b>0.5 && $a<$b*0.85)$gain=true;}
     if(($argv[3] ?? '')==='--dry-run') {$report['status']='dry_run';echo "[desempenho] Simulacao concluida; nenhuma politica alterada.\n";}
     elseif(!$gain) {$report['status']='unchanged';echo "[desempenho] Nenhum ganho relevante; politica preservada.\n";}
     else {
