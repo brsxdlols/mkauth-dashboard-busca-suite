@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Upgrade an existing reconciler without running it or changing its cron."""
 import pathlib, re, shutil, subprocess, sys
+from reconcile_session_identity import patch_session_identity
 scripts=pathlib.Path(sys.argv[1]); backup=pathlib.Path(sys.argv[2])
 target=scripts/'mkauth_radius_ppp_reconcile.php'
 if not target.is_file():
@@ -16,6 +17,10 @@ if 'offline_guard(' not in text:
     text=text.replace(anchor,'    offline_guard($db,$router,$active,$apply,$onlyLogin,$stats);\n'+anchor)
 if 'flock(' not in text:
     text=text.replace('$onlyLogin = null;', "$runLock=fopen('/var/lib/mkauth_radius_ppp_reconcile/run.lock','c');\nif(!$runLock || !flock($runLock,LOCK_EX|LOCK_NB))exit(0);\n$onlyLogin = null;",1)
+try:
+    text=patch_session_identity(text)
+except ValueError as error:
+    print('[reconcile] Formato desconhecido preservado: '+str(error));sys.exit(0)
 helper=scripts/'mkauth_radius_offline_guard.php'
 if target.read_bytes()==text.encode() and helper.is_file() and helper.read_bytes()==guard.encode():
     print('[reconcile] Confirmacao offline ja atualizada.');sys.exit(0)

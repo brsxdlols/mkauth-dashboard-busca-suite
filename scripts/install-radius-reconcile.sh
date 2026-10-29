@@ -469,8 +469,10 @@ foreach ($nasRows as $nas) {
         $sessionSeconds = uptime_to_seconds($uptime);
         $startTime = date('Y-m-d H:i:s', time() - $sessionSeconds);
 
-        $stmt = $db->prepare("SELECT radacctid FROM radacct WHERE LOWER(TRIM(username)) = ? AND acctstoptime IS NULL ORDER BY radacctid DESC LIMIT 1");
-        $stmt->bind_param('s', $login);
+        // mka-session-identity-v1: old NAS/session records do not prove this session is online.
+        if ($session === '') { log_line("SKIP_MISSING_SESSION login=$login router=$router"); continue; }
+        $stmt = $db->prepare("SELECT radacctid FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? AND LOWER(REPLACE(acctsessionid,'0x','')) = ? AND acctstoptime IS NULL AND COALESCE(acctupdatetime,acctstarttime) >= DATE_SUB(NOW(),INTERVAL 3 MINUTE) ORDER BY radacctid DESC LIMIT 1");
+        $stmt->bind_param('sss', $login, $router, $session);
         $stmt->execute();
         $online = $stmt->get_result()->fetch_assoc();
         $stmt->close();
@@ -482,19 +484,13 @@ foreach ($nasRows as $nas) {
 
         $stopped = null;
         if ($session !== '') {
-            $stmt = $db->prepare("SELECT * FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? AND LOWER(acctsessionid) = ? ORDER BY radacctid DESC LIMIT 1");
+            $stmt = $db->prepare("SELECT * FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? AND LOWER(REPLACE(acctsessionid,'0x','')) = ? ORDER BY radacctid DESC LIMIT 1");
             $stmt->bind_param('sss', $login, $router, $session);
             $stmt->execute();
             $stopped = $stmt->get_result()->fetch_assoc();
             $stmt->close();
         }
-        if (!$stopped) {
-            $stmt = $db->prepare("SELECT * FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? ORDER BY radacctid DESC LIMIT 1");
-            $stmt->bind_param('ss', $login, $router);
-            $stmt->execute();
-            $stopped = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-        }
+        // Reopen only the same session; preserve other session history.
 
         if ($stopped) {
             log_line(($apply ? 'REOPEN' : 'DRY_REOPEN') . " login=$login router=$router radacctid={$stopped['radacctid']} session=$session ip=$address caller=\"$caller\" uptime=$uptime stopped=\"{$stopped['acctstoptime']}\"");
@@ -517,6 +513,9 @@ foreach ($nasRows as $nas) {
                 $stmt->close();
             }
         } else {
+            // Accounting timestamps use the database clock, without changing server timezone.
+            $clock = $db->query('SELECT DATE_SUB(NOW(),INTERVAL '.(int)$sessionSeconds.' SECOND) AS started')->fetch_assoc();
+            $startTime = $clock['started'];
             $unique = md5($router . '|' . $session . '|' . $login . '|' . $startTime);
             log_line(($apply ? 'INSERT' : 'DRY_INSERT') . " login=$login router=$router session=$session ip=$address caller=\"$caller\" uptime=$uptime start=\"$startTime\"");
             if ($apply) {
