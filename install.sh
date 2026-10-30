@@ -308,6 +308,7 @@ rm -rf "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
 cp -a "${SCRIPT_DIR}/addons/busca_inteligente-legado" "${TARGET_ADDONS_DIR}/busca_inteligente-legado"
 rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
+python3 "${SCRIPT_DIR}/scripts/fix-addon-permissions.py" "${TARGET_ADDONS_DIR}" "${BACKUP_DIR}/addon-permissions"
 install_client_audit_hook
 # CPF policy installer backs up only affected files/options and preserves existing hooks.
 python3 "${SCRIPT_DIR}/scripts/install-cpf-policy.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cpf-opcional" || echo '[aviso] CPF/CNPJ opcional preservado sem alteracoes; consulte cpf-opcional/cpf-install-report.json.'

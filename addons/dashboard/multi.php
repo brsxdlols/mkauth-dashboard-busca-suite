@@ -101,24 +101,29 @@ if ($canTotals) {
 .multi-stat.outline-danger{border:1px solid rgba(248,113,113,.72)}
 .multi-stat.outline-danger small{border-top-color:rgba(248,113,113,.22)}
 .multi-stat.outline-danger .multi-stat-icon{background:#fff0f2}
+
+.multi-portal-search-row{display:flex;align-items:stretch;gap:10px;margin-bottom:16px}.multi-portal-link{flex:0 0 300px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:#1969e8;color:#fff!important;text-decoration:none!important;box-shadow:0 5px 14px #1761c91a}.multi-portal-link>i{font-size:26px}.multi-portal-link>span{display:flex;flex-direction:column;gap:3px}.multi-portal-link strong{font-size:14px}.multi-portal-link small{font-size:11px}.multi-portal-link>b{margin-left:auto;font-size:22px}.multi-portal-search-row .multi-search{flex:1;min-width:0;margin:0}.multi-portal-search-row .multi-search input{width:100%;min-width:0}.multi-portal-search-row .multi-search button{min-width:92px}.multi-config-link{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border:1px solid #cbdaf0;border-radius:10px;background:#f5f8fc;color:#244770;text-decoration:none!important;font-size:13px;white-space:nowrap}.multi-config-link:hover{background:#eaf2ff}.multi-shortcuts{padding:16px!important}.multi-shortcuts-button{display:inline-flex;align-items:center;gap:6px;padding:11px 17px;border:0;border-radius:10px;background:#2879ef;color:#fff;font-size:13px;font-weight:700;box-shadow:0 6px 15px #204e851a;cursor:pointer}.multi-shortcuts-button:hover{background:#1765db}@media(max-width:1000px){.multi-portal-search-row{flex-wrap:wrap}.multi-portal-link{flex:1 1 100%;box-sizing:border-box}.multi-portal-search-row .multi-search{flex:1 1 65%}}@media(max-width:600px){.multi-portal-search-row .multi-search{flex-direction:row;flex-basis:100%}.multi-config-link{width:100%;box-sizing:border-box}.multi-portal-link{flex-basis:100%}}
 </style><link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
 </head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); include __DIR__.'/mkauth_dashboard_top.php'; mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
-<header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div></header>
+<div class="multi-portal-search-row">
+<a class="multi-portal-link" href="/admin/addons/busca_inteligente/index.php"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span><strong>Acessar portal do sistema</strong><small>Clientes, atendimentos, chamados e instalações</small></span><b aria-hidden="true">→</b></a>
 <form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" data-client-suggestions list="multi-client-suggestions" autocomplete="off" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
+<?php if($canConfig){?><a class="multi-config-link" href="cfg.php"><i class="bi bi-gear-fill" aria-hidden="true"></i> Configurações</a><?php } ?>
+</div>
 <datalist id="multi-client-suggestions"></datalist>
 <script src="/admin/addons/shared/client_suggestions.js?v=20261029-1" defer></script>
 <section class="multi-summary"><h2>Clientes</h2>
 <?php if (!$canTotals) { ?><p>Seu usuário não possui permissão para visualizar os totais.</p><?php } elseif($multiError) { ?><p role="alert">Não foi possível carregar os indicadores. Tente novamente.</p><?php } else { ?>
 <div class="multi-cards"><?php $multiIcons=array('blue'=>'bi-people-fill','light'=>'bi-person-plus-fill','cyan'=>'bi-person-check-fill','mint'=>'bi-eye-fill','red'=>'bi-person-fill-lock','yellow'=>'bi-clock-fill','gray'=>'bi-person-x-fill'); foreach($cards as $card) { $multiIcon=isset($multiIcons[$card[4]])?$multiIcons[$card[4]]:($card[3]==='sem carne'?'bi-file-earmark-x-fill':'bi-receipt'); ?>
 <a class="multi-stat <?= $card[4] ?>" href="../busca_inteligente/index.php?busca=<?=rawurlencode($card[3])?>"><i class="multi-stat-icon <?= $multiIcon ?>" aria-hidden="true"></i><span><?=mka_contract_escape($card[0])?></span><strong><?=number_format($card[1],0,',','.')?></strong><small><?=number_format($card[2]>0 ? $card[1]/$card[2]*100 : 0,2,',','.')?>%</small></a>
-<?php } ?></div><p class="multi-note">Total inclui os adicionais dos cadastros ativos. Desativados ficam fora desse total; seu percentual considera titulares ativos e desativados. Os demais indicadores de situação consideram os titulares ativos.</p><?php } ?></section>
+<?php } ?></div><?php } ?></section>
 
 
-<section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
-<?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
+<section class="multi-summary multi-shortcuts"><nav class="multi-quick-links" aria-label="Atalhos">
+<button type="button" class="multi-shortcuts-button" data-dashboard-shortcuts><i class="bi bi-link-45deg" aria-hidden="true"></i> Atalhos</button>
 <?php foreach($multiShortcutLinks as $shortcutIndex=>$shortcut) {
     $shortcut=trim($shortcut);
     if($shortcut==='') continue;
@@ -133,4 +138,5 @@ if ($canTotals) {
     $tot_fat_previsto=$tot_entrada=$tot_a_receber=$tot_contas_pagar=$tot_saida=$saldo=$tot_geral_entrada_sem_emprestimo=$tot_geral_emprestimos=0;
     include __DIR__.'/graphs_frame.php';
 } else { ?><section class="multi-summary"><h2>Faturamento</h2><p>Seu usuário não possui permissão para visualizar os gráficos financeiros.</p></section><?php } ?>
+<script src="shortcuts_modal.js?v=20261016-1"></script>
 </main><?php include('../../baixo.php'); ?></body></html>
