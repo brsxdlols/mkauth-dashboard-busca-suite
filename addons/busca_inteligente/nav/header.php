@@ -45,9 +45,11 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/additional_connection.js?v=20261020-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261020-2">
-<script src="/admin/addons/shared/connection_settings.js?v=20261021-1" defer></script>
-<script src="/admin/addons/shared/live_client_states.js?v=20261021-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261029-9">
+<script src="/admin/addons/shared/connection_settings.js?v=20261029-9" defer></script>
+<script src="/admin/addons/shared/live_client_states.js?v=20261029-1" defer></script>
 </head>
 
 <script src="/admin/addons/shared/client_activation.js?v=20261026-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/client_lifecycle.css?v=20261029-2">
+<script src="/admin/addons/shared/client_lifecycle.js?v=20261029-2" defer></script>

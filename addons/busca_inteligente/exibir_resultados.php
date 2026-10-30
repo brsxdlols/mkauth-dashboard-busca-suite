@@ -2,6 +2,7 @@
 require_once __DIR__.'/../shared/layout_mode.php';
 $suite_support_destination=mka_suite_get_support_destination($link);
 $canActivateClients=false;
+$canDeleteClients=false;
 $activationOperator=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
 if($activationOperator!=='') {
     $activationPermission=$link->prepare("SELECT 1 FROM sis_perm WHERE usuario=? AND nome='perm_ativacao' AND permissao='sim' LIMIT 1");
@@ -9,6 +10,12 @@ if($activationOperator!=='') {
         $activationPermission->bind_param('s',$activationOperator);
         if($activationPermission->execute())$canActivateClients=(bool)$activationPermission->get_result()->fetch_row();
         $activationPermission->close();
+    }
+    $deletePermission=$link->prepare("SELECT 1 FROM sis_perm WHERE usuario=? AND nome='perm_delcliente' AND permissao='sim' LIMIT 1");
+    if($deletePermission) {
+        $deletePermission->bind_param('s',$activationOperator);
+        if($deletePermission->execute())$canDeleteClients=(bool)$deletePermission->get_result()->fetch_row();
+        $deletePermission->close();
     }
 }
 
@@ -382,6 +389,13 @@ if ($result === false || $result_limit === false) {
         text-decoration: none;
         box-shadow: inset 0 0 0 1px rgba(179, 194, 209, 0.75);
         transition: all .15s ease;
+    }
+
+    button.client-action-btn[data-client-lifecycle] {
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        font: inherit;
     }
 
     .client-action-btn:hover {
@@ -1221,6 +1235,10 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $nome_cliente_res = $row['nome_res'];
         $cpf_cnpj_cliente = $row['cpf_cnpj'];
         $login_cliente = $row['login'];
+        $client_mac=trim((string)($row['mac']??''));
+        $client_saved_ip=trim((string)($row['ip']??''));
+        $client_bind_mac=(string)($row['automac']??'');
+        $client_fix_ip=(string)($row['autoip']??'');
         $senha_cliente = $row['senha'];
         $end_cliente = $row['endereco'];
         $numero_casa = $row['numero'];
@@ -1419,7 +1437,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
     ?>
 
-        <div class='row client-row small <?= $bgColor; ?>' data-live-client="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-live-port="<?= (int)$porta_acesso; ?>">
+        <div class='row client-row small <?= $bgColor; ?>' data-live-client="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-live-port="<?= (int)$porta_acesso; ?>" data-live-ports="<?= htmlspecialchars(json_encode(array((int)$porta_acesso,(int)$porta_acesso2,(int)$porta_acesso3)),ENT_QUOTES,'UTF-8'); ?>">
 
             <div class='col-auto client-check-col'>
                 <input type='checkbox' name='login[]' class='login_select' value='<?= $login_cliente; ?>'>
@@ -1706,6 +1724,12 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     <i class="fa-solid fa-envelope"></i>
                                                                 </a>
                                                             <?php } ?>
+                                                            <?php if ($cli_ativado !== 'n' && $canActivateClients) { ?>
+                                                            <button type="button" class="client-action-btn" style="background:#111827;color:#fff;box-shadow:none" data-client-lifecycle="disable" data-client-login="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-name="<?= htmlspecialchars($nome_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-native-url="../../cliente_onoff.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>" title="Desativar cliente e informar motivo" aria-label="Desativar cliente e informar motivo"><i class="fa-solid fa-power-off" aria-hidden="true"></i></button>
+                                                            <?php } ?>
+                                                            <?php if ($canDeleteClients) { ?>
+                                                            <button type="button" class="client-action-btn is-danger" data-client-lifecycle="delete" data-client-login="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-name="<?= htmlspecialchars($nome_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-native-url="../../cliente_del.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>" title="Excluir cliente" aria-label="Excluir cliente"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                                                            <?php } ?>
                                                             <?php if (!empty($nas_ip[strtolower($login_cliente)])) { ?>
                                                                 <a class="client-action-btn is-success" href='#' onclick='return openTrafficModal(<?= json_encode($login_cliente); ?>, <?= json_encode($nas_ip[strtolower($login_cliente)]); ?>, <?= json_encode($nome_cliente); ?>, <?= json_encode($plano_cliente); ?>, <?= json_encode(isset($nas_nome[$nas_ip[strtolower($login_cliente)]]) ? $nas_nome[$nas_ip[strtolower($login_cliente)]] : ""); ?>);' title='Tráfego em tempo real'>
                                                                     <i class="fa-solid fa-chart-line"></i>
@@ -1923,6 +1947,8 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
                                                                     </p>
 
+                                                                    <p class="dados_cliente"><b>IP cadastrado:</b> <?= htmlspecialchars($client_saved_ip!==''?$client_saved_ip:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></p>
+                                                                    <div class="dados_cliente client-mac-line"><span><b>MAC:</b> <span data-client-mac-value><?= htmlspecialchars($client_mac!==''?$client_mac:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></span></span><button type="button" class="connection-diagnostic-btn binding-info-button" data-binding-info data-saved-mac="<?= htmlspecialchars($client_mac,ENT_QUOTES,'UTF-8'); ?>" data-saved-ip="<?= htmlspecialchars($client_saved_ip,ENT_QUOTES,'UTF-8'); ?>" data-binding-mac="<?= htmlspecialchars($client_bind_mac,ENT_QUOTES,'UTF-8'); ?>" data-binding-ip="<?= htmlspecialchars($client_fix_ip,ENT_QUOTES,'UTF-8'); ?>" aria-label="Ver parâmetros de MAC e IP" title="Ver parâmetros de MAC e IP">?</button></div>
                                                                     <p class='dados_cliente'>
 
                                                                         <b>Plano:</b> <?= $plano_cliente; ?>
@@ -1960,7 +1986,8 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
                                                                     </p>
                                                                     <div class="connection-actions no_print">
-                                                                        <button type="button" class="connection-diagnostic-btn" data-connection-tools data-connection-tools-login="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>">IP / MAC</button>
+                                                                        <button type="button" class="connection-diagnostic-btn" data-clear-client-mac="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>">Limpar MAC</button>
+
 
                                                                         <a class="connection-diagnostic-btn" href="../radius/live.php?login=<?= urlencode($login_cliente); ?>" data-radius-login="<?= htmlspecialchars($login_cliente, ENT_QUOTES, 'UTF-8'); ?>">LOG RADIUS</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Últimas conexões</a>

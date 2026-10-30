@@ -709,6 +709,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             c.nome, 
             c.cpf_cnpj, 
             c.login, 
+            c.ip, c.mac, c.autoip, c.automac,
             c.senha, 
             c.endereco, 
             c.numero, 

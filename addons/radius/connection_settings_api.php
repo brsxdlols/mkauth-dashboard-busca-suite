@@ -23,7 +23,7 @@ try{
   $login=$selection==='all'?null:trim($_POST['login']??'');if($login!==null&&($login===''||strlen($login)>64))throw new InvalidArgumentException('Informe o login do cadastro principal.');
   $sim=($_POST['operation']??'')==='simultaneous';if($sim&&!$global)connection_reply(403,array('error'=>'Acessos simultâneos requerem permissão de configuração e acesso a todos os grupos.'));if($sim){$value=$_POST['simultaneous']??'';if(!in_array($value,array('sim','nao'),true))throw new InvalidArgumentException('Escolha Sim ou Não.');$options=array('simultaneous'=>$value);$rows=mka_simultaneous_rows($conn,$scope,$login);}else{$options=mka_connection_settings_options($_POST);$rows=mka_connection_settings_rows($conn,$scope,$login);}if(!$rows)throw new DomainException('Nenhum cadastro disponível.');$changed=0;foreach($rows as $row)if($sim?$row['simultaneo']!==$value:mka_connection_settings_changed($row,$options))$changed++;
   $preview=array('key'=>bin2hex(random_bytes(24)),'snapshot'=>mka_connection_settings_snapshot($rows),'login'=>$login,'options'=>$options,'created'=>time());$_SESSION['suite_connection_preview']=$preview;
-  connection_reply(200,array('preview_key'=>$preview['key'],'matched'=>count($rows),'changed'=>$changed,'selection'=>$selection,'login'=>$login,'options'=>$options));
+  connection_reply(200,array('preview_key'=>$preview['key'],'matched'=>count($rows),'changed'=>$changed,'selection'=>$selection,'login'=>$login,'options'=>$options,'current_mac'=>$login!==null&&!$sim&&count($rows)===1?trim((string)$rows[0]['mac']):null));
  }
  if($action==='execute'){
   $preview=$_SESSION['suite_connection_preview']??null;

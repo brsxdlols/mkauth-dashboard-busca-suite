@@ -37,7 +37,9 @@ if ($canTotals) {
     $safeDay = mysqli_real_escape_string($conn,$now);
     $q = mysqli_query($conn,"SELECT COUNT(DISTINCT l.login) late FROM sis_lanc l INNER JOIN sis_cliente c ON c.login=l.login WHERE $grupos c.cli_ativado='s' AND l.deltitulo=0 AND l.status NOT LIKE 'pago' AND l.datavenc<='$safeDay'");
     $late = $q ? mysqli_fetch_assoc($q) : null;
-    $multiError = !$counts || !$extra || !$late;
+    $q = mysqli_query($conn,"SELECT COUNT(*) disabled FROM sis_cliente c WHERE $grupos c.cli_ativado='n'");
+    $disabled = $q ? mysqli_fetch_assoc($q) : null;
+    $multiError = !$counts || !$extra || !$late || !$disabled;
     if (!$multiError) {
         $base=(int)$counts['clients']; $additional=(int)$extra['additional']; $total=$base+$additional;
         $cards=array(
@@ -47,6 +49,7 @@ if ($canTotals) {
             array('Observação',(int)$counts['observation'],$base,'obs','mint'),
             array('Bloqueados',(int)$counts['blocked'],$base,'bloq','red'),
             array('Atrasados',(int)$late['late'],$base,'atrasado','yellow'),
+            array('Desativados',(int)$disabled['disabled'],$base+(int)$disabled['disabled'],'desativado','gray'),
             array('Sem carnê',(int)$counts['no_booklet'],$total,'sem carne','outline-danger'),
             array('Sem títulos',(int)$counts['no_titles'],$total,'sem tit','outline-danger')
         );
@@ -67,7 +70,7 @@ if ($canTotals) {
 .multi-main{padding:14px 24px}.multi-heading{margin-bottom:12px}.multi-heading h1{font-size:23px}.multi-heading p{font-size:13px}
 .multi-nav a,.multi-search button{padding:9px 13px}.multi-search{margin-bottom:12px}.multi-search input{padding:10px 14px}
 .multi-summary{padding:12px;margin-bottom:14px}.multi-summary h2{margin-bottom:10px}.multi-stat{padding:12px;gap:8px;border-radius:12px}.multi-stat strong{font-size:30px}.multi-stat span{font-size:13px}.multi-stat small{font-size:12px;padding-top:6px}.multi-note{margin-top:8px;font-size:11px}
-@media(min-width:1101px){.multi-cards{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}}
+@media(min-width:1101px){.multi-cards{grid-template-columns:repeat(9,minmax(0,1fr));gap:8px}}
 @media(min-width:601px) and (max-width:1100px){.multi-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:600px){.multi-main{padding:12px}.multi-stat strong{font-size:26px}}
 .multi-quick-links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:8px 8px 2px}
@@ -84,6 +87,13 @@ if ($canTotals) {
 .multi-stat.blue{background:linear-gradient(180deg,#2f80ff,#1f6de8);color:#fff!important}
 .multi-stat.light{background:linear-gradient(180deg,#fff,#f8fafc);color:#1f2937!important;border:1px solid rgba(203,213,225,.88)}
 .multi-stat.light .multi-stat-icon{background:#edf2f7}
+.multi-stat.gray{background:linear-gradient(180deg,#87909e,#677281);color:#fff!important}
+.multi-stat{transition:transform .18s ease,box-shadow .18s ease;cursor:pointer}
+@media(hover:hover) and (pointer:fine){.multi-stat:hover{transform:translateY(-4px);box-shadow:0 9px 20px rgba(23,48,78,.20)}}
+.multi-stat:focus-visible{outline:3px solid #185bd4;outline-offset:3px;box-shadow:0 6px 16px rgba(23,48,78,.18)}
+.multi-stat:active{transform:translateY(-1px)}
+@media(prefers-reduced-motion:reduce){.multi-stat{transition:none}.multi-stat:hover,.multi-stat:active{transform:none}}
+
 .multi-stat.cyan{background:linear-gradient(180deg,#35c8eb,#22b8db);color:#0f172a!important}
 .multi-stat.mint{background:linear-gradient(180deg,#96edba,#80E7AB);color:#0f5132!important}
 .multi-stat.red{background:linear-gradient(180deg,#eb455a,#df3148);color:#fff!important}
@@ -97,14 +107,16 @@ if ($canTotals) {
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); include __DIR__.'/mkauth_dashboard_top.php'; mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
 <header class="multi-heading"><div><h1>Multiempresas</h1><p>Visão de clientes e resultados financeiros</p></div></header>
-<form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
+<form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" data-client-suggestions list="multi-client-suggestions" autocomplete="off" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
+<datalist id="multi-client-suggestions"></datalist>
+<script src="/admin/addons/shared/client_suggestions.js?v=20261029-1" defer></script>
 <section class="multi-summary"><h2>Clientes</h2>
 <?php if (!$canTotals) { ?><p>Seu usuário não possui permissão para visualizar os totais.</p><?php } elseif($multiError) { ?><p role="alert">Não foi possível carregar os indicadores. Tente novamente.</p><?php } else { ?>
-<div class="multi-cards"><?php $multiIcons=array('blue'=>'bi-people-fill','light'=>'bi-person-plus-fill','cyan'=>'bi-person-check-fill','mint'=>'bi-eye-fill','red'=>'bi-person-fill-lock','yellow'=>'bi-clock-fill'); foreach($cards as $card) { $multiIcon=isset($multiIcons[$card[4]])?$multiIcons[$card[4]]:($card[3]==='sem carne'?'bi-file-earmark-x-fill':'bi-receipt'); ?>
+<div class="multi-cards"><?php $multiIcons=array('blue'=>'bi-people-fill','light'=>'bi-person-plus-fill','cyan'=>'bi-person-check-fill','mint'=>'bi-eye-fill','red'=>'bi-person-fill-lock','yellow'=>'bi-clock-fill','gray'=>'bi-person-x-fill'); foreach($cards as $card) { $multiIcon=isset($multiIcons[$card[4]])?$multiIcons[$card[4]]:($card[3]==='sem carne'?'bi-file-earmark-x-fill':'bi-receipt'); ?>
 <a class="multi-stat <?= $card[4] ?>" href="../busca_inteligente/index.php?busca=<?=rawurlencode($card[3])?>"><i class="multi-stat-icon <?= $multiIcon ?>" aria-hidden="true"></i><span><?=mka_contract_escape($card[0])?></span><strong><?=number_format($card[1],0,',','.')?></strong><small><?=number_format($card[2]>0 ? $card[1]/$card[2]*100 : 0,2,',','.')?>%</small></a>
-<?php } ?></div><p class="multi-note">Total inclui adicionais. Os demais indicadores de situação consideram os cadastros principais.</p><?php } ?></section>
-<p><button type="button" data-radius-login="">Log RADIUS</button></p>
-<script src="../shared/radius_modal.js?v=20261006"></script>
+<?php } ?></div><p class="multi-note">Total inclui os adicionais dos cadastros ativos. Desativados ficam fora desse total; seu percentual considera titulares ativos e desativados. Os demais indicadores de situação consideram os titulares ativos.</p><?php } ?></section>
+
+
 <section class="multi-summary"><h2>Acesso rápido</h2><nav class="multi-quick-links" aria-label="Acesso rápido">
 <?php if($canConfig){?><a href="cfg.php" class="is-primary">Configurações</a><?php } ?>
 <?php foreach($multiShortcutLinks as $shortcutIndex=>$shortcut) {
