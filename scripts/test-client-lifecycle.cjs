@@ -7,7 +7,7 @@ function fixture(action){
  const nativeDoc={body:{scrollHeight:340},head:{append(){}},createElement:node,querySelector(){return reason},addEventListener(n,f){events[n]=f}};
  let frame;
  const document={body:node('body'),addEventListener(n,f){click=f},createElement(t){const n=node(t);if(t==='iframe'){frame=n;n.contentWindow={location:{pathname:'/admin/'+(action==='disable'?'cliente_onoff':'cliente_del')+'.hhvm'}};n.contentDocument=nativeDoc;}return n;}};
- const window={location:{href:'https://example/admin/addons/busca_inteligente/index.php',reload(){reloaded=true}}};
+ const window={mkaWatchClientAction(){return function(){}},location:{href:'https://example/admin/addons/busca_inteligente/index.php',reload(){reloaded=true}}};
  vm.runInNewContext(source,{window,document,location:{origin:'https://example'},URL,Date,RegExp});
  const attrs={'data-client-lifecycle':action,'data-client-login':'one-client','data-client-name':'One','data-client-native-url':'/admin/'+(action==='disable'?'cliente_onoff':'cliente_del')+'.hhvm'};
  click({preventDefault(){},target:{closest(){return {focus(){},getAttribute(k){return attrs[k]}}}}});

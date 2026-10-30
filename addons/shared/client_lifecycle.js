@@ -29,15 +29,22 @@
         var target = 'mka_client_action_' + Date.now();
         frame.name = target; frame.title = action === 'disable' ? 'Motivo da desativação' : 'Confirmação da exclusão';
         dialog.append(header, notice, frame); document.body.append(dialog);
-        var refresh = false, observer, oldOverflow = document.body.style.overflow;
+        var refresh = false, stopWatch = null, observer, oldOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         close.addEventListener('click', function () { dialog.close(); });
         dialog.addEventListener('close', function () {
+            if (stopWatch) stopWatch();
             if (observer) observer.disconnect();
             document.body.style.overflow = oldOverflow;
             dialog.remove(); button.focus();
             if (refresh) window.location.reload();
         });
+        function watchResult() {
+            if (stopWatch) return;
+            stopWatch = window.mkaWatchClientAction(login, action === 'disable' ? 'inactive' : 'deleted', function () { window.location.reload(); }, function () {
+                notice.textContent = 'Não foi possível confirmar o resultado. Confira a mensagem do MK-AUTH e o cadastro antes de repetir a operação.';
+            });
+        }
         frame.addEventListener('load', function () {
             try {
                 var popup = frame.contentWindow, doc = frame.contentDocument;
@@ -60,7 +67,7 @@
                         if (!reason.value.trim()) {
                             event.preventDefault(); event.stopImmediatePropagation();
                             reason.setCustomValidity('Informe o motivo para continuar.'); reason.reportValidity();
-                        } else if (event.type === 'submit') { refresh = true; }
+                        } else { watchResult(); }
                     }
                     reason.addEventListener('input', function () { reason.setCustomValidity(''); });
                     doc.addEventListener('submit', validate, true);
