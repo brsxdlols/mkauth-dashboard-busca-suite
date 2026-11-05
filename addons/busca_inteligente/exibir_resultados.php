@@ -2023,11 +2023,8 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                         <div class="mka-bulk-block-toolbar no_print" data-bulk-block-toolbar>
                                                             <button type="button" class="mka-bulk-select" data-bulk-select>Selecionar todos desta página</button>
                                                             <span data-bulk-selected aria-live="polite">0 selecionados</span>
-                                                            <?php if (strtolower(trim((string)($_GET['busca'] ?? ''))) === 'bloq') { ?>
                                                             <button type="button" class="mka-bulk-unlock" data-bulk-client-block="desbloqueio" data-native-block-url="../../executar_bloqueio.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>"><i class="fa-solid fa-lock-open" aria-hidden="true"></i> Desbloquear selecionados</button>
-                                                            <?php } else { ?>
                                                             <button type="button" class="mka-bulk-lock" data-bulk-client-block="bloqueio" data-native-block-url="../../executar_bloqueio.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>"><i class="fa-solid fa-lock" aria-hidden="true"></i> Bloquear selecionados</button>
-                                                            <?php } ?>
                                                         </div>
                                                         <?php } ?>
                                                         <div class='opcoes no_print' style='display:flex;align-items:center;flex-wrap:wrap;gap:8px'>

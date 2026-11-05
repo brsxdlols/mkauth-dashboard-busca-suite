@@ -3,13 +3,19 @@
  var active=null;
  function boxes(){return Array.from(document.querySelectorAll('.login_select[data-client-uuid]'));}
  function update(){
-  var total=boxes().filter(function(b){return b.checked;}).length;
+  var all=boxes(),marked=all.filter(function(b){return b.checked;}),total=marked.length,scope=total?marked:all;
+  document.querySelectorAll('[data-bulk-client-block]').forEach(function(button){
+   var blocked=button.getAttribute('data-bulk-client-block')==='desbloqueio';
+   button.hidden=!scope.some(function(b){return (b.getAttribute('data-client-blocked')==='sim')===blocked;});
+   button.disabled=!total;
+  });
   document.querySelectorAll('[data-bulk-selected]').forEach(function(n){n.textContent=total+' selecionado'+(total===1?'':'s');});
  }
  function selected(action){
   var seen=new Set();
   return boxes().filter(function(b){
    var uuid=b.getAttribute('data-client-uuid');
+   if((b.getAttribute('data-client-blocked')==='sim')!==(action==='desbloqueio'))return false;
    if(!b.checked||!uuid||!/^[A-Za-z0-9-]{16,64}$/.test(uuid)||seen.has(uuid))return false;
    seen.add(uuid);return true;
   }).map(function(b){return {uuid:b.getAttribute('data-client-uuid'),name:b.getAttribute('data-client-name')||b.value,login:b.value};});
@@ -45,7 +51,7 @@
   dialog.className='mka-bulk-block-dialog'+(unlock?' is-unlock':'');dialog.setAttribute('aria-labelledby','mka-bulk-block-title');
   var header=node('h2',unlock?'Desbloquear clientes selecionados':'Bloquear clientes selecionados');header.id='mka-bulk-block-title';
   var content=node('div');content.className='mka-bulk-block-content';
-  var summary=node('p',clients.length+' cliente(s) marcado(s) nesta página. A ação usa o procedimento nativo do MK-AUTH.');summary.className='mka-bulk-summary';
+  var summary=node('p',clients.length+' cliente(s) selecionado(s) para esta ação nesta página. A ação usa o procedimento nativo do MK-AUTH.');summary.className='mka-bulk-summary';
   var warning=node('p',unlock?'Se ainda houver títulos vencidos e a regra de corte se aplicar, o MK-AUTH poderá bloquear novamente. Esta ação não concede prazo de confiança.':'Se o financeiro permitir o desbloqueio automático, o MK-AUTH poderá liberar novamente estes clientes. Esta ação não cria um bloqueio permanente.');warning.className='mka-bulk-warning';
   var preserve=node('p','Títulos, pagamentos e regras automáticas do sistema serão mantidos. Quem já estiver no estado solicitado será ignorado.');
   var names=node('ul');names.className='mka-bulk-client-list';clients.forEach(function(c){names.append(node('li',c.name+' · '+c.login));});

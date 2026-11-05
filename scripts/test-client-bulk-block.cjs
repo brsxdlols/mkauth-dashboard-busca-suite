@@ -13,8 +13,9 @@ function fixture(action='bloqueio',options={}){
  });
  const body=new Node('body'),counter=new Node('span'),master=new Node('input'),trigger=new Node('button');
  trigger.attrs={'data-bulk-client-block':action,'data-native-block-url':'../../executar_bloqueio.'+(options.extension||'hhvm')};
+ const other=new Node('button');other.attrs={'data-bulk-client-block':action==='bloqueio'?'desbloqueio':'bloqueio'};
  const location={href:'https://example/admin/addons/busca_inteligente/index.php?busca=bloq&pagina=2',origin:'https://example',reload(){reloads++;}};
- const document={body,querySelectorAll(s){return s.startsWith('.login_select')?boxes:s==='[data-bulk-selected]'?[counter]:[];},getElementById(){return master;},createElement:t=>new Node(t),addEventListener(k,f){listeners[k]=f;}};
+ const document={body,querySelectorAll(s){return s.startsWith('.login_select')?boxes:s==='[data-bulk-selected]'?[counter]:s==='[data-bulk-client-block]'?[trigger,other]:[];},getElementById(){return master;},createElement:t=>new Node(t),addEventListener(k,f){listeners[k]=f;}};
  const fetch=async(url,opts={})=>{
   url=String(url);requests.push([url,opts]);
   if(url.includes('executar_bloqueio')){
@@ -35,7 +36,7 @@ function fixture(action='bloqueio',options={}){
  function click(n){listeners.click({target:n,preventDefault(){}});}
  function open(){click(trigger);return body.children.at(-1);}
  function controls(){return {confirm:nodes.find(n=>n.className==='mka-bulk-confirm'),reason:nodes.find(n=>n.id==='mka-bulk-reason'),cancel:nodes.find(n=>n.tag==='button'&&n.textContent==='Cancelar')};}
- return {requests,boxes,open,controls,click,Node,nodes,reloads:()=>reloads,counter};
+ return {requests,boxes,open,controls,click,Node,nodes,reloads:()=>reloads,counter,trigger,other,change(){listeners.change();}};
 }
 (async()=>{
  let f=fixture();f.open();assert.equal(f.requests.length,0);f.controls().cancel.events.click();assert.equal(f.requests.length,0);
@@ -49,5 +50,9 @@ function fixture(action='bloqueio',options={}){
  assert.equal(f.requests.filter(([u])=>u.includes('executar_bloqueio')).length,2);assert.equal(f.reloads(),0);assert(f.controls().confirm.hidden);assert(f.nodes.some(n=>n.textContent.includes('Não houve repetição automática')));
  f=fixture('bloqueio',{denied:true});f.open();f.controls().reason.value='Motivo de teste';await f.controls().confirm.events.click();assert(!f.requests.some(([u])=>u.includes('executar_bloqueio')));
  f=fixture();f.boxes.forEach(b=>b.checked=false);let select=new f.Node('button');select.attrs['data-bulk-select']='';f.click(select);assert(f.boxes.every(b=>b.checked));assert.equal(f.counter.textContent,'2 selecionados');
+ f=fixture('bloqueio',{boxes:[true]});assert(f.trigger.hidden);assert(!f.other.hidden);f.boxes[0].checked=false;f.change();assert(f.trigger.hidden);assert(!f.other.hidden);assert(f.other.disabled);
+ f=fixture('bloqueio',{boxes:[false]});assert(!f.trigger.hidden);assert(f.other.hidden);
+ f=fixture('bloqueio',{boxes:[false,true]});assert(!f.trigger.hidden&&!f.other.hidden);f.boxes[0].checked=false;f.change();assert(f.trigger.hidden&&!f.other.hidden);
+ console.log('PASS state-aware buttons for blocked/free/mixed selections;');
  console.log('PASS explicit selection/confirmation; native PHP/HHVM; CSRF audit; skip existing state; stop on error without retry; cancel makes no requests');
 })().catch(e=>{console.error(e);process.exitCode=1;});

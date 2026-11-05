@@ -14,3 +14,5 @@
 .mka-bulk-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}.mka-bulk-actions .mka-bulk-confirm{background:#b91c1c;border-color:#b91c1c;color:#fff}.is-unlock .mka-bulk-actions .mka-bulk-confirm{background:#168447;border-color:#168447}
 .mka-bulk-actions button:disabled{opacity:.55;cursor:wait}
 @media(max-width:520px){.mka-bulk-block-toolbar{align-items:stretch}.mka-bulk-block-toolbar button{flex:1 1 100%}.mka-bulk-actions{flex-wrap:wrap}.mka-bulk-actions button{flex:1}.mka-bulk-block-content{padding:14px}}
+
+.mka-bulk-block-toolbar [hidden]{display:none!important}

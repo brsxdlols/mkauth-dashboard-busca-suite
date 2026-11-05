@@ -55,5 +55,5 @@ if (isset($_SESSION['MM_Usuario'])) {
 <link rel="stylesheet" href="/admin/addons/shared/client_lifecycle.css?v=20261029-2">
 <script src="/admin/addons/shared/client_lifecycle.js?v=20261029-4" defer></script>
 
-<link rel="stylesheet" href="/admin/addons/shared/client_bulk_block.css?v=20261105-1">
-<script src="/admin/addons/shared/client_bulk_block.js?v=20261105-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/client_bulk_block.css?v=20261105-2">
+<script src="/admin/addons/shared/client_bulk_block.js?v=20261105-2" defer></script>

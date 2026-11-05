@@ -1,7 +1,10 @@
 # Bloqueio e desbloqueio em massa na Busca
 
-No rodape do filtro Bloqueados aparece **Desbloquear selecionados**. Nos demais
-filtros de clientes ativos aparece **Bloquear selecionados**. O controle exige
+No rodape, os botoes acompanham o estado dos clientes selecionados, em qualquer
+busca: bloqueados permitem **Desbloquear selecionados**, livres permitem
+**Bloquear selecionados**. Uma selecao mista mostra os dois botoes; cada acao
+processa somente os clientes no estado correspondente. Sem selecao, os botoes
+refletem os resultados da pagina e ficam desabilitados. O controle exige
 a permissao nativa `perm_bloqueio`; nao aparece na guia Desativados.
 
 **Selecionar todos desta pagina** marca somente os clientes carregados na pagina
