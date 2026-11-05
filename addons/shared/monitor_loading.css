@@ -1,0 +1,7 @@
+/* Standalone monitor: never flash the map while the selected client loads. */
+#app,#fullscreen-toggle,.sidebar-toggle,.demo-bar,#mobile-toggle,#mobile-back-mkauth{visibility:hidden!important}
+html:not(.mka-monitor-ready) body>*:not(#mka-monitor-loading){visibility:hidden!important}
+html:not(.mka-monitor-ready)::after{content:'Carregando monitor de tráfego…';position:fixed;inset:0;display:grid;place-items:center;background:#f3f7fb;color:#31516d;font:600 16px Arial,sans-serif;z-index:99999}
+html.mka-monitor-message::after{display:none}
+#mka-monitor-loading{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:24px;text-align:center;background:#f3f7fb;color:#31516d;font:15px/1.5 Arial,sans-serif;z-index:99999}
+#mka-monitor-loading button{border:0;border-radius:8px;padding:11px 18px;background:#2563eb;color:#fff;font:600 14px Arial,sans-serif;cursor:pointer}
