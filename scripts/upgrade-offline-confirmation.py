@@ -5,14 +5,14 @@ from reconcile_session_identity import patch_session_identity
 scripts=pathlib.Path(sys.argv[1]); backup=pathlib.Path(sys.argv[2])
 target=scripts/'mkauth_radius_ppp_reconcile.php'
 if not target.is_file():
-    print('[reconcile] Rotina ausente; nenhuma rotina nova criada.'); sys.exit(0)
+    print('[reconcile] Rotina ausente; instalacao necessaria.'); sys.exit(1)
 old=target.read_bytes(); text=old.decode('utf-8')
 source=(pathlib.Path(__file__).parent/'install-radius-reconcile.sh').read_text()
 guard=re.search(r"<<'GUARD_PHP'\n(.*?)\nGUARD_PHP",source,re.S).group(1)+'\n'
 if 'offline_guard(' not in text:
     anchor='    foreach ($active as $ppp) {'
     if text.count(anchor)!=1 or text.count('$onlyLogin = null;')!=1:
-        print('[reconcile] Versao desconhecida preservada; atualizacao manual necessaria.');sys.exit(0)
+        print('[reconcile] Versao desconhecida preservada; atualizacao manual necessaria.');sys.exit(1)
     text=text.replace('$onlyLogin = null;', "require_once __DIR__.'/mkauth_radius_offline_guard.php';\n$onlyLogin = null;",1)
     text=text.replace(anchor,'    offline_guard($db,$router,$active,$apply,$onlyLogin,$stats);\n'+anchor)
 if 'flock(' not in text:
@@ -20,7 +20,7 @@ if 'flock(' not in text:
 try:
     text=patch_session_identity(text)
 except ValueError as error:
-    print('[reconcile] Formato desconhecido preservado: '+str(error));sys.exit(0)
+    print('[reconcile] Formato desconhecido preservado: '+str(error));sys.exit(1)
 helper=scripts/'mkauth_radius_offline_guard.php'
 if target.read_bytes()==text.encode() and helper.is_file() and helper.read_bytes()==guard.encode():
     print('[reconcile] Confirmacao offline ja atualizada.');sys.exit(0)

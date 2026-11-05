@@ -141,17 +141,7 @@ install_additional_block_patch() {
 
 install_reconcile() {
   echo "[8/8] Instalando reconcile de Radius"
-  local reconcile_installer="${SCRIPT_DIR}/scripts/install-radius-reconcile.sh"
-
-  if [ ! -f "${reconcile_installer}" ]; then
-    echo "[aviso] instalador do reconcile nao foi encontrado no pacote."
-    return 0
-  fi
-
-  # Upgrade existing API confirmation without running accounting writes at install time.
-  python3 "${SCRIPT_DIR}/scripts/upgrade-offline-confirmation.py" /opt/mk-auth/scripts "${BACKUP_DIR}/offline-confirmation"
-  cp "${SCRIPT_DIR}/scripts/radacct-maintenance.sh" /opt/mk-auth/scripts/mkauth-radacct-maintenance.sh
-  chmod 700 /opt/mk-auth/scripts/mkauth-radacct-maintenance.sh
+  python3 "${SCRIPT_DIR}/scripts/ensure-radius-reconcile.py"     /opt/mk-auth/scripts "${BACKUP_DIR}/offline-confirmation"     --admin "${TARGET_ADMIN_DIR}"
 }
 
 remove_manual_block_guard() {
