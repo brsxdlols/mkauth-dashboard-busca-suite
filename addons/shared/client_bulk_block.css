@@ -1,0 +1,16 @@
+.mka-bulk-block-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:16px 0;padding:14px 16px;border:1px solid #d6e2ee;border-radius:12px;background:#f5f9fd;color:#456078;font:13px Arial,sans-serif}
+.mka-bulk-block-toolbar button,.mka-bulk-actions button{padding:10px 14px;border:1px solid #c6d6e5;border-radius:8px;background:#fff;color:#31516d;font:600 13px Arial,sans-serif;cursor:pointer}
+.mka-bulk-block-toolbar .mka-bulk-unlock{background:#168447;border-color:#168447;color:#fff}
+.mka-bulk-block-toolbar .mka-bulk-lock{background:#b91c1c;border-color:#b91c1c;color:#fff}
+.mka-bulk-block-dialog{width:min(650px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:0;border:1px solid #d6e2ee;border-radius:14px;background:#fff;color:#233f56;box-shadow:0 20px 70px #102b4666;font:14px/1.5 Arial,sans-serif}
+.mka-bulk-block-dialog::backdrop{background:#18324d88}
+.mka-bulk-block-dialog h2{margin:0;padding:18px 20px;background:#fff1f2;color:#a7192b;font-size:19px}
+.mka-bulk-block-dialog.is-unlock h2{background:#edf9f1;color:#16653d}
+.mka-bulk-block-content{padding:18px 20px}.mka-bulk-summary{font-weight:600}
+.mka-bulk-warning{padding:12px;border-left:4px solid #d99a11;border-radius:7px;background:#fff8e8;color:#775112}
+.mka-bulk-client-list{max-height:120px;overflow:auto;padding:10px 10px 10px 30px;border:1px solid #e0e8ef;border-radius:8px;background:#f8fbfe;overflow-wrap:anywhere}
+.mka-bulk-block-content label{display:block;margin:14px 0 6px;font-weight:600}
+.mka-bulk-block-content textarea{box-sizing:border-box;width:100%;padding:10px;border:1px solid #bed1e2;border-radius:8px;font:14px Arial,sans-serif;resize:vertical}
+.mka-bulk-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}.mka-bulk-actions .mka-bulk-confirm{background:#b91c1c;border-color:#b91c1c;color:#fff}.is-unlock .mka-bulk-actions .mka-bulk-confirm{background:#168447;border-color:#168447}
+.mka-bulk-actions button:disabled{opacity:.55;cursor:wait}
+@media(max-width:520px){.mka-bulk-block-toolbar{align-items:stretch}.mka-bulk-block-toolbar button{flex:1 1 100%}.mka-bulk-actions{flex-wrap:wrap}.mka-bulk-actions button{flex:1}.mka-bulk-block-content{padding:14px}}

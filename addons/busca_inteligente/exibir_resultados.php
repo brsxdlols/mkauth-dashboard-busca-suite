@@ -3,8 +3,16 @@ require_once __DIR__.'/../shared/layout_mode.php';
 $suite_support_destination=mka_suite_get_support_destination($link);
 $canActivateClients=false;
 $canDeleteClients=false;
+$canBulkBlockClients=false;
 $activationOperator=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
 if($activationOperator!=='') {
+    $bulkBlockPermission=$link->prepare("SELECT 1 FROM sis_perm WHERE usuario=? AND nome='perm_bloqueio' AND permissao='sim' LIMIT 1");
+    if($bulkBlockPermission) {
+        $bulkBlockPermission->bind_param('s',$activationOperator);
+        if($bulkBlockPermission->execute())$canBulkBlockClients=(bool)$bulkBlockPermission->get_result()->fetch_row();
+        $bulkBlockPermission->close();
+    }
+
     $activationPermission=$link->prepare("SELECT 1 FROM sis_perm WHERE usuario=? AND nome='perm_ativacao' AND permissao='sim' LIMIT 1");
     if($activationPermission) {
         $activationPermission->bind_param('s',$activationOperator);
@@ -1440,7 +1448,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         <div class='row client-row small <?= $bgColor; ?>' data-live-client="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-live-port="<?= (int)$porta_acesso; ?>" data-live-ports="<?= htmlspecialchars(json_encode(array((int)$porta_acesso,(int)$porta_acesso2,(int)$porta_acesso3)),ENT_QUOTES,'UTF-8'); ?>">
 
             <div class='col-auto client-check-col'>
-                <input type='checkbox' name='login[]' class='login_select' value='<?= $login_cliente; ?>'>
+                <input type="checkbox" name="login[]" class="login_select" value="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-uuid="<?= htmlspecialchars($uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-name="<?= htmlspecialchars($nome_cliente,ENT_QUOTES,'UTF-8'); ?>" data-client-blocked="<?= strtolower(trim((string)$bloqueado)) === 'sim' ? 'sim' : 'nao'; ?>">
             </div>
 
             <?php
@@ -2011,6 +2019,17 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                     }
                                                         ?>
 
+                                                        <?php if (empty($disabledScope) && $canBulkBlockClients && $acesso_permitido) { ?>
+                                                        <div class="mka-bulk-block-toolbar no_print" data-bulk-block-toolbar>
+                                                            <button type="button" class="mka-bulk-select" data-bulk-select>Selecionar todos desta página</button>
+                                                            <span data-bulk-selected aria-live="polite">0 selecionados</span>
+                                                            <?php if (strtolower(trim((string)($_GET['busca'] ?? ''))) === 'bloq') { ?>
+                                                            <button type="button" class="mka-bulk-unlock" data-bulk-client-block="desbloqueio" data-native-block-url="../../executar_bloqueio.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>"><i class="fa-solid fa-lock-open" aria-hidden="true"></i> Desbloquear selecionados</button>
+                                                            <?php } else { ?>
+                                                            <button type="button" class="mka-bulk-lock" data-bulk-client-block="bloqueio" data-native-block-url="../../executar_bloqueio.<?= htmlspecialchars($links_ext,ENT_QUOTES,'UTF-8'); ?>"><i class="fa-solid fa-lock" aria-hidden="true"></i> Bloquear selecionados</button>
+                                                            <?php } ?>
+                                                        </div>
+                                                        <?php } ?>
                                                         <div class='opcoes no_print' style='display:flex;align-items:center;flex-wrap:wrap;gap:8px'>
                                                             <input type='image' src='img/icon_menu_add_cliente.png' formaction='../../cliente_ins.<?= $links_ext; ?>' title='Adicionar Cliente' />
 
