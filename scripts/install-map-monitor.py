@@ -3,6 +3,25 @@
 import hashlib, importlib.util, json, os, pathlib, re, shutil, subprocess, sys, tarfile, time, urllib.request
 REPOSITORY='brsxdlols/mkauth-toolkit'
 
+def isolate_runtime_paths(text):
+    # Toolkit may use absolute URLs for its full-map assets and APIs. The suite
+    # installs an independent copy; never depend on a full map being installed.
+    return re.sub(r'/admin/addons/mapa-clientes/(?!monitor(?:/|[?\"\']))',
+                  '/admin/addons/mapa-clientes/monitor/runtime/', text)
+
+def repair_runtime_paths(runtime):
+    for file in runtime.rglob('*'):
+        # Authentication cookie scopes and local provider configuration are not
+        # resource URLs. Preserve all backend files except the rendered page.
+        if not file.is_file() or (file.name != 'maps.hhvm' and file.suffix != '.js'):
+            continue
+        original=file.read_bytes()
+        updated=isolate_runtime_paths(original.decode('utf-8')).encode('utf-8')
+        if updated!=original:file.write_bytes(updated)
+    maps=(runtime/'maps.hhvm').read_text(encoding='utf-8')
+    for asset in re.findall(r'(?:src|href)=[\"\']/admin/addons/mapa-clientes/monitor/runtime/(assets/[^\"\'?<>]+)',maps):
+        if not (runtime/asset).is_file():raise ValueError('Dependencia local do monitor ausente: '+asset)
+
 def download(url, target):
     for attempt in range(3):
         try:
@@ -48,6 +67,7 @@ def build_runtime(source,target,patcher):
     text=text.replace('<head>','<head><script src="/admin/addons/shared/admin_asset_paths.js?v=20261014-1"></script><link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">',1)
     text=text.replace('src="../../','src="/admin/').replace('href="../../','href="/admin/').replace("'../../","'/admin/").replace("'../geocodificacao/","'/admin/addons/geocodificacao/")
     (target/'maps.hhvm').write_bytes(text.encode('utf-8'))
+    repair_runtime_paths(target)
 
 def install_runtime(source,admin,backup,patcher):
     route=admin/'addons/mapa-clientes/monitor';entry=route/'index.php'

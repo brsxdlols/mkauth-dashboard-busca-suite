@@ -40,4 +40,23 @@ class MonitorInstallTests(unittest.TestCase):
   self.assertIn('MKA_SUITE_MONITOR_RUNTIME',(addon/'monitor/runtime/maps.hhvm').read_text());self.assertIn('suite-map-monitor-entry-v2',(addon/'monitor/index.php').read_text())
   self.assertFalse((addon/'monitor/runtime/index.hhvm').exists())
   with mock.patch.object(m.subprocess,'run'):m.install_runtime(source,admin,self.path/'second-backup',patcher)
+ def test_absolute_assets_and_api_stay_in_isolated_runtime(self):
+  runtime=self.path/'runtime';assets=runtime/'assets';assets.mkdir(parents=True)
+  original='<script src="/admin/addons/mapa-clientes/assets/region-selection.js?v=1"></script><a href="/admin/addons/mapa-clientes/monitor/?login=x">Monitor</a>'
+  (runtime/'maps.hhvm').write_text(original,encoding='utf-8')
+  (assets/'region-selection.js').write_text('window.mkaMapRegionSelection=function(){};',encoding='utf-8')
+  (assets/'telegram.js').write_text("fetch('/admin/addons/mapa-clientes/telegram_api.hhvm')",encoding='utf-8')
+  auth="setcookie('token','value',['path'=>'/admin/addons/mapa-clientes/']);"
+  (runtime/'auth.php').write_text(auth,encoding='utf-8')
+  m.repair_runtime_paths(runtime)
+  result=(runtime/'maps.hhvm').read_text(encoding='utf-8')
+  self.assertIn('/monitor/runtime/assets/region-selection.js?v=1',result)
+  self.assertIn('/mapa-clientes/monitor/?login=x',result)
+  self.assertIn('/monitor/runtime/telegram_api.hhvm',(assets/'telegram.js').read_text(encoding='utf-8'))
+  self.assertEqual((runtime/'auth.php').read_text(encoding='utf-8'),auth)
+  m.repair_runtime_paths(runtime);self.assertEqual(result,(runtime/'maps.hhvm').read_text(encoding='utf-8'))
+ def test_missing_local_asset_rejected(self):
+  runtime=self.path/'runtime';runtime.mkdir()
+  (runtime/'maps.hhvm').write_text('<script src="/admin/addons/mapa-clientes/assets/missing.js"></script>',encoding='utf-8')
+  with self.assertRaises(ValueError):m.repair_runtime_paths(runtime)
 if __name__=='__main__':unittest.main()
