@@ -1,6 +1,19 @@
 <?php
 include('config.php');
 require_once __DIR__ . '/../shared/layout_mode.php';
+
+require_once __DIR__.'/finance_period.php';
+if (empty($_SESSION['suite_finance_summary_csrf'])) $_SESSION['suite_finance_summary_csrf']=bin2hex(random_bytes(32));
+if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['finance_summary_present'])) {
+    if (!permissao('perm_config') || !hash_equals($_SESSION['suite_finance_summary_csrf'],(string)($_POST['finance_summary_csrf']??''))) {
+        http_response_code(403); exit('Sessão inválida. Atualize a página.');
+    }
+    $financeVisible=(string)($_POST['finance_summary_enabled']??'');
+    if (!in_array($financeVisible,array('sim','nao'),true)) { http_response_code(422); exit('Opção financeira inválida.'); }
+    mka_finance_summary_save($conn,$financeVisible);
+}
+$financeSummaryEnabled=mka_finance_summary_enabled($conn);
+
 require_once __DIR__ . '/../shared/router_monitoring.php';
 if(empty($_SESSION['suite_router_monitoring_csrf']))$_SESSION['suite_router_monitoring_csrf']=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['router_monitoring_present'])) {
@@ -397,6 +410,14 @@ if (isset($_SESSION['MM_Usuario'])) {
                 <section class="cfg-card cfg-topic" id="cfg-topic-finance">
                     <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Financeiro e gráficos</h2><p>Organize os gráficos, o período e os valores considerados.</p></div></div>
                     <div class="cfg-topic-grid">
+<input type="hidden" name="finance_summary_present" value="1">
+<input type="hidden" name="finance_summary_csrf" value="<?=htmlspecialchars($_SESSION['suite_finance_summary_csrf'],ENT_QUOTES,'UTF-8')?>">
+<div class="form-floating cfg-field">
+<select class="form-select" name="finance_summary_enabled" id="cfg-finance-summary"><option value="sim" <?=$financeSummaryEnabled?'selected':''?>>Sim</option><option value="nao" <?=!$financeSummaryEnabled?'selected':''?>>Não</option></select>
+<label for="cfg-finance-summary">Exibir resumo financeiro (dia / semana)</label>
+<small>Mostra A receber e Caixa. Cada usuário visualiza somente os valores permitidos.</small>
+</div>
+
 <div class="form-floating cfg-field">
                         <select class="form-select" name="exb_ticket_medio" id="cfg-exb_ticket_medio" aria-label="">
                             <?php

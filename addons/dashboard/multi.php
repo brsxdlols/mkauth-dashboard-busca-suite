@@ -122,6 +122,7 @@ if ($canTotals) {
 <?php } ?></div><?php } ?></section>
 
 
+<?php include __DIR__.'/finance_today.php'; ?>
 <section class="multi-summary multi-shortcuts"><nav class="multi-quick-links" aria-label="Atalhos">
 <button type="button" class="multi-shortcuts-button" data-dashboard-shortcuts><i class="bi bi-link-45deg" aria-hidden="true"></i> Atalhos</button>
 <?php foreach($multiShortcutLinks as $shortcutIndex=>$shortcut) {

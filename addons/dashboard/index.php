@@ -2019,6 +2019,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
             <div class="col-12 mb-2"><style>.mka-radius-launch{display:block;width:100%;padding:12px 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font:600 14px system-ui;cursor:pointer;transition:background .18s,box-shadow .18s,transform .18s}.mka-radius-launch:hover{background:#1d4ed8;box-shadow:0 6px 16px #2563eb35;transform:translateY(-1px)}.mka-radius-launch:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.mka-radius-launch:active{transform:translateY(0)}</style><button type="button" class="mka-radius-launch" data-radius-login="">RADIUS</button></div>
 <script src="../shared/radius_modal.js?v=20261006"></script>
+            <div class="col-12"><?php include __DIR__.'/finance_today.php'; ?></div>
             <!-- Acesso Rápido -->
             <div class='col-12 col-md-12 col-lg-12'>
                 <div class='dashboard-surface mb-2'>
