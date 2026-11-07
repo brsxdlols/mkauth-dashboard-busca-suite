@@ -5,9 +5,7 @@
  const find=key=>root.querySelector('[data-finance-'+key+']');
  const refresh=find('refresh'),status=find('updated');
  const buttons=Array.from(root.querySelectorAll('[data-finance-period]'));
- const preferenceKey=root.getAttribute('data-finance-preference-key')||'mka.finance.period';
- let period='day';
- try{const saved=localStorage.getItem(preferenceKey);if(saved==='day'||saved==='week')period=saved;}catch(e){}
+ let period='week';
  function markPeriod(){buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.getAttribute('data-finance-period')===period)));}
  markPeriod();
  const date=value=>value.split('-').reverse().join('/');
@@ -20,11 +18,13 @@
    if(response.status===403){root.hidden=true;return;}
    const d=await response.json();if(!response.ok||!d.ok)throw Error('unavailable');
    if(selectedPeriod!==(period))return;
-   const week=d.period==='week';
-   find('eyebrow').textContent=week?'FINANCEIRO · SEMANA':'FINANCEIRO · HOJE';find('title').textContent=week?'Acompanhe a semana':'Acompanhe o dia';
-   find('due-title').textContent=week?'A receber nesta semana':'A receber hoje';find('cash-title').textContent=week?'Caixa da semana':'Caixa de hoje';
-   find('due-note').textContent=(week?'Vencimento de domingo a sábado':'Vencimento hoje')+' · títulos em aberto e vencidos, sem encargos calculados.';
-   find('balance-note').textContent=(week?'Saldo da semana':'Saldo do dia')+' · entradas menos saídas';
+   const labels={day:['HOJE','o dia','hoje','de hoje','do dia','hoje'],week:['SEMANA','a semana','nesta semana','da semana','da semana','de domingo a sábado'],fortnight:['15 DIAS','os próximos 15 dias','nos próximos 15 dias','dos próximos 15 dias','dos próximos 15 dias','nos próximos 15 dias'],month:['MÊS','o mês','neste mês','do mês','do mês','no mês atual']};
+   const label=labels[d.period]||labels.week;
+   find('eyebrow').textContent='FINANCEIRO · '+label[0];find('title').textContent='Acompanhe '+label[1];
+   find('due-title').textContent='A receber '+label[2];find('cash-title').textContent='Caixa '+label[3];
+   find('due-note').textContent='Vencimento '+label[5]+' · títulos em aberto e vencidos, sem encargos calculados.';
+   find('balance-note').textContent='Saldo '+label[4]+' · entradas menos saídas';
+   if(d.due_url)find('due').setAttribute('href',d.due_url);else find('due').removeAttribute('href');
    find('due').hidden=!d.due;find('cash').hidden=!d.cash;
    if(d.due){cash('amount',d.due.amount);find('quantity').textContent=d.due.quantity+' título(s) a receber'+(Number(d.due.overdue_quantity)>0?' · '+d.due.overdue_quantity+' em atraso':'');}
    if(d.cash){cash('incoming',d.cash.incoming);cash('outgoing',d.cash.outgoing);find('balance-wrap').hidden=d.cash.balance===undefined;if(d.cash.balance!==undefined){cash('balance',d.cash.balance);find('balance').classList.toggle('is-negative',Number(d.cash.balance)<0);}}
@@ -36,11 +36,12 @@
  }
  refresh.addEventListener('click',update);
  buttons.forEach(button=>button.addEventListener('click',()=>{
-  const value=button.getAttribute('data-finance-period');if((value!=='day'&&value!=='week')||value===period)return;
-  period=value;markPeriod();try{localStorage.setItem(preferenceKey,period);}catch(e){}
+  const value=button.getAttribute('data-finance-period');if(!['day','week','fortnight','month'].includes(value)||value===period)return;
+  period=value;markPeriod();
   status.textContent='Atualizando período…';update();
  }));
  document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(document.hidden){if(controller)controller.abort();}else update();});
+ window.addEventListener('pageshow',event=>{if(event.persisted){period='week';markPeriod();update();}});
  window.addEventListener('pagehide',()=>{clearTimeout(timer);if(controller)controller.abort();});
  update();
 }());

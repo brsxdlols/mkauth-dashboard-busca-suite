@@ -13,9 +13,11 @@ function mka_finance_summary_save($db, $value) {
 }
 // Calendar bounds only: never change the server, database or PHP timezone.
 function mka_finance_period($day, $period) {
-    if (!in_array($period, array('day', 'week'), true) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $day)) throw new InvalidArgumentException('Invalid financial period');
+    if (!in_array($period, array('day', 'week', 'fortnight', 'month'), true) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $day)) throw new InvalidArgumentException('Invalid financial period');
     $start = new DateTimeImmutable($day, new DateTimeZone('UTC'));
     if ($period === 'week') $start = $start->modify('-'.$start->format('w').' days');
-    $end = $start->modify($period === 'week' ? '+7 days' : '+1 day');
+    if ($period === 'month') $start = $start->modify('first day of this month');
+    $duration = array('day'=>'+1 day','week'=>'+7 days','fortnight'=>'+15 days','month'=>'+1 month');
+    $end = $start->modify($duration[$period]);
     return array('start'=>$start->format('Y-m-d'), 'end'=>$end->format('Y-m-d'), 'last'=>$end->modify('-1 day')->format('Y-m-d'));
 }

@@ -5,3 +5,5 @@
 a.mka-finance-card{display:block;text-decoration:none;color:inherit;transition:box-shadow .18s,transform .18s}a.mka-finance-card:hover{box-shadow:0 6px 18px #05966920;transform:translateY(-2px)}a.mka-finance-card:focus-visible{outline:3px solid #6ee7b7;outline-offset:3px}
 
 .mka-finance-period-buttons{display:inline-flex;gap:3px;padding:3px;border:1px solid #d6e4f5;border-radius:10px;background:#f2f6fc}.mka-finance-period-buttons button{min-width:72px;border:0;background:transparent;color:#526c87;border-radius:7px;padding:8px 13px;font-weight:700}.mka-finance-period-buttons button[aria-pressed="true"]{background:#2563eb;color:#fff;box-shadow:0 2px 6px #2563eb26}.mka-finance-period-buttons button:hover{background:#dce9fc;color:#164c9c}.mka-finance-period-buttons button[aria-pressed="true"]:hover{background:#1d4ed8;color:#fff}.mka-finance-period-buttons button:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+
+a.mka-finance-card.is-due:hover{box-shadow:0 6px 18px #2563eb20}a.mka-finance-card.is-due:focus-visible{outline-color:#93c5fd}.mka-finance-period-buttons{flex-wrap:wrap}.mka-finance-period-buttons button{min-width:58px}

@@ -12,11 +12,12 @@ for($i=1;$i<=53;$i++)$db->query("INSERT INTO sis_lanc(id,login,status,deltitulo,
 $db->query("INSERT INTO sis_lanc(id,login,status,deltitulo,recibo,datavenc,valor,obs) VALUES(54,'fixture','pago',0,'P','2026-01-01','90',''),(55,'fixture','aberto',1,'D','2026-01-01','90',''),(56,'other','aberto',0,'O','2026-01-01','90','')");
 $db->query("UPDATE sis_lanc SET status='vencido' WHERE id=1");
 $db->query("INSERT INTO sis_qrpix VALUES('1','PIX-EXISTING'),('55','DELETED-PIX')");
-$db->query("INSERT INTO sis_mlanc VALUES(1,60,'desconto',0),(1,999,'acrescimo',1),(2,15,'acrescimo',0)");
+$db->query("INSERT INTO sis_mlanc VALUES(1,60,'desconto',0),(1,999,'acrescimo',1),(2,15,'acrescimo',0),(3,80,'outros',0)");
 $a=mka_client_open_invoices($db,'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',"c.grupo='permitido'",1);
 if($a['total']!==53||count($a['invoices'])!==5||$a['pages']!==11)throw new Exception('Pagination or paid/deleted isolation failed');
 if((int)$a['invoices'][0]['id']!==1||(int)$a['invoices'][0]['overdue']!==1)throw new Exception('Explicit overdue status missing');
 if(abs((float)$a['invoices'][0]['valor']-40.50)>0.001||(float)$a['invoices'][0]['valor_original']!==100.50||abs((float)$a['invoices'][1]['valor']-115.50)>0.001)throw new Exception('Discount/surcharge or deleted adjustments mismatch');
+if(abs((float)$a['invoices'][2]['valor']-180.50)>0.001)throw new Exception('Native non-discount charge omitted');
 $b=mka_client_open_invoices($db,'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',"c.grupo='permitido'",999);
 if(count($b['invoices'])!==3||$b['page']!==11)throw new Exception('Last page failed');
 try{mka_client_open_invoices($db,'ffffffff-bbbb-cccc-dddd-eeeeeeeeeeee',"c.grupo='permitido'",1);throw new Exception('Scope bypass');}catch(DomainException $expected){}

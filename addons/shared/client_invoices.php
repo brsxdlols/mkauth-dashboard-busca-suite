@@ -6,15 +6,38 @@ function mka_client_open_invoices($db,$uuid,$scope,$page=1) {
     $q=$db->prepare("SELECT COUNT(*) FROM sis_lanc WHERE login=? AND status IN ('aberto','vencido') AND COALESCE(deltitulo,0)=0");
     $q->bind_param('s',$client['login']);$q->execute();$total=(int)$q->get_result()->fetch_row()[0];
     $size=5;$pages=max(1,(int)ceil($total/$size));$page=min(max(1,(int)$page),$pages);$offset=($page-1)*$size;
-    $q=$db->prepare("SELECT l.id,l.uuid_lanc,l.recibo,l.datavenc,l.valor AS valor_original,(COALESCE((SELECT vt.valor FROM vtab_titulos vt WHERE vt.titulo=l.id LIMIT 1),l.valor)+COALESCE((SELECT SUM(CASE WHEN m.tipo='acrescimo' THEN m.valor WHEN m.tipo='desconto' THEN -m.valor ELSE 0 END) FROM sis_mlanc m WHERE m.idlanc=l.id AND COALESCE(m.deltitulo,0)=0),0)) AS valor,l.obs,(l.status='vencido' OR l.datavenc<CURDATE()) AS overdue,EXISTS(SELECT 1 FROM sis_qrpix pix WHERE pix.titulo=l.id AND TRIM(pix.qrcode)<>'') AS has_pix FROM sis_lanc l WHERE l.login=? AND l.status IN ('aberto','vencido') AND COALESCE(l.deltitulo,0)=0 ORDER BY l.datavenc ASC,l.id ASC LIMIT $size OFFSET $offset");
+    $q=$db->prepare("SELECT l.id,l.uuid_lanc,l.recibo,l.datavenc,l.valor AS valor_original,(COALESCE((SELECT vt.valor FROM vtab_titulos vt WHERE vt.titulo=l.id LIMIT 1),l.valor)+COALESCE((SELECT SUM(CASE WHEN m.tipo='desconto' THEN -m.valor WHEN m.tipo<>'desconto' THEN m.valor ELSE 0 END) FROM sis_mlanc m WHERE m.idlanc=l.id AND COALESCE(m.deltitulo,0)=0),0)) AS valor,l.obs,(l.status='vencido' OR l.datavenc<CURDATE()) AS overdue,EXISTS(SELECT 1 FROM sis_qrpix pix WHERE pix.titulo=l.id AND TRIM(pix.qrcode)<>'') AS has_pix FROM sis_lanc l WHERE l.login=? AND l.status IN ('aberto','vencido') AND COALESCE(l.deltitulo,0)=0 ORDER BY l.datavenc ASC,l.id ASC LIMIT $size OFFSET $offset");
     $q->bind_param('s',$client['login']);$q->execute();
     return array('client'=>$client,'invoices'=>$q->get_result()->fetch_all(MYSQLI_ASSOC),'total'=>$total,'page'=>$page,'pages'=>$pages);
+}
+
+function mka_client_invoice_action_url($action,$id,$key,$adminRoot=null) {
+    $adminRoot=$adminRoot===null?dirname(__DIR__,2):$adminRoot;
+    $id=(int)$id;if($id<1)return null;
+    $modern=array('receive'=>'receber','edit'=>'titulo_alt','info'=>'titulo_info','boleto'=>'prepara_boleto','send'=>'send_titulo');
+    if(!isset($modern[$action]))return null;
+    foreach(array('hhvm','php') as $extension){
+        $name=$modern[$action];
+        if(is_file($adminRoot.'/'.$name.'.'.$extension)){
+            if($action==='send')return '/admin/'.$name.'.'.$extension;
+            $uuid=in_array($action,array('receive','edit'),true);
+            if($uuid&&!preg_match('/^[a-zA-Z0-9-]{16,64}$/D',(string)$key))return null;
+            return '/admin/'.$name.'.'.$extension.'?'.http_build_query(array('titulo'=>$uuid?$key:$id));
+        }
+    }
+    if($action==='receive'||$action==='edit'){
+        foreach(array('hhvm','php') as $extension){
+            if(is_file($adminRoot.'/titulo.'.$extension))return '/admin/titulo.'.$extension.'?'.http_build_query(array('tipo'=>$action==='receive'?'baixar':'alttitulo','id'=>$id));
+        }
+    }
+    return null;
 }
 
 function mka_client_invoice_interest_methods(){
     $families=array(
         array(array('MKAC_TITULO','FMMMHAKMKATKTMAAHMKKAKUAHMKAUMUKH'),array('MKAC_MATH','FMUKMAHKAAMKUMAAUKHAUAKMAAHMAMKKH'),array('MKAC_MATH','FMHMUKAKMMMKTMAATMUAHMHAMAHAHAUKT'),array('MKAC_DATA','FAUMTKAAMKUMMKMMAAUKHATKMMKAHKUAU'),array('MKAC_FORMATACAO','FMKKAMAATATAMATMUMHMUMTMAMHAKMTAU')),
-        array(array('MKAC_TITULO','FKTMTKTKTMMMUKTAKAHKUKUATAMAHMKKA'),array('MKAC_MATH','FAMAHAUKHMMMHMHMUKUMTMKAMKHAKMTAK'),array('MKAC_MATH','FMMKUMUMTAKMMMHAMAUKHAKMKKMKTMHKM'),array('MKAC_DATA','FMKATKUAKMTKTMKKUKUMTKTKHMTKAAMMK'),array('MKAC_FORMATACAO','FKMAHAMMAKHKHMUMUMHMKMAKHAMAKKMAM'))
+        array(array('MKAC_TITULO','FKTMTKTKTMMMUKTAKAHKUKUATAMAHMKKA'),array('MKAC_MATH','FAMAHAUKHMMMHMHMUKUMTMKAMKHAKMTAK'),array('MKAC_MATH','FMMKUMUMTAKMMMHAMAUKHAKMKKMKTMHKM'),array('MKAC_DATA','FMKATKUAKMTKTMKKUKUMTKTKHMTKAAMMK'),array('MKAC_FORMATACAO','FKMAHAMMAKHKHMUMUMHMKMAKHAMAKKMAM')),
+        array(array('MKAC_TITULO','FMMMUKUAMMAAHMUMHMAATKAAMAUKUATAM'),array('MKAC_MATH','FAMAKKAAUKAMAAKATMKAKKTMMMKMMKUKM'),array('MKAC_MATH','FMTAHAHKHMAMHKMMAAKKHKUKHMMMUAHMA'),array('MKAC_DATA','FAHKUATKTKUAUAMMTMHAKKAMAKTKHMTKU'),array('MKAC_FORMATACAO','FAMKTATAUMAMMAHKAKTAUAUMKATKTAUMT'))
     );
     foreach($families as $methods){$available=true;foreach($methods as $method)if(!is_callable($method)){$available=false;break;}if($available)return $methods;}
     throw new DomainException('O cálculo de juros não está disponível nesta versão do MK-AUTH. Consulte o recebimento nativo.');

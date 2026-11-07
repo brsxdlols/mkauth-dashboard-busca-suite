@@ -414,7 +414,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 <input type="hidden" name="finance_summary_csrf" value="<?=htmlspecialchars($_SESSION['suite_finance_summary_csrf'],ENT_QUOTES,'UTF-8')?>">
 <div class="form-floating cfg-field">
 <select class="form-select" name="finance_summary_enabled" id="cfg-finance-summary"><option value="sim" <?=$financeSummaryEnabled?'selected':''?>>Sim</option><option value="nao" <?=!$financeSummaryEnabled?'selected':''?>>Não</option></select>
-<label for="cfg-finance-summary">Exibir resumo financeiro (dia / semana)</label>
+<label for="cfg-finance-summary">Exibir resumo financeiro</label>
 <small>Mostra A receber e Caixa. Cada usuário visualiza somente os valores permitidos.</small>
 </div>
 

@@ -4,8 +4,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, private');
 require_once __DIR__.'/finance_period.php';
 try {
-    $period = isset($_GET['period']) ? (string)$_GET['period'] : 'day';
-    if (!in_array($period, array('day','week'), true)) { http_response_code(422); echo json_encode(array('ok'=>false)); exit; }
+    $period = isset($_GET['period']) ? (string)$_GET['period'] : 'week';
+    if (!in_array($period, array('day','week','fortnight','month'), true)) { http_response_code(422); echo json_encode(array('ok'=>false)); exit; }
     $dueAllowed = permissao('perm_relFin') || permissao('perm_relFat');
     $cashAllowed = permissao('perm_caixa');
     $balanceAllowed = $cashAllowed && permissao('perm_saldoCaixa');
@@ -44,7 +44,13 @@ try {
         $cash = $result->fetch_assoc();
         if (!$balanceAllowed) unset($cash['balance']);
     }
-    echo json_encode(array('ok'=>true, 'day'=>$clock['day'], 'period'=>$period, 'range'=>$range, 'updated_at'=>$clock['updated_at'], 'due'=>$due, 'cash'=>$cash), JSON_UNESCAPED_UNICODE);
+    $dueUrl = null;
+    if ($due && permissao('perm_titulos')) {
+        foreach (array('hhvm','php') as $ext) if (is_file(__DIR__.'/../../titulos_receber.'.$ext)) {
+            $dueUrl='/admin/titulos_receber.'.$ext.'?'.http_build_query(array('datai'=>$range['start'],'dataf'=>$range['last'],'valorpesq'=>'','campo'=>'nenhum','IR'=>'IR'));break;
+        }
+    }
+    echo json_encode(array('ok'=>true, 'due_url'=>$dueUrl, 'day'=>$clock['day'], 'period'=>$period, 'range'=>$range, 'updated_at'=>$clock['updated_at'], 'due'=>$due, 'cash'=>$cash), JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     http_response_code(503);
     echo json_encode(array('ok'=>false, 'message'=>'Resumo financeiro indisponível. Tente novamente.'));

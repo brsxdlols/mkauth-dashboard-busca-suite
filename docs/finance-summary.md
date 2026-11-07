@@ -7,9 +7,11 @@ Não altera títulos, recebimentos, lançamentos ou o fuso do sistema.
 - Dia atual: meia-noite até a próxima meia-noite.
 - Semana atual: domingo até sábado, usando o próximo domingo como limite exclusivo.
 - O calendário é ancorado em CURRENT_DATE do banco. O intervalo aparece na interface.
-- Dois botões, Dia e Semana, fazem a troca diretamente. A última escolha fica em
-  localStorage, separada por usuário e origem do navegador. Não armazena valores
-  financeiros; armazenamento bloqueado usa Dia como padrão sem impedir a troca.
+- Quatro botões: Dia, Semana, 15 dias e Mês. Semana é sempre o padrão ao abrir
+  a página ou voltar pelo histórico do navegador.
+- 15 dias inclui hoje e os próximos 14 dias. Mês usa o mês atual completo.
+- O card A receber abre titulos_receber.php/.hhvm, conforme a versão instalada,
+  com datai/dataf do intervalo selecionado; exige também perm_titulos para o link.
 - A receber: quantidade e soma de `sis_lanc.valor` dos títulos `aberto` ou `vencido`, não excluídos,
   com vencimento no intervalo. Não calcula encargos de recebimento. Cadastros
   desativados continuam com seus títulos financeiros considerados.
@@ -21,7 +23,7 @@ A receber exige `perm_relFin` ou `perm_relFat`, com restrição aos grupos do op
 Caixa exige `perm_caixa` e acesso geral a clientes, pois seus movimentos não têm
 vínculo com grupos de clientes. O saldo exige também `perm_saldoCaixa`.
 
-Configurações > Financeiro e gráficos > Exibir resumo financeiro (dia / semana):
+Configurações > Financeiro e gráficos > Exibir resumo financeiro:
 salva `sis_opcao.nome=suite_finance_summary_enabled`, valor `sim` ou `nao`.
 Ausência da opção mantém a exibição habilitada. O salvamento exige `perm_config`,
 sessão e token CSRF. Desabilitado, o bloco não é renderizado e a API recusa a consulta.
@@ -38,3 +40,10 @@ configuração. Nenhum lançamento financeiro foi alterado nos testes.
 Reversão: restaurar index.php, multi.php e cfg.php do backup anterior à implantação
 e remover os novos finance_today.* e finance_period.php. A opção em sis_opcao pode
 permanecer sem efeito se o recurso for removido.
+
+O modal de faturas inclui Enviar boleto quando o operador possui perm_mensagem
+(a permissão verificada pelo compositor nativo) e existe send_titulo.php/.hhvm.
+O botão abre um modal e faz POST de titulo[] com o ID numérico para selecionar
+uma única fatura no compositor nativo. Abrir esse formulário não envia mensagem.
+A escolha do canal e a confirmação de envio continuam no MK-AUTH, com seus
+controles nativos. Nos testes só foi aberto o compositor, sem disparar mensagens.
