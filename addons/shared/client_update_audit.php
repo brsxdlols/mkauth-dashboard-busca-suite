@@ -49,28 +49,32 @@ function mka_client_audit_session_user()
 }
 
 if (isset($_POST['mka_client_audit']) && $_POST['mka_client_audit'] === 'prepare') {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        @session_start();
-    }
+    // Native admin sessions use a different cookie name on each installation.
+    require __DIR__ . '/notification_bootstrap.php';
+    require_once __DIR__ . '/client_action_access.php';
+    header('Cache-Control: no-store, private');
     $usuario = mka_client_audit_session_user();
     $uuid = isset($_POST['uuid_cliente']) ? trim((string) $_POST['uuid_cliente']) : '';
     $login = isset($_POST['login']) ? trim((string) $_POST['login']) : '';
     $detalhes = isset($_POST['detalhes']) ? trim((string) $_POST['detalhes']) : '';
-    $conn = mka_client_audit_connect();
+    // The authenticated bootstrap supplies the connection and operator session.
+    $usuario = mka_client_audit_session_user();
     if ($usuario !== '' && ($uuid !== '' || $login !== '') && $conn instanceof mysqli) {
-        mka_client_audit_ensure_table($conn);
+        if (!mka_client_audit_ensure_table($conn)) { http_response_code(503); exit; }
         $where = $uuid !== '' ? "uuid_cliente='" . mysqli_real_escape_string($conn, $uuid) . "'" : "login='" . mysqli_real_escape_string($conn, $login) . "'";
         $query = @mysqli_query($conn, "SELECT uuid_cliente,login,last_update FROM sis_cliente WHERE " . $where . " LIMIT 1");
         if ($query && ($row = mysqli_fetch_assoc($query))) {
+            mka_action_client($conn, (string) $row['uuid_cliente'], true);
             $uuid_sql = mysqli_real_escape_string($conn, (string) $row['uuid_cliente']);
             $login_sql = mysqli_real_escape_string($conn, (string) $row['login']);
             $usuario_sql = mysqli_real_escape_string($conn, $usuario);
             $detalhes_sql = mysqli_real_escape_string($conn, substr($detalhes, 0, 8000));
             $previous_sql = empty($row['last_update']) ? 'NULL' : "'" . mysqli_real_escape_string($conn, (string) $row['last_update']) . "'";
-            @mysqli_query($conn, "INSERT INTO dashboard_am_client_update_audit (uuid_cliente,login_cliente,usuario,previous_last_update,captured_at,detalhes)
+            $auditSaved = @mysqli_query($conn, "INSERT INTO dashboard_am_client_update_audit (uuid_cliente,login_cliente,usuario,previous_last_update,captured_at,detalhes)
                 VALUES ('" . $uuid_sql . "','" . $login_sql . "','" . $usuario_sql . "'," . $previous_sql . ",NOW(),'" . $detalhes_sql . "')
                 ON DUPLICATE KEY UPDATE login_cliente=VALUES(login_cliente),usuario=VALUES(usuario),previous_last_update=VALUES(previous_last_update),captured_at=VALUES(captured_at),detalhes=VALUES(detalhes)");
-        }
+            if (!$auditSaved) { http_response_code(503); exit; }
+        } else { http_response_code(404); exit; }
         @mysqli_close($conn);
     }
     http_response_code(204);
