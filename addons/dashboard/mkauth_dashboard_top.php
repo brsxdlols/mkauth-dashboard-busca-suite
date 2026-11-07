@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $dashTopProvider = 'MK-AUTH';
 $dashTopCompany = '';
 $dashTopUser = isset($usuario_logado) ? (string) $usuario_logado : ($_SESSION['MKA_Usuario'] ?? ($_SESSION['MM_Usuario'] ?? ''));
@@ -141,6 +141,26 @@ nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
     background: #eef4ff !important;
     color: #0f5db8 !important;
 }
+/* Keep the native logo/provider flex row inside the mobile viewport. */
+@media screen and (max-width: 768px) {
+    body.mka-suite-dashboard-page #systopo {
+        width: 100%;
+        min-width: 0;
+    }
+    body.mka-suite-dashboard-page #systopo > .level-item {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+    body.mka-suite-dashboard-page #systopo > .level-item > div {
+        width: 100%;
+        min-width: 0;
+    }
+    body.mka-suite-dashboard-page #systopo #UUE_NProvedor {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
 @media screen and (max-width: 1023px) {
     #mkauth-dashboard-navbar .navbar-menu.is-active {
         display: block !important;
