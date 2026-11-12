@@ -1,0 +1,24 @@
+name: RADIUS queue tools
+on:
+  push:
+    paths:
+      - 'tools/radius-queues/**'
+      - '.github/workflows/radius-queues.yml'
+  pull_request:
+    paths:
+      - 'tools/radius-queues/**'
+      - '.github/workflows/radius-queues.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  queue-decisions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate installer syntax
+        run: bash -n tools/radius-queues/install-queues.sh
+      - name: Validate Python syntax
+        run: python3 -m py_compile tools/radius-queues/sincronizar-queues.py
+      - name: Test discovery, policies, plan changes and session rollback
+        run: python3 tools/radius-queues/test-sincronizar-queues.py
