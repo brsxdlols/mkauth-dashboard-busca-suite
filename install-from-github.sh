@@ -51,13 +51,16 @@ if [ -z "${PACKAGE_DIR}" ] || [ ! -d "${PACKAGE_DIR}" ]; then
   exit 1
 fi
 
+# Normalize shell files only inside this extracted package. Native files are untouched.
+find "${PACKAGE_DIR}" -type f -name '*.sh' -exec sed -i 's/\r$//' {} +
+
 echo "[3/4] Executando instalador local"
 chmod +x "${PACKAGE_DIR}/install.sh"
 if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
   # pipefail retains any installer failure; awk only colors its output.
-  "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}" 2>&1 | awk -f "${PACKAGE_DIR}/scripts/install-output-colors.awk"
+  bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}" 2>&1 | awk -f "${PACKAGE_DIR}/scripts/install-output-colors.awk"
 else
-  "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
+  bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
 fi
 
 if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
