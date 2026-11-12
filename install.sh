@@ -180,7 +180,7 @@ check_online_offline() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
-for addon in rel_clientes rel_caixa graf_faturamento radius rel_cli_offline; do
+for addon in rel_clientes graf_faturamento radius rel_cli_offline; do
   test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
@@ -232,7 +232,7 @@ fi
 bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
 
 echo "[3/8] Instalando arquivos"
-for addon in rel_clientes rel_caixa graf_faturamento radius rel_cli_offline; do
+for addon in rel_clientes graf_faturamento radius rel_cli_offline; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
@@ -300,6 +300,8 @@ rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 python3 "${SCRIPT_DIR}/scripts/fix-addon-permissions.py" "${TARGET_ADDONS_DIR}" "${BACKUP_DIR}/addon-permissions"
 install_client_audit_hook
+# The official Caixa installer preserves config, loaders and private user templates.
+bash "${SCRIPT_DIR}/scripts/install-caixa-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/caixa-package"
 # CPF policy installer backs up only affected files/options and preserves existing hooks.
 python3 "${SCRIPT_DIR}/scripts/install-cpf-policy.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cpf-opcional" || echo '[aviso] CPF/CNPJ opcional preservado sem alteracoes; consulte cpf-opcional/cpf-install-report.json.'
 install_branding

@@ -20,9 +20,9 @@ def patch_reader(text):
     return text[:start]+replacement+text[end:]
 def patch_index(text):
     if '/shared/connection_settings.js' in text:
-        return re.sub(r'(connection_settings\.(?:js|css)\?v=)[A-Za-z0-9._-]+',r'\g<1>20261112-3',text)
+        return re.sub(r'(connection_settings\.(?:js|css)\?v=)[A-Za-z0-9._-]+',r'\g<1>20261112-4',text)
     if '</body>' not in text:raise ValueError('Página Radius sem ponto de integração conhecido.')
-    assets='<link rel="stylesheet" href="../shared/connection_settings.css?v=20261112-3">\n<script src="../shared/connection_settings.js?v=20261112-3"></script>\n'
+    assets='<link rel="stylesheet" href="../shared/connection_settings.css?v=20261112-4">\n<script src="../shared/connection_settings.js?v=20261112-4"></script>\n'
     return text.replace('</body>',assets+'</body>',1)
 def install(admin,backup):
     root=Path(admin)/'addons/radius';backup=Path(backup);backup.mkdir(parents=True,exist_ok=True)
