@@ -156,7 +156,7 @@ def parse_records(text):
     return result
 
 
-def index(snapshot, plan_units='auto'):
+def index(snapshot, plan_units='auto', missing_plan_policy='skip'):
     out = dict(snapshot)
     for name, key in [('primary', 'login'), ('additional', 'username'), ('plans', 'nome')]:
         mapping = collections.defaultdict(list)
@@ -164,6 +164,7 @@ def index(snapshot, plan_units='auto'):
             mapping[row[key]].append(row)
         out[name + '_by'] = mapping
     out['requested_plan_units'] = plan_units
+    out['missing_plan_policy'] = missing_plan_policy
     evidence = {}
     for name, plans in out['plans_by'].items():
         if len(plans) != 1:
@@ -195,6 +196,14 @@ def expected_plan_rate(snapshot, plan):
                 'Plan/RADIUS unit convention is unknown or mixed; review --plan-units')
         units = next(iter(conventions))
     return rate_from_plan(plan, units)
+
+
+def named_missing_plan(name):
+    m = re.fullmatch(r'([1-9]\d*)_?(MB|MEGAS?|GB|GIGAS?)(?:_(?:FIBRA|FIBER|CABO_UTP|RADIO))?', name, re.I)
+    require(m is not None, 'Missing plan name does not identify an unambiguous speed')
+    down = int(m[1]) * (1000000 if m[2].upper().startswith('G') else 1000)
+    return dict(nome=name, velup=str(down // 2), veldown=str(down), maxup='0', maxdown='0',
+                desaup='0', desadown='0', garup='0', gardown='0', tempoup='0', tempodown='0', prioridade='8')
 
 
 def one(items, description):
@@ -235,15 +244,23 @@ def propose(snapshot, session, queues):
             m = re.fullmatch(r'(\d+)MB_FIB(?:RA|ER)', desired, re.I)
             matches = [n for n in snapshot['plans_by'] if m and re.search(
                 r'ADICIONAIS_?' + re.escape(m[1]) + r'MB$', n, re.I)]
-            desired = one(matches, 'legacy additional plan match')
-            change_additional = True
+            if len(matches) == 1:
+                desired = matches[0]
+                change_additional = True
+            elif not matches and snapshot.get('missing_plan_policy') == 'name50':
+                named_missing_plan(desired)
+            else:
+                one(matches, 'legacy additional plan match')
     require(not re.search(r'bloq|corte|suspens|desativ|inativ', desired, re.I), 'Restricted plan; authorization policy preserved')
-    plan = one(snapshot['plans_by'].get(desired, []), 'current plan: ' + desired)
-    rate = expected_plan_rate(snapshot, plan)
+    plan_rows = snapshot['plans_by'].get(desired, [])
+    derived_plan = not plan_rows and snapshot.get('missing_plan_policy') == 'name50'
+    plan = named_missing_plan(desired) if derived_plan else one(plan_rows, 'current plan: ' + desired)
+    # Explicit name50 policy means actual commercial Mb/s, independent of legacy conversions.
+    rate = rate_from_plan(plan, 1000) if derived_plan else expected_plan_rate(snapshot, plan)
     groups = [r for r in snapshot['groups'] if r['username'] == u]
     names = {r['groupname'] for r in groups} | {desired}
     for name in names:
-        require(name in snapshot['plans_by'] or re.fullmatch(r'\d+MB_FIB(?:RA|ER)', name, re.I),
+        require(name in snapshot['plans_by'] or (derived_plan and name == desired) or re.fullmatch(r'\d+MB_FIB(?:RA|ER)', name, re.I),
                 'Custom group membership')
     checks = [r for r in snapshot['group_checks'] if r['groupname'] in names]
     require(not checks, 'Custom group checks')
@@ -269,7 +286,7 @@ def propose(snapshot, session, queues):
                 'Static, disabled or invalid queue')
         require(actual[0].get('target') == target, 'Unexpected queue target')
     queue_change = not actual or not queue_matches(actual[0], rate)
-    return dict(user=u, plan=desired, rate=rate, change_groups=group_change,
+    return dict(user=u, plan=desired, rate=rate, derived_plan=derived_plan, change_groups=group_change,
                 change_rate=rate_change, change_additional=change_additional,
                 change_queue=queue_change, previous_queue=actual[0] if actual else None,
                 session=session)
@@ -387,7 +404,7 @@ def secure_dir(root):
 
 def public_change(change):
     return {k: change[k] for k in ('user', 'plan', 'rate', 'change_groups', 'change_rate',
-                                  'change_additional', 'change_queue')}
+                                  'change_additional', 'change_queue', 'derived_plan')}
 
 
 def perform(router, proposal, args):
@@ -395,7 +412,7 @@ def perform(router, proposal, args):
     active, queues = router.read()
     session = one([a for a in active if a.get('name') == proposal['user']], 'current PPP session')
     require(same_session(proposal['session'], session), 'Session changed after audit')
-    snapshot = index(db(), getattr(args, 'plan_units', 'auto'))
+    snapshot = index(db(), getattr(args, 'plan_units', 'auto'), getattr(args, 'missing_plan_policy', 'skip'))
     current = propose(snapshot, session, queues)
     require(public_change(current) == public_change(proposal), 'Plan or queue changed after audit; audit again')
     if current['change_queue']:
@@ -408,7 +425,7 @@ def perform(router, proposal, args):
     if any(current[k] for k in ('change_groups', 'change_rate', 'change_additional')):
         guard = db('guard', user=current['user'], plan=current['plan'])
         # Guard itself was read after snapshot; compare authoritative policy before applying.
-        require(guard['plan'] == snapshot['plans_by'][current['plan']], 'Plan changed before transaction')
+        require(guard['plan'] == snapshot['plans_by'].get(current['plan'], []), 'Plan changed before transaction')
         expect = {'primary': snapshot['primary_by'].get(current['user'], []),
                   'additional': snapshot['additional_by'].get(current['user'], [])}
         expect['parent'] = snapshot['primary_by'].get(expect['additional'][0]['login'], []) if len(expect['additional']) == 1 else []
@@ -421,7 +438,7 @@ def perform(router, proposal, args):
             require(guard[key] == expected, 'Account changed before transaction')
         result = db('apply', user=current['user'], plan=current['plan'], rate=current['rate'],
                     change_groups=current['change_groups'], change_rate=current['change_rate'],
-                    change_additional=current['change_additional'], guard=guard)
+                    change_additional=current['change_additional'], derived_plan=current['derived_plan'], guard=guard)
         (directory / 'db-result.json').write_text(json.dumps(result))
     if current['change_queue']:
         try:
@@ -432,7 +449,7 @@ def perform(router, proposal, args):
         after, after_queues = router.read()
         new_session = one([a for a in after if a.get('name') == current['user']], 'session after CoA')
         require(same_session(session, new_session), 'Session changed during verification; inspect manually')
-        verified = propose(index(db(), getattr(args, 'plan_units', 'auto')), new_session, after_queues)
+        verified = propose(index(db(), getattr(args, 'plan_units', 'auto'), getattr(args, 'missing_plan_policy', 'skip')), new_session, after_queues)
         require(not verified['change_queue'], 'CoA acknowledged but queue does not match; backup: ' + str(directory))
     return dict(**public_change(current), verified=True, backup=str(directory))
 
@@ -441,7 +458,7 @@ def rollback_session(path, args, credentials):
     b = json.loads(pathlib.Path(path).read_text())
     change = b['change']; old = change['session']
     require(change['change_queue'], 'Backup did not change a live queue')
-    snapshot = index(db(), getattr(args, 'plan_units', 'auto'))
+    snapshot = index(db(), getattr(args, 'plan_units', 'auto'), getattr(args, 'missing_plan_policy', 'skip'))
     nas = one([n for n in snapshot['nas'] if n['nasname'] == b['nas']], 'NAS registration')
     router = Router(nas, args, credentials)
     active, queues = router.read()
@@ -482,6 +499,8 @@ def main():
     parser.add_argument('--apply', action='store_true', help='Apply discovered corrections; default audit only')
     parser.add_argument('--plan-units', choices=('auto', '1000', '1024'), default='auto',
                         help='Default auto preserves per-plan 1000/1024 conventions; explicit mode overrides inference')
+    parser.add_argument('--missing-plan-policy', choices=('name50', 'skip'), default='name50',
+                        help='Missing speed-named plan: name50 generates RADIUS at 50%% upload/100%% download without changing billing; skip disables this policy')
     parser.add_argument('--nas', action='append', default=[], help='Restrict discovery to this NAS IPv4; repeatable')
     parser.add_argument('--user', action='append', default=[], help='Restrict to this RADIUS username; repeatable')
     parser.add_argument('--ssh-user', default='mkauth')
@@ -510,7 +529,7 @@ def main():
         if args.rollback_session:
             require(args.apply, 'Session rollback requires --apply')
             print(json.dumps(rollback_session(args.rollback_session, args, credentials))); return 0
-        snapshot = index(db(), args.plan_units)
+        snapshot = index(db(), args.plan_units, args.missing_plan_policy)
         report = dict(mode='apply' if args.apply else 'audit', routers=[], changes=[], skipped=[], errors=[])
         seen = set()
         registered = collections.Counter(n['nasname'] for n in snapshot['nas'])
@@ -552,7 +571,7 @@ def main():
                                 report['errors'].append(dict(nas=host, user=user, reason=str(error)))
                                 break
                             # Prior changes can update shared plan attributes; refresh before next user.
-                            snapshot = index(db(), args.plan_units)
+                            snapshot = index(db(), args.plan_units, args.missing_plan_policy)
                         report['changes'].append(dict(nas=host, **result))
                     except Refused as error:
                         report['skipped'].append(dict(nas=host, user=user, reason=str(error)))

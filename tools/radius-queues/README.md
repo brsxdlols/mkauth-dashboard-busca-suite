@@ -74,6 +74,20 @@ Um mesmo servidor pode ter planos das duas convenções. O programa preserva a c
 
 `--plan-units=1000` e `--plan-units=1024` são opções explícitas para casos cuja conversão foi confirmada pelo administrador. Não usar uma base global como tentativa em um servidor misto; restringir o escopo ao plano/cliente revisado e considerar que o atributo é compartilhado pelo plano.
 
+### Plano ausente: regra pelo nome
+
+A política padrão `--missing-plan-policy=name50` mantém o nome do cadastro quando o plano não existe em `sis_plano`, desde que o nome identifique uma velocidade inteira de forma reconhecível. Exemplos: `350_MEGAS_FIBRA`, `100MB_FIBRA`, `25_Megas_CABO_UTP` ou `1_GIGA_FIBRA`.
+
+Nessa situação gera autorização RADIUS com **50% de upload e 100% de download da velocidade indicada**, em Mb/s comerciais decimais. `350_MEGAS_FIBRA` resulta em `175000k/350000k`, ou seja, 175/350 Mb/s. O relatório marca `derived_plan: true`. A aplicação continua exigindo `--apply`, estado elegível, grupo simples, sessão válida, backup e conferência após CoA.
+
+Essa regra não altera planos que já existem nem substitui a conversão comprovada deles. Também **não cria um plano comercial, preço, boleto ou cobrança**: restaura somente o atributo RADIUS do nome já vinculado ao cliente. O cadastro comercial ausente continua sendo uma pendência administrativa. Nomes ambíguos, planos restritos ou regras personalizadas permanecem para revisão.
+
+Para desativar a derivação e apenas registrar planos ausentes:
+
+```sh
+mkauth-queues --missing-plan-policy=skip
+```
+
 - RADIUS sem fila dinâmica.
 - Fila ainda com velocidade máxima, burst, garantia ou prioridade anteriores.
 - Cliente associado a um grupo de plano antigo, mesmo se esse grupo ainda existir.
@@ -93,7 +107,7 @@ Exemplo: ao trocar um cliente de um plano de 100 MB para um de 200 MB, a ferrame
 - Grupos com checks ou respostas personalizadas, atributos individuais de autorização/velocidade e vínculos de grupos desconhecidos.
 - Filas estáticas, inválidas, desabilitadas, alvos inesperados e múltiplas filas/sessões ambíguas.
 - Planos incompletos, valores não numéricos ou bursts/garantias inconsistentes.
-- Planos ausentes e diferenças de maiúsculas/espaços no login que precisem de revisão; o programa não renomeia clientes nem escolhe outro plano pela proximidade do nome.
+- Planos ausentes sem nome de velocidade reconhecível, ou com derivação desativada, e diferenças de maiúsculas/espaços no login; o programa não renomeia clientes nem escolhe outro plano pela proximidade do nome.
 
 Nesses casos registra o motivo e não tenta substituir a política. O objetivo não é implementar ou certificar a política financeira de bloqueio.
 
@@ -138,6 +152,8 @@ Validado em MK-AUTH com PHP 7.1/Python 3.7, MikroTik RouterOS 6.49.18 e banco co
 Testes automatizados cobrem descoberta de múltiplos NAS, sessões locais, estados especiais, troca de plano/velocidade, fila ausente, unidades equivalentes, políticas personalizadas, accounting divergente e reversão de sessão. A gravação de grupos/atributos, recusa de guard desatualizado, rollback do banco e instalação repetida foram exercitados em base e diretórios isolados. O tráfego CoA nesses testes isolados foi simulado; a criação real por CoA foi confirmada anteriormente em 46 sessões, com filas e IDs preservados. O novo fluxo de descoberta foi exercitado em leitura no servidor real, sem aplicar limpeza em massa como teste.
 
 A compatibilidade 1000/1024 foi validada por testes de convenções mistas, ausência de evidência e escolha explícita, além de auditoria em segundo servidor: as diferenças de conversão deixaram de gerar propostas de alteração. Nenhuma mudança em massa foi usada para validar essa correção.
+
+A regra name50 também foi exercitada em base isolada: criou a autorização do grupo de 350 MB em 175/350 Mb/s, preservou o catálogo comercial e permitiu reversão direcionada. Nomes restritos e planos existentes com conversão 1024 foram preservados.
 
 Os arquivos antigos `reconciliar-radius.php` e `atualizar-filas-coa.py` permanecem para compatibilidade com o fluxo manual anterior. A instalação atual usa `sincronizar-queues.py` e `queues-db.php`.
 

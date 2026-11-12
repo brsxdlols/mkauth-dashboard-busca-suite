@@ -54,7 +54,13 @@ try {
   try {
    $u=$req['user'];$p=$req['plan'];$before=guard($u,$p,' FOR UPDATE');
    if($before!==$req['guard'])throw new Exception('Database changed since audit');
-   if(count($before['plan'])!==1)throw new Exception('Plan missing');
+   $derived=!empty($req['derived_plan']);
+   if($derived){
+    if(count($before['plan'])!==0||!preg_match('/^([1-9][0-9]*)_?(MB|MEGAS?|GB|GIGAS?)(?:_(?:FIBRA|FIBER|CABO_UTP|RADIO))?$/i',$p,$m))throw new Exception('Invalid derived plan');
+    $down=(int)$m[1]*(stripos($m[2],'G')===0?1000000:1000);
+    $expected=((int)($down/2)).'k/'.$down.'k 0/0 0/0 0/0 8 0/0';
+    if($req['rate']!==$expected)throw new Exception('Derived rate does not match approved name50 policy');
+   } elseif(count($before['plan'])!==1)throw new Exception('Plan missing');
    $groupBefore=array_values(array_filter($before['group_replies'],function($r)use($p){return $r['groupname']===$p;}));
    $changeGroups=$req['change_groups'];$changeRate=$req['change_rate'];$changeAdditional=$req['change_additional'];
    $owner=count($before['primary'])===1?$u:$before['additional'][0]['login'];

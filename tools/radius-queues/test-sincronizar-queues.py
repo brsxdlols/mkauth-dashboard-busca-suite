@@ -94,6 +94,28 @@ class Decisions(unittest.TestCase):
         with self.assertRaisesRegex(sync.Refused,'spelling'):
             self.propose(session=dict(SESSION,name='Cliente@exemplo '))
 
+    def test_missing_350_plan_uses_175_upload_and_350_download_without_billing_row(self):
+        s=fixture();s['primary'][0]['plano']='350_MEGAS_FIBRA';s['groups'][0]['groupname']='350_MEGAS_FIBRA'
+        r=sync.propose(sync.index(s,missing_plan_policy='name50'),SESSION,[])
+        self.assertTrue(r['derived_plan']);self.assertTrue(r['change_rate'])
+        self.assertEqual(r['rate'],'175000k/350000k 0/0 0/0 0/0 8 0/0')
+        self.assertEqual(len(s['plans']),1)
+
+    def test_missing_plan_can_be_explicitly_skipped(self):
+        s=fixture();s['primary'][0]['plano']='350_MEGAS_FIBRA'
+        with self.assertRaises(sync.Refused):sync.propose(sync.index(s,missing_plan_policy='skip'),SESSION,[])
+
+    def test_name50_does_not_guess_custom_or_restricted_plan(self):
+        for name in ('VIP_350','350','350_6990','bloqueado','1k_DESATIVADOS'):
+            with self.subTest(name=name),self.assertRaises(sync.Refused):sync.named_missing_plan(name)
+
+    def test_name50_preserves_existing_1024_plan(self):
+        s=fixture();s['plans'][0].update(velup='18000',veldown='28000')
+        s['group_replies'][0]['value']='18432k/28672k 0/0 0/0 0/0 8 0/0'
+        q=dict(QUEUE);q['max-limit']='18432k/28672k'
+        r=sync.propose(sync.index(s,missing_plan_policy='name50'),SESSION,[q])
+        self.assertFalse(r['derived_plan']);self.assertFalse(r['change_queue'])
+
     def test_changed_plan_replaces_stale_valid_group(self):
         s = fixture();s['plans'].append(plan('200MB_FIBRA', '110000', '210000'))
         s['primary'][0]['plano'] = '200MB_FIBRA'
