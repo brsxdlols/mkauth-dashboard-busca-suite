@@ -50,9 +50,49 @@ class Decisions(unittest.TestCase):
 
     def test_changed_speed_in_plan_changes_attribute_and_session(self):
         s = fixture(); s['plans'][0]['veldown'] = '210000'
+        s['plans'].append(plan('50MB_FIBRA','50000','50000'))
+        s['group_replies'].append(dict(id='2',groupname='50MB_FIBRA',attribute='Mikrotik-Rate-Limit',op='=',value='50000k/50000k 0/0 0/0 0/0 8 0/0'))
         r = self.propose(s)
         self.assertTrue(r['change_rate']); self.assertTrue(r['change_queue'])
         self.assertTrue(r['rate'].startswith('105000k/210000k'))
+
+    def test_1024_conversion_is_preserved_without_false_changes(self):
+        s=fixture();s['plans'][0].update(velup='18000',veldown='28000')
+        s['group_replies'][0]['value']='18432k/28672k 0/0 0/0 0/0 8 0/0'
+        q=dict(QUEUE);q['max-limit']='18432k/28672k'
+        r=self.propose(s,queues=[q])
+        self.assertFalse(r['change_rate']);self.assertFalse(r['change_queue'])
+
+    def test_mixed_conventions_are_selected_per_plan(self):
+        s=fixture();s['plans'].append(plan('25MB_FIBRA','18000','28000'))
+        s['group_replies'].append(dict(id='2',groupname='25MB_FIBRA',attribute='Mikrotik-Rate-Limit',op='=',value='18432k/28672k 0/0 0/0 0/0 8 0/0'))
+        self.assertFalse(self.propose(s)['change_rate'])
+        s['primary'][0]['plano']='25MB_FIBRA';s['groups'][0]['groupname']='25MB_FIBRA'
+        q=dict(QUEUE);q['max-limit']='18432k/28672k'
+        self.assertFalse(self.propose(s,queues=[q])['change_queue'])
+
+    def test_unknown_convention_does_not_guess_shared_plan_rate(self):
+        s=fixture();s['plans'][0]['veldown']='210000'
+        with self.assertRaises(sync.Refused):self.propose(s)
+
+    def test_missing_rate_in_mixed_server_requires_review(self):
+        s=fixture();s['plans'] += [plan('25MB_FIBRA','18000','28000'),plan('NEW_PLAN','200000','200000')]
+        s['group_replies'].append(dict(id='2',groupname='25MB_FIBRA',attribute='Mikrotik-Rate-Limit',op='=',value='18432k/28672k 0/0 0/0 0/0 8 0/0'))
+        s['primary'][0]['plano']='NEW_PLAN'
+        with self.assertRaises(sync.Refused):self.propose(s)
+
+    def test_explicit_units_can_repair_an_unconfirmed_plan(self):
+        s=fixture();s['plans'][0]['veldown']='210000'
+        r=sync.propose(sync.index(s,'1000'),SESSION,[QUEUE])
+        self.assertTrue(r['change_rate']);self.assertTrue(r['change_queue'])
+
+    def test_blocked_plan_name_preserved_even_if_flags_are_normal(self):
+        s=fixture();s['plans'][0]['nome']='bloqueado';s['primary'][0]['plano']='bloqueado'
+        with self.assertRaises(sync.Refused):self.propose(s)
+
+    def test_user_spelling_difference_is_explicit_review(self):
+        with self.assertRaisesRegex(sync.Refused,'spelling'):
+            self.propose(session=dict(SESSION,name='Cliente@exemplo '))
 
     def test_changed_plan_replaces_stale_valid_group(self):
         s = fixture();s['plans'].append(plan('200MB_FIBRA', '110000', '210000'))

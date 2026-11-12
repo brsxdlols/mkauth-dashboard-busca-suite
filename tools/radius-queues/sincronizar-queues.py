@@ -76,8 +76,9 @@ def pair(value, duration=False):
     return tuple(number(x, duration) for x in parts)
 
 
-def rate_from_plan(plan):
-    """Standard MK-AUTH schema, kbit/s. No guessed numeric speeds."""
+def rate_from_plan(plan, units=1000):
+    """Standard MK-AUTH schema, explicit numeric conversion convention."""
+    require(units in (1000, 1024), 'Unsupported plan unit convention')
     fields = ('velup', 'veldown', 'maxup', 'maxdown', 'desaup', 'desadown',
               'garup', 'gardown')
     values = {}
@@ -92,7 +93,8 @@ def rate_from_plan(plan):
     times = [str(plan.get(k) or '0') for k in ('tempoup', 'tempodown')]
     require(all(re.fullmatch(r'\d+', x) for x in times), 'Invalid plan burst time')
     def p(up, down):
-        return '/'.join(str(values[k]) + ('k' if values[k] else '') for k in (up, down))
+        bits = [values[k] * units for k in (up, down)]
+        return '/'.join((str(v // 1000) + 'k') if v and v % 1000 == 0 else str(v) for v in bits)
     # Schema stores burst limits/thresholds even when the burst flag is unused.
     rate = '{} {} {} {}/{} {} {}'.format(
         p('velup', 'veldown'), p('maxup', 'maxdown'), p('desaup', 'desadown'),
@@ -154,14 +156,45 @@ def parse_records(text):
     return result
 
 
-def index(snapshot):
+def index(snapshot, plan_units='auto'):
     out = dict(snapshot)
     for name, key in [('primary', 'login'), ('additional', 'username'), ('plans', 'nome')]:
         mapping = collections.defaultdict(list)
         for row in snapshot[name]:
             mapping[row[key]].append(row)
         out[name + '_by'] = mapping
+    out['requested_plan_units'] = plan_units
+    evidence = {}
+    for name, plans in out['plans_by'].items():
+        if len(plans) != 1:
+            continue
+        replies = [r for r in snapshot['group_replies'] if r['groupname'] == name
+                   and r['attribute'] == 'Mikrotik-Rate-Limit']
+        if not replies:
+            continue
+        for units in (1000, 1024):
+            try:
+                expected = rate_values(rate_from_plan(plans[0], units))
+                if all(rate_values(r['value']) == expected for r in replies):
+                    evidence[name] = units
+            except Refused:
+                pass
+    out['plan_unit_evidence'] = evidence
     return out
+
+
+def expected_plan_rate(snapshot, plan):
+    configured = snapshot.get('requested_plan_units', 'auto')
+    if configured != 'auto':
+        return rate_from_plan(plan, int(configured))
+    evidence = snapshot.get('plan_unit_evidence', {})
+    units = evidence.get(plan['nome'])
+    if units is None:
+        conventions = set(evidence.values())
+        require(len(conventions) == 1,
+                'Plan/RADIUS unit convention is unknown or mixed; review --plan-units')
+        units = next(iter(conventions))
+    return rate_from_plan(plan, units)
 
 
 def one(items, description):
@@ -181,6 +214,11 @@ def propose(snapshot, session, queues):
     require('R' in session['flags'] and session.get('service') == 'pppoe', 'Local or non-PPPoE session')
     primary = snapshot['primary_by'].get(u, [])
     additional = snapshot['additional_by'].get(u, [])
+    if not primary and not additional:
+        norm = lambda x: x.casefold().rstrip(' ')
+        variants = [r for r in snapshot['primary'] if norm(r['login']) == norm(u)]
+        variants += [r for r in snapshot['additional'] if norm(r['username']) == norm(u)]
+        require(not variants, 'Username case/trailing-space differs from registration; review spelling')
     require(not (primary and additional), 'Overlapping primary/additional username')
     change_additional = False
     if primary:
@@ -199,8 +237,9 @@ def propose(snapshot, session, queues):
                 r'ADICIONAIS_?' + re.escape(m[1]) + r'MB$', n, re.I)]
             desired = one(matches, 'legacy additional plan match')
             change_additional = True
-    plan = one(snapshot['plans_by'].get(desired, []), 'current plan')
-    rate = rate_from_plan(plan)
+    require(not re.search(r'bloq|corte|suspens|desativ|inativ', desired, re.I), 'Restricted plan; authorization policy preserved')
+    plan = one(snapshot['plans_by'].get(desired, []), 'current plan: ' + desired)
+    rate = expected_plan_rate(snapshot, plan)
     groups = [r for r in snapshot['groups'] if r['username'] == u]
     names = {r['groupname'] for r in groups} | {desired}
     for name in names:
@@ -267,7 +306,10 @@ class Router:
         else:
             query = self.host if self.port == 22 else '[{}]:{}'.format(self.host, self.port)
             require(self.known.is_file(), 'Unknown SSH host; fingerprint(s): ' + ', '.join(fingerprint(x) for x in self.keys))
-            trusted = run(['ssh-keygen', '-F', query, '-f', str(self.known)])
+            found = subprocess.run(['ssh-keygen', '-F', query, '-f', str(self.known)],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+            require(found.returncode in (0, 1), 'Cannot inspect existing SSH host trust')
+            trusted = found.stdout.decode('utf-8', errors='replace')
             require(any(k.split()[1:] == t.split()[1:] for k in self.keys
                         for t in trusted.splitlines() if t and not t.startswith('#')),
                     'Unknown or changed SSH host; fingerprint(s): ' + ', '.join(fingerprint(x) for x in self.keys))
@@ -353,7 +395,7 @@ def perform(router, proposal, args):
     active, queues = router.read()
     session = one([a for a in active if a.get('name') == proposal['user']], 'current PPP session')
     require(same_session(proposal['session'], session), 'Session changed after audit')
-    snapshot = index(db())
+    snapshot = index(db(), getattr(args, 'plan_units', 'auto'))
     current = propose(snapshot, session, queues)
     require(public_change(current) == public_change(proposal), 'Plan or queue changed after audit; audit again')
     if current['change_queue']:
@@ -390,7 +432,7 @@ def perform(router, proposal, args):
         after, after_queues = router.read()
         new_session = one([a for a in after if a.get('name') == current['user']], 'session after CoA')
         require(same_session(session, new_session), 'Session changed during verification; inspect manually')
-        verified = propose(index(db()), new_session, after_queues)
+        verified = propose(index(db(), getattr(args, 'plan_units', 'auto')), new_session, after_queues)
         require(not verified['change_queue'], 'CoA acknowledged but queue does not match; backup: ' + str(directory))
     return dict(**public_change(current), verified=True, backup=str(directory))
 
@@ -399,7 +441,7 @@ def rollback_session(path, args, credentials):
     b = json.loads(pathlib.Path(path).read_text())
     change = b['change']; old = change['session']
     require(change['change_queue'], 'Backup did not change a live queue')
-    snapshot = index(db())
+    snapshot = index(db(), getattr(args, 'plan_units', 'auto'))
     nas = one([n for n in snapshot['nas'] if n['nasname'] == b['nas']], 'NAS registration')
     router = Router(nas, args, credentials)
     active, queues = router.read()
@@ -438,6 +480,8 @@ def rollback_session(path, args, credentials):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apply', action='store_true', help='Apply discovered corrections; default audit only')
+    parser.add_argument('--plan-units', choices=('auto', '1000', '1024'), default='auto',
+                        help='Default auto preserves per-plan 1000/1024 conventions; explicit mode overrides inference')
     parser.add_argument('--nas', action='append', default=[], help='Restrict discovery to this NAS IPv4; repeatable')
     parser.add_argument('--user', action='append', default=[], help='Restrict to this RADIUS username; repeatable')
     parser.add_argument('--ssh-user', default='mkauth')
@@ -466,7 +510,7 @@ def main():
         if args.rollback_session:
             require(args.apply, 'Session rollback requires --apply')
             print(json.dumps(rollback_session(args.rollback_session, args, credentials))); return 0
-        snapshot = index(db())
+        snapshot = index(db(), args.plan_units)
         report = dict(mode='apply' if args.apply else 'audit', routers=[], changes=[], skipped=[], errors=[])
         seen = set()
         registered = collections.Counter(n['nasname'] for n in snapshot['nas'])
@@ -508,7 +552,7 @@ def main():
                                 report['errors'].append(dict(nas=host, user=user, reason=str(error)))
                                 break
                             # Prior changes can update shared plan attributes; refresh before next user.
-                            snapshot = index(db())
+                            snapshot = index(db(), args.plan_units)
                         report['changes'].append(dict(nas=host, **result))
                     except Refused as error:
                         report['skipped'].append(dict(nas=host, user=user, reason=str(error)))

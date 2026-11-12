@@ -66,6 +66,14 @@ Não guardar credenciais no repositório. O helper `queues-db.php` é exclusivo 
 
 ## O que corrige
 
+### Convenções de velocidade 1000 e 1024
+
+O modo padrão `--plan-units=auto` reconhece as duas convenções numéricas encontradas no MK-AUTH, por plano, comparando os campos do cadastro com o atributo RADIUS já gerado. Por exemplo, um cadastro com 18000/28000 pode corresponder a 18000k/28000k ou a 18432k/28672k. Se o RADIUS e a fila já coincidem na convenção detectada, não propõe redução nem regravação.
+
+Um mesmo servidor pode ter planos das duas convenções. O programa preserva a convenção de cada plano comprovada pelo atributo existente. Para um atributo ausente/desatualizado, só infere a conversão quando há evidência consistente nos demais planos. Sem evidência ou com convenções misturadas, registra revisão e não escolhe uma base arbitrária. Isso pode exigir revisão antes de reparar um plano recém-editado; não impede ajustar uma fila conforme um plano cuja convenção já foi confirmada.
+
+`--plan-units=1000` e `--plan-units=1024` são opções explícitas para casos cuja conversão foi confirmada pelo administrador. Não usar uma base global como tentativa em um servidor misto; restringir o escopo ao plano/cliente revisado e considerar que o atributo é compartilhado pelo plano.
+
 - RADIUS sem fila dinâmica.
 - Fila ainda com velocidade máxima, burst, garantia ou prioridade anteriores.
 - Cliente associado a um grupo de plano antigo, mesmo se esse grupo ainda existir.
@@ -85,6 +93,7 @@ Exemplo: ao trocar um cliente de um plano de 100 MB para um de 200 MB, a ferrame
 - Grupos com checks ou respostas personalizadas, atributos individuais de autorização/velocidade e vínculos de grupos desconhecidos.
 - Filas estáticas, inválidas, desabilitadas, alvos inesperados e múltiplas filas/sessões ambíguas.
 - Planos incompletos, valores não numéricos ou bursts/garantias inconsistentes.
+- Planos ausentes e diferenças de maiúsculas/espaços no login que precisem de revisão; o programa não renomeia clientes nem escolhe outro plano pela proximidade do nome.
 
 Nesses casos registra o motivo e não tenta substituir a política. O objetivo não é implementar ou certificar a política financeira de bloqueio.
 
@@ -127,6 +136,8 @@ Para voltar a uma versão anterior das ferramentas, o instalador mantém `releas
 Validado em MK-AUTH com PHP 7.1/Python 3.7, MikroTik RouterOS 6.49.18 e banco com TokuDB/InnoDB. Requer os campos padrão usados de `nas`, `sis_cliente`, `sis_adicional`, `sis_plano`, `radusergroup`, `radreply`, `radgroupreply`, `radgroupcheck` e `radacct`. Configurações SQL com socket/porta personalizados ou outro formato podem exigir adaptação. NAS por IPv4; credenciais SSH devem ser utilizáveis ou sobrescritas no arquivo privado.
 
 Testes automatizados cobrem descoberta de múltiplos NAS, sessões locais, estados especiais, troca de plano/velocidade, fila ausente, unidades equivalentes, políticas personalizadas, accounting divergente e reversão de sessão. A gravação de grupos/atributos, recusa de guard desatualizado, rollback do banco e instalação repetida foram exercitados em base e diretórios isolados. O tráfego CoA nesses testes isolados foi simulado; a criação real por CoA foi confirmada anteriormente em 46 sessões, com filas e IDs preservados. O novo fluxo de descoberta foi exercitado em leitura no servidor real, sem aplicar limpeza em massa como teste.
+
+A compatibilidade 1000/1024 foi validada por testes de convenções mistas, ausência de evidência e escolha explícita, além de auditoria em segundo servidor: as diferenças de conversão deixaram de gerar propostas de alteração. Nenhuma mudança em massa foi usada para validar essa correção.
 
 Os arquivos antigos `reconciliar-radius.php` e `atualizar-filas-coa.py` permanecem para compatibilidade com o fluxo manual anterior. A instalação atual usa `sincronizar-queues.py` e `queues-db.php`.
 
