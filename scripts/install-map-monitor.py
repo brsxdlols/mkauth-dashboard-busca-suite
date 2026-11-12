@@ -61,7 +61,9 @@ def build_runtime(source,target,patcher):
     for name in required:
         if not(source/name).is_file():raise ValueError('Dependencia ausente: '+name)
     shutil.copytree(source,target,ignore=shutil.ignore_patterns('central-compat','monitor','menu.js','index.hhvm'))
-    text=patcher.patch((target/'maps.hhvm').read_bytes().decode('utf-8'))
+    text=patcher.patch_monitor_selected(patcher.patch((target/'maps.hhvm').read_bytes().decode('utf-8')))
+    api=target/'maps_clientes_api.hhvm'
+    api.write_text(patcher.patch_monitor_api(api.read_text(encoding='utf-8')),encoding='utf-8')
     # The only renderer entry is the monitor; direct map rendering is denied.
     text=text.replace('<?php',"<?php\nif(!defined('MKA_SUITE_MONITOR_RUNTIME')){http_response_code(403);exit('Acesso somente pelo monitor.');}\n$_GET['monitor']='1';",1)
     text=text.replace('<head>','<head><script src="/admin/addons/shared/admin_asset_paths.js?v=20261014-1"></script><link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">',1)

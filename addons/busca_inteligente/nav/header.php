@@ -45,8 +45,8 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/additional_connection.js?v=20261020-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261029-9">
-<script src="/admin/addons/shared/connection_settings.js?v=20261029-9" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261112-3">
+<script src="/admin/addons/shared/connection_settings.js?v=20261112-3" defer></script>
 <script src="/admin/addons/shared/live_client_states.js?v=20261029-1" defer></script>
 </head>
 
@@ -57,3 +57,5 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <link rel="stylesheet" href="/admin/addons/shared/client_bulk_block.css?v=20261105-2">
 <script src="/admin/addons/shared/client_bulk_block.js?v=20261105-2" defer></script>
+
+<script src="/admin/addons/shared/client_update_history.js?v=20261112-1" defer></script>

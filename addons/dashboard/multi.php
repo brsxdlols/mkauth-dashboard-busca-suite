@@ -114,7 +114,7 @@ if ($canTotals) {
 <?php if($canConfig){?><a class="multi-config-link" href="cfg.php"><i class="bi bi-gear-fill" aria-hidden="true"></i> Configurações</a><?php } ?>
 </div>
 <datalist id="multi-client-suggestions"></datalist>
-<script src="/admin/addons/shared/client_suggestions.js?v=20261029-1" defer></script>
+<script src="/admin/addons/shared/client_suggestions.js?v=20261112-1" defer></script>
 <section class="multi-summary"><h2>Clientes</h2>
 <?php if (!$canTotals) { ?><p>Seu usuário não possui permissão para visualizar os totais.</p><?php } elseif($multiError) { ?><p role="alert">Não foi possível carregar os indicadores. Tente novamente.</p><?php } else { ?>
 <div class="multi-cards"><?php $multiIcons=array('blue'=>'bi-people-fill','light'=>'bi-person-plus-fill','cyan'=>'bi-person-check-fill','mint'=>'bi-eye-fill','red'=>'bi-person-fill-lock','yellow'=>'bi-clock-fill','gray'=>'bi-person-x-fill'); foreach($cards as $card) { $multiIcon=isset($multiIcons[$card[4]])?$multiIcons[$card[4]]:($card[3]==='sem carne'?'bi-file-earmark-x-fill':'bi-receipt'); ?>

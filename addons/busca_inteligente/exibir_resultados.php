@@ -367,6 +367,10 @@ if ($result === false || $result_limit === false) {
         transform: translateX(-50%);
     }
 
+    .last-update-popover { padding-right:46px; min-width:240px; }
+    .last-update-popover .last-update-history-more { position:absolute;right:10px;top:10px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid #bdd3f5;border-radius:50%;background:#edf4ff;color:#1c60b7;font:700 20px/1 Arial,sans-serif;cursor:pointer;box-shadow:0 2px 5px #1b4f8510; }
+    .last-update-popover .last-update-history-more:hover { background:#1d6ce0;color:#fff;border-color:#1d6ce0; }
+    .last-update-popover .last-update-history-more:focus-visible { outline:2px solid #1d6ce0;outline-offset:2px; }
     .last-update-popover[hidden] {
         display: none !important;
     }
@@ -1696,7 +1700,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             <div class='client-meta-stack'>
                                                                 <p class='info_add'><b>CPF/CNPJ:</b> <?= $cpf_cnpj_fmt; ?></p>
                                                                 <p class='info_add'><b>Data cadastro:</b> <?= $data_cad_fmt; ?></p>
-                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?></span></span><?php } ?></p>
+                                                                <p class='info_add'><b>Última alteração:</b> <?= $last_update_display; ?><?php if ($last_update_user !== '') { ?> por <span class="last-update-audit-wrap"><a href="#" class="last-update-user-link" onclick="return mkaShowLastUpdateDetails(this);" title="Ver o que foi alterado"><?= htmlspecialchars($last_update_user, ENT_QUOTES, 'UTF-8'); ?></a><span class="last-update-popover" hidden><b>Alterações realizadas</b><br><?= htmlspecialchars($last_update_details !== '' ? $last_update_details : 'Detalhes não registrados para esta alteração.', ENT_QUOTES, 'UTF-8'); ?><br><button type="button" data-client-update-history="<?= htmlspecialchars($uuid_cliente,ENT_QUOTES,'UTF-8'); ?>" class="last-update-history-more" title="Ver histórico completo" aria-label="Ver histórico completo">+</button></span></span><?php } ?></p>
                                                                 <p class='info_add invoice-summary-line'><span><b>Vencimento da fatura:</b> <?= $venc_cliente_fmt; ?></span> <?= $showScore; ?></p>
                                                                 <p class='info_add'><b>Conta bancária:</b> <?= htmlspecialchars($conta_cliente !== '' ? $conta_cliente : '-', ENT_QUOTES, 'UTF-8'); ?></p>
                                                             </div>
@@ -1959,7 +1963,7 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                                     </p>
 
                                                                     <p class="dados_cliente"><b>IP cadastrado:</b> <?= htmlspecialchars($client_saved_ip!==''?$client_saved_ip:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></p>
-                                                                    <div class="dados_cliente client-mac-line"><span><b>MAC:</b> <span data-client-mac-value><?= htmlspecialchars($client_mac!==''?$client_mac:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></span></span><button type="button" class="connection-diagnostic-btn binding-info-button" data-binding-info data-saved-mac="<?= htmlspecialchars($client_mac,ENT_QUOTES,'UTF-8'); ?>" data-saved-ip="<?= htmlspecialchars($client_saved_ip,ENT_QUOTES,'UTF-8'); ?>" data-binding-mac="<?= htmlspecialchars($client_bind_mac,ENT_QUOTES,'UTF-8'); ?>" data-binding-ip="<?= htmlspecialchars($client_fix_ip,ENT_QUOTES,'UTF-8'); ?>" aria-label="Ver parâmetros de MAC e IP" title="Ver parâmetros de MAC e IP">?</button></div>
+                                                                    <div class="dados_cliente client-mac-line"><span><b>MAC:</b> <span data-client-mac-value><?= htmlspecialchars($client_mac!==''?$client_mac:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></span></span><button type="button" class="connection-diagnostic-btn binding-info-button" data-binding-info data-binding-login="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-saved-mac="<?= htmlspecialchars($client_mac,ENT_QUOTES,'UTF-8'); ?>" data-saved-ip="<?= htmlspecialchars($client_saved_ip,ENT_QUOTES,'UTF-8'); ?>" data-binding-mac="<?= htmlspecialchars($client_bind_mac,ENT_QUOTES,'UTF-8'); ?>" data-binding-ip="<?= htmlspecialchars($client_fix_ip,ENT_QUOTES,'UTF-8'); ?>" aria-label="Ver parâmetros de MAC e IP" title="Ver parâmetros de MAC e IP">?</button></div>
                                                                     <p class='dados_cliente'>
 
                                                                         <b>Plano:</b> <?= $plano_cliente; ?>

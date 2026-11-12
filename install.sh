@@ -23,7 +23,7 @@ lint_file() {
 
 install_client_audit_hook() {
   local target="${TARGET_ADMIN_DIR}/scripts/mk-auth.js"
-  local hook_line=';document.addEventListener("DOMContentLoaded",function(){if(!document.getElementById("mka-client-update-audit")){var s=document.createElement("script");s.id="mka-client-update-audit";s.src="/admin/addons/shared/client_update_audit.js?v=2";document.head.appendChild(s);}});'
+  local hook_line=';document.addEventListener("DOMContentLoaded",function(){if(!document.getElementById("mka-client-update-audit")){var s=document.createElement("script");s.id="mka-client-update-audit";s.src="/admin/addons/shared/client_update_audit.js?v=4";document.head.appendChild(s);}});'
 
   if [ ! -f "${target}" ]; then
     echo "[aviso] scripts/mk-auth.js nao encontrado; auditoria de alteracoes nao foi ativada."
@@ -31,7 +31,7 @@ install_client_audit_hook() {
   fi
 
   if grep -q "mka-client-update-audit" "${target}"; then
-    sed -i 's/client_update_audit\.js?v=[0-9][0-9]*/client_update_audit.js?v=2/g' "${target}"
+    sed -i 's/client_update_audit\.js?v=[0-9][0-9]*/client_update_audit.js?v=4/g' "${target}"
     return 0
   fi
 

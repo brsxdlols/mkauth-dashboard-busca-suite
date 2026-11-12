@@ -5,6 +5,13 @@ $db->query('CREATE TEMPORARY TABLE sis_cliente(id INT PRIMARY KEY,login VARCHAR(
 $db->query('CREATE TEMPORARY TABLE suite_connection_operations(id BIGINT AUTO_INCREMENT PRIMARY KEY,operator VARCHAR(64),request_key VARCHAR(96),selection VARCHAR(16),client_login VARCHAR(64) NULL,options_json TEXT,changed_count INT,UNIQUE KEY once_only(operator,request_key)) ENGINE=InnoDB');
 $db->query('CREATE TEMPORARY TABLE suite_connection_operation_items(operation_id BIGINT,client_id INT,login VARCHAR(64),previous_ip VARCHAR(64) NULL,previous_mac VARCHAR(64) NULL,previous_autoip VARCHAR(8),previous_automac VARCHAR(8),PRIMARY KEY(operation_id,client_id)) ENGINE=InnoDB');
 $db->query("INSERT INTO sis_cliente VALUES(1,'first','100.64.1.1','AA:BB','sim','sim','allowed'),(2,'second',NULL,'CC:DD','sim','nao','allowed'),(3,'restricted','100.64.1.3','EE:FF','sim','sim','restricted')");
+$db->query('CREATE TEMPORARY TABLE radcheck(username VARCHAR(64),login VARCHAR(64),attribute VARCHAR(64),value VARCHAR(64),ativo CHAR(1))');
+$db->query('CREATE TEMPORARY TABLE radreply(username VARCHAR(64),login VARCHAR(64),attribute VARCHAR(64),value VARCHAR(64))');
+$db->query("INSERT INTO radcheck VALUES('first','first','Calling-Station-ID','AA:BB','s')");
+$db->query("INSERT INTO radreply VALUES('first','first','Framed-IP-Address','100.64.1.1')");
+$current=mka_connection_settings_current($db,"c.grupo='allowed'");check_connection($current['total']===2&&$current['automac_yes']===1&&$current['automac_no']===1,'Current mixed state is counted, not represented as a global default');
+$current=mka_connection_settings_current($db,"c.grupo='allowed'",'first');check_connection($current['client']['radius_mac']['state']==='sim'&&$current['client']['radius_ip']['value']==='100.64.1.1','Actual native SQL rules separate from auto flags');
+check_connection(!mka_connection_settings_changed(array('ip'=>'','mac'=>'','autoip'=>'nao','automac'=>'nao'),array('clear'=>'both','autoip'=>'keep','automac'=>'keep')),'Empty strings require no MAC or IP clearing');
 $macScope="c.grupo='allowed'";$macRows=mka_connection_settings_rows($db,$macScope,'first');$macPreview=array('key'=>'fixture-mac-only','login'=>'first','options'=>mka_connection_settings_options(array('clear'=>'mac','autoip'=>'keep','automac'=>'keep')),'snapshot'=>mka_connection_settings_snapshot($macRows));
 $macResult=mka_connection_settings_execute($db,'operator',$macScope,$macPreview);$macRow=$db->query('SELECT * FROM sis_cliente WHERE id=1')->fetch_assoc();
 check_connection($macResult['changed']===1&&$macRow['mac']===null&&$macRow['ip']==='100.64.1.1'&&$macRow['autoip']==='sim'&&$macRow['automac']==='sim','MAC-only preserves IP and binding settings');

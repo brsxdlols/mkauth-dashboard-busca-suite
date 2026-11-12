@@ -9,7 +9,7 @@ function mka_connection_settings_rows($db,$scope,$login=null,$lock=false){
  $q=$db->prepare($sql);if($login!==null)$q->bind_param('s',$login);$q->execute();return $q->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 function mka_connection_settings_changed($row,$options){
- return (in_array($options['clear'],array('ip','both'),true)&&$row['ip']!==null)||(in_array($options['clear'],array('mac','both'),true)&&$row['mac']!==null)||($options['autoip']!=='keep'&&$row['autoip']!==$options['autoip'])||($options['automac']!=='keep'&&$row['automac']!==$options['automac']);
+ return (in_array($options['clear'],array('ip','both'),true)&&trim((string)$row['ip'])!=='')||(in_array($options['clear'],array('mac','both'),true)&&trim((string)$row['mac'])!=='')||($options['autoip']!=='keep'&&$row['autoip']!==$options['autoip'])||($options['automac']!=='keep'&&$row['automac']!==$options['automac']);
 }
 function mka_connection_settings_snapshot($rows){return hash('sha256',json_encode($rows,JSON_INVALID_UTF8_SUBSTITUTE));}
 function mka_connection_settings_schema($db){
@@ -49,4 +49,15 @@ function mka_simultaneous_execute($db,$operator,$scope,$preview){
  foreach($changed as $row){$audit->bind_param('isiss',$operation,$row['type'],$row['id'],$row['login'],$row['simultaneo']);$audit->execute();$table=$row['type']==='principal'?'sis_cliente':'sis_adicional';$q=$db->prepare('UPDATE '.$table.' SET simultaneo=? WHERE id=?');$q->bind_param('si',$value,$row['id']);$q->execute();}
  $db->commit();return array('operation_id'=>$operation,'changed'=>$total);
  }catch(Throwable $e){$db->rollback();throw $e;}
+}
+
+// Counts describe persisted customer settings, not a provider-wide default.
+function mka_connection_settings_current($db,$scope,$login=null){
+ $sql="SELECT COUNT(*) total,COALESCE(SUM(c.autoip='sim'),0) autoip_yes,COALESCE(SUM(c.autoip='nao'),0) autoip_no,COALESCE(SUM(c.automac='sim'),0) automac_yes,COALESCE(SUM(c.automac='nao'),0) automac_no,COALESCE(SUM(TRIM(COALESCE(c.ip,''))<>''),0) saved_ip,COALESCE(SUM(TRIM(COALESCE(c.mac,''))<>''),0) saved_mac FROM sis_cliente c WHERE ($scope)".($login!==null?' AND c.login=?':'');
+ $q=$db->prepare($sql);if($login!==null)$q->bind_param('s',$login);$q->execute();$result=$q->get_result()->fetch_assoc();foreach($result as $key=>$value)$result[$key]=(int)$value;
+ if($login!==null){$rows=mka_connection_settings_rows($db,$scope,$login);if(count($rows)!==1)throw new DomainException('Cadastro indisponível.');$row=$rows[0];$result['client']=array('login'=>$row['login'],'ip'=>trim((string)$row['ip']),'mac'=>trim((string)$row['mac']),'autoip'=>$row['autoip'],'automac'=>$row['automac']);
+  $result['client']['radius_mac']=array('state'=>'unknown','value'=>'');$result['client']['radius_ip']=array('state'=>'unknown','value'=>'');
+  foreach(array('mac'=>"SELECT value FROM radcheck WHERE (username=? OR login=?) AND LOWER(attribute)='calling-station-id' AND ativo='s' LIMIT 1",'ip'=>"SELECT value FROM radreply WHERE (username=? OR login=?) AND LOWER(attribute)='framed-ip-address' LIMIT 1") as $kind=>$sql){try{$q=$db->prepare($sql);if(!$q)continue;$q->bind_param('ss',$row['login'],$row['login']);$q->execute();$rule=$q->get_result()->fetch_assoc();$result['client']['radius_'.$kind]=array('state'=>$rule&&trim((string)$rule['value'])!==''?'sim':'nao','value'=>$rule?trim((string)$rule['value']):'');}catch(Throwable $e){/* Keep unknown on unsupported native schemas. */}}
+ }
+ return $result;
 }

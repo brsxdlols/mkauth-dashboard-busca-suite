@@ -35,6 +35,12 @@ function mka_client_audit_ensure_table($conn)
     if ($legacy_column && mysqli_num_rows($legacy_column) > 0) {
         @mysqli_query($conn, "ALTER TABLE dashboard_am_client_update_audit MODIFY alterado_em DATETIME NULL");
     }
+    if ($ok) $ok = (bool) @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS dashboard_am_client_update_history (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        uuid_cliente VARCHAR(64) NOT NULL, usuario VARCHAR(100) NOT NULL,
+        captured_at DATETIME NOT NULL, changed_at DATETIME NULL, detalhes TEXT NULL,
+        UNIQUE KEY once_only(uuid_cliente,captured_at,usuario), KEY client_history(uuid_cliente,id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
     return $ok;
 }
 
@@ -46,6 +52,15 @@ function mka_client_audit_session_user()
         }
     }
     return '';
+}
+
+function mka_client_audit_archive_previous($conn, $uuid) {
+    $safe = mysqli_real_escape_string($conn, $uuid);
+    return (bool) @mysqli_query($conn, "INSERT IGNORE INTO dashboard_am_client_update_history(uuid_cliente,usuario,captured_at,changed_at,detalhes)
+                SELECT a.uuid_cliente,a.usuario,a.captured_at,c.last_update,a.detalhes
+                FROM dashboard_am_client_update_audit a INNER JOIN sis_cliente c ON c.uuid_cliente=a.uuid_cliente
+                WHERE a.uuid_cliente='".$safe."' AND NOT(c.last_update <=> a.previous_last_update)
+                AND c.last_update BETWEEN DATE_SUB(a.captured_at,INTERVAL 5 SECOND) AND DATE_ADD(a.captured_at,INTERVAL 5 MINUTE)");
 }
 
 if (isset($_POST['mka_client_audit']) && $_POST['mka_client_audit'] === 'prepare') {
@@ -70,6 +85,7 @@ if (isset($_POST['mka_client_audit']) && $_POST['mka_client_audit'] === 'prepare
             $usuario_sql = mysqli_real_escape_string($conn, $usuario);
             $detalhes_sql = mysqli_real_escape_string($conn, substr($detalhes, 0, 8000));
             $previous_sql = empty($row['last_update']) ? 'NULL' : "'" . mysqli_real_escape_string($conn, (string) $row['last_update']) . "'";
+            if (!mka_client_audit_archive_previous($conn, (string)$row['uuid_cliente'])) { http_response_code(503); exit; }
             $auditSaved = @mysqli_query($conn, "INSERT INTO dashboard_am_client_update_audit (uuid_cliente,login_cliente,usuario,previous_last_update,captured_at,detalhes)
                 VALUES ('" . $uuid_sql . "','" . $login_sql . "','" . $usuario_sql . "'," . $previous_sql . ",NOW(),'" . $detalhes_sql . "')
                 ON DUPLICATE KEY UPDATE login_cliente=VALUES(login_cliente),usuario=VALUES(usuario),previous_last_update=VALUES(previous_last_update),captured_at=VALUES(captured_at),detalhes=VALUES(detalhes)");

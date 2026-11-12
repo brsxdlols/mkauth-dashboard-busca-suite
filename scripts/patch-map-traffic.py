@@ -127,6 +127,49 @@ def migrate_monitor_links(backup):
         match=re.search(r'ERROR ([0-9]+)',error.stderr or '')
         code=match.group(1) if match else str(error.returncode)
         print('[aviso] Atalhos do banco nao migrados (mysql codigo '+code+'); URL antiga permanece compativel.')
+def patch_monitor_api(source):
+    if 'suite-monitor-selected-client-v1' in source:return source
+    anchor="$additionalScope = map_client_scope_sql('owner');"
+    if source.count(anchor)!=1 or source.count('WHERE acctstoptime IS NULL')!=2:raise ValueError('Monitor API layout unsupported; preserving source.')
+    extra=r"""
+// suite-monitor-selected-client-v1: dedicated monitoring reads only scoped candidates.
+$suiteAccountingFilter = '';
+$suiteLogin = isset($_GET['suite_monitor_login']) && is_string($_GET['suite_monitor_login']) ? trim($_GET['suite_monitor_login']) : '';
+$suiteSearch = isset($_GET['suite_monitor_search']) && is_string($_GET['suite_monitor_search']) ? trim($_GET['suite_monitor_search']) : '';
+if ($suiteLogin !== '' || $suiteSearch !== '') {
+    if (strlen($suiteLogin)>128 || strlen($suiteSearch)>128) { http_response_code(400);exit; }
+    if ($suiteLogin !== '') {
+        $quoted = "'".$link->real_escape_string($suiteLogin)."'";
+        $primaryScope .= ' AND c.login = '.$quoted;
+        $additionalScope .= ' AND a.username = '.$quoted;
+        $suiteAccountingFilter = ' AND username = '.$quoted;
+    } else {
+        $quoted = "'".$link->real_escape_string('%'.$suiteSearch.'%')."'";
+        $primaryScope .= ' AND (c.login LIKE '.$quoted.' OR c.nome LIKE '.$quoted.')';
+        $additionalScope .= ' AND (a.username LIKE '.$quoted.' OR a.nome LIKE '.$quoted.')';
+        $suiteAccountingFilter = ' AND username IN (SELECT c.login FROM sis_cliente c WHERE '.$primaryScope.' UNION SELECT a.username FROM sis_adicional a LEFT JOIN sis_cliente owner ON owner.login=a.login WHERE '.$additionalScope.')';
+    }
+}
+"""
+    return source.replace(anchor,anchor+'\n'+extra,1).replace('WHERE acctstoptime IS NULL','WHERE acctstoptime IS NULL $suiteAccountingFilter')
+
+def patch_monitor_selected(source):
+    if 'suite-monitor-selected-client-v1' in source:return source
+    anchor="fetch('maps_clientes_api.hhvm',{credentials:'same-origin',cache:'no-store'})"
+    if source.count(anchor)!=1:raise ValueError('Monitor load point unsupported; preserving source.')
+    replacement="fetch('maps_clientes_api.hhvm'+(new URLSearchParams(location.search).get('login')?'?suite_monitor_login='+encodeURIComponent(new URLSearchParams(location.search).get('login')):''),{credentials:'same-origin',cache:'no-store'})"
+    source=source.replace(anchor,replacement,1)
+    # Preserve searching another online customer without loading every customer's history.
+    old="var found=state.clients.filter(function(c){return c.status==='online'&&((c.name||'').toLowerCase().indexOf(q)!==-1||(c.login||'').toLowerCase().indexOf(q)!==-1);}).slice(0,10);"
+    if source.count(old)!=1:raise ValueError('Monitor search point unsupported; preserving source.')
+    source=source.replace(old,"var found=(data.clients||[]).filter(function(c){return c.status==='online';}).slice(0,10);",1)
+    start="if(q.length<2)return;var found="
+    if start not in source:raise ValueError('Monitor search layout unsupported')
+    source=source.replace(start,"if(q.length<2)return;clearTimeout(wrap._searchTimer);wrap._searchTimer=setTimeout(function(){fetch('maps_clientes_api.hhvm?suite_monitor_search='+encodeURIComponent(q),{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw Error('Consulta indisponível');return r.json();}).then(function(data){if(input.value.trim().toLowerCase()!==q)return;var found=",1)
+    end="results.appendChild(button);});});input.addEventListener('keydown'"
+    source=source.replace(end,"results.appendChild(button);});}).catch(function(){if(input.value.trim().toLowerCase()===q)results.textContent='Não foi possível buscar. Tente novamente.';});},300);});input.addEventListener('keydown'",1)
+    return source.replace('</head>','<!-- suite-monitor-selected-client-v1 -->\n</head>',1)
+
 def main():
     admin=pathlib.Path(sys.argv[1] if len(sys.argv)>1 else '/opt/mk-auth/admin')
     backup=pathlib.Path(sys.argv[2]);target=admin/'addons/mapa-clientes/maps.hhvm'

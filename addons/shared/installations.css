@@ -10,3 +10,5 @@
 @media(max-width:800px){.installation-board .ticket-search{grid-template-columns:1fr 1fr}.installation-board summary{grid-template-columns:1fr 1fr}.installation-board summary>span{display:none}}
 @media(max-width:500px){.installation-board .ticket-search{grid-template-columns:1fr}.installation-board summary{grid-template-columns:1fr}}
 .installation-board *{box-sizing:border-box}
+
+.installation-board .ticket-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.installation-board .ticket-heading-actions .ticket-settings-icon{flex:0 0 42px}.installation-board .ticket-heading-actions .ticket-create{margin:0}

@@ -18,7 +18,7 @@ $counts=array('all'=>count($rows),'late'=>0,'upcoming'=>0,'unscheduled'=>0,'unas
 foreach($rows as &$row){$row['_timing']=mka_ticket_timing($row['visita']);$row['_timing']['text']=str_replace(array('Visita','Atrasado'),array('Instalação','Atrasada'),$row['_timing']['text']);$key=$row['_timing']['state'];if(isset($counts[$key]))$counts[$key]++;$row['_unassigned']=in_array(strtolower(trim((string)$row['tecnico'])),array('','0','nenhum','nenhuma'),true);if($row['_unassigned'])$counts['unassigned']++;}unset($row);
 ?>
 <body><?php include('../../topo.php');require_once __DIR__.'/../shared/layout_mode.php';mka_suite_render_top_spacing_style($link); ?>
-<link rel="stylesheet" href="../shared/installations.css?v=20261015-2">
+<link rel="stylesheet" href="../shared/installations.css?v=20261112-1">
 <link rel="stylesheet" href="../shared/ticket_board.css?v=20261015-4">
 <main class="ticket-board installation-board" data-installation-board data-can-edit="<?= $canEdit?'1':'0'; ?>">
 <?php require_once __DIR__.'/../shared/support_navigation.php';mka_support_navigation($link,$Manifest,$operator,'installations'); ?>
