@@ -32,29 +32,10 @@ def phase(line):
     return names.get(match.group(1)) if match else None
 
 
-def panel(current, stage_seconds, total_seconds, count, finished=None):
-    """Append-only ASCII panel: safe through pipes, mobile terminals and logs."""
-    title = 'INSTALACAO MK-AUTH | '+(finished or 'EM ANDAMENTO')
-    lines = [title, 'Etapa atual: '+current,
-             'Tempo nesta etapa: '+duration(stage_seconds),
-             'Tempo total: '+duration(total_seconds),
-             'Fases observadas: '+str(count)]
-    if not finished:
-        lines += ['Referencia anterior: 2m36s (nao e prazo garantido)',
-                  'Tempo restante: varia conforme servidor e downloads',
-                  '>>> Executando | aguarde a conclusao das validacoes']
-    width = 66
-    border = '+'+'-'*(width+2)+'+'
-    output = [border]
-    for line in lines:
-        for start in range(0, len(line), width):
-            output.append('| '+line[start:start+width].ljust(width)+' |')
-    return '\n'.join(output+[border])
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--log-dir', required=True)
+    parser.add_argument('--terminal', action='store_true')
     parser.add_argument('--interval', type=float, default=10)
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -72,12 +53,17 @@ def main():
     observed = set()
     print('[progresso] Log completo: '+logfile, flush=True)
     with os.fdopen(descriptor, 'w', encoding='utf-8') as log:
-        def show_panel(now, finished=None):
-            message = panel(current, now-changed, now-started, len(observed), finished)
-            print(message, flush=True)
-            log.write(message+'\n')
-            log.flush()
-        show_panel(started)
+        color = (args.terminal or os.environ.get('FORCE_COLOR') == '1') and not os.environ.get('NO_COLOR')
+        def progress(percent, failed=False):
+            label = '[erro]' if failed else ('[OK]' if percent == 100 else '[...]')
+            message = '%s %s: %d%%' % (label, current, percent)
+            if args.terminal:
+                prefix = '\033[31m' if failed else ('\033[32m' if percent == 100 else '')
+                print('\r\033[2K'+(prefix if color else '')+message+('\033[0m' if color else ''),
+                      end='\n' if failed or percent == 100 else '', flush=True)
+            elif failed or percent == 100:
+                print(message, flush=True)
+        progress(0)
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    universal_newlines=True, errors='replace', start_new_session=True)
         def terminate(signum, frame):
@@ -100,23 +86,21 @@ def main():
                 except queue.Empty:
                     now = time.monotonic()
                     if now-last_output >= interval:
-                        message = '[progresso] Executando: %s | etapa %s | total %s | aguardando nova saida; processo ativo' % (current, duration(now-changed), duration(now-started))
-                        print(message, flush=True)
-                        log.write(message+'\n')
-                        log.flush()
-                        show_panel(now)
+                        progress(0)
                     continue
                 if line is None:
                     break
                 now = time.monotonic()
                 next_phase = phase(line)
                 if next_phase and next_phase != current:
+                    progress(100)
                     timings.append((current, now-changed))
                     current, changed = next_phase, now
                     observed.add(current)
-                    show_panel(now)
+                    progress(0)
                 last_output = now
-                print(line, end='', flush=True)
+                if re.search(r'\[erro\]|\[error\]|fatal error|parse error|traceback|^error:|^erro:', line, re.I):
+                    print(('\033[31m' if color else '')+line.rstrip()+('\033[0m' if color else ''), flush=True)
                 log.write(line)
                 log.flush()
             status = process.wait()
@@ -136,15 +120,14 @@ def main():
                 pass
             return 130
         timings.append((current, time.monotonic()-changed))
-        show_panel(time.monotonic(), 'CONCLUIDA' if status == 0 else 'FALHOU')
+        progress(100 if status == 0 else 0, failed=status != 0)
         elapsed = duration(time.monotonic()-started)
         summary = ('[OK] Instalacao concluida em '+elapsed if status == 0 else '[erro] Instalacao falhou apos '+elapsed+' (codigo '+str(status)+')')
-        print(summary, flush=True)
+        print(('\033[32m' if status == 0 and color else ('\033[31m' if color else ''))+summary+('\033[0m' if color else ''), flush=True)
         log.write(summary+'\n')
         for name, seconds in sorted(timings, key=lambda row: row[1], reverse=True)[:5]:
             if seconds >= 1:
                 message = '[tempo] '+name+': '+duration(seconds)
-                print(message, flush=True)
                 log.write(message+'\n')
         print('[progresso] Log completo: '+logfile, flush=True)
         return status if status >= 0 else 128-status

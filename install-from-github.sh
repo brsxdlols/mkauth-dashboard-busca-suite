@@ -62,7 +62,7 @@ echo "[3/4] Executando instalador local"
 chmod +x "${PACKAGE_DIR}/install.sh"
 if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
   # pipefail retains any installer failure; awk only colors its output.
-  python3 -u "${PACKAGE_DIR}/scripts/install-progress.py" --log-dir "${BACKUP_ROOT}" -- bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}" 2>&1 | awk -f "${PACKAGE_DIR}/scripts/install-output-colors.awk"
+  python3 -u "${PACKAGE_DIR}/scripts/install-progress.py" --terminal --log-dir "${BACKUP_ROOT}" -- bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
 else
   python3 -u "${PACKAGE_DIR}/scripts/install-progress.py" --log-dir "${BACKUP_ROOT}" -- bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
 fi

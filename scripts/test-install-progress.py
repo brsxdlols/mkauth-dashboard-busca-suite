@@ -25,17 +25,16 @@ class Progress(unittest.TestCase):
     def test_quiet_phase_reports_elapsed_and_keeps_output(self):
         result, log = self.run_fixture("import time; print('[radius] Instalando'); time.sleep(.2); print('ultimo texto sem quebra',end='')")
         self.assertEqual(result.returncode, 0)
-        self.assertIn('Executando: Log RADIUS', result.stdout)
+        self.assertIn('Log RADIUS: 100%', result.stdout)
         self.assertIn('ultimo texto sem quebra', log)
         self.assertIn('[OK] Instalacao concluida', result.stdout)
 
-    def test_visual_panel_has_actual_timers_and_no_fake_percentage(self):
-        result, log = self.run_fixture("print('[caixa] Instalando')")
-        self.assertIn('INSTALACAO MK-AUTH | EM ANDAMENTO', result.stdout)
-        self.assertIn('Etapa atual: Caixa', log)
-        self.assertIn('Tempo total:', log)
-        self.assertIn('INSTALACAO MK-AUTH | CONCLUIDA', log)
-        self.assertNotIn('100%', log)
+    def test_compact_progress_keeps_details_only_in_log(self):
+        result, log = self.run_fixture("print('[caixa] Instalando'); print('detalhe interno')")
+        self.assertIn('[OK] Caixa: 100%', result.stdout)
+        self.assertNotIn('detalhe interno', result.stdout)
+        self.assertIn('detalhe interno', log)
+        self.assertNotIn('+----', result.stdout)
 
     def test_failure_is_not_reported_as_success(self):
         result, log = self.run_fixture("import sys; print('[erro] fixture'); sys.exit(7)")
@@ -50,13 +49,16 @@ class Progress(unittest.TestCase):
     def test_cancellation_terminates_child(self):
         with tempfile.TemporaryDirectory() as tmp:
             marker = str(Path(tmp)/'should-not-run')
-            child = "import time,pathlib; print('child-started',flush=True); time.sleep(2); pathlib.Path("+repr(marker)+").write_text('unexpected')"
+            ready = Path(tmp)/'ready'
+            child = "import time,pathlib; pathlib.Path("+repr(str(ready))+").write_text('ready'); time.sleep(2); pathlib.Path("+repr(marker)+").write_text('unexpected')"
             process = subprocess.Popen([sys.executable, str(RUNNER), '--log-dir', tmp,
                                         '--', sys.executable, '-u', '-c', child],
                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-            while 'child-started' not in process.stdout.readline():
-                if process.poll() is not None:
+            deadline = time.monotonic()+5
+            while not ready.exists():
+                if process.poll() is not None or time.monotonic() > deadline:
                     self.fail('Runner exited before starting child')
+                time.sleep(.02)
             process.send_signal(signal.SIGTERM)
             process.communicate(timeout=5)
             self.assertEqual(process.returncode, 130)
