@@ -224,6 +224,30 @@ class Decisions(unittest.TestCase):
                 self.assertEqual(sync.main(),0);apply.assert_not_called()
             self.assertFalse(json.loads(report.read_text())['errors'])
 
+    def test_queue_that_appears_on_confirmation_is_not_a_proposal(self):
+        data=fixture();data['nas']=[dict(nasname='192.0.2.1',sshativo='sim')]
+        class Router:
+            calls=0
+            def __init__(self,nas,*args):pass
+            def read(self):
+                Router.calls+=1
+                return [dict(SESSION)],([] if Router.calls==1 else [dict(QUEUE)])
+        with tempfile.TemporaryDirectory() as temp:
+            report=pathlib.Path(temp)/'report.json'
+            with contextlib.redirect_stdout(io.StringIO()),patch.object(sync,'db',return_value=data),patch.object(sync,'Router',Router),patch.object(sync.shutil,'which',return_value='/fixture'),patch.object(sys,'argv',['sync','--backups='+temp,'--report='+str(report)]):
+                self.assertEqual(sync.main(),0)
+            self.assertEqual(Router.calls,2)
+            self.assertFalse(json.loads(report.read_text())['changes'])
+
+    def test_apply_does_not_send_coa_if_queue_already_converged(self):
+        data=fixture()
+        class Router:
+            def read(self):return [dict(SESSION)],[dict(QUEUE)]
+        initial=sync.propose(sync.index(data),SESSION,[])
+        with patch.object(sync,'db',return_value=data),patch.object(sync,'send_coa') as coa:
+            self.assertIsNone(sync.perform(Router(),initial,type('Args',(),{})()))
+            coa.assert_not_called()
+
     def test_session_rollback_to_unlimited_and_changed_session_refused(self):
         data=fixture();data['nas']=[dict(nasname='192.0.2.1')]
         q=dict(QUEUE);s=dict(SESSION)

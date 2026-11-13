@@ -414,6 +414,8 @@ def perform(router, proposal, args):
     require(same_session(proposal['session'], session), 'Session changed after audit')
     snapshot = index(db(), getattr(args, 'plan_units', 'auto'), getattr(args, 'missing_plan_policy', 'skip'))
     current = propose(snapshot, session, queues)
+    if not any(current[k] for k in ('change_groups', 'change_rate', 'change_additional', 'change_queue')):
+        return None  # A queue may appear naturally between the audit and execution.
     require(public_change(current) == public_change(proposal), 'Plan or queue changed after audit; audit again')
     if current['change_queue']:
         router.incoming()
@@ -552,6 +554,7 @@ def main():
                 report['routers'].append(dict(nas=host, active=len(active),
                     radius=sum('R' in a['flags'] for a in active), queues=len(queues)))
                 usernames = collections.Counter(a['name'] for a in active)
+                confirmed_inventory = None
                 for session in active:
                     user = session['name']
                     if args.user and user not in args.user:
@@ -561,6 +564,26 @@ def main():
                     try:
                         require(usernames[user] == 1, 'Multiple active sessions for username')
                         change = propose(snapshot, session, queues)
+                        if change['change_queue'] and change['previous_queue'] is None and not args.apply:
+                            # PPP and queue snapshots are not atomic. Confirm absence again
+                            # before reporting a correction for a newly connecting user.
+                            try:
+                                if confirmed_inventory is None:
+                                    fresh_active, fresh_queues = router.read()
+                                    fresh_snapshot = index(db(), args.plan_units, args.missing_plan_policy)
+                                    confirmed_inventory = (fresh_active, fresh_queues, fresh_snapshot)
+                                else:
+                                    fresh_active, fresh_queues, fresh_snapshot = confirmed_inventory
+                            except Refused as error:
+                                report['errors'].append(dict(nas=host, user=user, reason=str(error)))
+                                break
+                            fresh = [a for a in fresh_active if a['name'] == user]
+                            if not fresh:
+                                report['skipped'].append(dict(nas=host, user=user, reason='Session ended during audit'))
+                                continue
+                            live = one(fresh, 'session during queue confirmation')
+                            require(same_session(session, live), 'Session changed during audit; re-audit')
+                            change = propose(fresh_snapshot, live, fresh_queues)
                         if not any(change[k] for k in ('change_groups', 'change_rate', 'change_additional', 'change_queue')):
                             continue
                         result = public_change(change)
@@ -570,6 +593,8 @@ def main():
                             except Refused as error:
                                 report['errors'].append(dict(nas=host, user=user, reason=str(error)))
                                 break
+                            if result is None:
+                                continue
                             # Prior changes can update shared plan attributes; refresh before next user.
                             snapshot = index(db(), args.plan_units, args.missing_plan_policy)
                         report['changes'].append(dict(nas=host, **result))

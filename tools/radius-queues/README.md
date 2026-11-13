@@ -115,6 +115,8 @@ Nesses casos registra o motivo e não tenta substituir a política. O objetivo n
 
 Antes de escrever, relê a sessão e o cadastro, trava e revalida os registros do banco e cria backup direcionado. Para a fila, exige que o NAS já aceite CoA, lê a porta em `/radius incoming`, confere IP e ID no accounting e envia somente Mikrotik-Rate-Limit.
 
+As leituras de sessões e filas não são atômicas. Na auditoria, uma fila aparentemente ausente é conferida em nova leitura, com o mesmo ID de sessão, antes de virar proposta. Se a fila surgir naturalmente, nenhuma correção é proposta. Se já estiver correta no momento da aplicação, não envia CoA nem registra uma alteração desnecessária.
+
 Não habilita CoA/firewall automaticamente, não cria filas estáticas, não reinicia serviços nem envia Disconnect-Request. Depois do CoA-ACK, relê a fila e verifica os seis componentes do limite e o mesmo ID de sessão. ACK sem fila correta é erro.
 
 Um lote não é uma transação distribuída: o banco pode ter sido corrigido antes de um erro de CoA, e clientes anteriores podem já estar ajustados. Nesse caso interrompe a aplicação naquele NAS, registra o erro e o backup, e exige nova auditoria. Nunca usa desconexão como alternativa. Uma segunda execução após a convergência não propõe novas alterações.
