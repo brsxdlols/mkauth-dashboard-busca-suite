@@ -29,6 +29,14 @@ class Progress(unittest.TestCase):
         self.assertIn('ultimo texto sem quebra', log)
         self.assertIn('[OK] Instalacao concluida', result.stdout)
 
+    def test_visual_panel_has_actual_timers_and_no_fake_percentage(self):
+        result, log = self.run_fixture("print('[caixa] Instalando')")
+        self.assertIn('INSTALACAO MK-AUTH | EM ANDAMENTO', result.stdout)
+        self.assertIn('Etapa atual: Caixa', log)
+        self.assertIn('Tempo total:', log)
+        self.assertIn('INSTALACAO MK-AUTH | CONCLUIDA', log)
+        self.assertNotIn('100%', log)
+
     def test_failure_is_not_reported_as_success(self):
         result, log = self.run_fixture("import sys; print('[erro] fixture'); sys.exit(7)")
         self.assertEqual(result.returncode, 7)

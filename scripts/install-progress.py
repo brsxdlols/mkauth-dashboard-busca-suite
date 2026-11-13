@@ -32,6 +32,26 @@ def phase(line):
     return names.get(match.group(1)) if match else None
 
 
+def panel(current, stage_seconds, total_seconds, count, finished=None):
+    """Append-only ASCII panel: safe through pipes, mobile terminals and logs."""
+    title = 'INSTALACAO MK-AUTH | '+(finished or 'EM ANDAMENTO')
+    lines = [title, 'Etapa atual: '+current,
+             'Tempo nesta etapa: '+duration(stage_seconds),
+             'Tempo total: '+duration(total_seconds),
+             'Fases observadas: '+str(count)]
+    if not finished:
+        lines += ['Referencia anterior: 2m36s (nao e prazo garantido)',
+                  'Tempo restante: varia conforme servidor e downloads',
+                  '>>> Executando | aguarde a conclusao das validacoes']
+    width = 66
+    border = '+'+'-'*(width+2)+'+'
+    output = [border]
+    for line in lines:
+        for start in range(0, len(line), width):
+            output.append('| '+line[start:start+width].ljust(width)+' |')
+    return '\n'.join(output+[border])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--log-dir', required=True)
@@ -49,8 +69,15 @@ def main():
     started = changed = last_output = time.monotonic()
     current = 'Preparando instalacao'
     timings = []
+    observed = set()
     print('[progresso] Log completo: '+logfile, flush=True)
     with os.fdopen(descriptor, 'w', encoding='utf-8') as log:
+        def show_panel(now, finished=None):
+            message = panel(current, now-changed, now-started, len(observed), finished)
+            print(message, flush=True)
+            log.write(message+'\n')
+            log.flush()
+        show_panel(started)
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    universal_newlines=True, errors='replace', start_new_session=True)
         def terminate(signum, frame):
@@ -77,6 +104,7 @@ def main():
                         print(message, flush=True)
                         log.write(message+'\n')
                         log.flush()
+                        show_panel(now)
                     continue
                 if line is None:
                     break
@@ -85,6 +113,8 @@ def main():
                 if next_phase and next_phase != current:
                     timings.append((current, now-changed))
                     current, changed = next_phase, now
+                    observed.add(current)
+                    show_panel(now)
                 last_output = now
                 print(line, end='', flush=True)
                 log.write(line)
@@ -106,6 +136,7 @@ def main():
                 pass
             return 130
         timings.append((current, time.monotonic()-changed))
+        show_panel(time.monotonic(), 'CONCLUIDA' if status == 0 else 'FALHOU')
         elapsed = duration(time.monotonic()-started)
         summary = ('[OK] Instalacao concluida em '+elapsed if status == 0 else '[erro] Instalacao falhou apos '+elapsed+' (codigo '+str(status)+')')
         print(summary, flush=True)
