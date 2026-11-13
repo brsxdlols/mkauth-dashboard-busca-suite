@@ -14,3 +14,5 @@ jobs:
         run: python3 scripts/test-caixa-dependency.py
       - name: Test official NFCom DICI and traffic dependency routing
         run: python3 scripts/test-nfcom-dependency.py
+      - name: Test cleanup retention rollback and installation
+        run: python3 scripts/test-cleanup.py

@@ -424,6 +424,7 @@ php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-tri
 bash "${SCRIPT_DIR}/scripts/install-receive-notice.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/receive-notice"
 bash "${SCRIPT_DIR}/scripts/install-ipv6-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/ipv6"
 bash "${SCRIPT_DIR}/scripts/install-nfcom-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/nfcom-dici-trafego"
+python3 "${SCRIPT_DIR}/scripts/install-cleanup.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cleanup"
 
 echo "[8/8] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"
