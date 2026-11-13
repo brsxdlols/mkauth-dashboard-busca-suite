@@ -56,7 +56,7 @@ cp "$FISCAL_FIXTURE" "$1"
         source = (ROOT/'install.sh').read_text()
         self.assertEqual(source.count('scripts/install-nfcom-dependency.sh'), 1)
         self.assertLess(source.index('scripts/install-nfcom-dependency.sh'),
-                        source.index('echo "[8/8] Finalizado"'))
+                        source.index('echo "[OK] Todas as etapas da suite concluidas"'))
 
 
 if __name__ == '__main__':

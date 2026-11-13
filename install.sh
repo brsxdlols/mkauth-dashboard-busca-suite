@@ -426,9 +426,9 @@ bash "${SCRIPT_DIR}/scripts/install-ipv6-dependency.sh" "${TARGET_ADMIN_DIR}" "$
 bash "${SCRIPT_DIR}/scripts/install-nfcom-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/nfcom-dici-trafego"
 python3 "${SCRIPT_DIR}/scripts/install-cleanup.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cleanup"
 
-echo "[8/8] Finalizado"
+echo "[etapas] Addons instalados; executando as validacoes finais"
 echo "Backup salvo em: ${BACKUP_DIR}"
-echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
+echo "Destino: ${TARGET_ADMIN_DIR}"
 
 # Authenticated HTTP measurements: no invented operator, cookie or session.
 mkdir -p /var/lib/mkauth-suite-performance
@@ -469,3 +469,7 @@ if command -v python3 >/dev/null 2>&1; then
 fi
 
 php "${SCRIPT_DIR}/scripts/install-invoice-notes.php"
+
+echo "[OK] Todas as etapas da suite concluidas"
+echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
+echo "Backup salvo em: ${BACKUP_DIR}"

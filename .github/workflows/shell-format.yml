@@ -16,3 +16,5 @@ jobs:
         run: python3 scripts/test-nfcom-dependency.py
       - name: Test cleanup retention rollback and installation
         run: python3 scripts/test-cleanup.py
+      - name: Test installer progress and failure reporting
+        run: python3 scripts/test-install-progress.py

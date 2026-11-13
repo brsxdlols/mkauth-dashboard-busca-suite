@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+BOOTSTRAP_STARTED=$SECONDS
+
 REPO_OWNER="${REPO_OWNER:-brsxdlols}"
 REPO_NAME="${REPO_NAME:-mkauth-dashboard-busca-suite}"
 REPO_REF="${REPO_REF:-main}"
@@ -28,9 +30,11 @@ fetch() {
   local url="$1"
   local output="$2"
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "$url" -o "$output"
+    local display=--silent
+    if [ -t 2 ]; then display=--progress-bar; fi
+    curl --fail --location --show-error "$display" --retry 2 --retry-max-time 300 --connect-timeout 15 --max-time 300 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "$url" -o "$output"
   elif command -v wget >/dev/null 2>&1; then
-    wget --no-cache -qO "$output" "$url"
+    wget --no-cache --timeout=30 --tries=3 -O "$output" "$url"
   else
     echo "Erro: curl ou wget e obrigatorio para baixar o pacote." >&2
     exit 1
@@ -38,7 +42,7 @@ fetch() {
 }
 
 CACHE_BUSTER="$(date +%s)"
-ARCHIVE_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${REPO_REF}.tar.gz?cache=${CACHE_BUSTER}"
+ARCHIVE_URL="https://codeload.github.com/${REPO_OWNER}/${REPO_NAME}/tar.gz/refs/heads/${REPO_REF}?cache=${CACHE_BUSTER}"
 echo "[1/4] Baixando pacote ${REPO_OWNER}/${REPO_NAME}@${REPO_REF}"
 fetch "${ARCHIVE_URL}" "${ARCHIVE_PATH}"
 
@@ -58,13 +62,13 @@ echo "[3/4] Executando instalador local"
 chmod +x "${PACKAGE_DIR}/install.sh"
 if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
   # pipefail retains any installer failure; awk only colors its output.
-  bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}" 2>&1 | awk -f "${PACKAGE_DIR}/scripts/install-output-colors.awk"
+  python3 -u "${PACKAGE_DIR}/scripts/install-progress.py" --log-dir "${BACKUP_ROOT}" -- bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}" 2>&1 | awk -f "${PACKAGE_DIR}/scripts/install-output-colors.awk"
 else
-  bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
+  python3 -u "${PACKAGE_DIR}/scripts/install-progress.py" --log-dir "${BACKUP_ROOT}" -- bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
 fi
 
 if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
-  printf '\033[32m[4/4] Instalacao remota concluida\033[0m\n'
+  printf '\033[32m[4/4] Instalacao remota concluida em %ss\033[0m\n' "$((SECONDS - BOOTSTRAP_STARTED))"
 else
-  echo "[4/4] Instalacao remota concluida"
+  echo "[4/4] Instalacao remota concluida em $((SECONDS - BOOTSTRAP_STARTED))s"
 fi
