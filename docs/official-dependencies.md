@@ -11,3 +11,26 @@ O Caixa mantém configuração, carregador nativo e modelos existentes. O instal
 O instalador procura PHP CLI 7.3 ou superior para executar o deploy do Caixa, sem mudar alternativas nem o PHP do sistema. Sem executável compatível, preserva o Caixa existente e emite aviso. Não instala nem atualiza PHP automaticamente. Isso não altera os requisitos de execução web do addon oficial.
 
 Novas versões do Caixa devem ser validadas e o commit fixado atualizado nesta integração. Instalação e testes do pacote do Caixa não alteram tabelas, títulos ou saldos.
+
+## NFCom, DICI e Relatório de Tráfego
+
+`scripts/install-nfcom-dependency.sh` chama o `install-all.sh` oficial de
+`brsxdlols/mkauth-gerador-nfcom`, na branch `main`, que executa os instaladores
+oficiais de NFCom e DICI. O pacote também instala `/admin/addons/rel_trafego/`.
+Os três atalhos ficam em **Provedor**. O relatório não substitui o monitor de
+tráfego em tempo real já integrado à Busca.
+
+Os instaladores oficiais usam o destino fixo `/opt/mk-auth/admin`. Em raízes
+alternativas, a integração é ignorada explicitamente para não alterar outra
+instalação. O download é salvo e validado antes de executar, com log em
+`nfcom-dici-trafego/install.log`, dentro do backup da suíte. Uma falha interrompe
+a instalação e informa o log; não é apresentada como sucesso.
+
+Backups próprios: `/opt/mk-auth/backups/gerador_nf_dici/` e
+`/opt/mk-auth/backups/dici/`. Para reversão, baixe o `install.sh` do respectivo
+repositório e execute com `--rollback CAMINHO_DO_BACKUP`. Não existe reversão
+automática conjunta; revise os backups e os menus antes de restaurar.
+
+A instalação copia os addons e o layout NFCom; não emite documentos fiscais,
+não gera nem envia declarações e não recebe pagamentos. A configuração e o uso
+fiscal continuam sendo feitos no MK-Auth pelo operador autorizado.

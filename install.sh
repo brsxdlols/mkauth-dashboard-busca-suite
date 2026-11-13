@@ -423,6 +423,7 @@ bash "${SCRIPT_DIR}/scripts/install-client-support.sh" "${TARGET_ADMIN_DIR}" "${
 php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"
 bash "${SCRIPT_DIR}/scripts/install-receive-notice.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/receive-notice"
 bash "${SCRIPT_DIR}/scripts/install-ipv6-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/ipv6"
+bash "${SCRIPT_DIR}/scripts/install-nfcom-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/nfcom-dici-trafego"
 
 echo "[8/8] Finalizado"
 echo "Backup salvo em: ${BACKUP_DIR}"
