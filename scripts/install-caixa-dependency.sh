@@ -3,8 +3,8 @@ set -euo pipefail
 admin="${1:-/opt/mk-auth/admin}"
 backup="${2:?Informe o diretorio de backup}"
 case "$admin" in /*/admin) ;; *) echo '[erro] Diretorio administrativo invalido.' >&2; exit 1;; esac
-# Official release reviewed together with this suite. Update after validating a new release.
-ref='65e625ef8bdd8a1047d85955b8fe2199aaad5199'
+# Follow the official main branch requested by the operator.
+ref='main'
 mkdir -p "$backup"
 chmod 0700 "$backup"
 php_bin=''
@@ -34,5 +34,5 @@ fi
 for file in index.php config.php rollback.sh; do
   [ -f "$admin/addons/rel_caixa/$file" ] || { echo "[erro] Caixa incompleto: $file" >&2; exit 1; }
 done
-printf '%s\n' "$ref" > "$backup/source-commit"
+printf '%s\n' "$ref" > "$backup/source-ref"
 echo "[caixa] Instalador oficial concluido. Log: $backup/install.log"

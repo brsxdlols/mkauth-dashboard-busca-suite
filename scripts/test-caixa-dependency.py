@@ -26,13 +26,14 @@ class CaixaDependency(unittest.TestCase):
             fixture = base / 'official.sh'
             fixture.write_text('''#!/bin/sh
 set -eu
-[ "$1" = --ref ] && [ "$2" = 65e625ef8bdd8a1047d85955b8fe2199aaad5199 ]
+[ "$1" = --ref ] && [ "$2" = main ]
 [ "$3" = --root ] && [ "$5" = --no-menu ]
 for file in index.php rollback.sh; do printf 'official' > "$4/admin/addons/rel_caixa/$file"; done
 ''')
             env = dict(os.environ, PATH=str(bin_dir)+os.pathsep+os.environ['PATH'], CAIXA_FIXTURE=str(fixture))
             command = ['bash', str(ROOT/'scripts/install-caixa-dependency.sh'), str(admin), str(base/'backup')]
             subprocess.run(command, env=env, check=True)
+            self.assertEqual((base/'backup/source-ref').read_text().strip(), 'main')
             self.assertEqual((addon/'config.php').read_text(), 'existing config')
             self.assertEqual((addon/'model.php').read_text(), 'existing private model')
             fixture.write_text('#!/bin/sh\nexit 9\n')

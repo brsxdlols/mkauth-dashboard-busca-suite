@@ -4,7 +4,7 @@ O comando de atualização da suíte permanece `install-from-github.sh`.
 
 - **Log RADIUS:** `scripts/install-radius-dependency.sh` chama o instalador oficial de `brsxdlols/mkauth-radius-logs`. Depois aplica os componentes de integração da suíte (modal, estado atual, IP/MAC e menus).
 - **IPv6:** `scripts/install-ipv6-dependency.sh` chama o instalador oficial de `brsxdlols/mkauth-ipv6-addon`, para a raiz padrão `/opt/mk-auth/admin`.
-- **Caixa:** `scripts/install-caixa-dependency.sh` usa o instalador e a árvore completa do commit oficial `65e625ef8bdd8a1047d85955b8fe2199aaad5199` (3.7.1) de `brsxdlols/mkauth-relatorio-caixa`, com `--no-menu`. A suíte não copia sua versão interna por cima do Caixa instalado.
+- **Caixa:** `scripts/install-caixa-dependency.sh` usa o instalador e a árvore completa do ramo oficial `main` (atualizado em cada instalacao) de `brsxdlols/mkauth-relatorio-caixa`, com `--no-menu`. A suíte não copia sua versão interna por cima do Caixa instalado.
 
 O Caixa mantém configuração, carregador nativo e modelos existentes. O instalador oficial cria seu próprio backup e disponibiliza `addons/rel_caixa/rollback.sh`. O diretório de backup da suíte contém `caixa-package/install.log` e o commit utilizado.
 
