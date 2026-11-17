@@ -1,7 +1,5 @@
-# Progresso compacto da instalacao
+# Loading compacto da instalacao
 
-Cada fase ocupa uma linha no terminal. Mostra 0% enquanto executa e 100% ao passar para a fase seguinte; a ultima fase somente conclui apos retorno zero do instalador. Nao ha percentuais intermediarios estimados, pois os instaladores oficiais nao fornecem essa informacao.
+Download e fases locais mostram barra animada na mesma linha. Os percentuais durante execucao sao explicitamente estimados pelo tempo decorrido, nao por bytes transferidos ou trabalho interno. Os instaladores oficiais e arquivos de codeload podem nao informar o total. A estimativa para em 95%; somente a passagem para a proxima fase ou retorno zero permite mostrar 100%. Uma espera longa continua em 95% ate terminar ou falhar.
 
-Conclusoes aparecem em verde e erros em vermelho quando ha terminal e cores habilitadas. NO_COLOR desativa cores. A saida detalhada e os tempos das fases ficam no log privado BACKUP_ROOT/install-run-IDENTIFICADOR.log (modo 0600). O resumo final informa o tempo total e o caminho do log.
-
-Falhas preservam o codigo original e cancelamento encerra apenas o grupo filho do instalador. Backups e verificacoes continuam ativos; os addons continuam sequenciais.
+Conclusao verde e erro vermelho quando cores habilitadas. NO_COLOR desativa cores. A saida completa e tempos ficam no log privado BACKUP_ROOT/install-run-IDENTIFICADOR.log, modo 0600. Falhas mantem codigo original e cancelamento encerra apenas o processo filho. Sem terminal, a saida e textual sem animacao.

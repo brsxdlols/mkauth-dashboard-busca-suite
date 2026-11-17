@@ -46,7 +46,7 @@ def main():
     logdir.mkdir(parents=True, exist_ok=True)
     descriptor, logfile = tempfile.mkstemp(prefix='install-run-', suffix='.log', dir=str(logdir))
     os.chmod(logfile, 0o600)
-    interval = max(0.05, args.interval)
+    interval = min(0.2, max(0.05, args.interval)) if args.terminal else max(0.05, args.interval)
     started = changed = last_output = time.monotonic()
     current = 'Preparando instalacao'
     timings = []
@@ -56,7 +56,9 @@ def main():
         color = (args.terminal or os.environ.get('FORCE_COLOR') == '1') and not os.environ.get('NO_COLOR')
         def progress(percent, failed=False):
             label = '[erro]' if failed else ('[OK]' if percent == 100 else '[...]')
-            message = '%s %s: %d%%' % (label, current, percent)
+            filled = percent//5
+            bar = '['+'#'*filled+'-'*(20-filled)+']'
+            message = '%s %s %s %d%%%s' % (label, current, bar, percent, ' estimado' if percent < 100 and not failed else '')
             if args.terminal:
                 prefix = '\033[31m' if failed else ('\033[32m' if percent == 100 else '')
                 print('\r\033[2K'+(prefix if color else '')+message+('\033[0m' if color else ''),
@@ -85,8 +87,9 @@ def main():
                     line = messages.get(timeout=interval)
                 except queue.Empty:
                     now = time.monotonic()
-                    if now-last_output >= interval:
-                        progress(0)
+                    budgets = {'Caixa': 26, 'Validando instalacao': 60, 'NFCom, DICI e Trafego': 43, 'Analise de desempenho': 20}
+                    budget = budgets.get(current, 10)
+                    progress(min(95, int(100*(now-changed)/(budget+now-changed))))
                     continue
                 if line is None:
                     break

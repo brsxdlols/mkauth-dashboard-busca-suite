@@ -25,16 +25,23 @@ class Progress(unittest.TestCase):
     def test_quiet_phase_reports_elapsed_and_keeps_output(self):
         result, log = self.run_fixture("import time; print('[radius] Instalando'); time.sleep(.2); print('ultimo texto sem quebra',end='')")
         self.assertEqual(result.returncode, 0)
-        self.assertIn('Log RADIUS: 100%', result.stdout)
+        self.assertIn('Log RADIUS [####################] 100%', result.stdout)
         self.assertIn('ultimo texto sem quebra', log)
         self.assertIn('[OK] Instalacao concluida', result.stdout)
 
     def test_compact_progress_keeps_details_only_in_log(self):
         result, log = self.run_fixture("print('[caixa] Instalando'); print('detalhe interno')")
-        self.assertIn('[OK] Caixa: 100%', result.stdout)
+        self.assertIn('[OK] Caixa [####################] 100%', result.stdout)
         self.assertNotIn('detalhe interno', result.stdout)
         self.assertIn('detalhe interno', log)
         self.assertNotIn('+----', result.stdout)
+
+    def test_loading_advances_but_waits_for_real_completion(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run([sys.executable,str(RUNNER),'--terminal','--log-dir',tmp,'--',sys.executable,'-u','-c',"import time; print('[caixa] Instalando'); time.sleep(.8); raise SystemExit(7)"],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True)
+            self.assertIn('1% estimado',result.stdout)
+            self.assertNotIn('[OK] Caixa',result.stdout)
+            self.assertIn('[erro]',result.stdout)
 
     def test_failure_is_not_reported_as_success(self):
         result, log = self.run_fixture("import sys; print('[erro] fixture'); sys.exit(7)")
