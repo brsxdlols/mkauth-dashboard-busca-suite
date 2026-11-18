@@ -424,6 +424,7 @@ bash "${SCRIPT_DIR}/scripts/install-client-support.sh" "${TARGET_ADMIN_DIR}" "${
 php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"
 bash "${SCRIPT_DIR}/scripts/install-receive-notice.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/receive-notice"
 bash "${SCRIPT_DIR}/scripts/install-ipv6-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/ipv6"
+python3 "${SCRIPT_DIR}/scripts/install-ipv6-menu-icon.py" "${TARGET_ADMIN_DIR}"
 bash "${SCRIPT_DIR}/scripts/install-nfcom-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/nfcom-dici-trafego"
 python3 "${SCRIPT_DIR}/scripts/install-cleanup.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cleanup"
 
