@@ -5,7 +5,7 @@
     EMAIL: meyknho@gmail.com  
     @AJF TELECOM - TODOS DIREITOS RESERVADOS.
 -->
-<?php require_once('config.php'); ?>
+<?php require_once('config.php'); require __DIR__.'/suite_filters.php'; ?>
 
 <!DOCTYPE html>
 <?php
@@ -90,8 +90,10 @@
                 }
         </script>
 
+<link rel="stylesheet" href="suite.css?v=20261117-2"><script src="suite.js?v=20261118-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/addon_header_mobile.css?v=20261118-2">
 </head>
-<body>
+<body class="gf-suite">
 
 
 
@@ -220,7 +222,8 @@
                 <td><input type="submit" name="submit" id="btn_buscar" value="OK" /></td>
             </tr>
         </table>
-    </form>
+    <?php include __DIR__.'/cash_filter.php'; ?>
+</form>
 
     <?php
     
@@ -238,7 +241,7 @@
     $data_query_saldo = date('Y-m-d', strtotime('-1 days', strtotime($data_inicial)));
     
         //echo $data_query_saldo;
-    $query_saldo_anterior = mysqli_query($link, "SELECT (sum(entrada) - sum(saida)) saldo_geral  FROM sis_caixa WHERE data <= '$data_query_saldo 23:59:59'");
+    $query_saldo_anterior = mysqli_query($link, "SELECT (sum(entrada) - sum(saida)) saldo_geral  FROM sis_caixa WHERE $billingCashSql data <= '$data_query_saldo 23:59:59'");
 
     $data_query_saldo = date('d/m/Y', strtotime($data_query_saldo));
 
@@ -260,7 +263,7 @@
     $query_mysql = mysqli_query($link, "SELECT c.uuid_caixa, c.usuario, c.data, c.historico, c.complemento, c.entrada, c.saida, c.planodecontas /*, l.formapag */
     FROM sis_caixa c 
     /*LEFT JOIN sis_lanc l*/
-    WHERE c.historico LIKE '%$palavra_busca%' AND c.data BETWEEN '$data_inicial' AND '$data_final 23:59:59' AND c.planodecontas LIKE '$plano_de_contas' AND c.usuario LIKE '$usuario' ORDER BY c.data");
+    WHERE $billingCashAliasSql c.historico LIKE '%$palavra_busca%' AND c.data BETWEEN '$data_inicial' AND '$data_final 23:59:59' AND c.planodecontas LIKE '$plano_de_contas' AND c.usuario LIKE '$usuario' ORDER BY c.data");
 
     while ($row = mysqli_fetch_array($query_mysql)){
         //print_r($row);
@@ -465,7 +468,7 @@
 
 
         
-    $query_saldo_atual = mysqli_query($link, "SELECT (sum(entrada) - sum(saida)) saldo_geral  FROM sis_caixa WHERE data <= '$data_final 23:59:59'");
+    $query_saldo_atual = mysqli_query($link, "SELECT (sum(entrada) - sum(saida)) saldo_geral  FROM sis_caixa WHERE $billingCashSql data <= '$data_final 23:59:59'");
 
     $data_query_saldo = date('d/m/Y', strtotime($data_final));
 
@@ -569,7 +572,7 @@
 
         }
 
-        $query_entradas_manuais = mysqli_query($link, "SELECT entrada, planodecontas FROM sis_caixa WHERE tipomov LIKE 'man' AND entrada > 0 AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
+        $query_entradas_manuais = mysqli_query($link, "SELECT entrada, planodecontas FROM sis_caixa WHERE $billingCashSql tipomov LIKE 'man' AND entrada > 0 AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
 
 
         while($in_manual = mysqli_fetch_array($query_entradas_manuais)){
@@ -586,6 +589,7 @@
     ?>
 
     <?php
+    if($billingCashUser!=='')$pag_por_tipo_pag_=gf_cash_income_groups($link,$billingCashUser,$data_inicial,$data_final);
     $query_previsao_pag = mysqli_query($link, "SELECT a.datavenc, a.valor,a.login FROM sis_lanc a WHERE a.datavenc BETWEEN '$data_inicial' AND '$data_final' AND a.deltitulo = '0' AND a.login LIKE (SELECT login FROM sis_cliente WHERE login = a.login AND cli_ativado LIKE 's') ORDER BY a.login");
     if (!$query_previsao_pag){
         echo mysqli_error($link);
@@ -605,14 +609,14 @@
     }
 
     //$previsao_pag = number_format($previsao_pag, 2, ',', '.');
-    $porc_recebido = ($tot_entrada / $previsao_pag) * 100;
-    $porc_recebido = number_format($porc_recebido, 2);
+    $porc_recebido = $previsao_pag > 0 ? ($tot_entrada / $previsao_pag) * 100 : null;
+    $porc_recebido = $porc_recebido === null ? 'sem previsão no período' : number_format($porc_recebido, 2).'% do previsto';
     echo "
         <div id='prev_faturamento'>
             <span id='prev_titulo'>Faturamento Previsto:</span>
             </br>
             <span id='prev_valor'>R$ $previsao_pag,00</span>   
-            <span id='prev_porc_recebido'> / recebido R$ $tot_entrada,00 - $porc_recebido% do previsto.</span>
+            <span id='prev_porc_recebido'> / recebido R$ $tot_entrada,00 - $porc_recebido.</span>
         </div>";
     
 

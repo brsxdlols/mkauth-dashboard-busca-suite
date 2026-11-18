@@ -27,12 +27,12 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 
-    <link href="/admin/addons/rel_cli_offline/css/css.css" rel="stylesheet" type="text/css" /><link href="/admin/addons/rel_cli_offline/offline-clean.css?v=20261017-2" rel="stylesheet" />
+    <link href="/admin/addons/rel_cli_offline/css/css.css" rel="stylesheet" type="text/css" /><link href="/admin/addons/rel_cli_offline/offline-clean.css?v=20261118-1" rel="stylesheet" />
 
 
-<link rel="stylesheet" href="/admin/estilos/bi-icons.css"></head>
+<link rel="stylesheet" href="/admin/estilos/bi-icons.css"><link rel="stylesheet" href="/admin/addons/shared/addon_header_mobile.css?v=20261118-4"></head>
 
-<body>
+<body class="off-suite">
     <?php
 
     if (!$off_fragment) {

@@ -40,7 +40,7 @@
             if (refresh) window.location.reload();
         });
         function watchResult() {
-            if (stopWatch) return;
+            if (stopWatch) stopWatch();
             stopWatch = window.mkaWatchClientAction(login, action === 'disable' ? 'inactive' : 'deleted', function () { window.location.reload(); }, function () {
                 notice.textContent = 'Não foi possível confirmar o resultado. Confira a mensagem do MK-AUTH e o cadastro antes de repetir a operação.';
             });
@@ -48,6 +48,12 @@
         frame.addEventListener('load', function () {
             try {
                 var popup = frame.contentWindow, doc = frame.contentDocument;
+                // Native JavaScript can submit without a DOM submit event. Confirm
+                // the database again when its result document finishes loading.
+                if (popup.location.pathname !== url.pathname && popup.location.href !== 'about:blank') {
+                    watchResult();
+                    return;
+                }
                 // Native success callbacks expect an opener and window.close().
                 popup.opener = {reloadAqui: function () { refresh = true; }};
                 popup.close = function () { dialog.close(); };

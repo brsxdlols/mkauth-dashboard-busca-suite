@@ -5,7 +5,7 @@
     EMAIL: meyknho@gmail.com  
     @AJF TELECOM - TODOS DIREITOS RESERVADOS.
 -->
-<?php require_once('config.php'); ?>
+<?php require_once('config.php'); require __DIR__.'/suite_filters.php'; ?>
 
 <!DOCTYPE html>
 <?php
@@ -111,8 +111,10 @@
                 }
         </script>
 
+<link rel="stylesheet" href="suite.css?v=20261117-2"><script src="suite.js?v=20261118-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/addon_header_mobile.css?v=20261118-2">
 </head>
-<body>
+<body class="gf-suite">
 
 
 
@@ -194,12 +196,13 @@
                 <td><input type="submit" name="submit" id="btn_buscar" value="OK" /></td>
             </tr>
         </table>
-    </form>
+    <?php include __DIR__.'/cash_filter.php'; ?>
+</form>
 
     <?php
             
     //Grafico Detalhado
-    $query_mysql = mysqli_query($link, "SELECT usuario, data, historico, complemento, entrada, saida, planodecontas FROM sis_caixa WHERE historico NOT LIKE 'estorno titulo%' AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
+    $query_mysql = mysqli_query($link, "SELECT usuario, data, historico, complemento, entrada, saida, planodecontas FROM sis_caixa WHERE $billingCashSql historico NOT LIKE 'estorno titulo%' AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
 
     
     echo "<table>
@@ -351,7 +354,7 @@
 
 
 
-    $tot_despesas = round(array_sum($array_tipo_conta));
+    $tot_despesas = round(array_sum($array_tipo_conta ?? array()));
 
 
     //echo "Total salários: R$ $tot_salarios";
@@ -395,7 +398,7 @@
 
     }
 
-    $query_entradas_manuais = mysqli_query($link, "SELECT entrada, planodecontas FROM sis_caixa WHERE tipomov LIKE 'man' AND entrada > 0 AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
+    $query_entradas_manuais = mysqli_query($link, "SELECT entrada, planodecontas FROM sis_caixa WHERE $billingCashSql tipomov LIKE 'man' AND entrada > 0 AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
 
 
     while($in_manual = mysqli_fetch_array($query_entradas_manuais)){
@@ -408,7 +411,7 @@
         $pag_por_tipo_pag_[$in_manual_planodecontas] += $in_manual_valor;
     }
 
-    /*$query_estorno = mysqli_query($link, "SELECT saida FROM sis_caixa WHERE historico LIKE 'estorno titulo%' AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
+    /*$query_estorno = mysqli_query($link, "SELECT saida FROM sis_caixa WHERE $billingCashSql historico LIKE 'estorno titulo%' AND data BETWEEN '$data_inicial' AND '$data_final 23:59:59' ORDER BY data");
 
 
     while($row4 = mysqli_fetch_array($query_estorno)){
@@ -424,12 +427,13 @@
 
     }*/
 
-    $tot_entradas = round(array_sum($pag_por_tipo_pag_));
+    if($billingCashUser!=='')$pag_por_tipo_pag_=gf_cash_income_groups($link,$billingCashUser,$data_inicial,$data_final);
+    $tot_entradas = round(array_sum($pag_por_tipo_pag_ ?? array()));
 
     $tot_saldo = $tot_entradas - $tot_despesas;
 
     //Calculo do Lucro Bruto
-    $tot_despesas_sem_salarios = round(array_sum($array_tipo_conta) - $array_tipo_conta["salario"]);
+    $tot_despesas_sem_salarios = round(array_sum($array_tipo_conta ?? array()) - ($array_tipo_conta["salario"] ?? 0));
     $tot_saldo_sem_salarios = $tot_entradas - $tot_despesas_sem_salarios;
 
     //echo "Entradas: R$ $tot_entradas Saidas: R$ $tot_despesas Saldo: R$ $tot_saldo ";
@@ -471,7 +475,7 @@
     mysqli_close($link);
 
     // total de contas a pagar
-    $tot_c_open = array_sum($array_c_open);
+    $tot_c_open = array_sum($array_c_open ?? array());
     
     ?>
     

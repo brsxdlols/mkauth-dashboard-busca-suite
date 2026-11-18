@@ -116,7 +116,7 @@ if ($result) {
     .contract-modal-dialog { display:flex; flex-direction:column; width:min(620px,calc(100vw - 32px)); height:min(780px,calc(100vh - 32px)); overflow:hidden; border:1px solid rgba(255,255,255,.55); border-radius:22px; background:#eef4fb; box-shadow:0 30px 80px rgba(15,23,42,.34); }
     .contract-modal-head { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:54px; padding:0 16px 0 20px; background:#fff; border-bottom:1px solid #dbe5f0; color:#193755; }
     .contract-modal-head strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .contract-modal-close { width:38px; height:38px; flex:0 0 auto; border:0; border-radius:10px; background:#edf2f7; color:#334155; font-size:26px; line-height:1; cursor:pointer; }
+    .contract-modal-close { display:inline-flex;align-items:center;justify-content:center;padding:0;box-sizing:border-box;width:32px; height:32px; flex:0 0 auto; border:0; border-radius:10px; background:#edf2f7; color:#334155; font-size:22px; line-height:1; cursor:pointer; }
     .contract-modal-close:hover { background:#fde7ea; color:#b42318; }
     .contract-modal-frame { width:100%; min-height:0; flex:1 1 auto; border:0; background:#eef4fb; }
     @media (max-width: 1100px) { .contract-summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }

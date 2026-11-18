@@ -5,7 +5,7 @@
     EMAIL: meyknho@gmail.com  
     @AJF TELECOM - TODOS DIREITOS RESERVADOS.
 -->
-<?php include('addons.class.php'); ?>
+<?php if(!defined('VERSAO2UPDATE')&&is_file('/opt/mk-auth/include/configure.php'))require_once '/opt/mk-auth/include/configure.php'; include('addons.class.php'); ?>
 
 <?php
 

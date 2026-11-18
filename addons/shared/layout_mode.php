@@ -62,6 +62,7 @@ if (!function_exists('mka_suite_ensure_layout_column')) {
             'link' => "TEXT NULL",
             'texto' => "TEXT NULL",
             'tot_acesso_rapido' => "INT NOT NULL DEFAULT 15",
+            'suite_show_shortcuts' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
             'popup_clientes_sessao' => "VARCHAR(1) NOT NULL DEFAULT 'n'",
             'popup_clientes_sessao_duracao' => "INT NOT NULL DEFAULT 2",
             'suite_top_spacing' => "INT NOT NULL DEFAULT 16",
@@ -440,4 +441,13 @@ function mka_suite_set_dashboard_installations_destination($conn,$value) {
 }
 function mka_suite_dashboard_installations_url($destination,$extension) {
     return $destination==='native'?'/admin/instalacoes_abertas.'.($extension==='php'?'php':'hhvm'):'/admin/addons/busca_inteligente/instalacoes.php';
+}
+
+if(!function_exists('mka_suite_get_show_shortcuts')){
+ function mka_suite_get_show_shortcuts($conn){
+  if(!($conn instanceof mysqli))return false;
+  mka_suite_ensure_layout_column($conn);
+  $result=$conn->query('SELECT suite_show_shortcuts FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1');
+  $row=$result?$result->fetch_assoc():null;return $row&&$row['suite_show_shortcuts']==='s';
+ }
 }

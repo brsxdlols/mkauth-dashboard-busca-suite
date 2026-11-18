@@ -53,8 +53,10 @@
             }
         </style>
 
+<link rel="stylesheet" href="suite.css?v=20261117-2"><script src="suite.js?v=20261118-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/addon_header_mobile.css?v=20261118-2">
 </head>
-<body>
+<body class="gf-suite">
 
 
 
@@ -403,18 +405,14 @@
                     {
                         echo "
                         {
-                            name: '$value',
+                            name: ".json_encode($value,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE).",
                             data: [
                             ";
                                 for($i=$per_ini; $i <= $per_meses; $i++){
                                     if ($i<10){
                                         $i="0$i";
                                     }
-                                    foreach ($fat_por_ramal[$i] as $key2 => $value2) 
-                                    {
-                                        if($value == $key2)
-                                            echo "$value2,"; 
-                                    }
+                                    echo (float)($fat_por_ramal[$i][$value] ?? 0).",";
                                 }
                             echo "
                             ]
@@ -495,7 +493,7 @@
                 foreach ($fat_por_ramal_ano as $key => $value) {
                             echo "
                             { 
-                                name: '$key',
+                                name: ".json_encode($key,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE).",
                                 y: $value
                             },
                             
@@ -538,7 +536,7 @@
                 {
                     echo "
                     {
-                    name: '$key',
+                    name: ".json_encode($key,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE).",
                     data: [
                         ";
                         foreach ($fat_por_ramal_ano as $key2 => $value2) 

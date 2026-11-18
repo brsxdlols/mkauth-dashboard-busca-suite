@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add a single Radius entry to the existing Applications menu, preserving its other entries."""
+"""Keep Radius only in the Provider menu, preserving other entries."""
 import shutil,sys
 from pathlib import Path
 MARKER='/* MKA-SUITE-RADIUS-APPLICATIONS-MENU */'
@@ -11,7 +11,7 @@ BLOCK=r'''
   function groupMenu(pattern){var group=groups.find(function(n){var label=n.querySelector('.navbar-link');return label&&pattern.test(label.textContent);});return group?group.querySelector('.navbar-dropdown'):null;}
   var applications=document.getElementById('menu_amsis')||groupMenu(/APLICATIVOS|ADDONS/i),provider=document.getElementById('menu_provedor')||groupMenu(/PROVEDOR/i);
   function ensure(menu){if(!menu)return false;if(Array.from(menu.querySelectorAll('a')).some(function(a){return /\/addons\/radius\/?(?:[?#]|$)/.test(a.getAttribute('href')||'');}))return true;var link=document.createElement('a');link.className='navbar-item';link.href='/admin/addons/radius/';link.textContent='LOG RADIUS';menu.appendChild(link);return true;}
-  var appReady=ensure(applications),providerReady=ensure(provider);return appReady&&providerReady;
+  if(applications)Array.from(applications.querySelectorAll('a')).forEach(function(a){if(/\/addons\/radius\/?(?:[?#]|$)/.test(a.getAttribute('href')||''))a.remove();});return ensure(provider);
  }
  function start(){if(addRadius())return;var root=document.querySelector('.navbar-start')||document.body;if(!root||typeof MutationObserver==='undefined')return;var observer=new MutationObserver(function(){if(addRadius())observer.disconnect();});observer.observe(root,{childList:true,subtree:true});window.setTimeout(function(){observer.disconnect();},30000);}
  if(document.readyState==='complete')start();else window.addEventListener('load',start,{once:true});
@@ -50,5 +50,5 @@ def install(admin,backup):
         backup.mkdir(parents=True,exist_ok=True)
         if path.exists():shutil.copy2(path,backup/(relative.replace('/','_')))
         path.write_bytes(new)
-    print('Atalhos LOG RADIUS nos menus Aplicativos e Provedor preparados, com carregamento administrativo independente.')
+    print('Atalho LOG RADIUS somente no menu Provedor, com carregamento administrativo independente.')
 if __name__=='__main__':install(sys.argv[1],sys.argv[2])

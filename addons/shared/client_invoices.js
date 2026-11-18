@@ -1,6 +1,7 @@
 (function(){
 'use strict';
 if(window.mkaClientInvoicesLoaded)return;window.mkaClientInvoicesLoaded=true;
+var financialReturnRefresh=false;
 var scrollState=null, selectedCard=null, activeTrigger=null, highlightTimer=null;
 var child,childBody,childTitle,childTools,childStatus,childFrame,childController,childRefresh=false;
 var modal,body,caption,detailsLink,prev,next,pager,controller,generation=0,uuid,currentPage=1;
@@ -62,7 +63,7 @@ function create(){
  body=node('div');body.className='client-invoices-body';body.setAttribute('aria-live','polite');
  var footer=node('footer');prev=node('button','Anterior');next=node('button','Próxima');prev.type=next.type='button';pager=node('span');footer.append(prev,pager,next);prev.addEventListener('click',function(){load(currentPage-1);});next.addEventListener('click',function(){load(currentPage+1);});
  var actions=node('div');actions.className='client-invoices-actions';detailsLink=node('a','Ver mais detalhes');detailsLink.hidden=true;actions.append(detailsLink);
- modal.append(header,body,actions,footer);document.body.append(modal);modal.addEventListener('close',function(){generation++;if(controller)controller.abort();unlockPage();});modal.addEventListener('click',function(event){if(event.target===modal){var r=modal.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)modal.close();}});
+ modal.append(header,body,actions,footer);document.body.append(modal);modal.addEventListener('close',function(){generation++;if(controller)controller.abort();unlockPage();if(financialReturnRefresh){financialReturnRefresh=false;window.location.reload();}});modal.addEventListener('click',function(event){if(event.target===modal){var r=modal.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)modal.close();}});
 }
 async function load(page){
  if(controller)controller.abort();detailsLink.hidden=true;controller=new AbortController();var ticket=++generation;prev.disabled=next.disabled=true;body.replaceChildren(node('p','Consultando faturas…'));pager.textContent='';
@@ -80,7 +81,7 @@ if(Number(invoice.has_pix)){var pix=node('button','PIX / QR Code');pix.type='but
 function openChild(title){
  if(!child){
   child=node('dialog');child.className='client-invoice-action-modal';var header=node('header');childTitle=node('h2');childTitle.id='client-invoice-action-title';child.setAttribute('aria-labelledby',childTitle.id);var close=node('button','Voltar às faturas ×');close.type='button';close.addEventListener('click',function(){child.close();});header.append(childTitle,close);childTools=node('div');childTools.className='invoice-action-tools';childStatus=node('p');childStatus.setAttribute('role','status');childBody=node('div');childBody.className='invoice-action-body';child.append(header,childTools,childStatus,childBody);document.body.append(child);
-  child.addEventListener('close',function(){if(childController)childController.abort();if(childFrame)childFrame.src='about:blank';childBody.replaceChildren();if(childRefresh&&modal.open){childRefresh=false;load(currentPage);}});
+  child.addEventListener('close',function(){if(childController)childController.abort();if(childFrame)childFrame.src='about:blank';childBody.replaceChildren();if(childRefresh){financialReturnRefresh=true;childRefresh=false;if(modal.open)load(currentPage);}});
  }
  if(childController)childController.abort();childController=new AbortController();child.className='client-invoice-action-modal';childTitle.textContent=title;childBody.replaceChildren();childTools.replaceChildren();childStatus.textContent='';childFrame=null;childRefresh=false;if(!child.open)child.showModal();
 }

@@ -95,6 +95,19 @@ for ($i = $per_meses - 1; $i >= 0; $i--) {
 }
 
 
+// Annual balance is independent of the rolling monthly charts.
+$annualYear=(int)date('Y');
+$annualStart=$annualYear.'-01-00 00:00:00';
+$annualEnd=($annualYear+1).'-01-01 00:00:00';
+    $annualDue=$loadMonths("SELECT DATE_FORMAT(l.datavenc,'%Y-%m') month_key,SUM(l.valor) fat_previsto,SUM(CASE WHEN l.status NOT LIKE 'pago' THEN l.valor END) f_pagar FROM sis_lanc l LEFT JOIN sis_cliente c ON l.login=c.login WHERE $grupos l.datavenc >= '$annualStart' AND l.datavenc < '$annualEnd' AND l.deltitulo=0 AND c.cli_ativado='s' GROUP BY month_key");
+    $annualPayable=$loadMonths("SELECT DATE_FORMAT(vencimento,'%Y-%m') month_key,SUM(valor) contas_a_pagar FROM sis_contaspagar WHERE vencimento >= '$annualStart' AND vencimento < '$annualEnd' AND status NOT LIKE 'liquidado' GROUP BY month_key");
+    $annualCash=$loadMonths("SELECT DATE_FORMAT(data,'%Y-%m') month_key,SUM(entrada) tot_entrada,SUM(saida) tot_saida,SUM(CASE WHEN historico LIKE 'estorno%' THEN entrada END) estorno_entrada,SUM(CASE WHEN historico LIKE 'estorno%' THEN saida END) estorno_saida,SUM(CASE WHEN historico LIKE 'emprestimo%' OR historico LIKE 'credito emprestimo%' THEN entrada END) emprestimo FROM sis_caixa WHERE data >= '$annualStart' AND data < '$annualEnd' GROUP BY month_key");
+$annualTotals=array('forecast'=>0,'received'=>0,'due'=>0,'payable'=>0,'expenses'=>0,'balance'=>0);
+foreach($annualDue as $row){$annualTotals['forecast']+=(float)$row['fat_previsto'];$annualTotals['due']+=round((float)$row['f_pagar']);}
+foreach($annualPayable as $row)$annualTotals['payable']+=(float)$row['contas_a_pagar'];
+foreach($annualCash as $row){$reversal=(float)$row['estorno_entrada']+(float)$row['estorno_saida'];$annualTotals['received']+=round((float)$row['tot_entrada']-$reversal);$annualTotals['expenses']+=round((float)$row['tot_saida']-$reversal);}
+$annualTotals['balance']=$annualTotals['received']-$annualTotals['expenses'];
+
 //debug($tot_entrada_);
 
 $mes_nome = array(

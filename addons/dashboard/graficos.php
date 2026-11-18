@@ -119,7 +119,7 @@
                                             }
                                         },
                                         title: {
-                                            text: 'Balanço <?php echo "$string_per"; ?>'
+                                            text: 'Balanço anual · <?php echo $annualYear; ?>'
                                         },
                                         xAxis: {
                                             categories: ['Balanço']
@@ -130,27 +130,27 @@
                                         series: [
                                         {
                                             name: 'Previsao Faturamento',
-                                            data: [<?php echo "$tot_fat_previsto,"; ?>]
+                                            data: [<?php echo (float)$annualTotals['forecast']; ?>]
                                         },
                                         {
                                             name: 'Faturamento Realizado',
-                                            data: [<?php echo "$tot_entrada,"; ?>]
+                                            data: [<?php echo (float)$annualTotals['received']; ?>]
                                         },
                                         {
                                             name: 'A receber',
-                                            data: [<?php echo "$tot_a_receber,"; ?>]
+                                            data: [<?php echo (float)$annualTotals['due']; ?>]
                                         },
                                         {
                                             name: 'Contas a Pagar',
-                                            data: [<?php echo "$tot_contas_pagar,"; ?>]
+                                            data: [<?php echo (float)$annualTotals['payable']; ?>]
                                         },
                                         {
                                             name: 'Despesas',
-                                            data: [<?php echo "$tot_saida,"; ?>]
+                                            data: [<?php echo (float)$annualTotals['expenses']; ?>]
                                         },
                                         {
                                             name: 'Lucro / Prejuizo',
-                                            data: [<?php echo "$saldo,"; ?>]
+                                            data: [<?php echo (float)$annualTotals['balance']; ?>]
                                         }
                                     ]
                                     });
@@ -284,7 +284,7 @@
     if ($exb_balanco_clientes == 's') {
 ?>
 
-        <div class='card border-light mb-2'>
+        <div class='card border-light mb-2 mka-client-charts'>
             <div class="card-header text-uppercase">
                 Clientes
             </div>
@@ -452,7 +452,7 @@
                                             text: '<?php echo "Balanço $string_per"; ?>'
                                         },
                                         xAxis: {
-                                            categories: ['Balanço Anual']
+                                            categories: ['Total do período']
                                         },
                                         credits: {
                                             enabled: false

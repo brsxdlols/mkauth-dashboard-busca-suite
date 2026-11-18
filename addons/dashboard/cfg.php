@@ -13,6 +13,13 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['finance_summary_present
     mka_finance_summary_save($conn,$financeVisible);
 }
 $financeSummaryEnabled=mka_finance_summary_enabled($conn);
+if(empty($_SESSION['suite_shortcuts_visible_csrf']))$_SESSION['suite_shortcuts_visible_csrf']=bin2hex(random_bytes(32));
+if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['shortcuts_visible_present'])){
+ if(!permissao('perm_config')||!hash_equals($_SESSION['suite_shortcuts_visible_csrf'],(string)($_POST['shortcuts_visible_csrf']??''))){http_response_code(403);exit('Sessão inválida. Atualize a página.');}
+ $visible=(string)($_POST['shortcuts_visible']??'');if(!in_array($visible,array('s','n'),true)){http_response_code(422);exit('Opção inválida.');}
+ $stmt=$conn->prepare('UPDATE dashboard_am_sis_cfg SET suite_show_shortcuts=? WHERE id=(SELECT id FROM (SELECT MAX(id) id FROM dashboard_am_sis_cfg) latest)');$stmt->bind_param('s',$visible);$stmt->execute();
+}
+$showAllShortcuts=mka_suite_get_show_shortcuts($conn);
 
 require_once __DIR__ . '/../shared/router_monitoring.php';
 if(empty($_SESSION['suite_router_monitoring_csrf']))$_SESSION['suite_router_monitoring_csrf']=bin2hex(random_bytes(32));
@@ -307,7 +314,9 @@ if (isset($_SESSION['MM_Usuario'])) {
 
                 <section class="cfg-card cfg-topic" id="cfg-topic-layout">
                     <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Layout e navegação</h2><p>Escolha o layout e o destino dos atalhos de atendimento.</p></div></div>
-                    <div class="cfg-topic-grid">
+                    <div class="cfg-topic-grid"><input type="hidden" name="shortcuts_visible_present" value="1"><input type="hidden" name="shortcuts_visible_csrf" value="<?=htmlspecialchars($_SESSION['suite_shortcuts_visible_csrf'],ENT_QUOTES,'UTF-8')?>">
+<div class="form-floating cfg-field" id="cfg-shortcuts-field"><select class="form-select" name="shortcuts_visible" id="cfg-shortcuts-visible"><option value="s" <?=$showAllShortcuts?'selected':''?>>SIM</option><option value="n" <?=!$showAllShortcuts?'selected':''?>>NÃO</option></select><label for="cfg-shortcuts-visible">Mostrar todos os atalhos na Dashboard</label><small>Em NÃO, os links ficam no botão Atalhos. Em SIM, também aparecem abaixo dos cards principais.</small></div>
+
 <div class="form-floating cfg-field">
                         <select class="form-select" name="suite_layout_mode" id="suite_layout_mode" aria-label="">
                             <?php

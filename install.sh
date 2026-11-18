@@ -180,7 +180,7 @@ check_online_offline() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
-for addon in rel_clientes graf_faturamento radius rel_cli_offline; do
+for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados; do
   test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
@@ -232,7 +232,7 @@ fi
 bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
 
 echo "[3/8] Instalando arquivos"
-for addon in rel_clientes graf_faturamento radius rel_cli_offline; do
+for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
@@ -256,6 +256,7 @@ cp "${SCRIPT_DIR}/addons/radius/radius.css" "${TARGET_ADDONS_DIR}/radius/suite-l
 cp "${SCRIPT_DIR}/addons/radius/connection_settings_api.php" "${TARGET_ADDONS_DIR}/radius/"
 python3 "${SCRIPT_DIR}/scripts/patch-radius-reader.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-reader-tools"
 python3 "${SCRIPT_DIR}/scripts/install-radius-menu.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-menu"
+python3 "${SCRIPT_DIR}/scripts/install-report-menus.py" "${TARGET_ADMIN_DIR}"
 # Grant only the web user's read access to the RADIUS log, including rotation.
 for web_user in www-data apache; do
   id "$web_user" >/dev/null 2>&1 || continue

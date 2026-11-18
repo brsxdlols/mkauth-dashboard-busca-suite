@@ -11,6 +11,7 @@ $string_per=$per_meses.' meses';
 foreach(array('exb_ticket_medio','exb_saldo_conta','exb_balanco_faturamento','exb_balanco_clientes','exb_balanco_chamados') as $setting) {
     $$setting=isset($settings[$setting]) && trim((string)$settings[$setting])!==''?$settings[$setting]:'s';
 }
+$compact=isset($_GET['compact'])&&$_GET['compact']==='1';
 $multi=mka_suite_get_layout_mode($conn)==='multi';
 if($multi){$exb_balanco_faturamento='s';$exb_balanco_clientes=$exb_balanco_chamados='n';}
 $user=(string)$usuario_logado;
@@ -31,7 +32,7 @@ foreach(array('assunto','tecnico') as $filter)$_GET[$filter]=mysqli_real_escape_
 session_write_close();
 if($hasFinance){
     include __DIR__.'/graf_periodo.php';
-    if(!$multi){
+    if(!$multi&&!$compact){
         include __DIR__.'/cli_periodo.php';
         include __DIR__.'/cli_chamado_per.php';
         include __DIR__.'/cli_planos.php';
@@ -42,7 +43,7 @@ if($hasFinance){
 <title>Gráficos do Dashboard</title><link rel="stylesheet" href="css/bootstrap.css"><link rel="stylesheet" href="css/estilo.css">
 <script src="js/highcharts.js"></script><script src="js/exporting.js"></script>
 <style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}#dashboard-graphs-content{display:flow-root;width:100%}.row{margin-left:0;margin-right:0}.highcharts-figure{margin:0;min-width:0}.card{border-radius:16px;overflow:hidden}.highcharts-description{margin:0}</style>
-</head><body data-mka-graphs-ready>
+<link rel="stylesheet" href="graphs_modern.css?v=20261118-2"><script src="graphs_modern.js?v=20261118-9" defer></script><?php if($compact){?><style>#dashboard-graphs-content>.card:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .card-header{display:none}#dashboard-graphs-content>.card:first-child .row>div:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .row>div:first-child{width:100%;flex:0 0 100%;max-width:100%}</style><?php } ?></head><body data-mka-graphs-ready data-current-month="<?=date('Y-m')?>" data-compact="<?=$compact?'sim':'nao'?>">
 <main id="dashboard-graphs-content">
 <?php include __DIR__.'/graficos.php'; ?>
 </main>

@@ -91,8 +91,10 @@
                 margin: 1em auto;
             }
         </style>
+<link rel="stylesheet" href="suite.css?v=20261117-2"><script src="suite.js?v=20261118-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/addon_header_mobile.css?v=20261118-2">
 </head>
-<body>
+<body class="gf-suite">
 
 
 

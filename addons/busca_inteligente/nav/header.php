@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <?php
 if (isset($_SESSION['MM_Usuario'])) {
-    echo '<html lang="pt-BR">'; // Fix versço antiga MK-AUTH
+    echo '<html data-mka-addon="busca" lang="pt-BR">'; // Fix versço antiga MK-AUTH
 } else {
-    echo '<html lang="pt-BR" class="has-navbar-fixed-top">';
+    echo '<html data-mka-addon="busca" lang="pt-BR" class="has-navbar-fixed-top">';
 }
 ?>
 
@@ -40,22 +40,23 @@ if (isset($_SESSION['MM_Usuario'])) {
 <script src="/admin/addons/shared/visit_agenda.js?v=20261019-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/visit_agenda.css?v=20261019-1">
 <link rel="stylesheet" href="/admin/addons/shared/client_invoices.css?v=20261026-5">
-<script src="/admin/addons/shared/client_invoices.js?v=20261106-1" defer></script>
+<script src="/admin/addons/shared/client_invoices.js?v=20261118-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/additional_connection.css?v=20261020-1">
 <script src="/admin/addons/shared/additional_connection.js?v=20261020-1" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261112-4">
-<script src="/admin/addons/shared/connection_settings.js?v=20261112-4" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/connection_settings.css?v=20261029-9">
+<script src="/admin/addons/shared/connection_settings.js?v=20261029-9" defer></script>
 <script src="/admin/addons/shared/live_client_states.js?v=20261029-1" defer></script>
+<link rel="stylesheet" href="/admin/addons/shared/addon_header_mobile.css?v=20261118-2">
 </head>
 
 <script src="/admin/addons/shared/client_action_status.js?v=20261029-4" defer></script>
 <script src="/admin/addons/shared/client_activation.js?v=20261029-4" defer></script>
 <link rel="stylesheet" href="/admin/addons/shared/client_lifecycle.css?v=20261029-2">
-<script src="/admin/addons/shared/client_lifecycle.js?v=20261029-4" defer></script>
+<script src="/admin/addons/shared/client_lifecycle.js?v=20261117-1" defer></script>
 
 <link rel="stylesheet" href="/admin/addons/shared/client_bulk_block.css?v=20261105-2">
 <script src="/admin/addons/shared/client_bulk_block.js?v=20261105-2" defer></script>
 
-<script src="/admin/addons/shared/client_update_history.js?v=20261112-1" defer></script>
+<script src="/admin/addons/shared/client_mobile_layout.js?v=20261118-4" defer></script>

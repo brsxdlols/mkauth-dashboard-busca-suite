@@ -1,0 +1,7 @@
+<?php
+if(!isset($conn)||!function_exists('permissao')){http_response_code(403);exit;}
+if(!permissao('perm_relFat')||!permissao('perm_numClientes'))return;
+?>
+<link rel="stylesheet" href="/admin/addons/dashboard/client_growth.css?v=20261118-3">
+<section class="mka-growth" data-client-growth aria-label="Ativações e cancelamentos"><header><div><small>CLIENTES · MÊS ATUAL</small><h2>Ativações e cancelamentos</h2></div><a href="/admin/addons/rel_clientes/">Ver relatório →</a></header><div data-growth-summary class="mka-growth-summary"></div><div class="mka-growth-chart-heading"><strong>Últimos 6 meses</strong><span class="mka-growth-legend"><span class="growth-green">● Ativações</span><span class="growth-purple">● Reativações</span><span class="growth-red">● Cancelamentos</span><span class="growth-balance">━ Saldo</span><span class="growth-red">━ Saldo negativo</span></span></div><div data-growth-chart class="mka-growth-chart"></div><p data-growth-status role="status">Carregando movimentações…</p><footer>Ativações: novas instalações pela data do cadastro. Cancelamentos: data de desativação registrada. Reativações: clientes reativados no histórico nativo, uma vez por mês. Saldo = ativações + reativações − cancelamentos. Mês atual parcial; adicionais ficam no relatório completo.</footer></section>
+<script src="/admin/addons/dashboard/client_growth.js?v=20261118-3" defer></script>
