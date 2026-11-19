@@ -18,4 +18,5 @@ if ! sh "$backup/install-all.sh" > "$backup/install.log" 2>&1; then
   echo "[erro] Pacote NFCOM/DICI/Trafego nao concluido; consulte $backup/install.log. Os backups oficiais foram preservados." >&2
   exit 1
 fi
+python3 "$(dirname "${BASH_SOURCE[0]}")/install-nfcom-menu.py" "$admin"
 echo "[nfcom] NFCOM, DICI e Relatorio de Trafego instalados. Log: $backup/install.log"
