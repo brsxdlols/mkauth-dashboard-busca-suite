@@ -3,7 +3,7 @@
 import json, os, pwd, stat, sys
 from pathlib import Path
 
-NAMES = ('dashboard', 'busca_inteligente', 'dashboard-legado', 'busca_inteligente-legado', 'shared')
+NAMES = ('dashboard', 'busca_inteligente', 'dashboard-legado', 'busca_inteligente-legado', 'shared', 'rel_desativados')
 
 def apply(root, backup, owner=None):
     root, backup = Path(root), Path(backup)

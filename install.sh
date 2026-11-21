@@ -180,7 +180,7 @@ check_online_offline() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
-for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados; do
+for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
   test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
@@ -232,7 +232,7 @@ fi
 bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
 
 echo "[3/8] Instalando arquivos"
-for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados; do
+for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
