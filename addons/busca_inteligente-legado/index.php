@@ -166,7 +166,7 @@
 
     $verifica_tabela_vazia = mysqli_query($link, "SELECT * FROM busca_inteligente_cfg");
     if (mysqli_num_rows($verifica_tabela_vazia) == 0) {
-        $ins_table_busca_inteligente_cfg = mysqli_query($link, "INSERT INTO busca_inteligente_cfg VALUES ('1', '50', '60', '80', '', '', 'https://api.whatsapp.com/send?phone=55', 'hhvm', 'mkauth')");
+        $ins_table_busca_inteligente_cfg = mysqli_query($link, "INSERT INTO busca_inteligente_cfg (id,num_conexoes,tempo_queda,porta_acesso,porta_acesso2,porta_acesso3,link_whats,links_ext,check_online) VALUES ('1', '50', '60', '80', '0', '0', 'https://api.whatsapp.com/send?phone=55', 'hhvm', 'mkauth')");
         if (!$ins_table_busca_inteligente_cfg) {
             echo mysqli_error($link);
         }

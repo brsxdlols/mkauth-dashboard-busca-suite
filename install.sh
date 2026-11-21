@@ -319,6 +319,9 @@ PY
   echo '[OK] Regra direta preexistente preservada; nao foi substituida pela regra normalizada.'
 fi
 
+# Seed HHVM once; preserve previously saved native-link preferences.
+php "${SCRIPT_DIR}/scripts/install-native-link-default.php"
+
 echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
