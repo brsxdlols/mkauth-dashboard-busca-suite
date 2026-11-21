@@ -22,7 +22,7 @@ def diagnostic_pools(apache):
     return sorted(pools)
 
 def patched_profile(source):
-    if not re.search(r"/opt/mk-auth/hhvm/[0-9-]+/bin/php-(admin|central)\s*\{", source):
+    if not re.search(r"/opt/mk-auth/hhvm/[0-9-]+/bin/php-(admin|central)(?:\s+flags=\([a-z_, \t]+\))?\s*\{", source):
         raise ValueError("Perfil PHP nativo nao reconhecido.")
     # Replace the initial admin-only hook if it was installed while diagnosing.
     source = source.replace("local/mkauth-suite-php-admin", "local/mkauth-suite-performance")
@@ -37,12 +37,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("backup")
     args = parser.parse_args()
+    print("[apparmor] Verificando perfil PHP do diagnostico.")
     backup = Path(args.backup)
     root = Path("/etc/apparmor.d")
     enabled = Path("/sys/module/apparmor/parameters/enabled")
     loader = shutil.which("apparmor_parser")
     if not (root / "sistema.php-admin").is_file() or not loader or not enabled.is_file() or enabled.read_text().strip() != "Y":
-        print("[desempenho] AppArmor PHP administrativo inativo ou ausente; nenhuma alteracao.")
+        print("[apparmor] AppArmor PHP administrativo inativo ou ausente; nenhuma alteracao.")
         return
     backup.mkdir(parents=True, exist_ok=True)
     apache = Path("/etc/apache2/conf-enabled/admin.conf")
@@ -87,7 +88,11 @@ def main():
             subprocess.run([loader, "-r", "-T", str(profile)], capture_output=True)
         raise
     (backup / "performance-apparmor.json").write_text(json.dumps({"status": "applied", "profiles": [str(p) for p in originals], "include": str(local)}, indent=2))
-    print("[desempenho] AppArmor: arquivos privados do diagnostico autorizados nos processos " + ", ".join(pools) + ".")
+    print("[apparmor] AppArmor: arquivos privados do diagnostico autorizados nos processos " + ", ".join(pools) + ".")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (ValueError, RuntimeError, OSError) as error:
+        print("[aviso] AppArmor preservado: " + str(error))
+        raise SystemExit(1)

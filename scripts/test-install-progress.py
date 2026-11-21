@@ -49,6 +49,22 @@ class Progress(unittest.TestCase):
         self.assertIn('[erro] Instalacao falhou', log)
         self.assertNotIn('[OK] Instalacao concluida', result.stdout)
 
+    def test_traceback_with_zero_exit_is_not_success(self):
+        result, log = self.run_fixture("print('[apparmor] Verificando'); print('Traceback (most recent call last):'); print('ValueError: fixture'); print('[busca] Continuando')")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('ValueError: fixture', result.stdout)
+        self.assertIn('[erro] Compatibilidade AppArmor', result.stdout)
+        self.assertNotIn('[OK] Compatibilidade AppArmor', result.stdout)
+        self.assertNotIn('[OK] Instalacao concluida', result.stdout)
+
+    def test_explicit_optional_warning_is_reported_separately(self):
+        result, log = self.run_fixture("print('[limpeza] Instalada'); print('[apparmor] Verificando'); print('[aviso] Perfil preservado'); print('[busca] Validando')")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn('[OK] Limpeza diaria', result.stdout)
+        self.assertIn('[aviso] Compatibilidade AppArmor', result.stdout)
+        self.assertIn('concluida com avisos', result.stdout)
+        self.assertNotIn('[OK] Compatibilidade AppArmor', result.stdout)
+
     def test_complete_message_is_at_end_of_installer(self):
         source = RUNNER.parent.parent.joinpath('install.sh').read_text()
         self.assertGreater(source.index('[OK] Todas as etapas da suite concluidas'), source.index('scripts/install-invoice-notes.php'))

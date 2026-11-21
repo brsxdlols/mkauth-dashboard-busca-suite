@@ -28,7 +28,7 @@ def phase(line):
              'receber': 'Recebimento', 'ipv6': 'IPv6', 'nfcom': 'NFCom, DICI e Trafego',
              'limpeza': 'Limpeza diaria', 'desempenho': 'Analise de desempenho',
              'busca': 'Validacao da Busca', 'mapa': 'Integracao do Mapa',
-             'monitor': 'Monitor de trafego', 'applications': 'Menus'}
+             'monitor': 'Monitor de trafego', 'applications': 'Menus', 'apparmor': 'Compatibilidade AppArmor'}
     return names.get(match.group(1)) if match else None
 
 
@@ -51,16 +51,20 @@ def main():
     current = 'Preparando instalacao'
     timings = []
     observed = set()
+    phase_error = phase_warning = False
+    error_phases = set()
+    warning_phases = set()
+    traceback_lines = 0
     print('[progresso] Log completo: '+logfile, flush=True)
     with os.fdopen(descriptor, 'w', encoding='utf-8') as log:
         color = (args.terminal or os.environ.get('FORCE_COLOR') == '1') and not os.environ.get('NO_COLOR')
-        def progress(percent, failed=False):
-            label = '[erro]' if failed else ('[OK]' if percent == 100 else '[...]')
+        def progress(percent, failed=False, warning=False):
+            label = '[erro]' if failed else ('[aviso]' if warning and percent == 100 else ('[OK]' if percent == 100 else '[...]'))
             filled = percent//5
             bar = '['+'#'*filled+'-'*(20-filled)+']'
             message = '%s %s %s %d%%%s' % (label, current, bar, percent, ' estimado' if percent < 100 and not failed else '')
             if args.terminal:
-                prefix = '\033[31m' if failed else ('\033[32m' if percent == 100 else '')
+                prefix = '\033[31m' if failed else ('\033[33m' if warning and percent == 100 else ('\033[32m' if percent == 100 else ''))
                 print('\r\033[2K'+(prefix if color else '')+message+('\033[0m' if color else ''),
                       end='\n' if failed or percent == 100 else '', flush=True)
             elif failed or percent == 100:
@@ -89,21 +93,36 @@ def main():
                     now = time.monotonic()
                     budgets = {'Caixa': 26, 'Validando instalacao': 60, 'NFCom, DICI e Trafego': 43, 'Analise de desempenho': 20}
                     budget = budgets.get(current, 10)
-                    progress(min(95, int(100*(now-changed)/(budget+now-changed))))
+                    if not phase_error:
+                        progress(min(95, int(100*(now-changed)/(budget+now-changed))))
                     continue
                 if line is None:
                     break
                 now = time.monotonic()
                 next_phase = phase(line)
                 if next_phase and next_phase != current:
-                    progress(100)
+                    if phase_error: error_phases.add(current)
+                    elif phase_warning: warning_phases.add(current)
+                    progress(0 if phase_error else 100, failed=phase_error, warning=phase_warning)
                     timings.append((current, now-changed))
                     current, changed = next_phase, now
+                    phase_error = phase_warning = False
+                    traceback_lines = 0
                     observed.add(current)
                     progress(0)
                 last_output = now
-                if re.search(r'\[erro\]|\[error\]|fatal error|parse error|traceback|^error:|^erro:', line, re.I):
-                    print(('\033[31m' if color else '')+line.rstrip()+('\033[0m' if color else ''), flush=True)
+                is_error = bool(re.search(r'\[erro\]|\[error\]|fatal error|parse error|traceback|^error:|^erro:', line, re.I))
+                is_warning = '[aviso]' in line.lower()
+                if is_error: phase_error = True
+                if 'Traceback (most recent call last):' in line: traceback_lines = 30
+                trace_detail = traceback_lines > 0 and bool(re.match(r'^\s+File |^[\w.]+(?:Error|Exception|Exit|Interrupt):', line))
+                if is_warning:
+                    phase_warning = True
+                    phase_error = False  # The caller explicitly classified a handled/optional failure.
+                if is_error or is_warning or trace_detail:
+                    if args.terminal: print('\r\033[2K', end='', flush=True)
+                    print(('\033[31m' if color and is_error else ('\033[33m' if color and is_warning else ''))+line.rstrip()+('\033[0m' if color else ''), flush=True)
+                if traceback_lines: traceback_lines -= 1
                 log.write(line)
                 log.flush()
             status = process.wait()
@@ -123,9 +142,13 @@ def main():
                 pass
             return 130
         timings.append((current, time.monotonic()-changed))
-        progress(100 if status == 0 else 0, failed=status != 0)
+        if phase_error: error_phases.add(current)
+        elif phase_warning: warning_phases.add(current)
+        progress(100 if status == 0 and not phase_error else 0, failed=status != 0 or phase_error, warning=phase_warning)
+        if status == 0 and error_phases: status = 1
         elapsed = duration(time.monotonic()-started)
-        summary = ('[OK] Instalacao concluida em '+elapsed if status == 0 else '[erro] Instalacao falhou apos '+elapsed+' (codigo '+str(status)+')')
+        success = ('[aviso] Instalacao concluida com avisos em ' if warning_phases else '[OK] Instalacao concluida em ') + elapsed
+        summary = (success if status == 0 else '[erro] Instalacao falhou apos '+elapsed+' (codigo '+str(status)+')')
         print(('\033[32m' if status == 0 and color else ('\033[31m' if color else ''))+summary+('\033[0m' if color else ''), flush=True)
         log.write(summary+'\n')
         for name, seconds in sorted(timings, key=lambda row: row[1], reverse=True)[:5]:

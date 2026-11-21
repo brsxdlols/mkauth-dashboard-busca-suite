@@ -24,6 +24,17 @@ class PerformancePolicyTests(unittest.TestCase):
         self.assertNotIn(" ix", module.RULES)
         self.assertIn("owner /var/lib/mkauth-suite-performance/*.json rwk,", module.RULES)
 
+    def test_native_attach_disconnected_flag_is_preserved(self):
+        for pool in ["admin", "central"]:
+            original = '/opt/mk-auth/hhvm/8-0-30/bin/php-' + pool + ' flags=(attach_disconnected) {\n audit deny network inet,\n /opt/mk-auth/** mrwlkix,\n}\n'
+            patched = module.patched_profile(original)
+            self.assertEqual(patched.replace("\n" + module.INCLUDE, ""), original)
+            self.assertEqual(module.patched_profile(patched), patched)
+
+    def test_unrecognized_profile_is_rejected(self):
+        with self.assertRaises(ValueError):
+            module.patched_profile('/usr/bin/unrelated {\n}\n')
+
     def test_initial_admin_hook_migrates(self):
         old = '/opt/mk-auth/hhvm/8-0-30/bin/php-admin {\n #include if exists <local/mkauth-suite-php-admin>\n}\n'
         patched = module.patched_profile(old)
