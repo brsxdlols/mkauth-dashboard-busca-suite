@@ -22,7 +22,7 @@ if (!class_exists('MkaRouterosMiniApi')) {
             // Login moderno (RouterOS 6.43+).
             $this->writeSentence(array('/login', '=name=' . $user, '=password=' . $pass));
             $reply = $this->readReply();
-            if ($this->hasDone($reply)) return true;
+            if ($this->hasDone($reply) && $this->findRet($reply) === '') return true;
 
             // Compatibilidade com o desafio utilizado por versões antigas.
             $challenge = $this->findRet($reply);
@@ -30,7 +30,7 @@ if (!class_exists('MkaRouterosMiniApi')) {
                 $response = '00' . md5(chr(0) . $pass . pack('H*', $challenge));
                 $this->writeSentence(array('/login', '=name=' . $user, '=response=' . $response));
                 $reply = $this->readReply();
-                if ($this->hasDone($reply)) return true;
+                if ($this->hasDone($reply) && $this->findRet($reply) === '') return true;
             }
 
             $this->disconnect();
@@ -45,10 +45,13 @@ if (!class_exists('MkaRouterosMiniApi')) {
 
         private function hasDone($reply)
         {
+            $done = false;
             foreach ($reply as $sentence) {
-                if (isset($sentence[0]) && $sentence[0] === '!done') return true;
+                if (!isset($sentence[0])) continue;
+                if ($sentence[0] === '!trap' || $sentence[0] === '!fatal') return false;
+                if ($sentence[0] === '!done') $done = true;
             }
-            return false;
+            return $done;
         }
 
         private function findRet($reply)

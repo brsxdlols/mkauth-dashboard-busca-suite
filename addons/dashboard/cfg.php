@@ -621,7 +621,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                     </div>
 <div class="form-floating cfg-field">
                         <input type="number" name="popup_clientes_sessao_duracao" class="form-control" id="popup_clientes_sessao_duracao" placeholder="3" min="1" max="15" step="1" value="<?php echo (int) $popup_clientes_sessao_duracao; ?>">
-                        <label for="popup_clientes_sessao_duracao">Tempo do Popup (s)</label>
+                        <label for="popup_clientes_sessao_duracao">Duração do popup (segundos)</label>
+                        <small class="d-block text-muted mt-1">Tempo que o aviso de conexão ou desconexão fica na tela antes de fechar automaticamente. Ex.: 2 = 2 segundos (de 1 a 15).</small>
                     </div>
 <div class="form-floating cfg-field">
                         <select class="form-select" name="ip_conflict_alert_enabled" id="ip_conflict_alert_enabled">
@@ -647,7 +648,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <select class="form-select" id="payment_notifications_enabled" disabled><option value="1">Sim</option><option value="0">Não</option></select>
                         <label for="payment_notifications_enabled">Exibir notificações de pagamento?</label>
                         <small id="payment-preference-status" role="status">Salvo automaticamente para seu usuário.</small>
-                        <script src="../shared/payment_preferences.js?v=20261007b" defer></script>
+                        <script src="../shared/payment_preferences.js?v=20261121-segundos" defer></script>
                     </div>
                     </div>
                 </section>
