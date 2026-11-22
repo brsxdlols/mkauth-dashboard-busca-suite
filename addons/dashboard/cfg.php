@@ -57,6 +57,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <script src="../../scripts/mk-auth.js"></script>
 
     <link href="css/estilo.css" rel="stylesheet" type="text/css" />
+    <link href="../shared/addon_header_mobile.css?v=20261122-cfg-1" rel="stylesheet" type="text/css" />
     <style>
         :root {
             --cfg-primary: #1769e8;
@@ -64,7 +65,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             --cfg-border: #dce6f2;
             --cfg-text: #17324f;
             --cfg-muted: #6f8195;
-            --cfg-bg: #f5f8fc;
+            --cfg-bg: #ffffff;
         }
         body { background: var(--cfg-bg); }
         .cfg-shell { max-width: 1640px; margin: 0 auto; padding: 24px 18px 42px; }
@@ -191,7 +192,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 </head>
 
-<body>
+<body class="mka-dashboard-config">
 
     <?php include("../../topo.php"); ?>
 

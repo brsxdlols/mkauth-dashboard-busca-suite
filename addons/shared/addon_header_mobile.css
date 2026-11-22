@@ -1,14 +1,14 @@
 /* Scoped native header sizing for Busca Inteligente and Faturamento only. */
 @media screen and (max-width:900px){
-:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #sistema-corpo2{min-width:0;max-width:100%;}
-:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #systopo{width:100%;min-width:0;max-width:100%;}
-:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #systopo > .level-item{flex:1 1 0;min-width:0;}
-:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #systopo > .level-item > div{width:100%;min-width:0;}
-:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #systopo #UUE_NProvedor{white-space:normal;overflow-wrap:anywhere;}
+:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #sistema-corpo2{min-width:0;max-width:100%;}
+:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #systopo{width:100%;min-width:0;max-width:100%;}
+:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #systopo > .level-item{flex:1 1 0;min-width:0;}
+:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #systopo > .level-item > div{width:100%;min-width:0;}
+:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #systopo #UUE_NProvedor{white-space:normal;overflow-wrap:anywhere;}
 }
 
-@media screen and (max-width:900px){:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #container-sistema{width:100%;min-width:0;max-width:100%}:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #principal{min-width:0;max-width:100%}}
+@media screen and (max-width:900px){:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #container-sistema{width:100%;min-width:0;max-width:100%}:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #principal{min-width:0;max-width:100%}}
 
-@media screen and (max-width:900px){:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #sistema-corpo2>section>.columns{margin-left:0;margin-right:0;min-width:0;max-width:100%}}
+@media screen and (max-width:900px){:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #sistema-corpo2>section>.columns{margin-left:0;margin-right:0;min-width:0;max-width:100%}}
 
-@media screen and (max-width:900px){:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite) #sistema-rodape .columns{margin-left:0;margin-right:0;min-width:0;max-width:100%}}
+@media screen and (max-width:900px){:is(html[data-mka-addon="busca"],body.gf-suite,body.rp-body,body.off-suite,body.rb-suite,body.mka-dashboard-config) #sistema-rodape .columns{margin-left:0;margin-right:0;min-width:0;max-width:100%}}
