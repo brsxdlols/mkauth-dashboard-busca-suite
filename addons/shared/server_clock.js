@@ -3,8 +3,8 @@ let base=0,mono=0,zone='America/Sao_Paulo',state=null,csrf='',canRepair=false,al
 const url='/admin/addons/dashboard/time_status.php';
 function node(tag,text){const n=document.createElement(tag);if(text)n.textContent=text;return n;}
 function mount(){if(clock&&clock.isConnected)return;const access=document.getElementById('UUE_Data');if(!access)return;
- const host=access.closest('p')||access.parentElement;const wrap=node('span');wrap.style.cssText='display:block;margin-top:5px';
- const label=node('span','HORÁRIO DO SERVIDOR');label.className='is-size-7 has-text-weight-bold';clock=node('span','Consultando…');clock.className='subtitle is-6';clock.style.cssText='display:block;margin:0;white-space:nowrap';clock.title='Relógio do servidor MK-AUTH. Clique para ver o diagnóstico.';clock.style.cursor='pointer';clock.onclick=()=>show(true);wrap.append(label,clock);host.append(wrap);tick();}
+ const accessColumn=access.closest('.level-item');if(!accessColumn)return;const column=node('div');column.className=accessColumn.className;column.id='mka-server-clock-column';const wrap=node('div');wrap.style.cssText='white-space:nowrap';column.append(wrap);
+ const label=node('span','HORÁRIO DO SERVIDOR');label.className='is-size-7 has-text-weight-bold';clock=node('span','Consultando…');clock.className='subtitle is-6';clock.style.cssText='display:block;margin:0;white-space:nowrap';clock.title='Relógio do servidor MK-AUTH. Clique para ver o diagnóstico.';clock.style.cursor='pointer';clock.onclick=()=>show(true);wrap.append(label,clock);accessColumn.parentElement.insertBefore(column,accessColumn);tick();}
 function tick(){mount();if(!clock||!base)return;const d=new Date(base+performance.now()-mono);try{clock.textContent=new Intl.DateTimeFormat('pt-BR',{timeZone:zone,day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);}catch(e){clock.textContent='Fuso indisponível';}}
 function explain(){if(!state)return 'O monitor ainda não foi instalado ou não gerou o primeiro diagnóstico.';
  const s=state,offset=s.offset_seconds;
