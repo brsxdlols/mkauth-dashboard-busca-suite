@@ -4,6 +4,12 @@ import os,json,time,socket,struct,statistics,subprocess,shutil,fcntl,re,tempfile
 from pathlib import Path
 STATE=Path('/opt/mk-auth/dados/suite-time-monitor')
 SERVERS=('a.ntp.br','b.ntp.br','c.ntp.br')
+FALLBACK_CRON=Path('/etc/cron.d/mkauth-time-sync')
+FALLBACK_MARKER='# MKA-SUITE-NTPDATE-FALLBACK'
+def fallback_client():return shutil.which('ntpdate',path='/usr/sbin:/usr/bin:/sbin:/bin')
+def fallback_scheduled():
+    try:return not FALLBACK_CRON.is_symlink() and FALLBACK_MARKER in FALLBACK_CRON.read_text() and bool(fallback_client())
+    except OSError:return False
 ADMIN_PATH='/usr/sbin:/usr/bin:/sbin:/bin'
 def configure_environment():
     # cron normally lacks sbin; missing service is not proof a daemon stopped.
@@ -32,11 +38,15 @@ def diagnose(query=sample):
         try:
             if subprocess.run(['service',name,'status'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=3).returncode==0:active.append(name)
         except (OSError,subprocess.TimeoutExpired):pass
+    if not active and fallback_scheduled():
+        try:
+            if subprocess.run(['service','cron','status'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=3).returncode==0:active.append('ntpdate (programado)')
+        except (OSError,subprocess.TimeoutExpired):pass
     zonefile=Path('/etc/localtime').resolve()
     timezone=str(zonefile).split('/zoneinfo/')[-1] if '/zoneinfo/' in str(zonefile) else 'Nao identificado'
     import datetime
     linux_offset=int(datetime.datetime.now().astimezone().utcoffset().total_seconds())
-    return dict(system_timezone=timezone,system_utc_offset=linux_offset,checked_at=time.time(),offset_seconds=round(offset,2) if offset is not None else None,reference_count=len(agree),services=services,active_services=active,issue='unverified' if offset is None else ('clock_offset' if abs(offset)>60 else ('service_inactive' if not active else 'ok')))
+    return dict(system_timezone=timezone,system_utc_offset=linux_offset,checked_at=time.time(),offset_seconds=round(offset,2) if offset is not None else None,reference_count=len(agree),services=services,active_services=active,issue='unverified' if offset is None else ('clock_offset' if abs(offset)>600 else ('service_inactive' if not active else 'ok')))
 
 def command(args):
     p=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=50,universal_newlines=True)
@@ -126,6 +136,19 @@ def timezone_config_is_correct(state):
         if result.returncode or result.stdout.strip()!=str(hours*3600):return False
     return True
 
+def install_fallback_schedule(backup):
+    if FALLBACK_CRON.is_symlink():raise RuntimeError('Agendamento simbolico preservado.')
+    if FALLBACK_CRON.exists():
+        if FALLBACK_MARKER not in FALLBACK_CRON.read_text():raise RuntimeError('Agendamento existente nao reconhecido; preservado.')
+        shutil.copy2(str(FALLBACK_CRON),str(Path(backup)/'ntpdate-cron-before'))
+    data=FALLBACK_MARKER+'\n*/30 * * * * root /usr/bin/python3 /usr/local/lib/mkauth-suite/time-monitor.py --sync-existing-client >> /var/log/mkauth-time-monitor.log 2>&1\n'
+    fd,name=tempfile.mkstemp(prefix='.mka-time-sync-',dir=str(FALLBACK_CRON.parent))
+    try:
+        with os.fdopen(fd,'w') as f:f.write(data)
+        os.chmod(name,0o644);os.replace(name,str(FALLBACK_CRON))
+    finally:
+        if os.path.exists(name):os.unlink(name)
+
 def repair(state,progress=None):
     progress=progress or (lambda label,percent:None)
     progress("Conferindo localidade e configuracoes",20)
@@ -133,11 +156,16 @@ def repair(state,progress=None):
         progress('Tudo correto; nenhuma alteracao necessaria',100)
         return dict(no_change=True)
     if len(state['active_services'])>1:raise RuntimeError('Mais de um sincronizador ativo; revise a configuracao antes de corrigir.')
-    services=state['active_services'] or state['services']
-    if not services:raise RuntimeError('Nenhum sincronizador instalado. Instale/configure o servico NTP do sistema pelo suporte.')
+    services=[name for name in state['active_services'] if name in state['services']] or state['services']
+    client=fallback_client() if not services else None
+    if not services and not client:raise RuntimeError('Nenhum servico ou cliente NTP instalado. Nao e possivel sincronizar automaticamente neste servidor.')
     progress("Criando backup e ajustando fusos Linux/PHP",40)
     timezone_result=configure_timezones()
     progress("Sincronizando o relogio com NTP",65)
+    if client:
+        command([client,'-u']+list(SERVERS));install_fallback_schedule(timezone_result['timezone_backup'])
+        progress('Validando sincronizacao NTP programada',85)
+        return dict(timezone_result,sync_mode='ntpdate_programado')
     name=services[0]
     if name in ('chrony','chronyd'):
         command(['service',name,'start']);command(['chronyc','online']);command(['chronyc','burst','4/4']);command(['chronyc','waitsync','10']);command(['chronyc','makestep'])
@@ -164,14 +192,18 @@ def write_status(data):
     os.chmod(str(stage),0o644);os.replace(str(stage),str(STATE/'status.json'))
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--diagnose-only',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--diagnose-only',action='store_true');parser.add_argument('--sync-existing-client',action='store_true');args=parser.parse_args()
     configure_environment()
     if os.geteuid()!=0:raise SystemExit('Execute como root')
     if STATE.is_symlink():raise RuntimeError('Diretorio simbolico recusado')
     with open('/run/mkauth-time-monitor.lock','w') as lock:
         try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError:return
-        state=diagnose();request=STATE/'request.json'
+        state=diagnose()
+        if args.sync_existing_client:
+            if fallback_scheduled() and not any(name in state['services'] for name in state['active_services']):command([fallback_client(),'-u']+list(SERVERS))
+            return
+        request=STATE/'request.json'
         if request.exists() and not request.is_symlink() and not args.diagnose_only:
             try:
                 if request.stat().st_size>1024:raise ValueError('Pedido invalido')

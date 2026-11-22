@@ -7,13 +7,17 @@ def load(name):
 m=load('time-monitor');installer=load('install-time-monitor')
 class Tests(unittest.TestCase):
  def diagnose(self,values):
-  with patch.object(m.Path,'is_file',return_value=False):return m.diagnose(lambda host:values[m.SERVERS.index(host)])
+  with patch.object(m.Path,'is_file',return_value=False),patch.object(m,'fallback_scheduled',return_value=False):return m.diagnose(lambda host:values[m.SERVERS.index(host)])
  def test_agreement_discards_outlier(self):
   d=self.diagnose([-3600,-3601,7200]);self.assertEqual(d['issue'],'clock_offset');self.assertEqual(d['offset_seconds'],-3600.5)
  def test_no_agreement_is_not_firewall_diagnosis(self):self.assertEqual(self.diagnose([0,90,180])['issue'],'unverified')
+ def test_clock_alert_only_above_ten_minutes(self):
+  self.assertNotEqual(self.diagnose([600,600,600])['issue'],'clock_offset')
+  self.assertEqual(self.diagnose([601,601,601])['issue'],'clock_offset')
  def test_stopped_service(self):self.assertEqual(self.diagnose([0,0,0])['issue'],'service_inactive')
  def test_no_installed_service_refuses_repair(self):
-  with self.assertRaisesRegex(RuntimeError,'Nenhum'):m.repair(dict(active_services=[],services=[]))
+  with patch.object(m,'fallback_client',return_value=None):
+   with self.assertRaisesRegex(RuntimeError,'Nenhum'):m.repair(dict(active_services=[],services=[]))
  def test_multiple_services_refuses_repair(self):
   with self.assertRaisesRegex(RuntimeError,'Mais de um'):m.repair(dict(active_services=['ntp','chrony'],services=['ntp','chrony']))
  def test_failed_one_shot_restores_daemon(self):
@@ -51,6 +55,20 @@ class Tests(unittest.TestCase):
  def test_repair_skips_already_correct_server(self):
   with patch.object(m,'timezone_config_is_correct',return_value=True),patch.object(m,'command') as command:
    result=m.repair({'issue':'ok'});self.assertTrue(result['no_change']);command.assert_not_called()
+ def test_existing_ntpdate_is_used_without_installing_a_daemon(self):
+  with patch.object(m,'fallback_client',return_value='/usr/sbin/ntpdate'),patch.object(m,'configure_timezones',return_value={'timezone_backup':'fixture'}),patch.object(m,'command') as command,patch.object(m,'install_fallback_schedule') as schedule:
+   result=m.repair({'active_services':[],'services':[]});self.assertEqual(result['sync_mode'],'ntpdate_programado');self.assertEqual(command.call_args[0][0][0],'/usr/sbin/ntpdate');schedule.assert_called_once_with('fixture')
+ def test_fallback_schedule_preserves_unknown_cron(self):
+  with tempfile.TemporaryDirectory() as d:
+   file=Path(d)/'cron';file.write_text('custom configuration')
+   with patch.object(m,'FALLBACK_CRON',file):
+    with self.assertRaises(RuntimeError):m.install_fallback_schedule(Path(d))
+   self.assertEqual(file.read_text(),'custom configuration')
+ def test_fallback_schedule_is_managed_and_reversible(self):
+  with tempfile.TemporaryDirectory() as d:
+   file=Path(d)/'cron'
+   with patch.object(m,'FALLBACK_CRON',file):m.install_fallback_schedule(Path(d))
+   self.assertIn('--sync-existing-client',file.read_text());self.assertIn(m.FALLBACK_MARKER,file.read_text())
  def test_loader_preserves_custom_and_is_idempotent(self):
   s=b'// custom\n';first=installer.patch(s);self.assertTrue(first.startswith(s));self.assertEqual(installer.patch(first),first)
 if __name__=='__main__':unittest.main()

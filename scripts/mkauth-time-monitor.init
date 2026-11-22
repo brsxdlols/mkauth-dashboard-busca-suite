@@ -1,0 +1,19 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides: mkauth-time-monitor
+# Required-Start: $remote_fs $network
+# Required-Stop: $remote_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: MK-AUTH time diagnostic queue
+### END INIT INFO
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+PID=/run/mkauth-time-monitor.pid
+SCRIPT=/usr/local/lib/mkauth-suite/time-monitor-service.py
+case "$1" in
+ start) start-stop-daemon --start --quiet --oknodo --background --make-pidfile --pidfile "$PID" --startas /usr/bin/python3 -- "$SCRIPT" >> /var/log/mkauth-time-monitor.log 2>&1 ;;
+ stop) start-stop-daemon --stop --quiet --oknodo --pidfile "$PID" --retry TERM/10/KILL/5 --exec /usr/bin/python3 ;;
+ restart) "$0" stop; "$0" start ;;
+ status) test -s "$PID" && kill -0 "$(cat "$PID")" 2>/dev/null ;;
+ *) echo "Uso: $0 {start|stop|restart|status}";exit 2 ;;
+esac
