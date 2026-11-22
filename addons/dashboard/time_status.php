@@ -7,6 +7,12 @@ $csrf=$_SESSION['suite_time_csrf'];session_write_close();
 $dir='/opt/mk-auth/dados/suite-time-monitor';$method=$_SERVER['REQUEST_METHOD'];
 if($method==='POST'){
  if(!$allowed||!hash_equals($csrf,(string)($_POST['csrf']??''))){http_response_code(403);exit(json_encode(array('error'=>'Permissao ou sessao invalida.')));}
+ if(($_POST['action']??'')==='settings'){
+  $enabled=(string)($_POST['enabled']??'');if(!in_array($enabled,array('s','n'),true)){http_response_code(400);exit;}
+  $q=$conn->prepare("INSERT INTO sis_opcao(nome,valor) VALUES('suite_time_alert_enabled',?) ON DUPLICATE KEY UPDATE valor=VALUES(valor)");$q->bind_param('s',$enabled);
+  if(!$q->execute()){http_response_code(503);exit(json_encode(array('error'=>'Nao foi possivel salvar a preferencia.')));}
+  echo json_encode(array('saved'=>true,'enabled'=>$enabled==='s'));exit;
+ }
  if(($_POST['action']??'')!=='repair'){http_response_code(400);exit;}
  $previous=is_file($dir.'/status.json')?json_decode((string)file_get_contents($dir.'/status.json'),true):null;
  if(is_array($previous)&&($previous['repair_status']??'')==='running'){http_response_code(409);exit(json_encode(array('error'=>'Uma correcao ja esta em execucao. Aguarde o resultado.')));}
@@ -39,4 +45,5 @@ if(is_array($state)&&$expectedOffset!==null){
   else $state['repair_message']='Correcao verificada: relogio sincronizado e fusos Linux/PHP de acordo com a localidade do provedor.';
  }
 }
-echo json_encode(array('epoch_ms'=>round(microtime(true)*1000),'timezone'=>date_default_timezone_get(),'alert_enabled'=>mka_suite_get_radius_alert_enabled($conn)==='s','can_repair'=>$allowed,'csrf'=>$allowed?$csrf:null,'status'=>$state,'configuration'=>$config),JSON_UNESCAPED_UNICODE);
+$timeAlert=true;$q=@mysqli_query($conn,"SELECT valor FROM sis_opcao WHERE nome='suite_time_alert_enabled' LIMIT 1");if($q&&($pref=mysqli_fetch_assoc($q)))$timeAlert=$pref['valor']!=='n';
+echo json_encode(array('epoch_ms'=>round(microtime(true)*1000),'timezone'=>date_default_timezone_get(),'alert_enabled'=>$timeAlert,'can_repair'=>$allowed,'csrf'=>$allowed?$csrf:null,'status'=>$state,'configuration'=>$config),JSON_UNESCAPED_UNICODE);
