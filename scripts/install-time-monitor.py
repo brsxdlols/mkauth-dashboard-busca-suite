@@ -3,7 +3,7 @@ import os,sys,re,shutil,subprocess,grp
 from pathlib import Path
 START=b'/* MKA-SUITE-TIME-START */'
 END=b'/* MKA-SUITE-TIME-END */'
-BLOCK=START+b"\n;(function(){if(window.mkaTimeLoader)return;window.mkaTimeLoader=true;var s=document.createElement('script');s.src='/admin/addons/shared/server_clock.js?v=20261122-8';s.defer=true;document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(window.mkaTimeLoader)return;window.mkaTimeLoader=true;var s=document.createElement('script');s.src='/admin/addons/shared/server_clock.js?v=20261122-9';s.defer=true;document.head.appendChild(s);})();\n"+END+b'\n'
 def patch(source):
     source=re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',source,flags=re.S)
     return source+(b'\n' if source and not source.endswith(b'\n') else b'')+BLOCK

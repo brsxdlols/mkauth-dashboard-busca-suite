@@ -54,6 +54,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css" />
 
     <script src="../../scripts/jquery.js"></script>
+    <script src="../shared/server_clock.js?v=20261122-9"></script>
     <script src="../../scripts/mk-auth.js"></script>
 
     <link href="css/estilo.css" rel="stylesheet" type="text/css" />
@@ -310,7 +311,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <h1>Configurações do Dashboard</h1>
                         <p>Personalize os indicadores, alertas e recursos exibidos no sistema.</p>
                     </div>
-                    <div class="cfg-performance-actions"><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a><span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span></div>
+                    <div class="cfg-performance-actions"><a href="#mka-time-settings" class="mka-performance-launch">Horário e NTP</a><a href="../busca_inteligente/performance.php" class="mka-performance-launch" data-mka-performance>Executar an&aacute;lise de desempenho</a><span class="cfg-badge"><i class="fa fa-check-circle"></i> Sistema configurável</span></div>
                 </div>
 
                 <section class="cfg-card cfg-topic" id="cfg-topic-layout">
