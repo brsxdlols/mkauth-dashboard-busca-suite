@@ -3,7 +3,7 @@ import os,sys,re,shutil,subprocess,grp
 from pathlib import Path
 START=b'/* MKA-SUITE-TIME-START */'
 END=b'/* MKA-SUITE-TIME-END */'
-BLOCK=START+b"\n;(function(){if(window.mkaTimeLoader)return;window.mkaTimeLoader=true;var s=document.createElement('script');s.src='/admin/addons/shared/server_clock.js?v=20261122-12';s.defer=true;document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(window.mkaTimeLoader)return;window.mkaTimeLoader=true;var s=document.createElement('script');s.src='/admin/addons/shared/server_clock.js?v=20261122-13';s.defer=true;document.head.appendChild(s);})();\n"+END+b'\n'
 def patch(source):
     source=re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',source,flags=re.S)
     return source+(b'\n' if source and not source.endswith(b'\n') else b'')+BLOCK
@@ -15,7 +15,7 @@ def main():
     backup.mkdir(parents=True,exist_ok=True)
     cfg=admin/'addons/dashboard/cfg.php'
     if cfg.is_file() and not cfg.is_symlink():
-        old=cfg.read_bytes();new=re.sub(rb'server_clock\.js\?v=20261122-[0-9]+',b'server_clock.js?v=20261122-12',old)
+        old=cfg.read_bytes();new=re.sub(rb'server_clock\.js\?v=20261122-[0-9]+',b'server_clock.js?v=20261122-13',old)
         if new!=old:shutil.copy2(str(cfg),str(backup/'cfg-time-version-before.php'));cfg.write_bytes(new)
     for rel in ('addons/addon.js','scripts/mk-auth.js'):
         p=admin/rel
