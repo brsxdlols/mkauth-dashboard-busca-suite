@@ -45,6 +45,9 @@ class Tests(unittest.TestCase):
    with patch.object(m.os,'replace',side_effect=fail_once):
     with self.assertRaises(OSError):m.apply_timezone_files({a:'new'},z,'newzone',local,tz,root)
    self.assertEqual(a.read_text(),'old');self.assertTrue(local.is_symlink());self.assertEqual(os.readlink(local),str(old));self.assertEqual(z.read_text(),'zone bytes');self.assertEqual(tz.read_text(),'old zone')
+ def test_cron_environment_restores_administrative_path(self):
+  with patch.dict(os.environ,{'PATH':'/usr/bin:/bin'}):
+   m.configure_environment();self.assertEqual(os.environ['PATH'],'/usr/sbin:/usr/bin:/sbin:/bin')
  def test_loader_preserves_custom_and_is_idempotent(self):
   s=b'// custom\n';first=installer.patch(s);self.assertTrue(first.startswith(s));self.assertEqual(installer.patch(first),first)
 if __name__=='__main__':unittest.main()

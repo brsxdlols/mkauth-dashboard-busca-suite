@@ -4,6 +4,10 @@ import os,json,time,socket,struct,statistics,subprocess,shutil,fcntl,re,tempfile
 from pathlib import Path
 STATE=Path('/opt/mk-auth/dados/suite-time-monitor')
 SERVERS=('a.ntp.br','b.ntp.br','c.ntp.br')
+ADMIN_PATH='/usr/sbin:/usr/bin:/sbin:/bin'
+def configure_environment():
+    # cron normally lacks sbin; missing service is not proof a daemon stopped.
+    os.environ['PATH']=ADMIN_PATH
 def sample(host):
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as s:
         s.settimeout(2);s.connect((socket.gethostbyname(host),123))
@@ -140,6 +144,7 @@ def write_status(data):
     os.chmod(str(stage),0o644);os.replace(str(stage),str(STATE/'status.json'))
 
 def main():
+    configure_environment()
     if os.geteuid()!=0:raise SystemExit('Execute como root')
     if STATE.is_symlink():raise RuntimeError('Diretorio simbolico recusado')
     with open('/run/mkauth-time-monitor.lock','w') as lock:
