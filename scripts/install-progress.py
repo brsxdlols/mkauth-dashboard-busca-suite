@@ -26,7 +26,7 @@ def phase(line):
              'reconcile': 'Reconciliador online/offline', 'checagem': 'Conferencia online/offline',
              'visitas': 'Visitas', 'atendimentos': 'Atendimentos', 'offline': 'Relatorio offline',
              'receber': 'Recebimento', 'ipv6': 'IPv6', 'nfcom': 'NFCom, DICI e Trafego',
-             'limpeza': 'Limpeza diaria', 'desempenho': 'Analise de desempenho',
+             'limpeza': 'Limpeza diaria', 'horario': 'Diagnostico de horario', 'desempenho': 'Analise de desempenho',
              'busca': 'Validacao da Busca', 'mapa': 'Integracao do Mapa',
              'monitor': 'Monitor de trafego', 'applications': 'Menus', 'apparmor': 'Compatibilidade AppArmor'}
     return names.get(match.group(1)) if match else None

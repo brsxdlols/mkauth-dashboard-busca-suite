@@ -1,0 +1,32 @@
+(function(){'use strict';if(window.mkaServerClockLoaded)return;window.mkaServerClockLoaded=true;
+let base=0,mono=0,zone='America/Sao_Paulo',state=null,csrf='',canRepair=false,alertEnabled=true,clock=null,card=null,dismissed=false,pendingId=null;
+const url='/admin/addons/dashboard/time_status.php';
+function node(tag,text){const n=document.createElement(tag);if(text)n.textContent=text;return n;}
+function mount(){if(clock&&clock.isConnected)return;const access=document.getElementById('UUE_Data');if(!access)return;
+ const host=access.closest('p')||access.parentElement;const wrap=node('span');wrap.style.cssText='display:block;margin-top:5px';
+ const label=node('span','HORÁRIO DO SERVIDOR');label.className='is-size-7 has-text-weight-bold';clock=node('span','Consultando…');clock.className='subtitle is-6';clock.style.cssText='display:block;margin:0;white-space:nowrap';clock.title='Relógio do servidor MK-AUTH. Clique para ver o diagnóstico.';clock.style.cursor='pointer';clock.onclick=()=>show(true);wrap.append(label,clock);host.append(wrap);tick();}
+function tick(){mount();if(!clock||!base)return;const d=new Date(base+performance.now()-mono);try{clock.textContent=new Intl.DateTimeFormat('pt-BR',{timeZone:zone,day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);}catch(e){clock.textContent='Fuso indisponível';}}
+function explain(){if(!state)return 'O monitor ainda não foi instalado ou não gerou o primeiro diagnóstico.';
+ const s=state,offset=s.offset_seconds;
+ const diff=offset==null?'Não foi possível confirmar o horário com duas referências NTP.':Math.abs(offset)<=60?'Horário dentro da tolerância de 60 segundos.':'O servidor está '+(offset<0?'adiantado':'atrasado')+' aproximadamente '+Math.round(Math.abs(offset))+' segundos em relação às referências NTP.';
+ return diff+' Sincronização: '+(s.active_services.length?s.active_services.join(', ')+' ativo.':'nenhum serviço ativo identificado.')+' Diferenças de horário podem fazer sessões RADIUS recentes parecerem antigas e alterar a contagem online/offline. Confira o estado/localização em Provedor → Dados do provedor, o acesso à internet, DNS e UDP 123. A correção usa o sincronizador já instalado, preserva sua configuração e pode ajustar o relógio imediatamente. Não altera senhas, sessões, firewall nem registros históricos.';}
+function show(force){if(!force&&(dismissed||!alertEnabled||!state||state.issue==='ok')){if(state&&state.issue==='ok'&&card&&!pendingId){card.remove();card=null;}return;}
+ if(!card){let root=document.getElementById('dashboard-session-toast-stack');if(!root){root=node('div');root.id='mka-server-time-alerts';root.style.cssText='position:fixed;bottom:18px;right:18px;z-index:1050;width:min(360px,calc(100vw - 36px))';document.body.append(root);}
+ card=node('section');card.setAttribute('role','status');card.style.cssText='background:white;color:#17334f;border:1px solid #d5e2f3;border-radius:14px;padding:16px;box-shadow:0 8px 30px #1233;margin-top:10px;font-family:inherit;font-size:13px;line-height:1.5';
+ const close=node('button','×');close.type='button';close.setAttribute('aria-label','Fechar alerta de horário');close.style.cssText='float:right;border:0;background:none;color:inherit';close.onclick=()=>{dismissed=true;card.remove();card=null;};
+ const title=node('strong','Integração RADIUS — horário do servidor');const summary=node('p');summary.dataset.timeSummary='';
+ const details=node('details');details.append(node('summary','Ver mais / Como corrigir'));const body=node('p');body.dataset.timeDetails='';details.append(body);
+ const result=node('p');result.dataset.timeResult='';result.setAttribute('aria-live','polite');
+ const button=node('button','Corrigir sincronização');button.type='button';button.className='btn btn-primary';button.style.cssText='margin-top:10px;background:#1765df;color:#fff;border:0;border-radius:7px;padding:9px 12px;font:inherit;cursor:pointer';button.dataset.timeRepair='';button.onclick=repair;
+ card.append(close,title,summary,details,button,result);root.append(card);if(force)details.open=true;}
+ card.querySelector('[data-time-summary]').textContent=!state?'Diagnóstico indisponível.':state.issue==='ok'?'Horário e serviço de sincronização verificados.':state.issue==='unverified'?'Não foi possível consultar referências NTP.':state.issue==='stale'?'O diagnóstico está desatualizado. Confira a execução do monitor.':state.issue==='service_inactive'?'O serviço de sincronização está parado.':'Diferença de horário detectada; a contagem online/offline pode ser afetada.';
+ card.querySelector('[data-time-details]').textContent=explain();const b=card.querySelector('[data-time-repair]');b.hidden=!canRepair;b.disabled=!!pendingId||!state||state.issue==='stale'||state.repair_status==='running';
+ if(state&&state.repair_message)card.querySelector('[data-time-result]').textContent=state.repair_message;
+ if(force)card.querySelector('details').open=true;}
+async function repair(){if(!confirm('Corrigir o horário do servidor usando o sincronizador existente? O ajuste pode alterar os horários de novos registros e agendamentos.'))return;
+ const b=card.querySelector('[data-time-repair]');b.disabled=true;
+ try{const r=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'repair',csrf})});const d=await r.json();if(!r.ok)throw Error(d.error||'Não foi possível solicitar a correção.');pendingId=d.id;card.querySelector('[data-time-result]').textContent='Correção solicitada. Aguarde a rotina administrativa (normalmente até 2 minutos).';}catch(e){card.querySelector('[data-time-result]').textContent=e.message;b.disabled=false;}}
+async function refresh(){const start=performance.now();try{const r=await fetch(url,{credentials:'same-origin',cache:'no-store'});if(!r.ok)return;const d=await r.json();base=d.epoch_ms+(performance.now()-start)/2;mono=performance.now();zone=d.timezone;state=d.status;csrf=d.csrf||'';canRepair=d.can_repair;alertEnabled=d.alert_enabled;if(pendingId&&state&&state.request_id===pendingId&&state.repair_status!=='running'){pendingId=null;show(true);}tick();show(false);}catch(e){}}
+function start(){mount();refresh();setInterval(tick,1000);setInterval(refresh,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
