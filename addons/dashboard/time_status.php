@@ -35,6 +35,7 @@ if(is_array($state)&&$expectedOffset!==null){
  if($mismatch&&$state['issue']==='ok')$state['issue']='timezone_mismatch';
  if(($state['repair_status']??'')==='success'){
   if($mismatch){$state['repair_status']='pending';$state['repair_message']='O relogio foi sincronizado, mas o fuso Linux/PHP ainda diverge da localidade. A correcao ainda nao foi confirmada; confira os detalhes.';}
+  elseif($state['issue']!=='ok'){$state['repair_status']='pending';$state['repair_message']='Fusos conferidos, mas o diagnostico ainda apresenta uma pendencia de sincronizacao. Aguarde a proxima verificacao.';}
   else $state['repair_message']='Correcao verificada: relogio sincronizado e fusos Linux/PHP de acordo com a localidade do provedor.';
  }
 }

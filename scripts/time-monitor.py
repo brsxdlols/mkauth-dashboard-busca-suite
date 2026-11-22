@@ -48,6 +48,7 @@ def provider_timezone():
     return zones[uf]
 
 def patch_timezone(source,zone,ini=False):
+    if ini:source=re.sub(r'(?m)^([ \t]*);[ \t]*(date\.timezone[ \t]*=)',r'\1\2',source)
     pattern=r'(?m)^([ \t]*date\.timezone[ \t]*=[ \t]*)[^\r\n]*' if ini else r"date_default_timezone_set\([ \t]*['\"][^'\"]+['\"][ \t]*\)"
     if not re.search(pattern,source):raise RuntimeError('Configuracao de fuso nao reconhecida; arquivo preservado.')
     return re.sub(pattern,(lambda m:m.group(1)+'"'+zone+'"') if ini else (lambda m:"date_default_timezone_set('"+zone+"')"),source)

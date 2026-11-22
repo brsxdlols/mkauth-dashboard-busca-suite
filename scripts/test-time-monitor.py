@@ -27,6 +27,8 @@ class Tests(unittest.TestCase):
  def test_timezone_patch_preserves_other_settings(self):
   self.assertEqual(m.patch_timezone("keep=true;date_default_timezone_set('America/Sao_Paulo');",'America/Bahia'),"keep=true;date_default_timezone_set('America/Bahia');")
   self.assertEqual(m.patch_timezone('memory_limit=128M\ndate.timezone = "America/Sao_Paulo"\n','America/Bahia',True),'memory_limit=128M\ndate.timezone = "America/Bahia"\n')
+ def test_commented_ini_timezone_is_enabled(self):
+  self.assertEqual(m.patch_timezone(';date.timezone =\nmemory_limit=128M\n','America/Bahia',True),'date.timezone ="America/Bahia"\nmemory_limit=128M\n')
  def test_unknown_timezone_config_is_preserved(self):
   with self.assertRaises(RuntimeError):m.patch_timezone('opaque native configuration','America/Bahia')
  def test_ambiguous_provider_refuses_timezone_changes(self):
