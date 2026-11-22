@@ -5,6 +5,8 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -22,6 +24,11 @@ installer = module('install-cleanup')
 
 
 class Cleanup(unittest.TestCase):
+    def test_installation_check_is_read_only(self):
+        result = subprocess.run([sys.executable, str(Path(__file__).with_name('cleanup-worker.py')), '--installation-check', '--apply'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b'cannot be combined', result.stderr)
+
     def fixture(self, root):
         directory = root/'opt/mk-auth/bckp'
         directory.mkdir(parents=True)

@@ -98,7 +98,7 @@ exec /usr/bin/python3 /usr/local/lib/mkauth-suite/cleanup.py --apply >> /var/log
                 subprocess.run(['/usr/sbin/logrotate', '-d', str(target(root, FILES[3]))],
                                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
             # Simulation only; the installer never deletes customer/system data.
-            result = subprocess.run([sys.executable, str(target(root, FILES[0]))],
+            result = subprocess.run([sys.executable, str(target(root, FILES[0])), '--installation-check'],
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, timeout=60)
             (backup/'initial-report.json').write_text(result.stdout)
             if result.returncode:
@@ -108,7 +108,7 @@ exec /usr/bin/python3 /usr/local/lib/mkauth-suite/cleanup.py --apply >> /var/log
     except Exception:
         restore(root, backup)
         raise
-    print('[limpeza] Rotina instalada: diariamente as 07:30; primeira execucao apenas simulada. Backup: '+str(backup))
+    print('[limpeza] Rotina instalada: diariamente as 07:30; validacao inicial sem exclusoes; varredura de temporarios adiada para a rotina diaria. Backup: '+str(backup))
 
 
 if __name__ == '__main__':

@@ -38,25 +38,34 @@ def temporary_files(root, days, apply, report):
     cutoff = time.time() - days * 86400
     opened = set()
     # Preserve even old files currently held open (including noatime mounts).
-    for process in Path('/proc').glob('[0-9]*'):
-        try:
-            for fd in (process/'fd').iterdir():
-                try:
-                    info = fd.stat()
-                    opened.add((info.st_dev, info.st_ino))
-                except OSError:
-                    pass
-        except OSError:
-            pass
+    if apply:
+        for process in Path('/proc').glob('[0-9]*'):
+            try:
+                for fd in (process/'fd').iterdir():
+                    try:
+                        info = fd.stat()
+                        opened.add((info.st_dev, info.st_ino))
+                    except OSError:
+                        pass
+            except OSError:
+                pass
     candidates = []
     # Never sweep /var/tmp PHP sessions or unrelated system/application files.
     for name in ('opt/mk-auth/tmp_bot', 'opt/mk-auth/tmp_eml', 'opt/mk-auth/tmp_sql'):
         directory = safe(root, name)
         if not directory.is_dir():
             continue
-        for current, dirs, files in os.walk(str(directory), followlinks=False):
-            dirs[:] = [d for d in dirs if not (Path(current)/d).is_symlink()]
-            candidates.extend(Path(current)/f for f in files if old_file(Path(current)/f, cutoff))
+        pending = [str(directory)]
+        while pending:
+            current = pending.pop()
+            # DirEntry uses directory metadata instead of a separate lstat per
+            # directory; old installations can contain years of empty folders.
+            with os.scandir(current) as entries:
+                for entry in entries:
+                    if entry.is_dir(follow_symlinks=False):
+                        pending.append(entry.path)
+                    elif entry.is_file(follow_symlinks=False) and old_file(Path(entry.path), cutoff):
+                        candidates.append(Path(entry.path))
     for name in ('tmp', 'var/tmp'):
         directory = safe(root, name)
         if directory.is_dir():
@@ -196,7 +205,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', default='/')
     parser.add_argument('--apply', action='store_true')
+    parser.add_argument('--installation-check', action='store_true', help='Validate installation without an exhaustive temporary-file scan')
     args = parser.parse_args()
+    if args.installation_check and args.apply:
+        parser.error('--installation-check cannot be combined with --apply')
     root = Path(os.path.abspath(args.root))
     # /var/run is normally a symlink to /run on Debian; use its physical directory.
     lock = safe(root, 'run/mkauth-limpeza.lock')
@@ -217,7 +229,7 @@ def main():
             raise RuntimeError('Retencao minima: 15 backups e 7 dias')
         report = {'time': datetime.datetime.now().isoformat(), 'apply': args.apply, 'errors': []}
         for action in (lambda: rotate_log(root, args.apply, report),
-                       lambda: temporary_files(root, days, args.apply, report),
+                       lambda: report.update(temporary_scan='Adiada para a rotina diaria; validacao inicial sem varredura completa') if args.installation_check else temporary_files(root, days, args.apply, report),
                        lambda: backup_retention(root, keep, days, args.apply, report),
                        lambda: docker_cleanup(args.apply and root == Path('/'), bool(config['docker']), report)):
             try:
