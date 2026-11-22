@@ -315,7 +315,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                 <section class="cfg-card cfg-topic" id="cfg-topic-layout">
                     <div class="cfg-card-head"><i class="fa fa-sliders" aria-hidden="true"></i><div><h2>Layout e navegação</h2><p>Escolha o layout e o destino dos atalhos de atendimento.</p></div></div>
                     <div class="cfg-topic-grid"><input type="hidden" name="shortcuts_visible_present" value="1"><input type="hidden" name="shortcuts_visible_csrf" value="<?=htmlspecialchars($_SESSION['suite_shortcuts_visible_csrf'],ENT_QUOTES,'UTF-8')?>">
-<div class="form-floating cfg-field" id="cfg-shortcuts-field"><select class="form-select" name="shortcuts_visible" id="cfg-shortcuts-visible"><option value="s" <?=$showAllShortcuts?'selected':''?>>SIM</option><option value="n" <?=!$showAllShortcuts?'selected':''?>>NÃO</option></select><label for="cfg-shortcuts-visible">Mostrar todos os atalhos na Dashboard</label><small>Em NÃO, os links ficam no botão Atalhos. Em SIM, também aparecem abaixo dos cards principais.</small></div>
+<div class="form-floating cfg-field" id="cfg-shortcuts-field"><select class="form-select" name="shortcuts_visible" id="cfg-shortcuts-visible"><option value="s" <?=$showAllShortcuts?'selected':''?>>Sim</option><option value="n" <?=!$showAllShortcuts?'selected':''?>>Não</option></select><label for="cfg-shortcuts-visible">Mostrar todos os atalhos na Dashboard</label><small>Em Não, os links ficam no botão Atalhos. Em Sim, também aparecem abaixo dos cards principais.</small></div>
 
 <div class="form-floating cfg-field">
                         <select class="form-select" name="suite_layout_mode" id="suite_layout_mode" aria-label="">
