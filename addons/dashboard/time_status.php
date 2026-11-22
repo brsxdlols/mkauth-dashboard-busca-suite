@@ -18,4 +18,13 @@ if($method==='POST'){
 if($method!=='GET'){http_response_code(405);exit;}
 $state=is_file($dir.'/status.json')?json_decode((string)file_get_contents($dir.'/status.json'),true):null;
 if(is_array($state)&&abs(time()-(int)$state['checked_at'])>300)$state['issue']='stale';
-echo json_encode(array('epoch_ms'=>round(microtime(true)*1000),'timezone'=>date_default_timezone_get(),'alert_enabled'=>mka_suite_get_radius_alert_enabled($conn)==='s','can_repair'=>$allowed,'csrf'=>$allowed?$csrf:null,'status'=>$state),JSON_UNESCAPED_UNICODE);
+$provider=null;$q=@mysqli_query($conn,'SELECT cidade,estado FROM sis_provedor ORDER BY id LIMIT 1');
+if($q)$provider=mysqli_fetch_assoc($q);
+$uf=$provider?strtoupper(trim((string)$provider['estado'])):'';
+$zones=array('AC'=>'America/Rio_Branco','AL'=>'America/Maceio','AP'=>'America/Belem','BA'=>'America/Bahia','CE'=>'America/Fortaleza','DF'=>'America/Sao_Paulo','ES'=>'America/Sao_Paulo','GO'=>'America/Sao_Paulo','MA'=>'America/Fortaleza','MT'=>'America/Cuiaba','MS'=>'America/Campo_Grande','MG'=>'America/Sao_Paulo','PA'=>'America/Belem','PB'=>'America/Fortaleza','PR'=>'America/Sao_Paulo','PI'=>'America/Fortaleza','RJ'=>'America/Sao_Paulo','RN'=>'America/Fortaleza','RS'=>'America/Sao_Paulo','RO'=>'America/Porto_Velho','RR'=>'America/Boa_Vista','SC'=>'America/Sao_Paulo','SP'=>'America/Sao_Paulo','SE'=>'America/Maceio','TO'=>'America/Araguaina');
+$expected=isset($zones[$uf])?$zones[$uf]:null;
+if($uf==='PE')$expected=stripos((string)$provider['cidade'],'noronha')!==false?'America/Noronha':'America/Recife';
+$expectedOffset=null;
+if($expected){$expectedOffset=-10800;if($uf==='AC')$expectedOffset=-18000;if(in_array($uf,array('MT','MS','RO','RR'),true))$expectedOffset=-14400;if($expected==='America/Noronha')$expectedOffset=-7200;}
+$config=array('provider_city'=>$provider?(string)$provider['cidade']:'','provider_state'=>$uf,'expected_timezone'=>$expected,'expected_utc_offset'=>$expectedOffset,'php_timezone'=>date_default_timezone_get(),'php_utc_offset'=>(int)date('Z'),'php_dst'=>date('I')==='1','server_utc'=>gmdate('d/m/Y H:i:s').' UTC','reference_utc'=>is_array($state)&&isset($state['offset_seconds'])?gmdate('d/m/Y H:i:s',(int)round(time()+$state['offset_seconds'])).' UTC':null);
+echo json_encode(array('epoch_ms'=>round(microtime(true)*1000),'timezone'=>date_default_timezone_get(),'alert_enabled'=>mka_suite_get_radius_alert_enabled($conn)==='s','can_repair'=>$allowed,'csrf'=>$allowed?$csrf:null,'status'=>$state,'configuration'=>$config),JSON_UNESCAPED_UNICODE);

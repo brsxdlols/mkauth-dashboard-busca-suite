@@ -28,7 +28,11 @@ def diagnose(query=sample):
         try:
             if subprocess.run(['service',name,'status'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=3).returncode==0:active.append(name)
         except (OSError,subprocess.TimeoutExpired):pass
-    return dict(checked_at=time.time(),offset_seconds=round(offset,2) if offset is not None else None,reference_count=len(agree),services=services,active_services=active,issue='unverified' if offset is None else ('clock_offset' if abs(offset)>60 else ('service_inactive' if not active else 'ok')))
+    zonefile=Path('/etc/localtime').resolve()
+    timezone=str(zonefile).split('/zoneinfo/')[-1] if '/zoneinfo/' in str(zonefile) else 'Nao identificado'
+    import datetime
+    linux_offset=int(datetime.datetime.now().astimezone().utcoffset().total_seconds())
+    return dict(system_timezone=timezone,system_utc_offset=linux_offset,checked_at=time.time(),offset_seconds=round(offset,2) if offset is not None else None,reference_count=len(agree),services=services,active_services=active,issue='unverified' if offset is None else ('clock_offset' if abs(offset)>60 else ('service_inactive' if not active else 'ok')))
 
 def command(args):
     p=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=50,universal_newlines=True)
