@@ -54,7 +54,7 @@ if (isset($_SESSION['MM_Usuario'])) {
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css" />
 
     <script src="../../scripts/jquery.js"></script>
-    <script src="../shared/server_clock.js?v=20261122-13"></script>
+    <script src="../shared/server_clock.js?v=20261122-14"></script>
     <script src="../../scripts/mk-auth.js"></script>
 
     <link href="css/estilo.css" rel="stylesheet" type="text/css" />
