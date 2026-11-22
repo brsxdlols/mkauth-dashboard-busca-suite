@@ -27,4 +27,15 @@ if($uf==='PE')$expected=stripos((string)$provider['cidade'],'noronha')!==false?'
 $expectedOffset=null;
 if($expected){$expectedOffset=-10800;if($uf==='AC')$expectedOffset=-18000;if(in_array($uf,array('MT','MS','RO','RR'),true))$expectedOffset=-14400;if($expected==='America/Noronha')$expectedOffset=-7200;}
 $config=array('provider_city'=>$provider?(string)$provider['cidade']:'','provider_state'=>$uf,'expected_timezone'=>$expected,'expected_utc_offset'=>$expectedOffset,'php_timezone'=>date_default_timezone_get(),'php_utc_offset'=>(int)date('Z'),'php_dst'=>date('I')==='1','server_utc'=>gmdate('d/m/Y H:i:s').' UTC','reference_utc'=>is_array($state)&&isset($state['offset_seconds'])?gmdate('d/m/Y H:i:s',(int)round(time()+$state['offset_seconds'])).' UTC':null);
+$config['server_local']=gmdate('d/m/Y H:i:s',time()+(int)($state['system_utc_offset']??date('Z')));
+$config['php_local']=date('d/m/Y H:i:s');
+$config['reference_local']=is_array($state)&&isset($state['offset_seconds'])&&$expectedOffset!==null?gmdate('d/m/Y H:i:s',(int)round(time()+$state['offset_seconds']+$expectedOffset)):null;
+if(is_array($state)&&$expectedOffset!==null){
+ $mismatch=(isset($state['system_utc_offset'])&&(int)$state['system_utc_offset']!==$expectedOffset)||(int)date('Z')!==$expectedOffset;
+ if($mismatch&&$state['issue']==='ok')$state['issue']='timezone_mismatch';
+ if(($state['repair_status']??'')==='success'){
+  if($mismatch){$state['repair_status']='pending';$state['repair_message']='O relogio foi sincronizado, mas o fuso Linux/PHP ainda diverge da localidade. A correcao ainda nao foi confirmada; confira os detalhes.';}
+  else $state['repair_message']='Correcao verificada: relogio sincronizado e fusos Linux/PHP de acordo com a localidade do provedor.';
+ }
+}
 echo json_encode(array('epoch_ms'=>round(microtime(true)*1000),'timezone'=>date_default_timezone_get(),'alert_enabled'=>mka_suite_get_radius_alert_enabled($conn)==='s','can_repair'=>$allowed,'csrf'=>$allowed?$csrf:null,'status'=>$state,'configuration'=>$config),JSON_UNESCAPED_UNICODE);

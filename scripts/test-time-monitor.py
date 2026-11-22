@@ -1,4 +1,4 @@
-import importlib.util,unittest,subprocess
+import importlib.util,unittest,subprocess,tempfile,os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -21,9 +21,28 @@ class Tests(unittest.TestCase):
   def command(args):
    calls.append(args)
    if '-gq' in args:raise RuntimeError('test failure')
-  with patch.object(m,'command',side_effect=command),patch.object(m.shutil,'which',return_value='/usr/sbin/ntpd'),patch.object(m.Path,'is_file',return_value=True):
+  with patch.object(m,'configure_timezones',return_value={}),patch.object(m,'command',side_effect=command),patch.object(m.shutil,'which',return_value='/usr/sbin/ntpd'),patch.object(m.Path,'is_file',return_value=True):
    with self.assertRaises(RuntimeError):m.repair(dict(active_services=[],services=['ntpsec']))
   self.assertEqual(calls[-1],['service','ntpsec','start'])
+ def test_timezone_patch_preserves_other_settings(self):
+  self.assertEqual(m.patch_timezone("keep=true;date_default_timezone_set('America/Sao_Paulo');",'America/Bahia'),"keep=true;date_default_timezone_set('America/Bahia');")
+  self.assertEqual(m.patch_timezone('memory_limit=128M\ndate.timezone = "America/Sao_Paulo"\n','America/Bahia',True),'memory_limit=128M\ndate.timezone = "America/Bahia"\n')
+ def test_unknown_timezone_config_is_preserved(self):
+  with self.assertRaises(RuntimeError):m.patch_timezone('opaque native configuration','America/Bahia')
+ def test_ambiguous_provider_refuses_timezone_changes(self):
+  with patch.object(m.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'AM\tUNKNOWN\n','')):
+   with self.assertRaises(RuntimeError):m.provider_timezone()
+ def test_timezone_file_failure_rolls_back(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);a=root/'configure.php';a.write_text('old');z=root/'zone';z.write_text('zone bytes');old=root/'oldzone';old.write_text('old zone bytes');local=root/'localtime';local.symlink_to(old);tz=root/'timezone';tz.write_text('old zone')
+   original=m.os.replace;calls=[]
+   def fail_once(src,dst):
+    calls.append(dst)
+    if len(calls)==2:raise OSError('fixture failure')
+    return original(src,dst)
+   with patch.object(m.os,'replace',side_effect=fail_once):
+    with self.assertRaises(OSError):m.apply_timezone_files({a:'new'},z,'newzone',local,tz,root)
+   self.assertEqual(a.read_text(),'old');self.assertTrue(local.is_symlink());self.assertEqual(os.readlink(local),str(old));self.assertEqual(z.read_text(),'zone bytes');self.assertEqual(tz.read_text(),'old zone')
  def test_loader_preserves_custom_and_is_idempotent(self):
   s=b'// custom\n';first=installer.patch(s);self.assertTrue(first.startswith(s));self.assertEqual(installer.patch(first),first)
 if __name__=='__main__':unittest.main()
