@@ -1225,7 +1225,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="dashboard_density.css?v=20261118-2"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script></head>
+<link rel="stylesheet" href="dashboard_density.css?v=20261122-3"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script></head>
 
 <body class="mka-suite-dashboard-page">
     <?php if (!defined('ADMIN2URL')) define('ADMIN2URL', '/admin/'); ?>

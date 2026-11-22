@@ -8,6 +8,11 @@ RULES = """# MK-AUTH suite: private diagnostic files only; no execution permissi
 owner /var/lib/mkauth-suite-performance/*.json rwk,
 owner /var/lib/mkauth-suite-performance/*.runs rwk,
 /var/lib/mkauth-suite-performance/optimization.lock rwk,
+/opt/mk-auth/dados/suite-time-monitor/ rw,
+/opt/mk-auth/dados/suite-time-monitor/status.json r,
+/opt/mk-auth/dados/suite-time-monitor/queue.lock rwk,
+owner /opt/mk-auth/dados/suite-time-monitor/.request-*.tmp rw,
+owner /opt/mk-auth/dados/suite-time-monitor/request.json rw,
 """
 INCLUDE = "  #include if exists <local/mkauth-suite-performance>"
 

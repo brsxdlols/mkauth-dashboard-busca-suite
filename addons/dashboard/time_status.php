@@ -42,7 +42,7 @@ if($method==='POST'){
  if($action==='repair'&&is_array($state)&&$state['issue']==='ok'&&$expectedOffset!==null&&abs(time()-(int)$state['checked_at'])<=120){echo json_encode(array('already_correct'=>true,'message'=>'Horario, fusos e NTP ja estao corretos. Nenhuma alteracao foi executada.'));exit;}
  $previous=is_file($dir.'/status.json')?json_decode((string)file_get_contents($dir.'/status.json'),true):null;
  if(is_array($previous)&&($previous['repair_status']??'')==='running'){http_response_code(409);exit(json_encode(array('error'=>'Uma correcao ja esta em execucao. Aguarde o resultado.')));}
- $lock=@fopen($dir.'/queue.lock','c');if(!$lock||!flock($lock,LOCK_EX|LOCK_NB)){http_response_code(409);exit(json_encode(array('error'=>'Outra solicitacao esta sendo registrada. Tente novamente.')));}
+ $lock=@fopen($dir.'/queue.lock','c');if(!$lock){http_response_code(503);exit(json_encode(array('error'=>'Nao foi possivel acessar a fila. Confira as permissoes e o perfil AppArmor do PHP.')));}if(!flock($lock,LOCK_EX|LOCK_NB)){http_response_code(409);exit(json_encode(array('error'=>'Outra solicitacao esta sendo registrada. Tente novamente.')));}
  if(file_exists($dir.'/request.json')){http_response_code(409);exit(json_encode(array('error'=>'Ja existe uma operacao aguardando execucao.')));}
  $id=bin2hex(random_bytes(16));$temp=$dir.'/.request-'.$id.'.tmp';$f=@fopen($temp,'x');
  if(!$f){http_response_code(503);exit(json_encode(array('error'=>'Nao foi possivel registrar a operacao. Confira a instalacao do monitor.')));}
