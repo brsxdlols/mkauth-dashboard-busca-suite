@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Read-only clock monitor; repair requires an explicit authenticated queued request."""
-import os,json,time,socket,struct,statistics,subprocess,shutil,fcntl,re,tempfile
+import os,json,time,socket,struct,statistics,subprocess,shutil,fcntl,re,tempfile,argparse
 from pathlib import Path
 STATE=Path('/opt/mk-auth/dados/suite-time-monitor')
 SERVERS=('a.ntp.br','b.ntp.br','c.ntp.br')
@@ -114,11 +114,30 @@ def configure_timezones():
     if hasattr(time,'tzset'):time.tzset()
     return dict(timezone_backup=str(backup),configured_system_timezone=zone,configured_php_timezone=phpzone)
 
-def repair(state):
+def timezone_config_is_correct(state):
+    zone,hours=provider_timezone()
+    if state.get('system_timezone')!=zone or state.get('system_utc_offset')!=hours*3600:return False
+    source=Path('/opt/mk-auth/include/configure.php').read_text()
+    found=re.search(r"date_default_timezone_set\([ \t]*['\"]([^'\"]+)['\"][ \t]*\)",source)
+    if not found or found.group(1) not in (zone,'Etc/GMT+'+str(-hours)):return False
+    phpzone=found.group(1)
+    for binary in Path('/opt/mk-auth/hhvm').glob('*/bin/php'):
+        result=subprocess.run([str(binary),'-r',"date_default_timezone_set('"+phpzone+"');echo date('Z');"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=5,universal_newlines=True)
+        if result.returncode or result.stdout.strip()!=str(hours*3600):return False
+    return True
+
+def repair(state,progress=None):
+    progress=progress or (lambda label,percent:None)
+    progress("Conferindo localidade e configuracoes",20)
+    if state.get('issue')=='ok' and timezone_config_is_correct(state):
+        progress('Tudo correto; nenhuma alteracao necessaria',100)
+        return dict(no_change=True)
     if len(state['active_services'])>1:raise RuntimeError('Mais de um sincronizador ativo; revise a configuracao antes de corrigir.')
     services=state['active_services'] or state['services']
     if not services:raise RuntimeError('Nenhum sincronizador instalado. Instale/configure o servico NTP do sistema pelo suporte.')
+    progress("Criando backup e ajustando fusos Linux/PHP",40)
     timezone_result=configure_timezones()
+    progress("Sincronizando o relogio com NTP",65)
     name=services[0]
     if name in ('chrony','chronyd'):
         command(['service',name,'start']);command(['chronyc','online']);command(['chronyc','burst','4/4']);command(['chronyc','waitsync','10']);command(['chronyc','makestep'])
@@ -134,6 +153,7 @@ def repair(state):
     # Keep the existing service and configuration; never install a competing daemon.
     if shutil.which('update-rc.d'):
         command(['update-rc.d',name,'defaults']);command(['update-rc.d',name,'enable'])
+    progress('Validando horario e servico NTP',85)
     return timezone_result
 
 def write_status(data):
@@ -144,6 +164,7 @@ def write_status(data):
     os.chmod(str(stage),0o644);os.replace(str(stage),str(STATE/'status.json'))
 
 def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--diagnose-only',action='store_true');args=parser.parse_args()
     configure_environment()
     if os.geteuid()!=0:raise SystemExit('Execute como root')
     if STATE.is_symlink():raise RuntimeError('Diretorio simbolico recusado')
@@ -151,18 +172,23 @@ def main():
         try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError:return
         state=diagnose();request=STATE/'request.json'
-        if request.exists() and not request.is_symlink():
+        if request.exists() and not request.is_symlink() and not args.diagnose_only:
             try:
                 if request.stat().st_size>1024:raise ValueError('Pedido invalido')
                 data=json.loads(request.read_text());request.unlink()
-                if data.get('action')!='repair' or not isinstance(data.get('id'),str) or len(data['id'])!=32:raise ValueError('Pedido invalido')
-                state.update(request_id=data['id'],repair_status='running');write_status(state)
-                timezone_result=repair(state);state=diagnose();state.update(timezone_result);state.update(request_id=data['id'],repair_status='success' if state['issue']=='ok' else 'pending',repair_message='Ajuste do relogio e dos fusos solicitado. Confira abaixo os offsets Linux/PHP; se o PHP ainda divergir, a verificacao web informara a pendencia.')
-            except Exception as e:state.update(repair_status='error',repair_message=str(e))
+                if data.get('action') not in ('repair','check') or not isinstance(data.get('id'),str) or len(data['id'])!=32:raise ValueError('Pedido invalido')
+                operation=data['action'];state.update(operation=operation,request_id=data['id'],repair_status='running');write_status(state)
+                if operation=='check':
+                    state.update(progress_label='Diagnostico concluido',progress_percent=100,repair_status='success',repair_message='Diagnostico atualizado. Nenhuma configuracao foi alterada.')
+                else:
+                    def update_progress(label,percent):
+                        state.update(checked_at=time.time(),progress_label=label,progress_percent=percent);write_status(state)
+                    timezone_result=repair(state,update_progress);state=diagnose();state.update(timezone_result);state.update(progress_label='Verificacao concluida',progress_percent=100,request_id=data['id'],repair_status='success' if state['issue']=='ok' else 'pending',repair_message='Ajuste do relogio e dos fusos solicitado. Confira abaixo os offsets Linux/PHP; se o PHP ainda divergir, a verificacao web informara a pendencia.')
+            except Exception as e:state.update(progress_label='Correcao interrompida',repair_status='error',repair_message=str(e))
         else:
             try:
                 previous=json.loads((STATE/'status.json').read_text())
-                for k in ('request_id','repair_status','repair_message'):
+                for k in ('operation','request_id','repair_status','repair_message','progress_label','progress_percent'):
                     if k in previous:state[k]=previous[k]
                 if state.get('repair_status')=='running':state.update(repair_status='error',repair_message='A correcao anterior foi interrompida. Consulte os logs e tente novamente.')
             except (OSError,ValueError):pass

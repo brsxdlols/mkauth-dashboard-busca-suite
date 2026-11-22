@@ -48,6 +48,9 @@ class Tests(unittest.TestCase):
  def test_cron_environment_restores_administrative_path(self):
   with patch.dict(os.environ,{'PATH':'/usr/bin:/bin'}):
    m.configure_environment();self.assertEqual(os.environ['PATH'],'/usr/sbin:/usr/bin:/sbin:/bin')
+ def test_repair_skips_already_correct_server(self):
+  with patch.object(m,'timezone_config_is_correct',return_value=True),patch.object(m,'command') as command:
+   result=m.repair({'issue':'ok'});self.assertTrue(result['no_change']);command.assert_not_called()
  def test_loader_preserves_custom_and_is_idempotent(self):
   s=b'// custom\n';first=installer.patch(s);self.assertTrue(first.startswith(s));self.assertEqual(installer.patch(first),first)
 if __name__=='__main__':unittest.main()

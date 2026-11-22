@@ -3,7 +3,7 @@ import os,sys,re,shutil,subprocess,grp
 from pathlib import Path
 START=b'/* MKA-SUITE-TIME-START */'
 END=b'/* MKA-SUITE-TIME-END */'
-BLOCK=START+b"\n;(function(){if(window.mkaTimeLoader)return;window.mkaTimeLoader=true;var s=document.createElement('script');s.src='/admin/addons/shared/server_clock.js?v=20261122-9';s.defer=true;document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(window.mkaTimeLoader)return;window.mkaTimeLoader=true;var s=document.createElement('script');s.src='/admin/addons/shared/server_clock.js?v=20261122-11';s.defer=true;document.head.appendChild(s);})();\n"+END+b'\n'
 def patch(source):
     source=re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',source,flags=re.S)
     return source+(b'\n' if source and not source.endswith(b'\n') else b'')+BLOCK
@@ -29,7 +29,7 @@ def main():
         if p.is_symlink():raise RuntimeError('Link recusado: '+name)
         if p.exists():shutil.copy2(str(p),str(backup/p.name))
         p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data);p.chmod(0o700 if name.endswith('.py') else 0o644)
-    try:subprocess.run([sys.executable,'/usr/local/lib/mkauth-suite/time-monitor.py'],check=True,timeout=35)
+    try:subprocess.run([sys.executable,'/usr/local/lib/mkauth-suite/time-monitor.py','--diagnose-only'],check=True,timeout=35)
     except (subprocess.SubprocessError,OSError):print('[aviso] Monitor instalado; primeira consulta indisponivel. A rotina diaria de monitoramento tentara novamente.')
     print('[horario] Diagnostico de horario e relogio instalados; nenhuma correcao de hora foi executada.')
 if __name__=='__main__':main()

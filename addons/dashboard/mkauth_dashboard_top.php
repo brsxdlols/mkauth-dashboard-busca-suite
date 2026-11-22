@@ -103,13 +103,7 @@ nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
 #mkauth-dashboard-navbar {
     z-index: 1030;
 }
-/* Mantem a cor escolhida no tema mesmo quando o CSS do MK-Auth a sobrescreve. */
-#mkauth-dashboard-navbar.is-black { background-color: #0b0b0c !important; color: #fff !important; }
-#mkauth-dashboard-navbar.is-primary { background-color: #00d1b2 !important; color: #fff !important; }
-#mkauth-dashboard-navbar.is-info { background-color: #1677e8 !important; color: #fff !important; }
-#mkauth-dashboard-navbar.is-warning { background-color: #ffd95a !important; color: #3d3210 !important; }
-#mkauth-dashboard-navbar.is-danger { background-color: #ff3860 !important; color: #fff !important; }
-#mkauth-dashboard-navbar.is-light { background-color: #f8fafc !important; color: #1f2937 !important; }
+/* Cores herdadas do tema nativo do MK-AUTH. */
 #mkauth-dashboard-navbar.is-black .navbar-item,
 #mkauth-dashboard-navbar.is-black .navbar-link,
 #mkauth-dashboard-navbar.is-primary .navbar-item,

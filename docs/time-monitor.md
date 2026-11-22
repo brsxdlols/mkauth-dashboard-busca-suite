@@ -10,4 +10,10 @@ A correção usa o serviço existente chrony/chronyd, ntpsec/ntp ou timesyncd. N
 
 Estado privado: /opt/mk-auth/dados/suite-time-monitor. Worker: /usr/local/lib/mkauth-suite/time-monitor.py. Cron: /etc/cron.d/mkauth-time-monitor. Diagnóstico inicial somente leitura durante a instalação.
 
-Validação: scripts/test-time-api-compat.py usa tabelas MariaDB temporárias e uma fila em diretório temporário, sem alterar configurações persistentes nem executar reparos reais. Sete cenários executados em PHP 7.1 e PHP 8.0. A opção PHP_TEST_BIN permite escolher o interpretador. Os testes do worker ficam em scripts/test-time-monitor.py.
+Validação: scripts/test-time-api-compat.py usa tabelas MariaDB temporárias e uma fila em diretório temporário, sem alterar configurações persistentes nem executar reparos reais. Oito cenários executados em PHP 7.1 e PHP 8.0. A opção PHP_TEST_BIN permite escolher o interpretador. Os testes do worker ficam em scripts/test-time-monitor.py.
+
+## Operações com retorno visível
+
+Atualizar diagnóstico solicita uma operação check: a rotina administrativa consulta novamente as referências e o estado do serviço, sem alterar configurações. Um modal informa pedido recebido, espera pela rotina (normalmente até um minuto), andamento e resultado; falhas são mostradas explicitamente. O horário da última verificação aparece no bloco. O modal pode ser fechado sem cancelar a operação; Ver andamento permite reabri-lo.
+
+A correção usa confirmação no modal, não confirm() do navegador. O progresso representa etapas confirmadas pelo worker (conferência, backup/fusos, sincronização, validação). Quando está correto, o botão é desabilitado. A API e o worker também evitam repetição desnecessária. NTP ativo aparece em verde, inativo em vermelho; horários/fusos corretos em verde e pendências em laranja. A exibição usa cor e texto.
