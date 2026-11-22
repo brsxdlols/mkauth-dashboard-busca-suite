@@ -13,5 +13,5 @@ if (permissao('perm_relFin') || permissao('perm_relFat') || permissao('perm_caix
  </div>
  <footer>Atualização automática a cada 30 segundos. <button type="button" data-finance-refresh>Atualizar agora</button></footer>
 </section>
-<script src="/admin/addons/dashboard/finance_today.js?v=20261106-6" defer></script>
+<script src="/admin/addons/dashboard/finance_today.js?v=20261122-2" defer></script>
 <?php } ?>

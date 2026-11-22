@@ -25,6 +25,7 @@
    find('due-note').textContent='Vencimento '+label[5]+' · títulos em aberto e vencidos, sem encargos calculados.';
    find('balance-note').textContent='Saldo '+label[4]+' · entradas menos saídas';
    if(d.due_url)find('due').setAttribute('href',d.due_url);else find('due').removeAttribute('href');
+   if(d.cash&&d.range)find('cash').setAttribute('href','/admin/addons/rel_caixa/?'+new URLSearchParams({tab:'financeiro',search:'',data_inicial:d.range.start,data_final:d.range.last}).toString());else find('cash').removeAttribute('href');
    find('due').hidden=!d.due;find('cash').hidden=!d.cash;
    if(d.due){cash('amount',d.due.amount);find('quantity').textContent=d.due.quantity+' título(s) a receber'+(Number(d.due.overdue_quantity)>0?' · '+d.due.overdue_quantity+' em atraso':'');}
    if(d.cash){cash('incoming',d.cash.incoming);cash('outgoing',d.cash.outgoing);find('balance-wrap').hidden=d.cash.balance===undefined;if(d.cash.balance!==undefined){cash('balance',d.cash.balance);find('balance').classList.toggle('is-negative',Number(d.cash.balance)<0);}}
