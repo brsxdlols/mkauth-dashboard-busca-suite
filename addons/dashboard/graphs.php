@@ -13,7 +13,7 @@ foreach(array('exb_ticket_medio','exb_saldo_conta','exb_balanco_faturamento','ex
 }
 $compact=isset($_GET['compact'])&&$_GET['compact']==='1';
 $multi=mka_suite_get_layout_mode($conn)==='multi';
-if($multi){$exb_balanco_faturamento='s';$exb_balanco_clientes=$exb_balanco_chamados='n';}
+if($multi){$exb_balanco_clientes=$exb_balanco_chamados='n';}
 $user=(string)$usuario_logado;
 $access=$conn->prepare('SELECT cli_grupos FROM sis_acesso WHERE login=? LIMIT 1');
 $access->bind_param('s',$user);$access->execute();$row=$access->get_result()->fetch_assoc();
@@ -39,13 +39,13 @@ if($hasFinance){
     }
 }
 ?>
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="pt-BR"><head><?php include __DIR__.'/preview_runtime.php'; ?><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gráficos do Dashboard</title><link rel="stylesheet" href="css/bootstrap.css"><link rel="stylesheet" href="css/estilo.css">
 <script src="js/highcharts.js"></script><script src="js/exporting.js"></script>
 <style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}#dashboard-graphs-content{display:flow-root;width:100%}.row{margin-left:0;margin-right:0}.highcharts-figure{margin:0;min-width:0}.card{border-radius:16px;overflow:hidden}.highcharts-description{margin:0}</style>
-<link rel="stylesheet" href="graphs_modern.css?v=20261118-2"><script src="graphs_modern.js?v=20261118-9" defer></script><?php if($compact){?><style>#dashboard-graphs-content>.card:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .card-header{display:none}#dashboard-graphs-content>.card:first-child .row>div:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .row>div:first-child{width:100%;flex:0 0 100%;max-width:100%}</style><?php } ?></head><body data-mka-graphs-ready data-current-month="<?=date('Y-m')?>" data-compact="<?=$compact?'sim':'nao'?>">
+<link rel="stylesheet" href="graphs_modern.css?v=20261118-2"><script src="graphs_modern.js?v=20261123-3" defer></script><?php if($compact){?><style>#dashboard-graphs-content>.card:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .card-header{display:none}#dashboard-graphs-content>.card:first-child .row>div:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .row>div:first-child{width:100%;flex:0 0 100%;max-width:100%}</style><?php } ?></head><body data-mka-graphs-ready data-current-month="<?=date('Y-m')?>" data-compact="<?=$compact?'sim':'nao'?>">
 <main id="dashboard-graphs-content">
-<?php include __DIR__.'/graficos.php'; if($multi&&!$compact&&$hasFinance&&permissao('perm_numClientes')&&($settings['exb_balanco_clientes']??'s')==='s')include __DIR__.'/multi_client_plans.php'; ?>
+<?php include __DIR__.'/graficos.php'; if($multi&&!$compact&&$hasFinance&&permissao('perm_numClientes')&&($settings['exb_balanco_clientes']??'s')==='s')include __DIR__.'/multi_client_plans.php'; if($multi&&!$compact&&permissao('perm_relFin')&&permissao('perm_chamados')&&($settings['exb_balanco_chamados']??'s')==='s')include __DIR__.'/multi_support_charts.php'; ?>
 </main>
 <script>
 (function(){

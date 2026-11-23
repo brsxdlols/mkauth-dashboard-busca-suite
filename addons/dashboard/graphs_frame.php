@@ -1,5 +1,6 @@
 <?php
 $graphsQuery = http_build_query(array_intersect_key($_GET, array('assunto'=>true,'tecnico'=>true)));
+if(!empty($dashboardPreviewToken))$graphsQuery.=($graphsQuery!==''?'&':'').'preview='.rawurlencode($dashboardPreviewToken);
 $graphsUrl = '/admin/addons/dashboard/graphs.php'.($graphsQuery!==''?'?'.$graphsQuery:'');
 ?>
 <section id="dashboard-graphs" aria-label="Gráficos do Dashboard">

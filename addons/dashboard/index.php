@@ -27,7 +27,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 ?>
 
-<head>
+<head><?php include __DIR__.'/preview_runtime.php'; ?>
     <script src="/admin/addons/shared/admin_asset_paths.js?v=20261014-1"></script>
     <link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1429,7 +1429,6 @@ if (isset($_SESSION['MM_Usuario'])) {
         $per_meses = $qtd_meses_graficos;
         $string_per = "$per_meses meses";
 
-        if ($exb_graficos_em_baixo == 'n') include __DIR__.'/activity_log.php';
         if ($exb_busca_inteligente == 's') {
         ?>
             <script>
@@ -2020,7 +2019,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
             <div class="col-12 mb-2"><style>.mka-radius-launch{display:block;width:100%;padding:12px 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font:600 14px system-ui;cursor:pointer;transition:background .18s,box-shadow .18s,transform .18s}.mka-radius-launch:hover{background:#1d4ed8;box-shadow:0 6px 16px #2563eb35;transform:translateY(-1px)}.mka-radius-launch:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}.mka-radius-launch:active{transform:translateY(0)}</style><button type="button" class="mka-radius-launch" data-radius-login="">RADIUS</button></div>
 <script src="../shared/radius_modal.js?v=20261006"></script>
-            <div class="col-12"><?php include __DIR__.'/finance_today.php'; ?></div>
+            <div class="col-12"><?php include __DIR__.'/finance_today.php'; ?></div><div class="col-12"><?php $sectionPlacement='before';include __DIR__.'/dashboard_sections.php'; ?></div>
             <div class="col-12"><?php include __DIR__.'/client_growth.php'; ?><?php include __DIR__.'/billing_preview.php'; ?></div>
             <!-- Acesso Rápido -->
             <div class='col-12 col-md-12 col-lg-12'>
@@ -2073,242 +2072,13 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         ?>
 
         <div class='row'>
-            <!-- Chamados -->
-
-            <?php if ((permissao('perm_chamados')) && $tbl_chamados_abertos == 's') { ?>
-
-                <div class='col-12 mb-3'>
-
-                    <table class='table table-sm'>
-                        <thead>
-                            <tr class="bg-primary text-uppercase">
-                                <th class="fw-bold text-light"></th>
-                                <th class='fw-bold text-light'>Chamado</th>
-                                <th class='fw-bold text-light'>Abertura</th>
-                                <th class='fw-bold text-light'>Nome [Login]</th>
-                                <th class='fw-bold text-light'>Assunto</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <div class='row text-uppercase font-title'>
-
-                            </div>
-                            <?php
-
-                            $query_sis_suporte = mysqli_query($conn, "SELECT s.chamado, s.abertura, s.login, s.assunto, c.nome FROM sis_suporte s LEFT JOIN sis_cliente c ON s.login = c.login WHERE $grupos s.status = 'aberto' AND c.cli_ativado = 's' ORDER BY s.abertura");
-
-                            $tot_chamados = mysqli_num_rows($query_sis_suporte);
-
-                            if (permissao('perm_totais')) {
-                                echo "<script>$('#tot_chamados').html(\"$tot_chamados\")</script>";
-                            }
-
-                            $ccSup = 0;
-                            while ($sup = mysqli_fetch_array($query_sis_suporte)) {
-
-                                $sup_chamado = $sup['chamado'];
-                                $sup_abertura = date('d/m/Y H:i:s', strtotime($sup['abertura']));
-                                $sup_nome = $sup['nome'];
-
-                                $sup_login = $sup['login'];
-                                $sup_assunto = $sup['assunto'];
-                            ?>
-
-                                <tr class='font-field'>
-                                    <td class="">
-                                        <strong>
-                                            <a href="/admin/chamado<?php echo $ext_mk; ?>?chamado=<?php echo $sup_chamado; ?>" onclick="window.open(this.href, this.target, 'width=800, height=500, scrollbars=yes'); return false;" class="btn-link text-decoration-none">Abrir </a>
-
-                                            <a href="/admin/suporte_info<?php echo $ext_mk; ?>?login=<?php echo $sup_login; ?>&chamado=<?php echo $sup_chamado; ?>" onclick="window.open(this.href, this.target, 'width=800, height=500, scrollbars=yes'); return false;" class="btn-link text-decoration-none">Info</a>
-                                        </strong>
-                                    </td>
-
-                                    <td class=''><?php echo $sup_chamado; ?></td>
-                                    <td class=''><?php echo $sup_abertura; ?></td>
-                                    <td class=''><?php echo "$sup_nome <strong>[$sup_login]</strong>"; ?></td>
-                                    <td class=''><?php echo $sup_assunto; ?></td>
-                                </tr>
-
-                            <?php
-                                $ccSup++;
-                                if ($ccSup == 15) {
-                                    break;
-                                }
-                            }
-                            ?>
-
-                        </tbody>
-                    </table>
-                </div>
-
-            <?php } ?>
-
-            <!-- Instalacoes -->
-
-            <?php if ((permissao('perm_instalacao'))) { ?>
-
-                <div class='col-12 mb-3 installation-highlight-target' id='solicitacoes-instalacao'>
-                    <table class='table table-sm'>
-                        <thead>
-                            <tr class="bg-primary text-uppercase">
-                                <th class='fw-bold text-light'></th>
-                                <th class='fw-bold text-light'>Instalação</th>
-                                <th class='fw-bold text-light'>Nome</th>
-                                <th class='fw-bold text-light'>Técnico</th>
-								<th class='fw-bold text-light'>Data de Cadastro</th> <!-- Nova coluna -->
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <?php
-
-                            $query_sis_instalacao = mysqli_query($conn, "
-							SELECT uuid_solic, disp, nome, login, tecnico, processamento AS data_cadastro 
-							FROM sis_solic 
-							WHERE status = 'aberto' 
-							AND (datainst <= '$nova_data_1' OR visita <= '$nova_data_1' OR datainst IS NULL) 
-							ORDER BY datainst
-								");
-								
-                            $tot_instalacoes = mysqli_num_rows($query_sis_instalacao);
-
-                            $tot_atendimento = $tot_chamados + $tot_instalacoes;
-                            $perc_chamados = $tot_atendimento > 0 ? number_format($tot_chamados / $tot_atendimento * 100, 2) : '0.00';
-                            $perc_instalacoes = $tot_atendimento > 0 ? number_format($tot_instalacoes / $tot_atendimento * 100, 2) : '0.00';
-
-                            if (permissao('perm_totais')) {
-                                // The card above counts scoped installation visits, independently of website requests below.
-                            }
-                            echo "<script>$('#perc_instalacoes').html(\"$perc_instalacoes%\")</script>";
-                            echo "<script>$('#perc_chamados').html(\"$perc_chamados%\")</script>";
-
-                            $ccInst = 0;
-
-                            while ($inst = mysqli_fetch_array($query_sis_instalacao)) {
-                                $inst_uuid = $inst['uuid_solic'];
-                                $inst_disponivel = $inst['disp'] == "sim" ? "Disponível" : "Indisponível";
-                                $inst_nome = $inst['nome'];
-                                $inst_login = $inst['login'];
-                                $inst_tecnico = $inst['tecnico'];
-								$data_cadastro = !empty($inst['data_cadastro']) ? date("d/m/Y", strtotime($inst['data_cadastro'])) : "N/A"; // Formata a data
-                            ?>
-
-                                <tr class='font-field'>
-                                    <td class="">
-                                        <strong>
-                                            <a href="/admin/instalar_alt<?php echo $ext_mk; ?>?uuid=<?php echo $inst_uuid; ?>" class="btn-link text-decoration-none">Alterar </a>
-
-                                            <a href="/admin/instalacao_info<?php echo $ext_mk; ?>?uuid=<?php echo $inst_uuid; ?>" onclick="window.open(this.href, this.target, 'width=800, height=500, scrollbars=yes'); return false;" class="btn-link text-decoration-none">Info</a>
-
-                                            <a href="/admin/cliente_ins<?php echo $ext_mk; ?>?new_install=<?php echo $inst_uuid; ?>" class="btn-link text-decoration-none" target="_blank">Incluir Cliente</a>
-
-                                            <a href="#" class="btn-link text-danger text-decoration-none delete-installation-request" data-solic="<?php echo htmlspecialchars($inst_uuid, ENT_QUOTES, 'UTF-8'); ?>" title="Excluir esta solicitação"><i class="bi bi-trash3"></i> Excluir</a>
-
-                                        </strong>
-                                    </td>
-                                    <td class=''><?php echo $inst_disponivel; ?></td>
-                                    <td class=''><?php echo "$inst_nome <strong>[$inst_login]</strong>"; ?></td>
-                                    <td class=''><?php echo $inst_tecnico; ?></td>
-									<td class=''><?php echo $data_cadastro; ?></td> <!-- Exibe a data de cadastro -->
-                                </tr>
-
-                            <?php
-                                $ccInst++;
-                                if ($ccInst == 500) {
-                                    break;
-                                }
-                            }
-                            ?>
-
-                        </tbody>
-                    </table>
-                </div>
-            <?php } ?>
-
-            <!-- Contas a pagar -->
-            <?php if ((permissao('perm_contaspagar')) && $tbl_contas_pagar == 's') { ?>
-
-                <div class='col-12 col'>
-
-                    <table class='table table-sm'>
-                        <thead>
-                            <tr class="bg-primary text-uppercase">
-                                <th class='fw-bold text-light'></th>
-                                <th class='fw-bold text-light'>Título</th>
-                                <th class='fw-bold text-light'>Parcela</th>
-                                <th class='fw-bold text-light'>Fornecedor / Funcionário</th>
-                                <th class='fw-bold text-light'>Vencimento</th>
-                                <th class='fw-bold text-light'>Valor</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <?php
-
-                            $query_sis_contaspagar = mysqli_query($conn, "SELECT c.id AS id_conta, c.nrdocumento, c.parcatual, c.numparcelas, c.historico, c.vencimento, c.valor, f.razaosoc, c.tipodiv, func.nome , c.uuid_contaspagar
-                            FROM sis_contaspagar c 
-                            LEFT JOIN sis_fornecedor f ON c.fornecedor = f.id 
-                            LEFT JOIN sis_func func ON c.fornecedor = func.id
-                            WHERE c.status NOT LIKE 'liquidado' AND c.vencimento <= '$nova_data_5'  ORDER BY c.vencimento");
-
-
-                            $ccCP = 0;
-                            while ($cp = mysqli_fetch_array($query_sis_contaspagar)) {
-                                $cp_id = $cp['id_conta'];
-                                $cp_uuid_contaspagar = $cp['uuid_contaspagar'];
-                                $cp_nrdocumento = $cp['nrdocumento'];
-                                $cp_parcatual = $cp['parcatual'];
-                                $cp_numparcelas = $cp['numparcelas'];
-
-                                if ($cp['tipodiv'] == "for") {
-                                    $cp_fornecedor = $cp['razaosoc'] . " - " . $cp['historico'];
-                                } else {
-                                    $cp_fornecedor = $cp['nome'] . " - " . $cp['historico'];
-                                }
-
-                                $cp_vencimento = date('d/m/Y', strtotime($cp['vencimento']));
-
-                                $cp_valor = number_format($cp['valor'], 2, ',', '.');
-                            ?>
-
-                                <tr class='font-field'>
-                                    <td class="">
-                                        <strong>
-                                            <a href="/admin/contaspagar_liquidar<?php echo $ext_mk; ?>?uuid=<?php echo $cp_uuid_contaspagar; ?>" class="btn-link text-decoration-none">Liquidar</a>
-                                        </strong>
-                                    </td>
-                                    <td class=''><?php echo $cp_nrdocumento; ?></td>
-                                    <td class=''><?php echo "$cp_parcatual / $cp_numparcelas"; ?></td>
-                                    <td class=''><?php echo $cp_fornecedor; ?></td>
-                                    <td class=''><?php echo $cp_vencimento; ?></td>
-                                    <td class=''>R$ <?php echo $cp_valor; ?></td>
-                                </tr>
-
-                            <?php
-                                $ccCP++;
-                                if ($ccCP == 15) {
-                                    break;
-                                }
-                            }
-                            ?>
-
-                        </tbody>
-                    </table>
-                </div>
-
-            <?php } ?>
         </div>
-
         <?php
-
-        if ($exb_graficos_em_baixo == 's') {
+        if ($exb_graficos_em_baixo != 'n') {
             include_once('graphs_frame.php');
         }
 
-        if ($exb_graficos_em_baixo != 'n') include __DIR__.'/activity_log.php';
+        $sectionPlacement='after';include __DIR__.'/dashboard_sections.php';
 
         // Close conn in MariaDB
         mysqli_close($conn);

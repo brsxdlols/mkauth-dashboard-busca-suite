@@ -8,8 +8,8 @@ try{
  $user=(string)($_SESSION['MKA_Usuario']??$_SESSION['MM_Usuario']??'');
  if(!mka_installation_permission($conn,$user,'perm_relFat')||!mka_installation_permission($conn,$user,'perm_numClientes')){http_response_code(403);echo json_encode(array('ok'=>false));exit;}
  $scope=mka_attendance_scope($conn,$user);session_write_close();
- $clock=$conn->query('SELECT CURRENT_DATE today')->fetch_assoc();$current=new DateTimeImmutable(substr($clock['today'],0,7).'-01');$start=$current->modify('-5 months');$end=$current->modify('+1 month');
- $months=array();for($i=0;$i<6;$i++){$key=$start->modify('+'.$i.' months')->format('Y-m');$months[$key]=array('month'=>$key,'activations'=>0,'reactivations'=>0,'cancellations'=>0);}
+ $clock=$conn->query('SELECT CURRENT_DATE today')->fetch_assoc();$current=new DateTimeImmutable(substr($clock['today'],0,7).'-01');$cfg=$conn->query('SELECT qtd_meses_graficos FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1')->fetch_assoc();$count=max(1,min(24,(int)($cfg['qtd_meses_graficos']??6)));$start=$current->modify('-'.($count-1).' months');$end=$current->modify('+1 month');
+ $months=array();for($i=0;$i<$count;$i++){$key=$start->modify('+'.$i.' months')->format('Y-m');$months[$key]=array('month'=>$key,'activations'=>0,'reactivations'=>0,'cancellations'=>0);}
  foreach(array('activations'=>'data_ins','cancellations'=>'data_desativacao') as $type=>$column){
   $rows=rc_query($conn,"SELECT DATE_FORMAT(c.`$column`,'%Y-%m') month,COUNT(*) total FROM sis_cliente c WHERE ($scope) AND c.`$column`>=? AND c.`$column`<? GROUP BY DATE_FORMAT(c.`$column`,'%Y-%m')",array($start->format('Y-m-d'),$end->format('Y-m-d')));
   foreach($rows as $row)if(isset($months[$row['month']]))$months[$row['month']][$type]=(int)$row['total'];

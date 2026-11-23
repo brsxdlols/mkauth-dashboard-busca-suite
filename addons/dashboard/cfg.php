@@ -13,6 +13,17 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['finance_summary_present
     mka_finance_summary_save($conn,$financeVisible);
 }
 $financeSummaryEnabled=mka_finance_summary_enabled($conn);
+
+$sectionLegacyQuery=mysqli_query($conn,"SELECT tbl_chamados_abertos,tbl_contas_pagar FROM dashboard_am_sis_cfg ORDER BY id DESC LIMIT 1");
+$sectionLegacy=$sectionLegacyQuery?mysqli_fetch_assoc($sectionLegacyQuery):array();
+$sectionPositions=array('calls'=>($sectionLegacy['tbl_chamados_abertos']??'s')==='s'?'after':'hidden','installations'=>($sectionLegacy['tbl_chamados_abertos']??'s')==='s'?'after':'hidden','payables'=>($sectionLegacy['tbl_contas_pagar']??'s')==='s'?'before':'hidden');
+$qSections=mysqli_query($conn,"SELECT nome,valor FROM sis_opcao WHERE nome IN ('suite_section_calls','suite_section_installations','suite_section_payables')");
+if($qSections)while($pSection=mysqli_fetch_assoc($qSections))if(in_array($pSection['valor'],array('before','after','hidden'),true))$sectionPositions[substr($pSection['nome'],14)]=$pSection['valor'];
+if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['section_position'])){
+ if(!permissao('perm_config')||!hash_equals($_SESSION['suite_finance_summary_csrf'],(string)($_POST['finance_summary_csrf']??''))){http_response_code(403);exit('Sessão inválida.');}
+ foreach(array('calls','installations','payables') as $key){$value=(string)($_POST['section_position'][$key]??'');if(!in_array($value,array('before','after','hidden'),true)){http_response_code(422);exit('Posição inválida.');}$name='suite_section_'.$key;$stmt=$conn->prepare('INSERT INTO sis_opcao(nome,valor) VALUES(?,?) ON DUPLICATE KEY UPDATE valor=VALUES(valor)');$stmt->bind_param('ss',$name,$value);$stmt->execute();$sectionPositions[$key]=$value;}
+}
+
 if(empty($_SESSION['suite_shortcuts_visible_csrf']))$_SESSION['suite_shortcuts_visible_csrf']=bin2hex(random_bytes(32));
 if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['shortcuts_visible_present'])){
  if(!permissao('perm_config')||!hash_equals($_SESSION['suite_shortcuts_visible_csrf'],(string)($_POST['shortcuts_visible_csrf']??''))){http_response_code(403);exit('Sessão inválida. Atualize a página.');}
@@ -215,7 +226,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         $exb_balanco_chamados = $cfg['exb_balanco_chamados'];
         $exb_busca_inteligente = $cfg['exb_busca_inteligente'];
         $contabilizar_bloq_offline = $cfg['contabilizar_bloq_offline'];
-        $exb_graficos_em_baixo = $cfg['exb_graficos_em_baixo'];
+        $exb_graficos_em_baixo = ($cfg['tbl_logs_sistema']??'s')==='s'?$cfg['exb_graficos_em_baixo']:'h';
         $tbl_logs_sistema = $cfg['tbl_logs_sistema'];
         $tbl_chamados_abertos = $cfg['tbl_chamados_abertos'];
         $tbl_contas_pagar = $cfg['tbl_contas_pagar'];
@@ -484,23 +495,12 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <label for="cfg-exb_balanco_faturamento">Exibir Balanço Faturamento</label>
                     </div>
 <div class="form-floating cfg-field">
-                        <select class="form-select" name="exb_graficos_em_baixo" id="cfg-exb_graficos_em_baixo" aria-label="">
-                            <?php
-                            if ($exb_graficos_em_baixo == 's') {
-                                echo "
-                        <option value='s' selected>Final da dashboard</option>
-                        <option value='n'>Início da dashboard</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Final da dashboard</option>
-                        <option value='n' selected>Início da dashboard</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="cfg-exb_graficos_em_baixo">Posição do log de atividades</label><small style="display:block;margin-top:6px">Início: antes dos cards e resumos. Final: depois de todos os gráficos e tabelas. Vale para Nova e Multiempresas. A tabela aparece quando “Exibir log de atividades” está habilitado e seu usuário tem permissão.</small>
+                        <select class="form-select" name="exb_graficos_em_baixo" id="cfg-exb_graficos_em_baixo"><?php foreach(array('n'=>'Antes dos gráficos','s'=>'Depois dos gráficos','h'=>'Não mostrar') as $positionValue=>$positionLabel){ ?><option value="<?=$positionValue?>" <?=$exb_graficos_em_baixo===$positionValue?'selected':''?>><?=$positionLabel?></option><?php } ?></select>
+                        <label for="cfg-exb_graficos_em_baixo">Posição do log de atividades</label><small style="display:block;margin-top:6px">Antes: logo abaixo do resumo financeiro, antes dos gráficos de ativações e faturamento. Depois: após todos os gráficos. Nunca aparece acima dos cards principais.</small>
                     </div>
+<?php foreach(array('calls'=>'Chamados em aberto','installations'=>'Instalações pendentes','payables'=>'Contas a pagar') as $sectionKey=>$sectionLabel){ ?>
+<div class="form-floating cfg-field"><select class="form-select" name="section_position[<?=$sectionKey?>]" id="section-position-<?=$sectionKey?>"><option value="before" <?=$sectionPositions[$sectionKey]==='before'?'selected':''?>>Antes dos gráficos</option><option value="after" <?=$sectionPositions[$sectionKey]==='after'?'selected':''?>>Depois dos gráficos</option><option value="hidden" <?=$sectionPositions[$sectionKey]==='hidden'?'selected':''?>>Não mostrar</option></select><label for="section-position-<?=$sectionKey?>">Posição: <?=$sectionLabel?></label><small>Antes: abaixo do resumo financeiro. Depois: após os gráficos detalhados.</small></div>
+<?php } ?>
 <div class="form-floating cfg-field">
                         <select class="form-select" name="qtd_meses_graficos" id="cfg-qtd_meses_graficos" aria-label="">
                             <?php
@@ -519,24 +519,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                         <input type="number" name="limite_ticket" class="form-control" id="limite_ticket" placeholder="Ticket" min="50" max="10000" step="50" value="<?php echo $limite_ticket; ?>">
                         <label for="limite_ticket">Valor Máximo de Mensalidade para Considerar no Ticket Médio R$</label>
                     </div>
-<div class="form-floating cfg-field">
-                        <select class="form-select" name="tbl_contas_pagar" id="cfg-tbl_contas_pagar" aria-label="">
-                            <?php
-                            if ($tbl_contas_pagar == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="cfg-tbl_contas_pagar">Exibir Tabela de Contas a Pagar</label>
-                    </div>
+
                     </div>
                 </section>
 
@@ -561,42 +544,8 @@ if (isset($_SESSION['MM_Usuario'])) {
                         </select>
                         <label for="cfg-exb_balanco_chamados">Exibir Balanco Chamados</label>
                     </div>
-<div class="form-floating cfg-field">
-                        <select class="form-select" name="tbl_chamados_abertos" id="cfg-tbl_chamados_abertos" aria-label="">
-                            <?php
-                            if ($tbl_chamados_abertos == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="cfg-tbl_chamados_abertos">Exibir Tabela de Chamados Abertos</label>
-                    </div>
-<div class="form-floating cfg-field">
-                        <select class="form-select" name="tbl_logs_sistema" id="cfg-tbl_logs_sistema" aria-label="">
-                            <?php
-                            if ($tbl_logs_sistema == 's') {
-                                echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
-                        ";
-                            } else {
-                                echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
-                    ";
-                            }
-                            ?>
-                        </select>
-                        <label for="cfg-tbl_logs_sistema">Exibir log de atividades</label>
-                    </div>
+
+
                     </div>
                 </section>
 
@@ -730,7 +679,8 @@ if (isset($_SESSION['MM_Usuario'])) {
 
                     <button type="button" name="retorn" onclick="window.location.href = ('index.php');" class="btn btn-light"><i class="fa fa-arrow-left"></i> Voltar</button>
 
-                    <button type="submit" name="OK" onclick="window.alert('Configurações Salvas');" class="btn btn-primary"><i class="fa fa-save"></i> Salvar configurações</button>
+                    <button type="button" class="btn btn-outline-primary" data-dashboard-preview>Pré-visualização</button>
+<button type="submit" name="OK" onclick="window.alert('Configurações Salvas');" class="btn btn-primary"><i class="fa fa-save"></i> Salvar configurações</button>
                 </div>
                 <!-- Rodapé -->
 <?php include_once('../../baixo.php'); ?>
@@ -754,6 +704,7 @@ if (isset($_SESSION['MM_Usuario'])) {
             //debug($links_db);
 
             if (isset($_POST['OK'])) {
+                $tbl_logs_sistema=$exb_graficos_em_baixo==='h'?'n':'s';
                 $update_table_dashboard_am_sis_cfg = mysqli_query($conn, "UPDATE dashboard_am_sis_cfg 
             SET 
             exb_ticket_medio = '$exb_ticket_medio',
@@ -848,6 +799,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         }
     </script>
 <script src="../shared/performance_modal.js?v=20261013-3"></script>
+<script src="/admin/addons/dashboard/cfg_preview.js?v=20261123-2" defer></script>
 </body>
 
 </html>
