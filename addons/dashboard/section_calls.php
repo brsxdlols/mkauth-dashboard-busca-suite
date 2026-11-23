@@ -43,13 +43,9 @@
                                 $sup_assunto = $sup['assunto'];
                             ?>
 
-                                <tr class='font-field'>
+                                <tr class='font-field' data-dashboard-ticket-row tabindex="0" aria-label="Ver detalhes do chamado">
                                     <td class="">
-                                        <strong>
-                                            <a href="/admin/chamado<?php echo $ext_mk; ?>?chamado=<?php echo $sup_chamado; ?>" onclick="window.open(this.href, this.target, 'width=800, height=500, scrollbars=yes'); return false;" class="btn-link text-decoration-none">Abrir </a>
-
-                                            <a href="/admin/suporte_info<?php echo $ext_mk; ?>?login=<?php echo $sup_login; ?>&chamado=<?php echo $sup_chamado; ?>" onclick="window.open(this.href, this.target, 'width=800, height=500, scrollbars=yes'); return false;" class="btn-link text-decoration-none">Info</a>
-                                        </strong>
+                                        <a href="<?=htmlspecialchars('/admin/suporte_info'.$ext_mk.'?'.http_build_query(array('login'=>$sup_login,'chamado'=>$sup_chamado)),ENT_QUOTES,'UTF-8')?>" data-dashboard-ticket-info data-client-login="<?=htmlspecialchars($sup_login,ENT_QUOTES,'UTF-8')?>" data-client-name="<?=htmlspecialchars($sup_nome,ENT_QUOTES,'UTF-8')?>" data-ticket-reference="<?=htmlspecialchars($sup_chamado,ENT_QUOTES,'UTF-8')?>" class="btn-link text-decoration-none">Ver chamado</a>
                                     </td>
 
                                     <td class=''><?php echo $sup_chamado; ?></td>

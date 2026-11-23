@@ -102,6 +102,7 @@
         <a class="ticket-create" data-open-native-ticket href="../../suporte_ins<?= htmlspecialchars($ext_mk, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="bi bi-plus-circle" aria-hidden="true"></i> Abrir chamado</a></div>
     </header>
     <form action="" method="get" id="form_pesquisa" class="no_print ticket-search">
+<?php if(is_string($_GET['cliente_login']??null)&&$_GET['cliente_login']!==''){?><input type="hidden" name="cliente_login" value="<?=htmlspecialchars($_GET['cliente_login'],ENT_QUOTES,'UTF-8')?>"><p style="grid-column:1/-1">Chamados do cliente: <strong><?=htmlspecialchars($_GET['cliente_login'],ENT_QUOTES,'UTF-8')?></strong> · <a href="chamados_abertos.php">Ver todos</a></p><?php } ?>
             <label>Pesquisar
                 <input type="search" name="busca" placeholder="Busque por nome ou endereço" value="<?php echo htmlspecialchars(str_replace('%', ' ', $busca), ENT_QUOTES, 'UTF-8'); ?>">
             </label>
@@ -201,6 +202,8 @@
         $vq=$link->query("SELECT sup.id AS ticket_id,sup.nome,sup.assunto,sup.abertura,sup.prioridade,sup.chamado,sup.visita,sup.tecnico,func.nome AS tecnico_nome,v.details FROM sis_suporte sup INNER JOIN suite_ticket_viability v ON v.ticket_id=sup.id LEFT JOIN sis_func func ON func.id=sup.tecnico WHERE ($owner) AND sup.status='aberto' AND sup.assunto LIKE '$assunto_sql' AND (sup.tecnico LIKE '$tecnico_sql' OR sup.tecnico IS NULL)");
         if($vq)foreach($vq->fetch_all(MYSQLI_ASSOC) as $vr){$d=json_decode($vr['details'],true)?:array();$needle=str_replace('%',' ',trim($busca));if($needle!==''&&stripos($vr['nome'].' '.implode(' ',$d),$needle)===false)continue;$vr+=array('endereco'=>$d['address']??'','numero'=>'','bairro'=>$d['district']??'','cidade'=>$d['city']??'','complemento'=>$d['complement']??'','estado'=>'','plano'=>'Viabilidade','login'=>'','senha'=>'','celular'=>$d['contact']??'','celular2'=>'');$vr['_viability']=true;$ticket_rows[]=$vr;}
 
+        $clientLoginFilter=is_string($_GET['cliente_login']??null)?trim($_GET['cliente_login']):'';
+        if($clientLoginFilter!=='')$ticket_rows=array_values(array_filter($ticket_rows,function($ticket)use($clientLoginFilter){return isset($ticket['login'])&&strcasecmp((string)$ticket['login'],$clientLoginFilter)===0;}));
         $tot_chamados_abertos=count($ticket_rows);
         $ticket_counts=array('all'=>$tot_chamados_abertos,'late'=>0,'upcoming'=>0,'unscheduled'=>0,'unassigned'=>0);
         $ticket_now=time();

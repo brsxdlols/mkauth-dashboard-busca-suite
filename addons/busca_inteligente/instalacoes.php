@@ -9,6 +9,8 @@ function installation_date($value){return !$value||substr($value,0,4)==='0000'?'
 $search=is_string($_GET['busca']??null)?trim($_GET['busca']):'';$state=is_string($_GET['status']??null)?$_GET['status']:'';$tech=is_string($_GET['tecnico']??null)?$_GET['tecnico']:'';
 $where=mka_installation_where($scope);$options=$link->query('SELECT DISTINCT s.tecnico,f.nome tecnico_nome FROM sis_solic s LEFT JOIN sis_func f ON CAST(f.id AS CHAR)=s.tecnico WHERE '.$where.' ORDER BY s.tecnico')->fetch_all(MYSQLI_ASSOC);
 $params=array();$types='';
+$installationFilter=is_string($_GET['solicitacao']??null)?trim($_GET['solicitacao']):'';
+if($installationFilter!==''){$where.=' AND s.uuid_solic=?';$params[]=$installationFilter;$types.='s';}
 if($search!==''){$where.=' AND (s.nome LIKE ? OR s.login LIKE ? OR s.endereco_res LIKE ? OR s.bairro_res LIKE ? OR s.cidade_res LIKE ?)';for($i=0;$i<5;$i++)$params[]='%'.$search.'%';$types.='sssss';}
 if(in_array($state,array('aberto','pendente','atrasado'),true)){$where.=' AND s.status=?';$params[]=$state;$types.='s';}
 if($tech!==''){$where.=' AND s.tecnico=?';$params[]=$tech;$types.='s';}

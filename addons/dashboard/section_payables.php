@@ -45,7 +45,7 @@
                                 $cp_valor = number_format($cp['valor'], 2, ',', '.');
                             ?>
 
-                                <tr class='font-field'>
+                                <tr class='font-field' data-dashboard-payable-detail tabindex="0" role="button" aria-label="Ver detalhes da conta a pagar">
                                     <td class="">
                                         <strong>
                                             <a href="/admin/contaspagar_liquidar<?php echo $ext_mk; ?>?uuid=<?php echo $cp_uuid_contaspagar; ?>" class="btn-link text-decoration-none">Liquidar</a>

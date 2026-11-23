@@ -4,7 +4,7 @@
             <?php if ((permissao('perm_instalacao'))) { ?>
 
                 <div class='col-12 mb-3 installation-highlight-target' id='solicitacoes-instalacao'>
-                    <section class="mka-operation-card" data-dashboard-section="installations"><h2>Instalações pendentes</h2><div class="mka-operation-table"><table class='table table-sm'>
+                    <section class="mka-operation-card" data-dashboard-section="installations"><h2>Instalações pendentes</h2><p><a href="/admin/addons/busca_inteligente/instalacoes.php">Ver todas as instalações na Busca</a></p><div class="mka-operation-table"><table class='table table-sm'>
                         <thead>
                             <tr class="bg-primary text-uppercase">
                                 <th class='fw-bold text-light'></th>
@@ -51,18 +51,9 @@
 								$data_cadastro = !empty($inst['data_cadastro']) ? date("d/m/Y", strtotime($inst['data_cadastro'])) : "N/A"; // Formata a data
                             ?>
 
-                                <tr class='font-field'>
+                                <tr class='font-field' data-dashboard-installation-row tabindex="0" aria-label="Abrir instalação na Busca">
                                     <td class="">
-                                        <strong>
-                                            <a href="/admin/instalar_alt<?php echo $ext_mk; ?>?uuid=<?php echo $inst_uuid; ?>" class="btn-link text-decoration-none">Alterar </a>
-
-                                            <a href="/admin/instalacao_info<?php echo $ext_mk; ?>?uuid=<?php echo $inst_uuid; ?>" onclick="window.open(this.href, this.target, 'width=800, height=500, scrollbars=yes'); return false;" class="btn-link text-decoration-none">Info</a>
-
-                                            <a href="/admin/cliente_ins<?php echo $ext_mk; ?>?new_install=<?php echo $inst_uuid; ?>" class="btn-link text-decoration-none" target="_blank">Incluir Cliente</a>
-
-                                            <a href="#" class="btn-link text-danger text-decoration-none delete-installation-request" data-solic="<?php echo htmlspecialchars($inst_uuid, ENT_QUOTES, 'UTF-8'); ?>" title="Excluir esta solicitação"><i class="bi bi-trash3"></i> Excluir</a>
-
-                                        </strong>
+                                        <a href="/admin/addons/busca_inteligente/instalacoes.php?solicitacao=<?=rawurlencode($inst_uuid)?>" class="btn-link text-decoration-none" data-dashboard-installation>Ver instalação</a>
                                     </td>
                                     <td class=''><?php echo $inst_disponivel; ?></td>
                                     <td class=''><?php echo "$inst_nome <strong>[$inst_login]</strong>"; ?></td>
