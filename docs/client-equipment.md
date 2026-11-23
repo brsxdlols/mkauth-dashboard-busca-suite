@@ -1,8 +1,8 @@
 # Equipamentos do cliente e estoque
 
-Na edição do cliente, **Equipamentos do cliente** permite adicionar linhas com **+ Adicionar equipamento**. Cada linha representa uma unidade e possui produto do estoque, MAC/serial e comodato. O mesmo produto pode aparecer em várias linhas.
+Na edição do cliente, o **+** ao lado de **Equipamento** repete os campos nativos **Equipamento** e **MAC/Serial**, no mesmo local e com o mesmo estilo do formulário. Cada linha controlada pelo estoque representa uma unidade. O mesmo produto pode aparecer em várias linhas. O comodato segue a opção nativa do cadastro.
 
-**Salvar equipamentos** grava a lista e movimenta o estoque em uma transação. Não é o botão de gravar os demais dados cadastrais. Adicionar ou remover uma linha na tela só altera o estoque depois de salvar. A tela mostra o saldo atual e o saldo previsto após salvar, considerando todas as linhas repetidas e devoluções.
+O botão **Gravar** original salva a lista de equipamentos e prossegue com a gravação nativa do cadastro. Os campos passam primeiro pela validação do formulário. Uma falha no estoque mantém o formulário aberto para corrigir ou tentar novamente. Adicionar ou remover uma linha na tela só movimenta o estoque ao gravar. O saldo aparece ao lado da seleção; ao passar o mouse, é possível consultar o saldo previsto após gravar, considerando linhas repetidas e devoluções.
 
 - Adicionar: baixa uma unidade e cria um vínculo nativo em `sis_prodcliente`.
 - Remover: devolve uma unidade e remove somente o vínculo criado pela suíte.
@@ -27,3 +27,5 @@ A instalação não altera modelos existentes e não emite contratos. Inclua a v
 `python3 scripts/install-client-equipment.py /opt/mk-auth/admin /caminho/do/backup` instala o loader e preserva o gerador original fora da pasta pública. `--dry-run` valida a compatibilidade sem criar tabelas ou alterar arquivos nativos. Instalações com tabelas de estoque sem transações são recusadas.
 
 As tabelas da suíte são `suite_equipment_clients` (revisão), `suite_equipment_items` (MAC/serial e vínculo nativo) e `suite_equipment_operations` (gravações idempotentes). Nenhuma coluna nativa é adicionada. Movimentações constam no histórico nativo de produtos. Remover o addon não deve apagar alocações nem somar estoque; devolva os equipamentos pela lista antes de desinstalar, se necessário.
+
+Para testar o layout com o CSS nativo, execute `node scripts/test-client-equipment-native-ui.cjs` com `MKA_NATIVE_CSS` apontando para `estilos/mk-auth.css`. `CHROME_BIN` permite escolher o Chrome/Chromium. O teste usa dados fictícios e verifica desktop/celular, preservação dos campos, repetição das linhas, validação, Gravar, envio pelo teclado e repetição após erro de rede. Não acessa clientes nem movimenta estoque real.

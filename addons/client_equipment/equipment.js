@@ -1,50 +1,80 @@
 (function(){'use strict';
 if(window.mkaEquipmentLoaded)return;window.mkaEquipmentLoaded=true;
 if(!/\/cliente_(alt|ins)\.(hhvm|php)$/.test(location.pathname))return;
-function el(tag,text){var n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;}
+function node(tag,text){var n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;}
 function start(){
-var nativeSelect=document.querySelector('select[name="equipamento"]'),serial=document.querySelector('[name="mac_serial"]');if(!nativeSelect||!serial)return;
-var uuid=new URLSearchParams(location.search).get('uuid'),box=el('section');box.className='mka-equipment';box.setAttribute('aria-label','Equipamentos do cliente');
-box.append(el('h3','Equipamentos do cliente'));
-var nativeRow=serial.closest('.field.is-horizontal')||serial.parentElement;nativeRow.insertAdjacentElement('afterend',box);
-if(!uuid){box.append(el('p','Grave o cadastro do cliente e abra a edição para vincular equipamentos do estoque.'));return;}
-box.append(el('p','Cada linha representa uma unidade. Salvar equipamentos baixa as novas unidades e devolve as removidas ao estoque.'));
-box.append(el('p','No contrato, use %equipamentos% para listar equipamento, MAC/serial e comodato.'));
-var equipmentRow=nativeSelect.closest('.field.is-horizontal');
-if(equipmentRow&&nativeRow!==equipmentRow){var legacy=el('details');legacy.append(el('summary','Equipamento do cadastro anterior (sem baixa retroativa)'));legacy.append(el('p','Este cadastro é preservado. Para controlar unidades pelo estoque, adicione os produtos na lista abaixo.'));legacy.append(equipmentRow,nativeRow);box.append(legacy);}
-var list=el('div');list.className='mka-equipment-list';var status=el('p');status.className='mka-equipment-status';status.setAttribute('role','status');
-var emptyCatalog=el('p');emptyCatalog.hidden=true;emptyCatalog.append(el('span','Nenhum produto cadastrado no estoque. '));var stockLink=el('a','Cadastrar produtos e quantidades');stockLink.href='/admin/produtos.'+(location.pathname.endsWith('.hhvm')?'hhvm':'php');emptyCatalog.append(stockLink);box.append(emptyCatalog);
-var actions=el('div');actions.className='mka-equipment-actions';
-function button(text,fn){var n=el('button',text);n.type='button';n.addEventListener('click',fn);actions.append(n);return n;}
-var add=button('+ Adicionar equipamento',function(){rows.push({id:0,product_id:0,serial:'',comodato:document.querySelector('[name="comodato"]:checked')?.value||'nao'});changed();render();});
-var save=button('Salvar equipamentos',function(){submit();});save.className='mka-equipment-save';
-var reload=button('Atualizar lista e saldo',function(){if(!dirty||window.confirm('Descartar as alterações não salvas dos equipamentos?'))load();});
-box.append(list,actions,status);var rows=[],baseline=[],catalog=[],revision=0,csrf='',dirty=false,busy=false,pending=null;
-function message(s,error){status.textContent=s;status.classList.toggle('error',!!error);}
-function lock(value){busy=value;box.querySelectorAll('button,input,select').forEach(function(n){n.disabled=value;});if(!value){add.disabled=!csrf||rows.length>=100||!catalog.some(function(p){return p.active&&p.available!==null;});save.disabled=!csrf;}}
-function changed(){dirty=true;pending=null;message('Alterações de equipamentos ainda não salvas.');updateBalances();}
-function counts(items){var m={};items.forEach(function(r){if(r.product_id&&!r.stale)m[r.product_id]=(m[r.product_id]||0)+1;});return m;}
-function updateBalances(){var old=counts(baseline),next=counts(rows);list.querySelectorAll('[data-stock]').forEach(function(n){var id=Number(n.dataset.stock),p=catalog.find(function(x){return x.id===id;});if(!p){n.textContent='Selecione um produto do estoque.';return;}var available=p.available,after=available===null?null:available+(old[id]||0)-(next[id]||0);n.textContent=available===null?'Saldo indisponível: revise o estoque do produto.':'Disponível em estoque: '+available+' · Após salvar: '+after;n.classList.toggle('stock-low',after===null||after<0);});}
-function render(){list.replaceChildren();rows.forEach(function(r,index){var line=el('div');line.className='mka-equipment-row';
-var productLabel=el('label');productLabel.append(el('span','Equipamento '+(index+1)));var select=el('select');select.setAttribute('aria-label','Equipamento '+(index+1));var empty=el('option','Selecione um equipamento');empty.value='0';select.append(empty);
-catalog.forEach(function(p){if(!p.active&&p.id!==r.product_id)return;var opt=el('option',p.name+(p.active?'':' (inativo)'));opt.value=String(p.id);select.append(opt);});
-if(r.product_id&&!catalog.some(function(p){return p.id===r.product_id;})){var missing=el('option',r.name||'Produto indisponível');missing.value=String(r.product_id);select.append(missing);}select.value=String(r.product_id);select.onchange=function(){r.product_id=Number(select.value);changed();stock.dataset.stock=String(r.product_id);updateBalances();};
-var stock=el('small');stock.dataset.stock=String(r.product_id);productLabel.append(select,stock);if(r.stale)productLabel.append(el('small','Vínculo alterado no estoque nativo. Remova esta linha e salve antes de adicionar novamente.'));
-var serialLabel=el('label');serialLabel.append(el('span','MAC/Serial'));var input=el('input');input.type='text';input.maxLength=255;input.value=r.serial;input.placeholder='MAC ou número de série';input.oninput=function(){r.serial=input.value;changed();};serialLabel.append(input);
-var loanLabel=el('label');loanLabel.append(el('span','Comodato'));var loan=el('select');['nao','sim'].forEach(function(v){var o=el('option',v==='sim'?'Sim':'Não');o.value=v;loan.append(o);});loan.value=r.comodato;loan.onchange=function(){r.comodato=loan.value;changed();};loanLabel.append(loan);
-var remove=el('button','Remover');remove.type='button';remove.className='mka-equipment-remove';remove.setAttribute('aria-label','Remover equipamento '+(index+1));remove.onclick=function(){rows.splice(index,1);changed();render();};line.append(productLabel,serialLabel,loanLabel,remove);list.append(line);});
-if(!rows.length)list.append(el('p','Nenhum equipamento vinculado por esta lista.'));add.disabled=busy||rows.length>=100||!catalog.some(function(p){return p.active&&p.available!==null;});updateBalances();}
-function apply(data){rows=data.items.map(function(r){return Object.assign({},r);});baseline=data.items.map(function(r){return Object.assign({},r);});catalog=data.products;emptyCatalog.hidden=catalog.length!==0;revision=data.revision;csrf=data.csrf;dirty=false;pending=null;render();}
-async function request(options){var response=await fetch('/admin/addons/client_equipment/api.php?uuid='+encodeURIComponent(uuid),Object.assign({credentials:'same-origin',cache:'no-store'},options||{}));var data;try{data=await response.json();}catch(e){throw Error('Sessão ou serviço indisponível. Atualize a página antes de tentar novamente.');}if(!response.ok||!data.ok)throw Error(data.error||'Não foi possível consultar os equipamentos.');return data;}
-async function load(){lock(true);message('Consultando equipamentos e estoque…');try{apply(await request());message('Estoque atualizado. A baixa ocorre ao salvar equipamentos.');}catch(e){message(e.message,true);}finally{lock(false);}}
-async function submit(){if(busy)return;if(rows.some(function(r){return !r.product_id;})){message('Selecione o produto de cada linha.',true);return;}lock(true);message('Salvando equipamentos…');try{
-if(!pending){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);pending={key:Array.from(bytes,function(x){return x.toString(16).padStart(2,'0');}).join(''),items:JSON.stringify(rows.map(function(r){return {id:r.id,product_id:r.product_id,serial:r.serial,comodato:r.comodato};})),revision:revision};}
-var form=new URLSearchParams({csrf:csrf,revision:String(pending.revision),request_key:pending.key,items:pending.items});apply(await request({method:'POST',body:form}));message('Equipamentos salvos. Estoque atualizado.');
-}catch(e){message(e.message+' Se a conexão falhou, tente salvar novamente: a mesma gravação não baixa duas vezes.',true);}finally{lock(false);}}
-// These allocations have their own explicit save. Do not silently lose edits when the native form submits.
-var form=nativeSelect.closest('form');if(form)form.addEventListener('submit',function(e){if(dirty||busy){e.preventDefault();e.stopImmediatePropagation();message('Salve os equipamentos antes de gravar o cadastro do cliente.',true);box.scrollIntoView({block:'center'});}},true);
+var equipment=document.querySelector('select[name="equipamento"]'),serial=document.querySelector('[name="mac_serial"]');
+if(!equipment||!serial)return;
+var equipmentRow=equipment.closest('.field.is-horizontal'),serialRow=serial.closest('.field.is-horizontal'),form=equipment.form;
+if(!equipmentRow||!serialRow||!form)return;
+var uuid=new URLSearchParams(location.search).get('uuid');if(!uuid)return;
+var equipmentTemplate=equipmentRow.cloneNode(true),serialTemplate=serialRow.cloneNode(true),original={name:equipment.value,serial:serial.value};
+var extra=node('div');extra.className='mka-equipment-extra';serialRow.insertAdjacentElement('afterend',extra);
+var statusRow=node('div');statusRow.className='field is-horizontal mka-equipment-feedback';statusRow.hidden=true;
+var emptyLabel=node('div');emptyLabel.className=equipmentRow.querySelector('.field-label').className;
+var statusBody=node('div');statusBody.className='field-body';var statusField=node('div');statusField.className='field';
+var status=node('p');status.className='help';status.setAttribute('role','status');statusField.append(status);statusBody.append(statusField);statusRow.append(emptyLabel,statusBody);extra.insertAdjacentElement('afterend',statusRow);
+var rows=[],baseline=[],catalog=[],revision=0,csrf='',dirty=false,busy=false,pending=null,ready=false,bypass=false;
+function keyName(s){return String(s||'').trim().normalize('NFKC').toLocaleLowerCase('pt-BR');}
+function product(name){return catalog.find(function(p){return keyName(p.name)===keyName(name);});}
+function loan(){var n=document.querySelector('[name="comodato"]:checked');return n?n.value:'nao';}
+function legacyRow(name,value){return {legacy:true,id:0,product_id:0,name:name,serial:value,comodato:loan()};}
+function message(text,error){status.textContent=text;status.className='help'+(error?' is-danger':'');statusRow.hidden=!text;}
+function changed(){dirty=true;pending=null;message('');balances();}
+function managed(){return rows.filter(function(r){return !r.legacy&&r.product_id;});}
+function counts(items){var result={};items.forEach(function(r){if(!r.legacy&&!r.stale&&r.product_id)result[r.product_id]=(result[r.product_id]||0)+1;});return result;}
+function balances(){var before=counts(baseline),after=counts(rows);document.querySelectorAll('[data-mka-stock]').forEach(function(n){var r=rows[Number(n.dataset.mkaStock)],p=r&&product(r.name);var value=p&&p.available!==null?p.available:null;n.textContent='Estoque: '+(value===null?'—':value);n.title=value===null?'Equipamento sem saldo cadastrado no estoque.':'Disponível: '+value+'. Após gravar: '+(value+(before[p.id]||0)-(after[p.id]||0))+'.';n.classList.toggle('has-text-danger',value!==null&&value+(before[p.id]||0)-(after[p.id]||0)<0);});}
+function lock(value){busy=value;document.querySelectorAll('[data-mka-equipment-control]').forEach(function(n){n.disabled=value;});}
+function addOption(select,value,label){if(!Array.from(select.options).some(function(o){return o.value===value;})){var option=node('option',label||value);option.value=value;select.append(option);}}
+function controls(eqRow,macRow,r,index,first){
+var select=eqRow.querySelector('select'),input=macRow.querySelector('input[name="mac_serial"],input[data-mka-serial]');
+if(!first){select.removeAttribute('id');select.name='mka_equipment_name_'+index;input.removeAttribute('id');input.name='mka_equipment_serial_'+index;input.dataset.mkaSerial='1';}
+catalog.forEach(function(p){if(p.active||p.id===r.product_id)addOption(select,p.name,p.name+(p.active?'':' (inativo)'));});
+addOption(select,r.name||'nenhum');select.value=r.name||'nenhum';input.value=r.serial||'';
+select.dataset.mkaEquipmentControl='1';input.dataset.mkaEquipmentControl='1';
+select.onchange=function(){r.name=select.value;var p=product(r.name);if(first&&r.legacy&&!p){r.product_id=0;balances();return;}r.legacy=false;r.product_id=p?p.id:0;changed();};
+input.oninput=function(){r.serial=input.value;if(!r.legacy)changed();};
+var addons=select.closest('.field.has-addons');if(!addons)return;
+addons.classList.add('mka-equipment-native-addons');
+addons.querySelectorAll('button,[data-mka-stock-control]').forEach(function(n){var control=n.closest('.control');if(control&&control!==select.closest('.control'))control.remove();else n.remove();});
+var stockControl=node('div');stockControl.className='control';stockControl.dataset.mkaStockControl='1';var stock=node('span');stock.className='button is-static';stock.dataset.mkaStock=String(index);stockControl.append(stock);addons.append(stockControl);
+function action(symbol,title,classes,fn){var control=node('div');control.className='control';var b=node('button');b.type='button';b.className=classes;b.title=title;b.setAttribute('aria-label',title);b.dataset.mkaEquipmentControl='1';var icon=node('i');icon.className=symbol;icon.setAttribute('aria-hidden','true');b.append(icon);b.onclick=function(e){e.preventDefault();e.stopPropagation();if(!busy)fn();};control.append(b);addons.append(control);}
+action('bi-plus','Adicionar equipamento','button is-primary',function(){if(rows.length>=100)return;rows.push({legacy:false,id:0,product_id:0,name:'nenhum',serial:'',comodato:loan()});changed();render();var last=extra.querySelectorAll('select');if(last.length)last[last.length-1].focus();});
+if(!first||!r.legacy)action('bi-dash','Remover equipamento','button is-danger is-outlined',function(){rows.splice(index,1);if(!rows.length)rows.push(legacyRow('nenhum',''));changed();render();});
+}
+function render(){extra.replaceChildren();if(!rows.length)rows.push(legacyRow(equipment.value,serial.value));
+rows.forEach(function(r,index){if(index===0){controls(equipmentRow,serialRow,r,index,true);return;}
+var eq=equipmentTemplate.cloneNode(true),mac=serialTemplate.cloneNode(true);eq.dataset.mkaEquipmentRow='1';mac.dataset.mkaEquipmentRow='1';
+eq.querySelectorAll('[id]').forEach(function(n){n.removeAttribute('id');});mac.querySelectorAll('[id]').forEach(function(n){n.removeAttribute('id');});
+controls(eq,mac,r,index,false);extra.append(eq,mac);});balances();}
+function apply(data,preserve){var first=preserve||(rows[0]&&rows[0].legacy?Object.assign({},rows[0]):null);
+catalog=data.products;baseline=data.items.map(function(r){return Object.assign({legacy:false,name:r.name},r);});
+if(!ready){var matched=baseline.findIndex(function(r){return keyName(r.name)===keyName(original.name)&&r.serial===original.serial;});
+if(matched>=0){baseline.unshift(baseline.splice(matched,1)[0]);first=null;}else first=legacyRow(original.name,original.serial);}
+if(first&&(!first.name||first.name==='nenhum')&&baseline.length)first=null;
+rows=baseline.map(function(r){return Object.assign({},r);});if(first)rows.unshift(first);if(!rows.length)rows=[legacyRow('nenhum','')];
+revision=data.revision;csrf=data.csrf;ready=true;dirty=false;pending=null;render();}
+async function request(options){var response=await fetch('/admin/addons/client_equipment/api.php?uuid='+encodeURIComponent(uuid),Object.assign({credentials:'same-origin',cache:'no-store'},options||{}));var data;
+try{data=await response.json();}catch(e){throw Error('Não foi possível consultar o estoque. Atualize a página.');}if(!response.ok||!data.ok)throw Error(data.error||'Não foi possível consultar o estoque.');return data;}
+async function save(){
+if(rows.some(function(r){return !r.legacy&&r.name!=='nenhum'&&!r.product_id;}))throw Error('Cadastre o equipamento selecionado e sua quantidade no estoque antes de gravar.');
+if(rows.some(function(r){return r.stale;}))throw Error('Um vínculo foi alterado no estoque. Remova a linha desatualizada antes de gravar.');
+if(!pending){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);pending={key:Array.from(bytes,function(x){return x.toString(16).padStart(2,'0');}).join(''),items:JSON.stringify(managed().map(function(r){return {id:r.id,product_id:r.product_id,serial:r.serial,comodato:r.comodato};})),revision:revision};}
+var keep=rows[0]&&rows[0].legacy?Object.assign({},rows[0]):null;
+var body=new URLSearchParams({csrf:csrf,revision:String(pending.revision),request_key:pending.key,items:pending.items});apply(await request({method:'POST',body:body}),keep);
+}
+async function continueSave(resume){if(busy)return;try{
+if(typeof window.verifica_form==='function'&&window.verifica_form(form)!==true)return;
+if(!form.checkValidity()){form.reportValidity();return;}
+lock(true);message('');await save();lock(false);bypass=true;try{resume();}finally{bypass=false;}
+}catch(e){lock(false);message(e.message,true);statusRow.scrollIntoView({block:'nearest'});}}
+// Use the original native Gravar action; no parallel save button or replacement form.
+document.addEventListener('click',function(e){var b=e.target.closest('#btn_gravar');if(!b||b.form!==form||bypass||(!dirty&&!busy))return;e.preventDefault();e.stopImmediatePropagation();continueSave(function(){b.click();});},true);
+form.addEventListener('submit',function(e){if(bypass||(!dirty&&!busy))return;e.preventDefault();e.stopImmediatePropagation();continueSave(function(){form.requestSubmit(e.submitter||undefined);});},true);
+document.querySelectorAll('[name="comodato"]').forEach(function(n){n.addEventListener('change',function(){rows.forEach(function(r){r.comodato=loan();});if(managed().length)changed();});});
 window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue='';}});
-load();
+// Until the authenticated read finishes, leave every native field and native action intact.
+request().then(function(data){original={name:equipment.value,serial:serial.value};apply(data);}).catch(function(e){message(e.message,true);});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
