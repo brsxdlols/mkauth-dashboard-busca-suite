@@ -432,6 +432,7 @@ bash "${SCRIPT_DIR}/scripts/install-nfcom-dependency.sh" "${TARGET_ADMIN_DIR}" "
 python3 "${SCRIPT_DIR}/scripts/install-cleanup.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cleanup"
 python3 "${SCRIPT_DIR}/scripts/install-time-monitor.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/time-monitor"
 python3 "${SCRIPT_DIR}/scripts/install-admin-mobile.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/admin-mobile"
+python3 "${SCRIPT_DIR}/scripts/install-client-equipment.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/client-equipment" || echo '[aviso] Equipamentos preservados: consulte a compatibilidade do contrato e do estoque.'
 
 echo "[etapas] Addons instalados; executando as validacoes finais"
 echo "Backup salvo em: ${BACKUP_DIR}"
