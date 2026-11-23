@@ -45,7 +45,7 @@ if($hasFinance){
 <style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}#dashboard-graphs-content{display:flow-root;width:100%}.row{margin-left:0;margin-right:0}.highcharts-figure{margin:0;min-width:0}.card{border-radius:16px;overflow:hidden}.highcharts-description{margin:0}</style>
 <link rel="stylesheet" href="graphs_modern.css?v=20261118-2"><script src="graphs_modern.js?v=20261118-9" defer></script><?php if($compact){?><style>#dashboard-graphs-content>.card:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .card-header{display:none}#dashboard-graphs-content>.card:first-child .row>div:not(:first-child){display:none}#dashboard-graphs-content>.card:first-child .row>div:first-child{width:100%;flex:0 0 100%;max-width:100%}</style><?php } ?></head><body data-mka-graphs-ready data-current-month="<?=date('Y-m')?>" data-compact="<?=$compact?'sim':'nao'?>">
 <main id="dashboard-graphs-content">
-<?php include __DIR__.'/graficos.php'; ?>
+<?php include __DIR__.'/graficos.php'; if($multi&&!$compact&&$hasFinance&&permissao('perm_numClientes')&&($settings['exb_balanco_clientes']??'s')==='s')include __DIR__.'/multi_client_plans.php'; ?>
 </main>
 <script>
 (function(){

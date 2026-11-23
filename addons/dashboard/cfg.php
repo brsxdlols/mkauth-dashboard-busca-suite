@@ -499,7 +499,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="cfg-exb_graficos_em_baixo">Exibir Graficos Abaixo?</label>
+                        <label for="cfg-exb_graficos_em_baixo">Posição dos gráficos na dashboard Nova</label><small style="display:block;margin-top:6px">Sim: após atividades e tabelas. Não: antes dessas seções. Esta opção muda a posição; a exibição é controlada pelas opções de cada gráfico. Na Multiempresas, os gráficos ficam ao final.</small>
                     </div>
 <div class="form-floating cfg-field">
                         <select class="form-select" name="qtd_meses_graficos" id="cfg-qtd_meses_graficos" aria-label="">
