@@ -1,8 +1,10 @@
 # Equipamentos do cliente e estoque
 
-Na edição do cliente, o **+** ao lado de **Equipamento** repete os campos nativos **Equipamento** e **MAC/Serial**, no mesmo local e com o mesmo estilo do formulário. Cada linha controlada pelo estoque representa uma unidade. O mesmo produto pode aparecer em várias linhas. O comodato segue a opção nativa do cadastro.
+Na edição do cliente, o **+** ao lado de **Equipamento** repete os campos nativos **Equipamento** e **MAC/Serial**, no mesmo local e com o mesmo estilo do formulário. Cada linha controlada pelo estoque representa uma unidade. O mesmo produto pode aparecer em várias linhas. Cada linha exibe **Comodato: Sim/Não** e permite alterar essa informação individualmente. Alterar o comodato do primeiro equipamento não modifica os demais.
 
-O botão **Gravar** original salva a lista de equipamentos e prossegue com a gravação nativa do cadastro. Os campos passam primeiro pela validação do formulário. Uma falha no estoque mantém o formulário aberto para corrigir ou tentar novamente. Adicionar ou remover uma linha na tela só movimenta o estoque ao gravar. O saldo aparece ao lado da seleção; ao passar o mouse, é possível consultar o saldo previsto após gravar, considerando linhas repetidas e devoluções.
+O botão **Gravar** original salva a lista de equipamentos e prossegue com a gravação nativa do cadastro. Os campos passam primeiro pela validação do formulário. Uma falha no estoque mantém o formulário aberto para corrigir ou tentar novamente. Adicionar ou remover uma linha na tela só movimenta o estoque ao gravar. O saldo aparece apenas no primeiro seletor, onde o equipamento é escolhido para adicionar. As linhas abaixo não repetem o estoque. Ao passar o mouse pelo saldo, é possível consultar a previsão após gravar, considerando todas as linhas e devoluções.
+
+Os nomes da lista rápida nativa não têm quantidade de estoque. Quando não há produto/saldo cadastrado, o primeiro seletor mostra **Estoque: não cadastrado**, com link para o cadastro nativo de produtos e quantidades. Saldo zero cadastrado aparece como **Estoque: 0**. Ao retornar da tela de estoque, os saldos são consultados novamente sem descartar alterações locais.
 
 - Adicionar: baixa uma unidade e cria um vínculo nativo em `sis_prodcliente`.
 - Remover: devolve uma unidade e remove somente o vínculo criado pela suíte.
