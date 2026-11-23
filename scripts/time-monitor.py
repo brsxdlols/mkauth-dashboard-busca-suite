@@ -149,6 +149,38 @@ def install_fallback_schedule(backup):
     finally:
         if os.path.exists(name):os.unlink(name)
 
+
+def compatible_chrony_config(source,version):
+    # NTS was introduced in chrony 4. Keep unknown sources/options untouched.
+    match=re.search(r'version\s+(\d+)\.',version)
+    if not match or int(match.group(1))>=4:return source
+    lines=[]
+    for line in source.splitlines(True):
+        if re.match(r'^\s*server\s+(?:[abcd]\.st1|gps)\.ntp\.br\s+',line) and re.search(r'\bnts\b',line.split('#',1)[0]):
+            line=re.sub(r'[ \t]+nts(?=\s|$)','',line,count=1)
+        lines.append(line)
+    return ''.join(lines)
+
+def prepare_chrony_config(backup_dir):
+    binary=shutil.which('chronyd')
+    if not binary:raise RuntimeError('Executavel chronyd ausente.')
+    version=subprocess.run([binary,'-v'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,universal_newlines=True,timeout=5).stdout
+    config=Path('/etc/chrony/chrony.conf')
+    if config.is_symlink() or not config.is_file():raise RuntimeError('Configuracao Chrony nao reconhecida; preservada.')
+    source=config.read_text();candidate=compatible_chrony_config(source,version)
+    if candidate==source:return None
+    backup=Path(backup_dir)/'chrony.conf.before'
+    shutil.copy2(str(config),str(backup))
+    fd,name=tempfile.mkstemp(prefix='.chrony-',dir=str(config.parent))
+    try:
+        with os.fdopen(fd,'w') as f:f.write(candidate)
+        shutil.copystat(str(config),name);os.chown(name,config.stat().st_uid,config.stat().st_gid)
+        os.replace(name,str(config))
+    finally:
+        if os.path.exists(name):os.unlink(name)
+    return backup
+
+
 def repair(state,progress=None):
     progress=progress or (lambda label,percent:None)
     progress("Conferindo localidade e configuracoes",20)
@@ -168,7 +200,18 @@ def repair(state,progress=None):
         return dict(timezone_result,sync_mode='ntpdate_programado')
     name=services[0]
     if name in ('chrony','chronyd'):
-        command(['service',name,'start']);command(['chronyc','online']);command(['chronyc','burst','4/4']);command(['chronyc','waitsync','10']);command(['chronyc','makestep'])
+        backup=prepare_chrony_config(timezone_result['timezone_backup'])
+        try:
+            command(['service',name,'start'])
+            for attempt in range(15):
+                probe=subprocess.run(['chronyc','tracking'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=3)
+                if probe.returncode==0:break
+                time.sleep(.3)
+            else:raise RuntimeError('Chrony nao iniciou. Consulte o log do servico.')
+        except Exception:
+            if backup:shutil.copy2(str(backup),'/etc/chrony/chrony.conf')
+            raise
+        command(['chronyc','online']);command(['chronyc','burst','4/4']);time.sleep(2);command(['chronyc','makestep']);command(['chronyc','waitsync','10','0.5','0','2'])
     elif name in ('ntp','ntpsec'):
         binary=shutil.which('ntpd')
         if not binary:raise RuntimeError('Executavel ntpd ausente.')

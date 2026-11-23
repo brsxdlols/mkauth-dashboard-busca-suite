@@ -488,18 +488,18 @@ if (isset($_SESSION['MM_Usuario'])) {
                             <?php
                             if ($exb_graficos_em_baixo == 's') {
                                 echo "
-                        <option value='s' selected>Sim</option>
-                        <option value='n'>Não</option>
+                        <option value='s' selected>Final da dashboard</option>
+                        <option value='n'>Início da dashboard</option>
                         ";
                             } else {
                                 echo "
-                        <option value='s'>Sim</option>
-                        <option value='n' selected>Não</option>
+                        <option value='s'>Final da dashboard</option>
+                        <option value='n' selected>Início da dashboard</option>
                     ";
                             }
                             ?>
                         </select>
-                        <label for="cfg-exb_graficos_em_baixo">Posição dos gráficos na dashboard Nova</label><small style="display:block;margin-top:6px">Sim: após atividades e tabelas. Não: antes dessas seções. Esta opção muda a posição; a exibição é controlada pelas opções de cada gráfico. Na Multiempresas, os gráficos ficam ao final.</small>
+                        <label for="cfg-exb_graficos_em_baixo">Posição do log de atividades</label><small style="display:block;margin-top:6px">Início: antes dos cards e resumos. Final: depois de todos os gráficos e tabelas. Vale para Nova e Multiempresas. A tabela aparece quando “Exibir log de atividades” está habilitado e seu usuário tem permissão.</small>
                     </div>
 <div class="form-floating cfg-field">
                         <select class="form-select" name="qtd_meses_graficos" id="cfg-qtd_meses_graficos" aria-label="">
@@ -595,7 +595,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                             }
                             ?>
                         </select>
-                        <label for="cfg-tbl_logs_sistema">Exibir Tabela de Logs do Sistema</label>
+                        <label for="cfg-tbl_logs_sistema">Exibir log de atividades</label>
                     </div>
                     </div>
                 </section>

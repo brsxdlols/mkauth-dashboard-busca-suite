@@ -1429,6 +1429,7 @@ if (isset($_SESSION['MM_Usuario'])) {
         $per_meses = $qtd_meses_graficos;
         $string_per = "$per_meses meses";
 
+        if ($exb_graficos_em_baixo == 'n') include __DIR__.'/activity_log.php';
         if ($exb_busca_inteligente == 's') {
         ?>
             <script>
@@ -2072,54 +2073,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         ?>
 
         <div class='row'>
-            <!-- Atividades - Logs do Sistema -->
-            <?php if ((permissao('perm_logs')) && $tbl_logs_sistema == 's') { ?>
-
-                <div class='col-12 mb-3'>
-
-                    <table class='table table-sm'>
-                        <thead>
-                            <tr class="bg-primary text-uppercase">
-                                <th class='fw-bold text-light'>Atividades</th>
-                                <th class='fw-bold text-light'>Data</th>
-                                <th class='fw-bold text-light'>Usuário</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <?php
-
-                            $query_sis_logs = mysqli_query($conn, "SELECT registro, data, login FROM sis_logs WHERE tipo NOT LIKE 'central' ORDER BY id DESC LIMIT 15");
-
-
-                            while ($l = mysqli_fetch_array($query_sis_logs)) {
-                                $log_registro = $l['registro'];
-                                $log_data = $l['data'];
-                                $log_login = $l['login'];
-                            ?>
-
-
-                                <tr class='font-field'>
-                                    <td class=''><?php echo $log_registro; ?></td>
-                                    <td class=''><?php echo $log_data; ?></td>
-                                    <td class=''><?php echo $log_login; ?></td>
-                                </tr>
-
-                            <?php
-                            }
-                            ?>
-
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan='100%'><a href='<?php echo "/admin/logs_sistema$ext_mk"; ?>' target='' class='fw-bold'>VER MAIS...</a></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-            <?php } ?>
             <!-- Chamados -->
 
             <?php if ((permissao('perm_chamados')) && $tbl_chamados_abertos == 's') { ?>
@@ -2354,6 +2307,8 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         if ($exb_graficos_em_baixo == 's') {
             include_once('graphs_frame.php');
         }
+
+        if ($exb_graficos_em_baixo != 'n') include __DIR__.'/activity_log.php';
 
         // Close conn in MariaDB
         mysqli_close($conn);

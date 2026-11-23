@@ -108,6 +108,7 @@ if ($canTotals) {
 <link rel="stylesheet" href="dashboard_density.css?v=20261122-4"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script></head><body class="multi-page mka-suite-dashboard-page">
 <?php if (!defined('ADMIN2URL')) define('ADMIN2URL','/admin/'); include('../../topo.php'); include __DIR__.'/mkauth_dashboard_top.php'; mka_suite_render_top_spacing_style($conn); ?>
 <main class="multi-main mka-suite-dashboard-start">
+<?php if(($multiCfg['exb_graficos_em_baixo']??'s')==='n')include __DIR__.'/activity_log.php'; ?>
 <div class="multi-portal-search-row">
 <a class="multi-portal-link" href="/admin/addons/busca_inteligente/index.php"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span><strong>Acessar portal do sistema</strong><small>Clientes, atendimentos, chamados e instalações</small></span><b aria-hidden="true">→</b></a>
 <form class="multi-search" action="../busca_inteligente/index.php" method="get"><input type="search" name="busca" aria-label="Pesquisar clientes" data-client-suggestions list="multi-client-suggestions" autocomplete="off" placeholder="Pesquisar cliente por nome, documento ou cadastro"><button type="submit">Buscar</button></form>
@@ -141,4 +142,5 @@ if ($canTotals) {
     include __DIR__.'/graphs_frame.php';
 } else { ?><section class="multi-summary"><h2>Faturamento</h2><p>Seu usuário não possui permissão para visualizar os gráficos financeiros.</p></section><?php } ?>
 <script src="shortcuts_modal.js?v=20261016-1"></script>
+<?php if(($multiCfg['exb_graficos_em_baixo']??'s')!=='n')include __DIR__.'/activity_log.php'; ?>
 </main><?php include('../../baixo.php'); ?></body></html>
