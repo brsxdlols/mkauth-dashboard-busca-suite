@@ -1223,6 +1223,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 <link rel="stylesheet" href="../shared/map_monitor.css?v=20261014-12">
 <script src="../shared/map_monitor.js?v=20261014-12"></script>
 <script src="../shared/search_client_modals.js?v=20261014-12" data-report-url="../../relatorios_u.<?= htmlspecialchars($links_ext, ENT_QUOTES, 'UTF-8'); ?>"></script>
+<script src="/admin/addons/shared/client_update_history.js?v=20261123-1" defer></script>
 </body>
 
 </html>

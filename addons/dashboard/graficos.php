@@ -727,12 +727,13 @@
 
                     <div class='col-12 col-md-4 col-lg-2'>
                         <figure class="highcharts-figure">
-                            <div id="container-rel-chamados-5"></div>
+                            <div id="container-rel-chamados-5" style="height:380px"></div>
                             <p class="highcharts-description">
                                 <script>
                                     Highcharts.chart('container-rel-chamados-5', {
+                                        legend: { layout: 'vertical', align: 'center', verticalAlign: 'bottom', itemMarginTop: 4, itemMarginBottom: 4 },
                                         chart: {
-                                            type: 'column',
+                                            type: 'column', height: 380, spacingBottom: 20,
                                         },
                                         plotOptions: {
                                             column: {
