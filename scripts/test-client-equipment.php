@@ -47,6 +47,12 @@ try {
  $db->query("INSERT INTO sis_prodcliente(idprod,qtdcli,usuario,cliente,datains) VALUES(1,7,'native','a',NOW())");$save(array(array('product_id'=>1)));$save(array());
  check((int)$db->query('SELECT SUM(qtdcli) n FROM sis_prodcliente')->fetch_assoc()['n']===7 && $stock(1)===3,'Unrelated native product modified');
  check(strpos(mka_equipment_contract_html($db,'a'),'ONU antiga')!==false,'Legacy equipment fallback lost');
+ // A vendor expander may erase unknown variables; the equipment marker must survive it.
+ define('MKA_EQUIPMENT_CODEC_TEST',true);require __DIR__.'/../addons/client_equipment/contract_runtime.php';
+ class MKAC_VARS {public function __construct($kind,$login){} public function expand($html){return preg_replace('/%[a-z_]+%/','',$html);}}
+ $native="include('sessao_admin.hhvm');".'$vars=new MKAC_VARS(\'cliente\',$login);$html=$vars->expand($html);';
+ $patched=mka_equipment_patch_contract($native);$patched=str_replace("include('sessao_admin.hhvm');",'',$patched);
+ $html='%equipamentos%';$login='a';$LOADMYSQL=$db;eval($patched);check(strpos($html,'ONU antiga')!==false&&strpos($html,'%equipamentos%')===false,'Native expander removed equipment variable');
  // Error after the stock UPDATE must roll back native and suite tables together.
  $db->query("CREATE TRIGGER equipment_test_failure BEFORE INSERT ON sis_prodhistorico FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated failure injection'");
  fails(function()use($save){$save(array(array('product_id'=>1)));},'Throwable');$db->query('DROP TRIGGER equipment_test_failure');
