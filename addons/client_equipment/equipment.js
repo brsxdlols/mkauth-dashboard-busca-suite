@@ -15,6 +15,14 @@ var emptyLabel=node('div');emptyLabel.className=equipmentRow.querySelector('.fie
 var statusBody=node('div');statusBody.className='field-body';var statusField=node('div');statusField.className='field';
 var status=node('p');status.className='help';status.setAttribute('role','status');statusField.append(status);statusBody.append(statusField);statusRow.append(emptyLabel,statusBody);extra.insertAdjacentElement('afterend',statusRow);
 var rows=[],baseline=[],catalog=[],revision=0,csrf='',dirty=false,busy=false,pending=null,ready=false,bypass=false;
+var stockDialog,stockOpener,stockName;
+function explainStock(opener,name){stockOpener=opener;
+if(!stockDialog){stockDialog=node('dialog');stockDialog.className='mka-equipment-stock-dialog';stockDialog.setAttribute('aria-labelledby','mka-equipment-stock-title');
+var header=node('header');header.className='modal-card-head';var heading=node('h2','Quantidade de estoque não cadastrada');heading.className='modal-card-title';heading.id='mka-equipment-stock-title';var close=node('button');close.type='button';close.className='delete';close.setAttribute('aria-label','Fechar');close.onclick=function(){stockDialog.close();};header.append(heading,close);
+var body=node('div');body.className='modal-card-body';stockName=node('p');stockName.className='has-text-weight-semibold';body.append(stockName,node('p','Não há uma quantidade de estoque válida cadastrada para este equipamento. Por isso aparece uma interrogação (?) no lugar do saldo.'));
+var footer=node('footer');footer.className='modal-card-foot';var dismiss=node('button','Fechar');dismiss.type='button';dismiss.className='button';dismiss.onclick=function(){stockDialog.close();};var register=node('a','Cadastrar estoque');register.className='button is-primary';register.href='/admin/produtos.'+(location.pathname.endsWith('.hhvm')?'hhvm':'php');register.target='_blank';register.rel='noopener';register.onclick=function(){stockDialog.close();};footer.append(dismiss,register);stockDialog.append(header,body,footer);document.body.append(stockDialog);
+stockDialog.addEventListener('close',function(){if(stockOpener&&stockOpener.isConnected)stockOpener.focus({preventScroll:true});});}
+stockName.textContent=name;if(!stockDialog.open)stockDialog.showModal();}
 function keyName(s){return String(s||'').trim().normalize('NFKC').toLocaleLowerCase('pt-BR');}
 function product(name){var exact=catalog.filter(function(p){return keyName(p.name)===keyName(name);});if(exact.length===1)return exact[0];var canonical=function(s){return keyName(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[_\s-]+/g,' ');};var matches=catalog.filter(function(p){return canonical(p.name)===canonical(name);});return matches.length===1?matches[0]:null;}
 function loan(){var n=document.querySelector('[name="comodato"]:checked');return n?n.value:'nao';}
@@ -24,8 +32,8 @@ function changed(){dirty=true;pending=null;message('');balances();}
 function managed(){return rows.filter(function(r){return !r.legacy&&r.product_id;});}
 function counts(items){var result={};items.forEach(function(r){if(!r.legacy&&!r.stale&&r.product_id)result[r.product_id]=(result[r.product_id]||0)+1;});return result;}
 function balances(){var before=counts(baseline),after=counts(rows);document.querySelectorAll('[data-mka-stock]').forEach(function(n){var r=rows[Number(n.dataset.mkaStock)],selected=r&&r.name&&r.name!=='nenhum',p=r&&(catalog.find(function(p){return p.id===r.product_id;})||product(r.name));var value=p&&p.available!==null?p.available:null;
-n.textContent='Estoque: '+(!selected?'selecione':value===null?'não cadastrado':value);n.title=!selected?'Selecione o equipamento.':value===null?'Cadastrar o produto e sua quantidade no estoque.':'Disponível: '+value+'. Após gravar: '+(value+(before[p.id]||0)-(after[p.id]||0))+'.';
-n.className='button '+(selected&&value===null?'is-light':'is-static');if(selected&&value===null){n.href='/admin/produtos.'+(location.pathname.endsWith('.hhvm')?'hhvm':'php');n.target='_blank';n.rel='noopener';}else{n.removeAttribute('href');n.removeAttribute('target');}n.classList.toggle('has-text-danger',value!==null&&value+(before[p.id]||0)-(after[p.id]||0)<0);});}
+n.textContent='Estoque: '+(!selected?'selecione':value===null?'?':value);n.title=!selected?'Selecione o equipamento.':value===null?'Quantidade não cadastrada. Clique no ? para entender.':'Disponível: '+value+'. Após gravar: '+(value+(before[p.id]||0)-(after[p.id]||0))+'.';
+n.className='button '+(selected&&value===null?'is-light':'is-static');if(selected&&value===null){n.setAttribute('aria-label','Estoque não cadastrado. Clique para entender.');n.setAttribute('aria-haspopup','dialog');n.onclick=function(){explainStock(n,r.name);};}else{n.setAttribute('aria-label',n.textContent);n.removeAttribute('aria-haspopup');n.onclick=null;}n.classList.toggle('has-text-danger',value!==null&&value+(before[p.id]||0)-(after[p.id]||0)<0);});}
 function lock(value){busy=value;document.querySelectorAll('[data-mka-equipment-control]').forEach(function(n){n.disabled=value;});}
 function addOption(select,value,label){if(!Array.from(select.options).some(function(o){return o.value===value;})){var option=node('option',label||value);option.value=value;select.append(option);}}
 function controls(eqRow,macRow,r,index,first){
@@ -39,7 +47,7 @@ input.oninput=function(){r.serial=input.value;if(!r.legacy)changed();};
 var addons=select.closest('.field.has-addons');if(!addons)return;
 addons.classList.add('mka-equipment-native-addons');
 addons.querySelectorAll('button,[data-mka-stock-control],[data-mka-loan-control]').forEach(function(n){var control=n.closest('.control');if(control&&control!==select.closest('.control'))control.remove();else n.remove();});
-if(first){var stockControl=node('div');stockControl.className='control';stockControl.dataset.mkaStockControl='1';var stock=node('a');stock.className='button is-static';stock.dataset.mkaStock=String(index);stockControl.append(stock);addons.append(stockControl);}
+if(first){var stockControl=node('div');stockControl.className='control';stockControl.dataset.mkaStockControl='1';var stock=node('button');stock.type='button';stock.className='button is-static';stock.dataset.mkaStock=String(index);stockControl.append(stock);addons.append(stockControl);}
 var loanControl=node('div');loanControl.className='control';loanControl.dataset.mkaLoanControl='1';var loanWrapper=node('div');loanWrapper.className='select';var perLoan=node('select');perLoan.name='mka_equipment_loan_'+index;perLoan.dataset.mkaEquipmentControl='1';perLoan.dataset.mkaLoan=String(index);perLoan.setAttribute('aria-label','Comodato do equipamento '+(index+1));
 ['sim','nao'].forEach(function(v){var option=node('option','Comodato: '+(v==='sim'?'Sim':'Não'));option.value=v;perLoan.append(option);});perLoan.value=r.comodato;
 perLoan.onchange=function(){r.comodato=perLoan.value;if(first)document.querySelectorAll('[name="comodato"]').forEach(function(n){n.checked=n.value===r.comodato;});if(!r.legacy)changed();};loanWrapper.append(perLoan);loanControl.append(loanWrapper);addons.append(loanControl);
@@ -55,7 +63,7 @@ eq.querySelectorAll('[id]').forEach(function(n){n.removeAttribute('id');});mac.q
 controls(eq,mac,r,index,false);extra.append(eq,mac);});balances();}
 function apply(data,preserve){var first=preserve||(rows[0]&&rows[0].legacy?Object.assign({},rows[0]):null);
 catalog=data.products;baseline=data.items.map(function(r){return Object.assign({legacy:false,name:r.name},r);});
-if(!ready){var matched=baseline.findIndex(function(r){return keyName(r.name)===keyName(original.name)&&r.serial===original.serial;});
+if(!ready){var primaryProduct=product(original.name);var matched=baseline.findIndex(function(r){return (keyName(r.name)===keyName(original.name)||(primaryProduct&&primaryProduct.id===r.product_id))&&r.serial===original.serial;});
 if(matched>=0){baseline.unshift(baseline.splice(matched,1)[0]);first=null;}else first=legacyRow(original.name,original.serial);}
 if(first&&(!first.name||first.name==='nenhum')&&baseline.length)first=null;
 rows=baseline.map(function(r){return Object.assign({},r);});if(first)rows.unshift(first);if(!rows.length)rows=[legacyRow('nenhum','')];

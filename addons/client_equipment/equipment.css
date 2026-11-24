@@ -4,3 +4,8 @@
 .mka-equipment-native-addons{flex-wrap:wrap}
 .mka-equipment-native-addons>.control.is-expanded{min-width:0;flex:1 1 180px}
 .mka-equipment-native-addons .is-static{white-space:nowrap}
+.mka-equipment-stock-dialog{padding:0;border:1px solid #dbdbdb;border-radius:6px;width:min(480px,calc(100% - 28px));max-height:85dvh;overflow:auto;color:inherit;font:inherit}
+.mka-equipment-stock-dialog::backdrop{background:rgba(10,10,10,.5)}
+.mka-equipment-stock-dialog .modal-card-title{font-size:1.05rem;line-height:1.4}
+.mka-equipment-stock-dialog .modal-card-body p+p{margin-top:12px}
+.mka-equipment-stock-dialog .modal-card-foot{flex-wrap:wrap;gap:8px}

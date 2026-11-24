@@ -144,7 +144,13 @@ function mka_equipment_contract_html($db,$login) {
     $q=mka_equipment_query($db,'SELECT uuid_cliente,equipamento,mac_serial,comodato FROM sis_cliente WHERE login=? LIMIT 1','s',array($login));$client=$q->get_result()->fetch_assoc();
     if(!$client)return '';
     $items=array();foreach(mka_equipment_rows($db,$client['uuid_cliente'],$login) as $r)if(mka_equipment_valid_allocation($r,$login))$items[]=array('name'=>$r['nome'],'serial'=>$r['serial'],'comodato'=>$r['comodato']);
-    if(!$items && trim((string)$client['equipamento'])!=='' && strtolower(trim($client['equipamento']))!=='nenhum')$items[]=array('name'=>$client['equipamento'],'serial'=>$client['mac_serial'],'comodato'=>$client['comodato']);
+    $legacy=trim((string)$client['equipamento']);$matched=false;
+    $fold=function($value){$value=trim((string)$value);if(class_exists('Normalizer',false))$value=Normalizer::normalize($value,Normalizer::FORM_KC);$value=function_exists('mb_strtolower')?mb_strtolower($value,'UTF-8'):strtolower($value);return preg_replace('/[_\s-]+/u',' ',$value);};
+    foreach($items as $item)if($fold($item['name'])===$fold($legacy) && (string)$item['serial']===(string)$client['mac_serial']){$matched=true;break;}
+    if($legacy!=='' && strtolower($legacy)!=='nenhum' && !$matched)array_unshift($items,array('name'=>$client['equipamento'],'serial'=>$client['mac_serial'],'comodato'=>$client['comodato']));
+    return mka_equipment_contract_table($items);
+}
+function mka_equipment_contract_table($items) {
     if(!$items)return '<p>Nenhum equipamento vinculado.</p>';
     $html='<table style="width:100%;border-collapse:collapse"><thead><tr><th>Equipamento</th><th>Quantidade</th><th>MAC/Serial</th><th>Comodato</th></tr></thead><tbody>';
     foreach($items as $r){$html.='<tr>';foreach(array($r['name'],'1',$r['serial'],$r['comodato']==='sim'?'Sim':'Não')as$v)$html.='<td>'.htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8').'</td>';$html.='</tr>';}

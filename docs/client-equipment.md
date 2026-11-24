@@ -4,7 +4,7 @@ Na edição do cliente, o **+** ao lado de **Equipamento** repete os campos nati
 
 O botão **Gravar** original salva a lista de equipamentos e prossegue com a gravação nativa do cadastro. Os campos passam primeiro pela validação do formulário. Uma falha no estoque mantém o formulário aberto para corrigir ou tentar novamente. Adicionar ou remover uma linha na tela só movimenta o estoque ao gravar. O saldo aparece apenas no primeiro seletor, onde o equipamento é escolhido para adicionar. As linhas abaixo não repetem o estoque. Ao passar o mouse pelo saldo, é possível consultar a previsão após gravar, considerando todas as linhas e devoluções.
 
-Os nomes da lista rápida nativa não têm quantidade de estoque. Quando não há produto/saldo cadastrado, o primeiro seletor mostra **Estoque: não cadastrado**, com link para o cadastro nativo de produtos e quantidades. Saldo zero cadastrado aparece como **Estoque: 0**. Ao retornar da tela de estoque, os saldos são consultados novamente sem descartar alterações locais.
+Os nomes da lista rápida nativa não têm quantidade de estoque. Quando não há produto/saldo cadastrado, o primeiro seletor mostra **Estoque: ?**. Passar o mouse mostra uma dica; clicar abre uma explicação em modal com acesso ao cadastro nativo de produtos e quantidades. Saldo zero cadastrado aparece como **Estoque: 0**. Ao retornar da tela de estoque, os saldos são consultados novamente sem descartar alterações locais.
 
 - Adicionar: baixa uma unidade e cria um vínculo nativo em `sis_prodcliente`.
 - Remover: devolve uma unidade e remove somente o vínculo criado pela suíte.
@@ -20,9 +20,11 @@ O equipamento e MAC/serial antigos são preservados. Não há importação nem b
 ## Contrato
 
 - `%produtos%`: variável nativa, lista nomes e quantidades dos produtos vinculados. As unidades da suíte aparecem automaticamente nessa lista.
-- `%equipamentos%`: na geração/impressão administrativa por `gera_contrato.hhvm`, lista uma linha por unidade com equipamento, quantidade, MAC/serial e comodato. Os nomes e números de série são escapados como texto. Sem lista da suíte, usa o equipamento antigo, se preenchido.
+- `%equipamentos%`: na geração/impressão administrativa por `gera_contrato.hhvm`, lista uma linha por unidade com equipamento, quantidade, MAC/serial e comodato. Dez unidades geram dez linhas, mesmo com modelos repetidos. Lista tanto comodato Sim quanto Não. Os nomes e números de série são escapados como texto. Inclui também o equipamento antigo se ele for distinto das unidades vinculadas, sem duplicar o primeiro campo quando ele representa uma unidade já listada.
 
 A instalação não altera modelos existentes e não emite contratos. Inclua a variável no modelo desejado. Fluxos de assinatura/geração externos que não usam `gera_contrato.hhvm` continuam com sua expansão nativa de `%produtos%`.
+
+`php scripts/preview-equipment-contract.php > exemplo.html` gera uma prévia com seis unidades fictícias usando o mesmo renderizador da variável. Não conecta ao banco nem emite um contrato real. O estilo final da tabela acompanha o modelo de contrato utilizado.
 
 ## Instalação e dados
 

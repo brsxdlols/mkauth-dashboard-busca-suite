@@ -33,6 +33,14 @@ try {
  check(mka_equipment_save($db,$uuid,'a','test',0,$key,array(array('product_id'=>1,'serial'=>'A'),array('product_id'=>1,'serial'=>'B')))===1 && $stock(1)===1,'Network retry debited twice');
  $rows=$items();$rows[0]['serial']='<script>alert(1)</script>'; $save($rows);check($stock(1)===1,'Serial edit moved stock');
  $html=mka_equipment_contract_html($db,'a');check(strpos($html,'&lt;script&gt;')!==false && strpos($html,'<script>')===false && substr_count($html,'Roteador &lt;Intelbras&gt;')===2,'Contract escaping or repeated units failed');
+ check(strpos($html,'ONU antiga')!==false && substr_count($html,'<tr>')===4,'Legacy equipment omitted alongside linked units');
+ mka_equipment_query($db,'UPDATE sis_cliente SET equipamento=?,mac_serial=? WHERE login=?','sss',array('Roteador <Intelbras>',$rows[0]['serial'],'a'));
+ check(substr_count(mka_equipment_contract_html($db,'a'),'<tr>')===3,'Native mirror counted twice in the contract');
+ $db->query("UPDATE sis_cliente SET equipamento='Roteador_<Intelbras>' WHERE login='a'");
+ check(substr_count(mka_equipment_contract_html($db,'a'),'<tr>')===3,'Equipment name alias counted twice');
+ $db->query("UPDATE sis_cliente SET equipamento='ONU antiga',mac_serial='antigo' WHERE login='a'");
+ $ten=array();for($i=0;$i<10;$i++)$ten[]=array('name'=>'Roteador repetido','serial'=>'EXEMPLO-'.$i,'comodato'=>$i%2?'nao':'sim');
+ $tenHtml=mka_equipment_contract_table($ten);check(substr_count($tenHtml,'<tr>')===11 && substr_count($tenHtml,'<td>1</td>')===10 && substr_count($tenHtml,'<td>Sim</td>')===5 && substr_count($tenHtml,'<td>Não</td>')===5,'Ten equipment units were grouped or comodato values lost');
  $rows=$items();array_pop($rows);$save($rows);check($stock(1)===2 && count($items())===1,'Remove did not return one');
  $rows=$items();$rows[0]['product_id']=2;$save($rows);check($stock(1)===3 && $stock(2)===1,'Product swap incorrect');
  $rows=$items();$rows[]=array('product_id'=>2);$rows[]=array('product_id'=>2);$before=$revision;
