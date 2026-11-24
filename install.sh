@@ -327,6 +327,7 @@ lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
 # intended for another PHP release and must not abort an otherwise valid install.
 # Validate the maintained aggregate calculations shipped by this installer.
+lint_file "${TARGET_ADDONS_DIR}/dashboard/mobile_layout.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/cli_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard/graf_periodo.php"
 lint_file "${TARGET_ADDONS_DIR}/rel_cli_offline/mapa.php"

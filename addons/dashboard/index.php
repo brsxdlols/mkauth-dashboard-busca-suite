@@ -463,7 +463,6 @@ if (isset($_SESSION['MM_Usuario'])) {
                 width: 100% !important;
                 max-width: 100% !important;
                 min-width: 0 !important;
-                overflow-x: hidden !important;
             }
 
             body.mka-suite-dashboard-page #pagina,
@@ -480,15 +479,15 @@ if (isset($_SESSION['MM_Usuario'])) {
             }
 
             body.mka-suite-dashboard-page .mka-suite-dashboard-start {
-                width: calc(100vw - 16px) !important;
-                max-width: calc(100vw - 16px) !important;
-                margin-right: 8px !important;
-                margin-left: 8px !important;
-                padding-right: 8px !important;
-                padding-left: 8px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-right: 0 !important;
+                margin-left: 0 !important;
+                padding-right: 12px !important;
+                padding-left: 12px !important;
                 position: relative;
-                left: -15px;
-                overflow-x: hidden !important;
+                left: 0;
+                overflow: visible !important;
             }
 
             body.mka-suite-dashboard-page .row {
@@ -589,7 +588,6 @@ if (isset($_SESSION['MM_Usuario'])) {
             body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row,
             body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row > [class*="col-"] {
                 max-width: 100% !important;
-                overflow-x: hidden !important;
             }
 
             body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row > [class*="col-"] {
@@ -846,7 +844,6 @@ if (isset($_SESSION['MM_Usuario'])) {
             body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row,
             body.mka-suite-dashboard-page .mka-suite-dashboard-start > .row > [class*="col-"] {
                 overflow: visible !important;
-                overflow-x: clip !important;
             }
             .dashboard-summary-row > [class*="col-"] {
                 display: block;
@@ -1225,7 +1222,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="dashboard_density.css?v=20261122-4"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script></head>
+<link rel="stylesheet" href="dashboard_density.css?v=<?=substr(hash_file('sha256',__DIR__.'/dashboard_density.css'),0,12)?>"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script><?php include __DIR__.'/mobile_layout.php'; ?></head>
 
 <body class="mka-suite-dashboard-page">
     <?php if (!defined('ADMIN2URL')) define('ADMIN2URL', '/admin/'); ?>
