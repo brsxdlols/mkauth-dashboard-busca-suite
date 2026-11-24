@@ -47,25 +47,21 @@ CACHE_BUSTER="$(date +%s)"
 ARCHIVE_URL="https://codeload.github.com/${REPO_OWNER}/${REPO_NAME}/tar.gz/refs/heads/${REPO_REF}?cache=${CACHE_BUSTER}"
 echo "[1/4] Baixando pacote ${REPO_OWNER}/${REPO_NAME}@${REPO_REF}"
 if [ -t 1 ]; then
-  # Archive transfers can omit Content-Length. Label the animation as estimated.
+  # codeload may omit Content-Length. Report received bytes and elapsed time;
+  # neither is a measurement of the unknown percentage remaining.
   fetch "${ARCHIVE_URL}" "${ARCHIVE_PATH}" >"${TMP_DIR}/download.log" 2>&1 &
   FETCH_PID=$!
   FETCH_START=$SECONDS
   while kill -0 "${FETCH_PID}" 2>/dev/null; do
     elapsed=$((SECONDS - FETCH_START))
-    percent=$((100 * elapsed / (15 + elapsed)))
-    [ "$percent" -le 95 ] || percent=95
-    filled=$((percent / 5))
-    bar=""
-    for ((i=0; i<20; i++)); do
-      if [ "$i" -lt "$filled" ]; then bar+="#"; else bar+="-"; fi
-    done
-    printf '\r\033[2K[...] Download [%s] %s%% estimado' "$bar" "$percent"
-    sleep 0.2
+    bytes=0
+    if [ -f "${ARCHIVE_PATH}" ]; then bytes="$(stat -c '%s' "${ARCHIVE_PATH}" 2>/dev/null || echo 0)"; fi
+    printf '\r\033[2K[...] Download %s KiB - %ss' "$((bytes / 1024))" "$elapsed"
+    sleep 1
   done
   if wait "${FETCH_PID}"; then
     FETCH_PID=""
-    if [ -z "${NO_COLOR:-}" ]; then printf '\r\033[2K\033[32m[OK] Download [####################] 100%%\033[0m\n'; else printf '\r[OK] Download [####################] 100%%\n'; fi
+    if [ -z "${NO_COLOR:-}" ]; then printf '\r\033[2K\033[32m[OK] Download 100%%\033[0m\n'; else printf '\r\033[2K[OK] Download 100%%\n'; fi
   else
     status=$?; FETCH_PID=""
     printf '\n'; cat "${TMP_DIR}/download.log" >&2
@@ -90,7 +86,7 @@ find "${PACKAGE_DIR}" -type f -name '*.sh' -exec sed -i 's/\r$//' {} +
 
 echo "[3/4] Executando instalador local"
 chmod +x "${PACKAGE_DIR}/install.sh"
-if { [ -t 1 ] || [ "${FORCE_COLOR:-0}" = "1" ]; } && [ -z "${NO_COLOR:-}" ]; then
+if [ -t 1 ]; then
   # The runner retains the installer exit status and paints the loading line.
   python3 -u "${PACKAGE_DIR}/scripts/install-progress.py" --terminal --log-dir "${BACKUP_ROOT}" -- bash "${PACKAGE_DIR}/install.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_ROOT}"
 else
