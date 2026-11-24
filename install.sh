@@ -321,7 +321,6 @@ fi
 
 # Select the supported HHVM native routes on installation.
 php "${SCRIPT_DIR}/scripts/install-native-link-default.php" "${BACKUP_DIR}/native-link-default"
-php "${SCRIPT_DIR}/scripts/install-hotsite-default.php" "${BACKUP_DIR}/hotsite-default"
 
 echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"

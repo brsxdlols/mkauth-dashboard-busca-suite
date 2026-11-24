@@ -1,6 +1,6 @@
 # Compatibilidade da instalação
 
-O instalador seleciona HHVM para os links nativos da Busca e salva o valor anterior no backup. O tema de hotsite padrão/padrão antigo passa a VPSCLOUD WhatsApp quando esse layout já existe em /var/www/layout; temas personalizados são preservados. Se o arquivo do tema não estiver instalado, o terminal informa a pendência.
+O instalador seleciona HHVM para os links nativos da Busca e salva o valor anterior no backup.
 
 A etapa de horário executa a correção pelo terminal, usando o cliente NTP existente, conferindo as referências e verificando novamente o resultado. O monitor web continua disponível. Uma falha ou ausência de duas referências concordantes gera aviso; o instalador não declara sincronização confirmada. Não instala outro daemon concorrente. Configurações de fuso e sincronização têm backup.
 
