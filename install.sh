@@ -321,6 +321,7 @@ fi
 
 # Select the supported HHVM native routes on installation.
 php "${SCRIPT_DIR}/scripts/install-native-link-default.php" "${BACKUP_DIR}/native-link-default"
+python3 "${SCRIPT_DIR}/scripts/install-native-disconnect-clock.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/native-disconnect-clock" || echo '[aviso] Rotina nativa de desconexao preservada; consulte o backup para revisar a compatibilidade.'
 
 echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"

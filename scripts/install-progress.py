@@ -23,7 +23,8 @@ def phase(line):
         return match.group(1).strip()
     match = re.match(r'^\[([a-z-]+)\]', line)
     names = {'radius': 'Log RADIUS', 'caixa': 'Caixa', 'cpf': 'CPF/CNPJ',
-             'reconcile': 'Reconciliador online/offline', 'checagem': 'Conferencia online/offline',
+             'reconcile': 'Reconciliador online/offline',
+             'desconexao': 'Horario das desconexoes', 'checagem': 'Conferencia online/offline',
              'visitas': 'Visitas', 'atendimentos': 'Atendimentos', 'offline': 'Relatorio offline',
              'receber': 'Recebimento', 'ipv6': 'IPv6', 'nfcom': 'NFCom, DICI e Trafego',
              'limpeza': 'Limpeza diaria', 'horario': 'Diagnostico de horario', 'desempenho': 'Analise de desempenho',
