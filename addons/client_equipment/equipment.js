@@ -18,14 +18,17 @@ var emptyLabel=node('div');emptyLabel.className=equipmentRow.querySelector('.fie
 var statusBody=node('div');statusBody.className='field-body';var statusField=node('div');statusField.className='field';
 var status=node('p');status.className='help';status.setAttribute('role','status');statusField.append(status);statusBody.append(statusField);statusRow.append(emptyLabel,statusBody);extra.insertAdjacentElement('afterend',statusRow);
 var rows=[],baseline=[],catalog=[],revision=0,csrf='',dirty=false,busy=false,pending=null,ready=false,bypass=false;
-var stockDialog,stockOpener,stockName;
-function explainStock(opener,name){stockOpener=opener;
+var stockDialog,stockOpener,stockName,stockHeading,stockReason;
+function explainStock(opener,name,available){stockOpener=opener;
+var unknown=available===undefined||available===null;
+var reason=unknown?'Este equipamento não tem uma quantidade de estoque cadastrada. Por isso aparece ? no lugar do saldo e não é possível adicioná-lo ao cliente.':'Não há saldo disponível deste equipamento para adicionar ao cliente. O saldo disponível nesta tela é '+Math.max(0,Number(available))+' unidade(s).';
+message(reason+' Acesse Provedor → Controle de produtos e registre uma entrada no estoque.',true);
 if(!stockDialog){stockDialog=node('dialog');stockDialog.className='mka-equipment-stock-dialog';stockDialog.setAttribute('aria-labelledby','mka-equipment-stock-title');
-var header=node('header');header.className='modal-card-head';var heading=node('h2','Quantidade de estoque não cadastrada');heading.className='modal-card-title';heading.id='mka-equipment-stock-title';var close=node('button');close.type='button';close.className='delete';close.setAttribute('aria-label','Fechar');close.onclick=function(){stockDialog.close();};header.append(heading,close);
-var body=node('div');body.className='modal-card-body';stockName=node('p');stockName.className='has-text-weight-semibold';body.append(stockName,node('p','Não há uma quantidade de estoque válida cadastrada para este equipamento. Por isso aparece uma interrogação (?) no lugar do saldo.'));
-var footer=node('footer');footer.className='modal-card-foot';var dismiss=node('button','Fechar');dismiss.type='button';dismiss.className='button';dismiss.onclick=function(){stockDialog.close();};var register=node('a','Cadastrar estoque');register.className='button is-primary';register.href='/admin/produtos.'+(location.pathname.endsWith('.hhvm')?'hhvm':'php');register.target='_blank';register.rel='noopener';register.onclick=function(){stockDialog.close();};footer.append(dismiss,register);stockDialog.append(header,body,footer);document.body.append(stockDialog);
+var header=node('header');header.className='modal-card-head';var heading=node('h2','Quantidade de estoque não cadastrada');heading.className='modal-card-title';heading.id='mka-equipment-stock-title';stockHeading=heading;var close=node('button');close.type='button';close.className='delete';close.setAttribute('aria-label','Fechar');close.onclick=function(){stockDialog.close();};header.append(heading,close);
+var body=node('div');body.className='modal-card-body';stockName=node('p');stockName.className='has-text-weight-semibold';stockReason=node('p');stockReason.id='mka-equipment-stock-reason';stockDialog.setAttribute('aria-describedby',stockReason.id);var steps=node('ol');['Acesse Provedor → Controle de produtos.','Cadastre o produto correspondente, se necessário, e registre a entrada da quantidade disponível no estoque.','Volte a esta tela, confira o saldo e clique em + para adicionar o equipamento ao cliente.'].forEach(function(text){steps.append(node('li',text));});body.append(stockName,stockReason,steps);
+var footer=node('footer');footer.className='modal-card-foot';var dismiss=node('button','Fechar');dismiss.type='button';dismiss.className='button';dismiss.onclick=function(){stockDialog.close();};var register=node('a','Abrir Controle de produtos');register.className='button is-primary';register.href='/admin/produtos.'+(location.pathname.endsWith('.hhvm')?'hhvm':'php');register.target='_blank';register.rel='noopener';register.onclick=function(){stockDialog.close();};footer.append(dismiss,register);stockDialog.append(header,body,footer);document.body.append(stockDialog);
 stockDialog.addEventListener('close',function(){if(stockOpener&&stockOpener.isConnected)stockOpener.focus({preventScroll:true});});}
-stockName.textContent=name;if(!stockDialog.open)stockDialog.showModal();}
+stockName.textContent=name;stockHeading.textContent=unknown?'Estoque não cadastrado — equipamento não adicionado':'Sem saldo no estoque — equipamento não adicionado';stockReason.textContent=reason;if(!stockDialog.open)stockDialog.showModal();}
 function keyName(s){return String(s||'').trim().normalize('NFKC').toLocaleLowerCase('pt-BR');}
 function product(name){var exact=catalog.filter(function(p){return keyName(p.name)===keyName(name);});if(exact.length===1)return exact[0];var canonical=function(s){return keyName(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[_\s-]+/g,' ');};var matches=catalog.filter(function(p){return canonical(p.name)===canonical(name);});return matches.length===1?matches[0]:null;}
 function loan(){var n=document.querySelector('[name="comodato"]:checked');return n?n.value:'nao';}
@@ -35,7 +38,7 @@ function changed(){dirty=true;pending=null;message('');balances();}
 function managed(){return rows.filter(function(r){return !r.legacy&&r.product_id;});}
 function counts(items){var result={};items.forEach(function(r){if(!r.legacy&&!r.stale&&r.product_id)result[r.product_id]=(result[r.product_id]||0)+1;});return result;}
 function balances(){var before=counts(baseline),after=counts(rows);document.querySelectorAll('[data-mka-stock]').forEach(function(n){var r=draft,selected=r.name&&r.name!=='nenhum',p=product(r.name);var known=p&&p.available!==null&&p.available!==undefined,value=known?Number(p.available)+(before[p.id]||0)-(after[p.id]||0):null;
-n.textContent='Estoque: '+(!selected?'selecione':value===null?'?':value);n.title=!selected?'Selecione o equipamento.':value===null?'Quantidade não cadastrada. Clique no ? para entender.':'Disponível após as alterações desta tela: '+value+'. A movimentação será confirmada ao gravar.';
+n.textContent='Estoque: '+(!selected?'selecione':value===null?'?':value);n.title=!selected?'Selecione o equipamento.':value===null?'Sem quantidade cadastrada. Clique no ? para saber como registrar a entrada no estoque.':'Disponível após as alterações desta tela: '+value+'. A movimentação será confirmada ao gravar.';
 n.className='button '+(selected&&value===null?'is-light':'is-static');if(selected&&value===null){n.setAttribute('aria-label','Estoque não cadastrado. Clique para entender.');n.setAttribute('aria-haspopup','dialog');n.onclick=function(){explainStock(n,r.name);};}else{n.setAttribute('aria-label',n.textContent);n.removeAttribute('aria-haspopup');n.onclick=null;}n.classList.toggle('has-text-danger',value!==null&&value<0);});}
 function lock(value){busy=value;document.querySelectorAll('[data-mka-equipment-control]').forEach(function(n){n.disabled=value||n.dataset.mkaFixed==='1';});}
 function addOption(select,value,label){if(!Array.from(select.options).some(function(o){return o.value===value;})){var option=node('option',label||value);option.value=value;select.append(option);}}
@@ -61,7 +64,7 @@ if(rows.length>=100)return;
 var p=product(draft.name);if(!draft.name||draft.name==='nenhum'){message('Selecione o equipamento para adicionar.',true);return;}
 if(!p||p.available===null||p.available===undefined){explainStock(document.querySelector('[data-mka-stock]'),draft.name);return;}
 var before=counts(baseline),after=counts(rows),available=Number(p.available)+(before[p.id]||0)-(after[p.id]||0);
-if(available<1){message('Não há unidades disponíveis deste equipamento no estoque.',true);return;}
+if(available<1){explainStock(document.querySelector('[aria-label="Adicionar equipamento"]'),draft.name,available);return;}
 rows.push({legacy:false,id:0,product_id:p.id,name:p.name,serial:draft.serial,comodato:draft.comodato});draft.serial='';changed();render();});
 else action('bi-dash','Remover equipamento','button is-danger is-outlined',function(){rows.splice(index,1);changed();render();});
 }
@@ -103,3 +106,4 @@ var refreshing=false;window.addEventListener('focus',async function(){if(!ready|
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
+

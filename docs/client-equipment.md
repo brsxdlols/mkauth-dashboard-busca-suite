@@ -10,7 +10,7 @@ Os nomes da lista rápida nativa não têm quantidade de estoque. Quando não h�
 - Remover: devolve uma unidade e remove somente o vínculo criado pela suíte.
 - A primeira linha serve apenas para selecionar e adicionar com o botão +; não tem botão de remover.
 - Nos itens adicionados, o equipamento fica bloqueado. Para trocar, remova a unidade e adicione o novo equipamento. Comodato e MAC/serial continuam editáveis.
-- Sem quantidade de estoque cadastrada, o + abre a explicação e não adiciona uma linha inválida.
+- Sem quantidade cadastrada ou sem saldo disponível, o + informa que o equipamento não foi adicionado e orienta acessar **Provedor → Controle de produtos**, cadastrar o produto se necessário e registrar uma entrada no estoque. O modal inclui um atalho para essa tela; a explicação também fica visível junto aos campos. Não há inclusão nem movimentação até existir saldo válido.
 - Alterar apenas MAC/serial ou comodato: não movimenta estoque.
 - Salvar novamente ou repetir uma requisição após falha de rede: não duplica a baixa.
 - Estoque insuficiente, alterações concorrentes ou vínculos inconsistentes: nenhuma movimentação parcial é confirmada.
@@ -35,3 +35,4 @@ A instalação não altera modelos existentes e não emite contratos. Inclua a v
 As tabelas da suíte são `suite_equipment_clients` (revisão), `suite_equipment_items` (MAC/serial e vínculo nativo) e `suite_equipment_operations` (gravações idempotentes). Nenhuma coluna nativa é adicionada. Movimentações constam no histórico nativo de produtos. Remover o addon não deve apagar alocações nem somar estoque; devolva os equipamentos pela lista antes de desinstalar, se necessário.
 
 Para testar o layout com o CSS nativo, execute `node scripts/test-client-equipment-native-ui.cjs` com `MKA_NATIVE_CSS` apontando para `estilos/mk-auth.css`. `CHROME_BIN` permite escolher o Chrome/Chromium. O teste usa dados fictícios e verifica desktop/celular, preservação dos campos, repetição das linhas, validação, Gravar, envio pelo teclado e repetição após erro de rede. Não acessa clientes nem movimenta estoque real.
+
