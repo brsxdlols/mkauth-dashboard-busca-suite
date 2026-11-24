@@ -14,8 +14,8 @@
  html.mka-mobile-shell nav.navbar #navbar-mka>svg{width:22px;height:22px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8}
  html.mka-mobile-shell nav.navbar .navbar-menu.is-active{display:block!important;position:absolute;top:100%;left:0;right:0;width:100%;max-height:calc(100vh - 70px);overflow-y:auto;overscroll-behavior:contain;background:#fff;box-shadow:0 7px 20px #0002;box-sizing:border-box}
  html.mka-mobile-shell nav.navbar .navbar-menu.is-active .navbar-item,html.mka-mobile-shell nav.navbar .navbar-menu.is-active .navbar-link{color:#24384e!important;white-space:normal}
- html.mka-mobile-shell nav.navbar .navbar-menu .has-dropdown>.navbar-dropdown{display:none!important}
- html.mka-mobile-shell nav.navbar .navbar-menu .has-dropdown.is-active>.navbar-dropdown{display:block!important;position:static;background:#fff!important;box-shadow:none;max-width:100%}
+ html.mka-mobile-shell:not(.mka-mobile-menu-legacy) nav.navbar .navbar-menu .has-dropdown>.navbar-dropdown{display:none!important}
+ html.mka-mobile-shell:not(.mka-mobile-menu-legacy) nav.navbar .navbar-menu .has-dropdown.is-active>.navbar-dropdown,html.mka-mobile-shell.mka-mobile-menu-legacy nav.navbar .navbar-menu .has-dropdown>.navbar-dropdown{display:block!important;position:static;background:#fff!important;box-shadow:none;max-width:100%}
  html.mka-mobile-shell nav.navbar .navbar-menu .navbar-dropdown .columns{display:block;margin:0}
  html.mka-mobile-shell nav.navbar .navbar-menu .navbar-dropdown .is-divisor-vertical{display:none}
 }

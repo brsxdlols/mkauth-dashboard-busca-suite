@@ -3,7 +3,7 @@
 <script>
 (function(){var token=<?=json_encode($dashboardPreviewToken)?>,original=window.fetch;
 window.fetch=function(input,options){var value=typeof input==='string'?input:input.url,url=new URL(value,location.href);if(url.origin===location.origin&&url.pathname.indexOf('/admin/addons/dashboard/')===0){if(options&&options.method&&options.method.toUpperCase()!=='GET')return Promise.reject(Error('Pré-visualização somente leitura'));url.searchParams.set('preview',token);input=url.href;}return original.call(this,input,options);};
-document.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();},true);
+document.addEventListener('click',function(e){if(e.target.closest('nav.navbar #navbar-mka,nav.navbar .navbar-burger,nav.navbar .has-dropdown>.navbar-link')){e.preventDefault();return;}e.preventDefault();e.stopImmediatePropagation();},true);
 document.addEventListener('submit',function(e){e.preventDefault();e.stopImmediatePropagation();},true);
 })();
 </script>

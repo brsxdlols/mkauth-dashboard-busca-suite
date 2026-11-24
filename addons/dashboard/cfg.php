@@ -4,6 +4,14 @@ require_once __DIR__ . '/../shared/layout_mode.php';
 
 require_once __DIR__.'/finance_period.php';
 if (empty($_SESSION['suite_finance_summary_csrf'])) $_SESSION['suite_finance_summary_csrf']=bin2hex(random_bytes(32));
+require_once __DIR__.'/../shared/mobile_menu.php';
+if($_SERVER['REQUEST_METHOD']==='POST'&&isset($_POST['mobile_menu_present'])){
+ try{mka_mobile_menu_save($conn,$_POST['mobile_menu_version']??null,permissao('perm_config'),$_SESSION['suite_finance_summary_csrf'],$_POST['finance_summary_csrf']??null);}
+ catch(DomainException $e){http_response_code(403);exit($e->getMessage());}
+ catch(InvalidArgumentException $e){http_response_code(422);exit($e->getMessage());}
+}
+$mobileMenuVersion=mka_mobile_menu_version($conn);
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['finance_summary_present'])) {
     if (!permissao('perm_config') || !hash_equals($_SESSION['suite_finance_summary_csrf'],(string)($_POST['finance_summary_csrf']??''))) {
         http_response_code(403); exit('Sessão inválida. Atualize a página.');
@@ -56,6 +64,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/admin/addons/shared/admin_mobile.js?v=20261124-1" defer></script>
     <meta charset="utf-8">
     <title>MK - AUTH :: <?php echo $Manifest->{'name'} . " - V " . $Manifest->{'version'};  ?></title>
 
@@ -340,6 +349,9 @@ if (isset($_SESSION['MM_Usuario'])) {
                         </select>
                         <label for="suite_layout_mode">Layout Dashboard + Busca</label>
                     </div>
+<input type="hidden" name="mobile_menu_present" value="1">
+<div class="form-floating cfg-field"><select class="form-select" name="mobile_menu_version" id="mobile_menu_version"><option value="nova" <?=$mobileMenuVersion==='nova'?'selected':''?>>Nova</option><option value="legada" <?=$mobileMenuVersion==='legada'?'selected':''?>>Legada</option></select><label for="mobile_menu_version">Versão do menu mobile</label><small>Nova: submenus recolhidos, abertos ao tocar. Legada: submenus já expandidos. Aplica-se às páginas administrativas no celular.</small></div>
+
 <div class="form-floating cfg-field">
                         <select class="form-select" name="suite_dashboard_support_destination" id="suite_dashboard_support_destination"><option value="busca" <?= $suite_dashboard_support_destination==='busca'?'selected':''; ?>>Central de chamados (novo)</option><option value="native" <?= $suite_dashboard_support_destination==='native'?'selected':''; ?>>Sistema nativo do MK-AUTH</option></select>
                         <label for="suite_dashboard_support_destination">Abrir Chamados da Dashboard em</label>
