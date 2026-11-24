@@ -2,13 +2,15 @@
 
 Na edição do cliente, o **+** ao lado de **Equipamento** repete os campos nativos **Equipamento** e **MAC/Serial**, no mesmo local e com o mesmo estilo do formulário. Cada linha controlada pelo estoque representa uma unidade. O mesmo produto pode aparecer em várias linhas. Cada linha exibe **Comodato: Sim/Não** e permite alterar essa informação individualmente. Alterar o comodato do primeiro equipamento não modifica os demais.
 
-O botão **Gravar** original salva a lista de equipamentos e prossegue com a gravação nativa do cadastro. Os campos passam primeiro pela validação do formulário. Uma falha no estoque mantém o formulário aberto para corrigir ou tentar novamente. Adicionar ou remover uma linha na tela só movimenta o estoque ao gravar. O saldo aparece apenas no primeiro seletor, onde o equipamento é escolhido para adicionar. As linhas abaixo não repetem o estoque. Ao passar o mouse pelo saldo, é possível consultar a previsão após gravar, considerando todas as linhas e devoluções.
+O botão **Gravar** original salva a lista de equipamentos e prossegue com a gravação nativa do cadastro. Os campos passam primeiro pela validação do formulário. Uma falha no estoque mantém o formulário aberto para corrigir ou tentar novamente. Adicionar ou remover uma linha na tela só movimenta o estoque ao gravar. O saldo aparece apenas no primeiro seletor, onde o equipamento é escolhido para adicionar. As linhas abaixo não repetem o estoque. O número exibido já desconta as inclusões e soma as remoções pendentes desta tela. O banco de estoque só é alterado ao gravar.
 
 Os nomes da lista rápida nativa não têm quantidade de estoque. Quando não há produto/saldo cadastrado, o primeiro seletor mostra **Estoque: ?**. Passar o mouse mostra uma dica; clicar abre uma explicação em modal com acesso ao cadastro nativo de produtos e quantidades. Saldo zero cadastrado aparece como **Estoque: 0**. Ao retornar da tela de estoque, os saldos são consultados novamente sem descartar alterações locais.
 
 - Adicionar: baixa uma unidade e cria um vínculo nativo em `sis_prodcliente`.
 - Remover: devolve uma unidade e remove somente o vínculo criado pela suíte.
-- Trocar o produto: devolve o anterior e baixa o novo.
+- A primeira linha serve apenas para selecionar e adicionar com o botão +; não tem botão de remover.
+- Nos itens adicionados, o equipamento fica bloqueado. Para trocar, remova a unidade e adicione o novo equipamento. Comodato e MAC/serial continuam editáveis.
+- Sem quantidade de estoque cadastrada, o + abre a explicação e não adiciona uma linha inválida.
 - Alterar apenas MAC/serial ou comodato: não movimenta estoque.
 - Salvar novamente ou repetir uma requisição após falha de rede: não duplica a baixa.
 - Estoque insuficiente, alterações concorrentes ou vínculos inconsistentes: nenhuma movimentação parcial é confirmada.

@@ -27,7 +27,7 @@ def phase(line):
              'visitas': 'Visitas', 'atendimentos': 'Atendimentos', 'offline': 'Relatorio offline',
              'receber': 'Recebimento', 'ipv6': 'IPv6', 'nfcom': 'NFCom, DICI e Trafego',
              'limpeza': 'Limpeza diaria', 'horario': 'Diagnostico de horario', 'desempenho': 'Analise de desempenho',
-             'busca': 'Validacao da Busca', 'mapa': 'Integracao do Mapa',
+             'hotsite': 'Layout do hotsite', 'ntp': 'Correcao e verificacao NTP', 'busca': 'Validacao da Busca', 'mapa': 'Integracao do Mapa',
              'monitor': 'Monitor de trafego', 'applications': 'Menus', 'apparmor': 'Compatibilidade AppArmor'}
     return names.get(match.group(1)) if match else None
 
@@ -119,7 +119,7 @@ def main():
                 if is_warning:
                     phase_warning = True
                     phase_error = False  # The caller explicitly classified a handled/optional failure.
-                if is_error or is_warning or trace_detail:
+                if is_error or is_warning or trace_detail or line.startswith('[ntp]'):
                     if args.terminal: print('\r\033[2K', end='', flush=True)
                     print(('\033[31m' if color and is_error else ('\033[33m' if color and is_warning else ''))+line.rstrip()+('\033[0m' if color else ''), flush=True)
                 if traceback_lines: traceback_lines -= 1

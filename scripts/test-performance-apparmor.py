@@ -1,12 +1,25 @@
 from pathlib import Path
 import importlib.util
 import unittest
+import tempfile
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location("performance_apparmor", Path(__file__).with_name("install-performance-apparmor.py"))
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 class PerformancePolicyTests(unittest.TestCase):
+    def test_existing_parser_does_not_download_or_reload(self):
+        with patch.object(module.shutil,'which',return_value='/usr/sbin/apparmor_parser'),patch.object(module.subprocess,'run') as run:
+            self.assertEqual(module.find_parser(Path('/unused')),'/usr/sbin/apparmor_parser');run.assert_not_called()
+
+    def test_missing_package_is_reported_without_changing_profiles(self):
+        with tempfile.TemporaryDirectory() as d:
+            result=type('Result',(),{'returncode':100,'stdout':'','stderr':'no candidate'})()
+            with patch.object(module.shutil,'which',side_effect=[None,'/usr/bin/apt-get','/usr/bin/dpkg-deb']),patch.object(module.subprocess,'run',return_value=result) as run:
+                with self.assertRaisesRegex(RuntimeError,'Politica nativa preservada'):module.find_parser(Path(d))
+                self.assertEqual(run.call_count,1);self.assertTrue((Path(d)/'parser-package/download.log').is_file())
+
     def test_native_addon_routing(self):
         apache = '<Directory /opt/mk-auth/admin/addons>\nSetHandler "proxy:unix:/run/php-central.sock|fcgi://127.0.0.1/"\n</Directory>'
         self.assertEqual(module.diagnostic_pools(apache), ["admin", "central"])

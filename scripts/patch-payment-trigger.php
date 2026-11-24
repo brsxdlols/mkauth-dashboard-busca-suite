@@ -18,7 +18,7 @@ function mka_payment_trigger_install($backup) {
         if (!$row) { echo "[receber] Trigger BRL ausente; nenhuma alteracao financeira necessaria.\n"; return; }
         $body=mka_payment_trigger_body($row['ACTION_STATEMENT']);
         if ($body===null || $row['ACTION_TIMING']!=='AFTER' || $row['EVENT_MANIPULATION']!=='UPDATE' || $row['EVENT_OBJECT_TABLE']!=='sis_lanc') {
-            echo "[aviso] tig_brl_pag personalizado/desconhecido; preservado para revisao.\n"; return;
+            echo "[aviso] Trigger tig_brl_pag de outro addon (ex.: Evolution/Recibo) preservado. Nenhuma rotina externa de recebimento foi substituida.\n"; return;
         }
         if ($body===$row['ACTION_STATEMENT']) { echo "[receber] Correcao de baixa/estorno BRL ja instalada.\n"; return; }
         $columns=array_column($db->query('SHOW COLUMNS FROM brl_pago')->fetch_all(MYSQLI_ASSOC),'Field');

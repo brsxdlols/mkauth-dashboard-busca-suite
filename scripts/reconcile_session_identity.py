@@ -5,6 +5,9 @@ def patch_session_identity(text):
         return text.replace('AND COALESCE(acctupdatetime,acctstarttime) >= DATE_SUB(NOW(),INTERVAL 15 MINUTE)', 'AND COALESCE(acctupdatetime,acctstarttime) >= DATE_SUB(NOW(),INTERVAL 3 MINUTE)')
     old='        $stmt = $db->prepare("SELECT radacctid FROM radacct WHERE LOWER(TRIM(username)) = ? AND acctstoptime IS NULL ORDER BY radacctid DESC LIMIT 1");\n        $stmt->bind_param(\'s\', $login);'
     new='        // mka-session-identity-v1: old NAS/session records do not prove this session is online.\n        if ($session === \'\') { log_line("SKIP_MISSING_SESSION login=$login router=$router"); continue; }\n        $stmt = $db->prepare("SELECT radacctid FROM radacct WHERE LOWER(TRIM(username)) = ? AND nasipaddress = ? AND LOWER(REPLACE(acctsessionid,\'0x\',\'\')) = ? AND acctstoptime IS NULL AND COALESCE(acctupdatetime,acctstarttime) >= DATE_SUB(NOW(),INTERVAL 3 MINUTE) ORDER BY radacctid DESC LIMIT 1");\n        $stmt->bind_param(\'sss\', $login, $router, $session);'
+    # Known MK-AUTH variant differs only by its index hint. Normalize this exact lookup.
+    hinted=old.replace('FROM radacct WHERE','FROM radacct FORCE INDEX (acctstoptime) WHERE')
+    if hinted in text:text=text.replace(hinted,old,1)
     if text.count(old)!=1:
         raise ValueError('Unrecognized online-session lookup; original preserved')
     text=text.replace(old,new,1)

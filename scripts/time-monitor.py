@@ -234,18 +234,35 @@ def write_status(data):
     with os.fdopen(fd,'w') as f:json.dump(data,f)
     os.chmod(str(stage),0o644);os.replace(str(stage),str(STATE/'status.json'))
 
+def repair_install(state):
+    try:
+        if state.get('reference_count',0)<2:raise RuntimeError('Sem duas referencias NTP concordantes; relogio preservado.')
+        def progress(label,percent):print('[ntp] '+str(percent)+'% '+label,flush=True)
+        result=repair(state,progress);state=diagnose();state.update(result);write_status(state)
+        if state.get('issue')!='ok':raise RuntimeError('Sincronizacao ainda nao confirmada: '+state.get('issue','desconhecido'))
+        print('[ntp] OK: horario, fuso e sincronizacao conferidos.',flush=True)
+    except Exception as e:
+        state.update(repair_status='error',repair_message=str(e));write_status(state)
+        print('[aviso] Horario: '+str(e),flush=True);raise SystemExit(2)
+
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--diagnose-only',action='store_true');parser.add_argument('--sync-existing-client',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--repair-install',action='store_true');parser.add_argument('--diagnose-only',action='store_true');parser.add_argument('--sync-existing-client',action='store_true');args=parser.parse_args()
     configure_environment()
     if os.geteuid()!=0:raise SystemExit('Execute como root')
     if STATE.is_symlink():raise RuntimeError('Diretorio simbolico recusado')
     with open('/run/mkauth-time-monitor.lock','w') as lock:
-        try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        except BlockingIOError:return
+        deadline=time.monotonic()+(15 if args.repair_install else 0)
+        while True:
+            try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);break
+            except BlockingIOError:
+                if not args.repair_install:return
+                if time.monotonic()>=deadline:raise SystemExit('Monitor ocupado; correcao de instalacao nao confirmada.')
+                time.sleep(.3)
         state=diagnose()
         if args.sync_existing_client:
             if fallback_scheduled() and not any(name in state['services'] for name in state['active_services']):command([fallback_client(),'-u']+list(SERVERS))
             return
+        if args.repair_install:return repair_install(state)
         request=STATE/'request.json'
         if request.exists() and not request.is_symlink() and not args.diagnose_only:
             try:

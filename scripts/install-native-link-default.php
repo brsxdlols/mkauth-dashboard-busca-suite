@@ -1,5 +1,5 @@
 <?php
-/** Initialize native link preferences without overriding a saved PHP/HHVM choice. */
+/** Prepare native links; the installer CLI selects HHVM as requested. */
 function mka_install_native_link_default($db,$table='busca_inteligente_cfg') {
     if(!preg_match('/^[a-z0-9_]+$/D',$table))throw new InvalidArgumentException('Tabela invalida');
     $query=function($sql)use($db){$result=$db->query($sql);if($result===false)throw new RuntimeException('Falha ao preparar extensao dos links nativos.');return $result;};
@@ -19,7 +19,12 @@ function mka_install_native_link_default($db,$table='busca_inteligente_cfg') {
 }
 if(PHP_SAPI==='cli'&&realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__){
     require_once __DIR__.'/installer-database.php';
+    mysqli_report(MYSQLI_REPORT_OFF);
     $db=mka_installer_database_connect();
-    echo '[links nativos] '.mka_install_native_link_default($db).PHP_EOL;
+    if(isset($argv[1])){if(!is_dir($argv[1]))mkdir($argv[1],0700,true);$before=$db->query('SELECT id,links_ext FROM busca_inteligente_cfg ORDER BY id DESC LIMIT 1');file_put_contents($argv[1].'/native-links-before.json',json_encode($before?$before->fetch_assoc():null));chmod($argv[1].'/native-links-before.json',0600);}
+    // Installation explicitly selects the supported native HHVM routes.
+    mka_install_native_link_default($db);
+    if(!$db->query("UPDATE busca_inteligente_cfg SET links_ext='hhvm' ORDER BY id DESC LIMIT 1"))throw new RuntimeException('Nao foi possivel selecionar HHVM.');
+    echo '[busca] Links nativos: HHVM selecionado e conferido.'.PHP_EOL;
     $db->close();
 }

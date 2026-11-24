@@ -38,6 +38,26 @@ def patched_profile(source):
         raise ValueError("Fim do perfil AppArmor nao reconhecido.")
     return source[:end.start()] + "\n" + INCLUDE + source[end.start():]
 
+def find_parser(backup):
+    loader=shutil.which('apparmor_parser',path='/usr/sbin:/usr/bin:/sbin:/bin')
+    if loader:return loader
+    # Some MK-AUTH images keep active kernel profiles but omit the userspace parser.
+    # Extract only the distro package into the private backup; do not enable/reload
+    # the global AppArmor service or replace unrelated profiles.
+    apt=shutil.which('apt-get',path='/usr/bin:/bin');deb=shutil.which('dpkg-deb',path='/usr/bin:/bin')
+    if not apt or not deb:raise RuntimeError('AppArmor ativo sem parser; apt-get/dpkg-deb indisponiveis.')
+    package=backup/'parser-package';package.mkdir(mode=0o700,exist_ok=True)
+    print('[apparmor] Parser ausente; obtendo ferramenta do repositorio Debian para validar somente os perfis PHP.',flush=True)
+    result=subprocess.run([apt,'download','apparmor'],cwd=str(package),capture_output=True,text=True,timeout=120)
+    (package/'download.log').write_text(result.stdout+result.stderr)
+    (package/'download.log').chmod(0o600)
+    files=list(package.glob('apparmor_*.deb'))
+    if result.returncode or len(files)!=1:raise RuntimeError('Nao foi possivel obter apparmor_parser. Politica nativa preservada; consulte os repositorios APT e download.log no backup.')
+    subprocess.run([deb,'--extract',str(files[0]),str(package/'extracted')],check=True,timeout=30)
+    candidates=[p for p in (package/'extracted').rglob('apparmor_parser') if p.is_file() and not p.is_symlink()]
+    if len(candidates)!=1:raise RuntimeError('Parser nao encontrado no pacote Debian.')
+    return str(candidates[0])
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("backup")
@@ -46,11 +66,12 @@ def main():
     backup = Path(args.backup)
     root = Path("/etc/apparmor.d")
     enabled = Path("/sys/module/apparmor/parameters/enabled")
-    loader = shutil.which("apparmor_parser")
-    if not (root / "sistema.php-admin").is_file() or not loader or not enabled.is_file() or enabled.read_text().strip() != "Y":
+    if not (root / "sistema.php-admin").is_file() or not enabled.is_file() or enabled.read_text().strip() != "Y":
         print("[apparmor] AppArmor PHP administrativo inativo ou ausente; nenhuma alteracao.")
         return
     backup.mkdir(parents=True, exist_ok=True)
+    backup.chmod(0o700)
+    loader = find_parser(backup)
     apache = Path("/etc/apache2/conf-enabled/admin.conf")
     pools = diagnostic_pools(apache.read_text() if apache.is_file() else "")
     originals = {}
@@ -98,6 +119,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (ValueError, RuntimeError, OSError) as error:
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:
         print("[aviso] AppArmor preservado: " + str(error))
         raise SystemExit(1)
