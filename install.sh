@@ -180,7 +180,7 @@ check_online_offline() {
 
 echo "[1/8] Validando caminhos"
 test -d "${TARGET_ADMIN_DIR}"
-for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
+for addon in rel_clientes graf_faturamento rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
   test -f "${SCRIPT_DIR}/addons/${addon}/index.php"
   lint_file "${SCRIPT_DIR}/addons/${addon}/index.php"
 done
@@ -227,35 +227,22 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
   cp -a "${TARGET_ADDONS_DIR}/shared" "${BACKUP_DIR}/addons/shared"
 fi
 
-# Install the complete Radius addon first; it replaces radius/ and must not erase
-# the suite live.php/current_state.php/suite-live.css overlay installed below.
+# Radius runtime and its Provedor shortcut belong to the official standalone package.
+# Never overlay suite copies over the canonical package.
 bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
 
 echo "[3/8] Instalando arquivos"
-for addon in rel_clientes graf_faturamento radius rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
+for addon in rel_clientes graf_faturamento rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
   if [ -d "${TARGET_ADDONS_DIR}/${addon}" ]; then
     cp -a "${TARGET_ADDONS_DIR}/${addon}" "${BACKUP_DIR}/addons/${addon}"
   fi
   mkdir -p "${TARGET_ADDONS_DIR}/${addon}"
-  if [ "$addon" = radius ] && [ -f "${TARGET_ADDONS_DIR}/radius/index.php" ] && ! grep -Fq "require __DIR__.'/live.php';" "${TARGET_ADDONS_DIR}/radius/index.php"; then
-    # Preserve the standalone Radius Logs addon and its existing settings/API.
-    cp -a "${SCRIPT_DIR}/addons/radius/live.php" "${SCRIPT_DIR}/addons/radius/history.php" "${SCRIPT_DIR}/addons/radius/current_state.php" "${SCRIPT_DIR}/addons/radius/preferences.php" "${TARGET_ADDONS_DIR}/radius/"
-    if [ ! -f "${TARGET_ADDONS_DIR}/radius/radius_lib.php" ]; then
-      cp -a "${SCRIPT_DIR}/addons/radius/radius_lib.php" "${TARGET_ADDONS_DIR}/radius/"
-    fi
-  else
     # Replace addon symlinks themselves; never write through them into native MK-AUTH files.
     cp -a --remove-destination "${SCRIPT_DIR}/addons/${addon}/." "${TARGET_ADDONS_DIR}/${addon}/"
     if [ "$addon" = rel_cli_offline ] && [ -f "${BACKUP_DIR}/addons/${addon}/config.php" ]; then
       cp -a "${BACKUP_DIR}/addons/${addon}/config.php" "${TARGET_ADDONS_DIR}/${addon}/config.php"
     fi
-  fi
 done
-# Keep the suite modal stylesheet separate from a standalone Radius addon.
-cp "${SCRIPT_DIR}/addons/radius/radius.css" "${TARGET_ADDONS_DIR}/radius/suite-live.css"
-cp "${SCRIPT_DIR}/addons/radius/connection_settings_api.php" "${TARGET_ADDONS_DIR}/radius/"
-python3 "${SCRIPT_DIR}/scripts/patch-radius-reader.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-reader-tools"
-python3 "${SCRIPT_DIR}/scripts/install-radius-menu.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-menu"
 python3 "${SCRIPT_DIR}/scripts/install-report-menus.py" "${TARGET_ADMIN_DIR}"
 # Grant only the web user's read access to the RADIUS log, including rotation.
 for web_user in www-data apache; do
@@ -483,3 +470,4 @@ php "${SCRIPT_DIR}/scripts/install-invoice-notes.php"
 echo "[OK] Todas as etapas da suite concluidas"
 echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
 echo "Backup salvo em: ${BACKUP_DIR}"
+

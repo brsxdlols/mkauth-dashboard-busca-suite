@@ -2,7 +2,7 @@
 
 O comando de atualização da suíte permanece `install-from-github.sh`.
 
-- **Log RADIUS:** `scripts/install-radius-dependency.sh` chama o instalador oficial de `brsxdlols/mkauth-radius-logs`. Depois aplica os componentes de integração da suíte (modal, estado atual, IP/MAC e menus).
+- **Log RADIUS:** `scripts/install-radius-dependency.sh` chama o instalador oficial de `brsxdlols/mkauth-radius-logs`. O pacote oficial inclui monitor, estado atual, preferências, IP/MAC e o atalho Provedor → LOG RADIUS. A suíte valida `package_features.json` e não sobrescreve arquivos desse addon. Correções de recursos e menus devem ser publicadas no repositório oficial, evitando versões divergentes.
 - **IPv6:** `scripts/install-ipv6-dependency.sh` chama o instalador oficial de `brsxdlols/mkauth-ipv6-addon`, para a raiz padrão `/opt/mk-auth/admin`.
 - **Caixa:** `scripts/install-caixa-dependency.sh` usa o instalador e a árvore completa do ramo oficial `main` (atualizado em cada instalacao) de `brsxdlols/mkauth-relatorio-caixa`, com `--no-menu`. A suíte não copia sua versão interna por cima do Caixa instalado.
 
@@ -34,3 +34,4 @@ automática conjunta; revise os backups e os menus antes de restaurar.
 A instalação copia os addons e o layout NFCom; não emite documentos fiscais,
 não gera nem envia declarações e não recebe pagamentos. A configuração e o uso
 fiscal continuam sendo feitos no MK-Auth pelo operador autorizado.
+
