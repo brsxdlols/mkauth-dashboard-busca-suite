@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
 const source=fs.readFileSync(path.join(__dirname,'../addons/dashboard/mkauth_dashboard_top.php'),'utf8');
 const script=source.slice(source.indexOf('    var sessionsCount ='),source.indexOf("    $('#UUE_Data')")).replace(/<\?php.*?\?>/g,JSON.stringify({users:2,sessions:3}));
-const nodes=[];function element(){let n={style:{cssText:''},children:[],textContent:'',append(...items){this.children.push(...items)},replaceChildren(...items){this.children=items},querySelector(){return null}};nodes.push(n);return n;}
+const nodes=[];function element(){let n={style:{cssText:''},setAttribute(){},children:[],textContent:'',append(...items){this.children.push(...items)},replaceChildren(...items){this.children=items},querySelector(){return null}};nodes.push(n);return n;}
 const label=element(),counter=element(),box=element();counter.id='UUE_SESSOES';counter.previousElementSibling=label;counter.parentElement=box;let focus;
 const context={sessionsOpener:box,document:{hidden:false,createElement:element,getElementById:id=>nodes.find(n=>n.id===id)||null},window:{addEventListener(name,fn){if(name==='focus')focus=fn}},setInterval(fn,ms){assert.equal(ms,30000)},setTimeout(){return 0},clearTimeout(){},AbortController,fetch:async()=>({ok:true,json:async()=>({users:3,sessions:4})})};
 vm.runInNewContext(script,context);

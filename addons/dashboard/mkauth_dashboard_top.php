@@ -97,6 +97,18 @@ html.has-navbar-fixed-top {
 #systopo.is-invisible {
     visibility: visible !important;
 }
+/* Align the native information blocks by their first label, independent of row count. */
+body.mka-suite-dashboard-page #systopo {
+    align-items: flex-start !important;
+}
+body.mka-suite-dashboard-page #systopo > .level-item,
+body.mka-suite-dashboard-page #systopo > .level-left {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+body.mka-suite-dashboard-page #systopo > .level-item > div > p {
+    margin-top: 0;
+}
 nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
     display: none !important;
 }
@@ -293,12 +305,15 @@ jQuery(function($){
         var totalLabel = document.createElement('strong');
         totalLabel.textContent = 'Sessões:';
         usersLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
-        sessionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding-left:17px;white-space:nowrap';
+        sessionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
         var sessionsIcon = counterBox.querySelector('i');
-        if (sessionsIcon) usersLine.append(sessionsIcon);
+        if (sessionsIcon) { sessionsIcon.className = 'bi-people-fill'; usersLine.append(sessionsIcon); }
         if (sessionsLabel) usersLine.append(sessionsLabel);
         usersLine.append(sessionsCount);
-        sessionsLine.append(totalLabel,sessionsTotal);
+        var totalIcon = document.createElement('i');
+        totalIcon.className = 'bi-pc-display-horizontal';
+        totalIcon.setAttribute('aria-hidden','true');
+        sessionsLine.append(totalIcon,totalLabel,sessionsTotal);
         counterBox.replaceChildren(usersLine,sessionsLine);
         counterBox.style.cssText += ';display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:3px';
         function paintWebSessions(counts) {
