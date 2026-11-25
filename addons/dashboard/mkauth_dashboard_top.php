@@ -109,6 +109,11 @@ body.mka-suite-dashboard-page #systopo > .level-left {
 body.mka-suite-dashboard-page #systopo > .level-item > div > p {
     margin-top: 0;
 }
+@media screen and (min-width: 769px) {
+    body.mka-suite-dashboard-page #systopo > .level-item {
+        padding-top: 1rem;
+    }
+}
 nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
     display: none !important;
 }
