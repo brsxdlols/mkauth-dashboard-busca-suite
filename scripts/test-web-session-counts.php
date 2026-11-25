@@ -6,7 +6,8 @@ MKAC_SESSAO::$directory=$dir;
 try{
     foreach(array(array('MKA_Usuario'=>'bruno'),array('MKA_Usuario'=>'bruno'),array('MKA_Usuario'=>'alice'),array('central'=>'client'))as$i=>$row)file_put_contents($dir.'/sess_'.$i,json_encode($row));
     file_put_contents($dir.'/sess_invalid','invalid');
-    $c=mka_web_session_counts();if($c!==array('users'=>2,'sessions'=>3))throw new RuntimeException('Users and sessions confused');
+    $_SESSION=array('MKA_Usuario'=>'bruno');
+    $c=mka_web_session_counts();if($c!==array('users'=>2,'sessions'=>3,'my_sessions'=>2))throw new RuntimeException('Users, all sessions and my sessions confused');
     MKAC_SESSAO::$directory=$dir.'/missing';if(mka_web_session_counts()!==null)throw new RuntimeException('Unavailable directory reported fake count');
     echo "PASS distinct users, multiple sessions, native filtering and unavailable directory\n";
 }finally{foreach(glob($dir.'/*')as$file)unlink($file);rmdir($dir);}

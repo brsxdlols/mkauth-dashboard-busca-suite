@@ -6,6 +6,10 @@ function mka_web_sessions_patch($source) {
         throw new RuntimeException('Lista nativa de sessoes incompativel; original preservado.');
     }
     $owner=$match[1]."['MKA_Usuario']";
+    $assignment='/'.preg_quote($match[1],'/').'\s*=\s*MKAC_SESSAO::unzerialize\(file_get_contents\([^;]+;/';
+    $guard="if((\$_GET['scope']??'')==='mine' && ((string)(\$_SESSION['MKA_Usuario']??(\$_SESSION['MM_Usuario']??''))==='' || (string)(".$owner."??'')!==(string)(\$_SESSION['MKA_Usuario']??(\$_SESSION['MM_Usuario']??''))))continue;";
+    $source=preg_replace_callback($assignment,function($row)use($guard){return $row[0].$guard;},$source,-1,$count);
+    if($count!==1)throw new RuntimeException('Filtro nativo de sessoes incompativel; original preservado.');
     $label="<strong> Usu&aacute;rio: </strong> ';echo htmlspecialchars((string)(".$owner." ?? ''),ENT_QUOTES|ENT_SUBSTITUTE,'ISO-8859-1');echo '<br />\n<strong> SO: </strong>";
     return str_replace('<strong> SO: </strong>',$label,$source);
 }

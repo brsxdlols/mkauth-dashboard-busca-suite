@@ -291,7 +291,11 @@ jQuery(function($){
         sessionsOpener.addEventListener('click', function(event) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            window.open(<?php echo json_encode('/admin/sessoes'.$ext_mk.'?v=20261125-2'); ?>, '_blank', 'width=500, height=650, scrollbars=YES');
+            var clicked = event.target.closest('[data-dashboard-session-view]');
+            var destination = clicked && clicked.dataset.dashboardSessionView === 'users'
+                ? '/admin/addons/dashboard/web_users.php'
+                : <?php echo json_encode('/admin/sessoes'.$ext_mk.'?scope=mine&v=20261125-3'); ?>;
+            window.open(destination, '_blank', 'width=500, height=650, scrollbars=YES');
         }, true);
     }
     $('#systopo').removeClass('is-invisible').css('visibility','visible');
@@ -308,7 +312,10 @@ jQuery(function($){
         var counterBox = sessionsOpener || sessionsCount.parentElement;
         var usersLine = document.createElement('span'), sessionsLine = document.createElement('span');
         var totalLabel = document.createElement('strong');
-        totalLabel.textContent = 'Sessões:';
+        totalLabel.textContent = 'Minhas sessões:';
+        usersLine.dataset.dashboardSessionView = 'users';
+        sessionsLine.dataset.dashboardSessionView = 'mine';
+        [usersLine,sessionsLine].forEach(function(line){line.setAttribute('role','button');line.tabIndex=0;line.addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();line.click();}});});
         usersLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
         sessionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
         var sessionsIcon = counterBox.querySelector('i');
@@ -323,8 +330,9 @@ jQuery(function($){
         counterBox.style.cssText += ';display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:3px';
         function paintWebSessions(counts) {
             sessionsCount.textContent = counts ? String(counts.users).padStart(2,'0') : 'indisponível';
-            sessionsTotal.textContent = counts ? String(counts.sessions).padStart(2,'0') : 'indisponível';
-            sessionsCount.title = 'Usuários diferentes e total de sessões administrativas da lista nativa. Um usuário pode ter várias sessões.';
+            sessionsTotal.textContent = counts ? String(counts.my_sessions).padStart(2,'0') : 'indisponível';
+            sessionsCount.title = 'Todos os usuários conectados ao painel administrativo.';
+            sessionsTotal.title = 'Somente as sessões do usuário atual: '+<?php echo json_encode($dashTopUser); ?>;
         }
         paintWebSessions(<?php echo json_encode($dashTopSessionCounts); ?>);
         var checkingSessions = false;
