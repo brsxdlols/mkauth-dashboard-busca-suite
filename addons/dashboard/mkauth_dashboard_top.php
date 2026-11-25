@@ -286,8 +286,24 @@ jQuery(function($){
         sessionsCount.id = 'mkaDashboardWebSessions';
         var sessionsLabel = sessionsCount.previousElementSibling;
         if (sessionsLabel) sessionsLabel.textContent = 'Usuários conectados: ';
+        var sessionsTotal = document.createElement('span');
+        sessionsTotal.id = 'mkaDashboardWebSessionsTotal';
+        var counterBox = sessionsOpener || sessionsCount.parentElement;
+        var usersLine = document.createElement('span'), sessionsLine = document.createElement('span');
+        var totalLabel = document.createElement('strong');
+        totalLabel.textContent = 'Sessões:';
+        usersLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
+        sessionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding-left:17px;white-space:nowrap';
+        var sessionsIcon = counterBox.querySelector('i');
+        if (sessionsIcon) usersLine.append(sessionsIcon);
+        if (sessionsLabel) usersLine.append(sessionsLabel);
+        usersLine.append(sessionsCount);
+        sessionsLine.append(totalLabel,sessionsTotal);
+        counterBox.replaceChildren(usersLine,sessionsLine);
+        counterBox.style.cssText += ';display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:3px';
         function paintWebSessions(counts) {
-            sessionsCount.textContent = counts ? String(counts.users).padStart(2,'0')+' | Sessões: '+String(counts.sessions).padStart(2,'0') : 'indisponível';
+            sessionsCount.textContent = counts ? String(counts.users).padStart(2,'0') : 'indisponível';
+            sessionsTotal.textContent = counts ? String(counts.sessions).padStart(2,'0') : 'indisponível';
             sessionsCount.title = 'Usuários diferentes e total de sessões administrativas da lista nativa. Um usuário pode ter várias sessões.';
         }
         paintWebSessions(<?php echo json_encode($dashTopSessionCounts); ?>);
