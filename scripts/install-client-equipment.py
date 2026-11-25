@@ -6,7 +6,7 @@ import argparse, hashlib, json, os, re, shutil, subprocess, tempfile
 from pathlib import Path
 
 START=b'/* MKA-CLIENT-EQUIPMENT-START */'; END=b'/* MKA-CLIENT-EQUIPMENT-END */'
-BLOCK=START+b"\n;(function(){if(!/\\/cliente_(alt|ins)\\.(hhvm|php)$/.test(location.pathname))return;var l=document.createElement('link');l.rel='stylesheet';l.href='/admin/addons/client_equipment/equipment.css?v=20261124-6';document.head.appendChild(l);var s=document.createElement('script');s.src='/admin/addons/client_equipment/equipment.js?v=20261124-6';document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(!/\\/cliente_(alt|ins)\\.(hhvm|php)$/.test(location.pathname))return;var l=document.createElement('link');l.rel='stylesheet';l.href='/admin/addons/client_equipment/equipment.css?v=20261124-7';document.head.appendChild(l);var s=document.createElement('script');s.src='/admin/addons/client_equipment/equipment.js?v=20261124-7';document.head.appendChild(s);})();\n"+END+b'\n'
 def patch_loader(raw):
     return re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',raw,flags=re.S).rstrip(b'\r\n')+b'\n'+BLOCK
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
