@@ -70,6 +70,22 @@ def progress_line(current, percent, elapsed, failed=False, warning=False,
     return (label+' '+name+suffix)[:width]
 
 
+def overall_checkpoint(line):
+    match = re.match(r'^\[suite-progress\] (\d+)/(\d+)\s*$', line.strip())
+    if not match:
+        return None
+    done, total = map(int, match.groups())
+    return (done, total) if total > 0 and 0 <= done <= total else None
+
+
+def overall_line(current, percent, elapsed, width=80):
+    width = max(1, width-1)
+    cells = 20 if width >= 90 else (10 if width >= 60 else 6)
+    filled = percent*cells//100
+    prefix = '[geral] ['+'#'*filled+'-'*(cells-filled)+'] '+str(percent)+'% | '+duration(elapsed)+' | '
+    return (prefix+current)[:width]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--log-dir', required=True)
@@ -97,24 +113,38 @@ def main():
     current_percent = None
     last_frame = None
     last_draw = started
+    overall_percent = 0
+    overall_total = None
+    frame_visible = False
     print('[progresso] Log completo: '+logfile, flush=True)
     with os.fdopen(descriptor, 'w', encoding='utf-8') as log:
         color = (args.terminal or os.environ.get('FORCE_COLOR') == '1') and not os.environ.get('NO_COLOR')
+        def clear_frame():
+            nonlocal frame_visible
+            if args.terminal and frame_visible:
+                print('\r\033[2K\033[1A\r\033[2K', end='', flush=True)
+                frame_visible = False
         def progress(percent=None, failed=False, warning=False, completed=False, announce=False):
-            nonlocal last_frame, last_draw
+            nonlocal last_frame, last_draw, frame_visible
+            width = shutil.get_terminal_size(fallback=(80,24)).columns if args.terminal else 200
             message = progress_line(current, percent, time.monotonic()-changed,
                                     failed, warning, completed,
-                                    shutil.get_terminal_size(fallback=(80,24)).columns if args.terminal else 200)
-            if message == last_frame:
+                                    width)
+            general = overall_line(current, overall_percent, time.monotonic()-started, width)
+            frame = (general, message)
+            if frame == last_frame:
                 return
             if not args.terminal and not (announce or completed or failed):
                 return
-            last_frame, last_draw = message, time.monotonic()
+            last_frame, last_draw = frame, time.monotonic()
             if args.terminal:
+                clear_frame()
                 prefix = '\033[31m' if failed else ('\033[33m' if warning and completed else ('\033[32m' if completed else ''))
-                print('\r\033[2K'+(prefix if color else '')+message+('\033[0m' if color else ''),
+                print(general+'\n'+(prefix if color else '')+message+('\033[0m' if color else ''),
                       end='\n' if failed or completed else '', flush=True)
+                frame_visible = not (failed or completed)
             else:
+                print(general, flush=True)
                 print(message, flush=True)
         progress(announce=True)
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -144,6 +174,16 @@ def main():
                 if line is None:
                     break
                 now = time.monotonic()
+                checkpoint = overall_checkpoint(line)
+                if checkpoint:
+                    done, total = checkpoint
+                    if overall_total is None:
+                        overall_total = total
+                    if total == overall_total:
+                        overall_percent = max(overall_percent, min(99, done*100//total))
+                    log.write(line); log.flush()
+                    progress(current_percent, announce=True)
+                    continue
                 next_phase = phase(line)
                 if next_phase and next_phase != current:
                     if phase_error: error_phases.add(current)
@@ -171,7 +211,7 @@ def main():
                 if advanced:
                     current_percent = reported
                 if is_error or is_warning or trace_detail:
-                    if args.terminal: print('\r\033[2K', end='', flush=True)
+                    clear_frame()
                     print(('\033[31m' if color and is_error else ('\033[33m' if color and is_warning else ''))+line.rstrip()+('\033[0m' if color else ''), flush=True)
                     last_frame = None
                 elif advanced and not phase_error:
@@ -193,6 +233,7 @@ def main():
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
             try:
+                clear_frame()
                 print('[erro] Instalacao interrompida pelo operador. Log: '+logfile, flush=True)
             except BrokenPipeError:
                 pass
@@ -200,9 +241,11 @@ def main():
         timings.append((current, time.monotonic()-changed))
         if phase_error: error_phases.add(current)
         elif phase_warning: warning_phases.add(current)
+        if status == 0 and error_phases: status = 1
+        if status == 0:
+            overall_percent = 100
         progress(current_percent, failed=status != 0 or phase_error, warning=phase_warning,
                  completed=status == 0 and not phase_error)
-        if status == 0 and error_phases: status = 1
         elapsed = duration(time.monotonic()-started)
         success = ('[aviso] Instalacao concluida com avisos em ' if warning_phases else '[OK] Instalacao concluida em ') + elapsed
         summary = (success if status == 0 else '[erro] Instalacao falhou apos '+elapsed+' (codigo '+str(status)+')')
@@ -218,3 +261,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

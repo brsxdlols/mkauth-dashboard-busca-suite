@@ -267,6 +267,16 @@ function dashboardMobileMenuToggle(event) {
 <script src="../../menu.js<?php echo $ext_mk; ?>"></script>
 <script>
 jQuery(function($){
+    // The native header uses a relative popup URL, which resolves inside addons/dashboard.
+    var sessionsOpener = document.getElementById('run_open_sessoes');
+    if (sessionsOpener && !sessionsOpener.dataset.dashboardSessionsBound) {
+        sessionsOpener.dataset.dashboardSessionsBound = '1';
+        sessionsOpener.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            window.open(<?php echo json_encode('/admin/sessoes'.$ext_mk); ?>, '_blank', 'width=500, height=650, scrollbars=YES');
+        }, true);
+    }
     $('#systopo').removeClass('is-invisible').css('visibility','visible');
     $('#UUE_NProvedor').text(<?php echo json_encode($dashTopProvider !== '' ? $dashTopProvider : $dashTopCompany); ?>);
     $('#UUE_Usuario').text(<?php echo json_encode($dashTopUser); ?>);
@@ -317,4 +327,5 @@ jQuery(function($){
     setTimeout(bindDashboardMobileMenu, 500);
 })();
 </script>
+
 

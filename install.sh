@@ -11,6 +11,8 @@ STAMP="$(date +%Y%m%d_%H%M%S)"
 BACKUP_DIR="${BACKUP_ROOT}/${STAMP}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+printf '[suite-progress] 0/18\n'
+
 # Release accumulated reconcile logs before generating installation backups.
 bash "${SCRIPT_DIR}/scripts/install-radius-log-cleanup.sh"
 
@@ -199,6 +201,7 @@ Path(sys.argv[2]).write_text('direct' if direct else 'default')
 PY
 fi
 
+printf '[suite-progress] 1/18\n'
 echo "[2/8] Gerando backup"
 mkdir -p "${BACKUP_DIR}/admin" "${BACKUP_DIR}/addons"
 if [ -f "${TARGET_ADMIN_DIR}/index.hhvm" ]; then
@@ -227,9 +230,11 @@ if [ -d "${TARGET_ADDONS_DIR}/shared" ]; then
   cp -a "${TARGET_ADDONS_DIR}/shared" "${BACKUP_DIR}/addons/shared"
 fi
 
+printf '[suite-progress] 2/18\n'
 # Radius runtime and its Provedor shortcut belong to the official standalone package.
 # Never overlay suite copies over the canonical package.
 bash "${SCRIPT_DIR}/scripts/install-radius-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/radius-package"
+printf '[suite-progress] 3/18\n'
 
 echo "[3/8] Instalando arquivos"
 for addon in rel_clientes graf_faturamento rel_cli_offline clientes_score rel_plano rel_bloqueados rel_desativados; do
@@ -288,11 +293,14 @@ rm -rf "${TARGET_ADDONS_DIR}/shared"
 cp -a "${SCRIPT_DIR}/addons/shared" "${TARGET_ADDONS_DIR}/shared"
 python3 "${SCRIPT_DIR}/scripts/fix-addon-permissions.py" "${TARGET_ADDONS_DIR}" "${BACKUP_DIR}/addon-permissions"
 install_client_audit_hook
+printf '[suite-progress] 4/18\n'
 # The official Caixa installer preserves config, loaders and private user templates.
 bash "${SCRIPT_DIR}/scripts/install-caixa-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/caixa-package"
+printf '[suite-progress] 5/18\n'
 # CPF policy installer backs up only affected files/options and preserves existing hooks.
 python3 "${SCRIPT_DIR}/scripts/install-cpf-policy.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cpf-opcional" || echo '[aviso] CPF/CNPJ opcional preservado sem alteracoes; consulte cpf-opcional/cpf-install-report.json.'
 install_branding
+printf '[suite-progress] 6/18\n'
 apply_dashboard_online_additional_fix
 if [ -f "${BACKUP_DIR}/existing-online-rule" ] && [ "$(cat "${BACKUP_DIR}/existing-online-rule")" = direct ]; then
   python3 - "${TARGET_ADDONS_DIR}/busca_inteligente/index.php" <<'PY'
@@ -310,6 +318,7 @@ fi
 php "${SCRIPT_DIR}/scripts/install-native-link-default.php" "${BACKUP_DIR}/native-link-default"
 python3 "${SCRIPT_DIR}/scripts/install-native-disconnect-clock.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/native-disconnect-clock" || echo '[aviso] Rotina nativa de desconexao preservada; consulte o backup para revisar a compatibilidade.'
 
+printf '[suite-progress] 7/18\n'
 echo "[5/8] Validando instalacao"
 lint_file "${TARGET_ADMIN_DIR}/index.hhvm"
 # Lint only the entry points. Third-party/legacy helper files can have syntax
@@ -402,27 +411,34 @@ lint_file "${TARGET_ADDONS_DIR}/busca_inteligente/client_manual_block_audit.php"
 lint_file "${TARGET_ADDONS_DIR}/dashboard-legado/index.php"
 lint_file "${TARGET_ADDONS_DIR}/busca_inteligente-legado/index.php"
 
+printf '[suite-progress] 8/18\n'
 install_additional_block_patch
 remove_manual_block_guard
 install_reconcile
 check_online_offline
+printf '[suite-progress] 9/18\n'
 
 bash "${SCRIPT_DIR}/scripts/install-payment-notifications.sh" "${TARGET_ADMIN_DIR}"
 bash "${SCRIPT_DIR}/scripts/install-visit-reminders.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/visit-reminders"
 bash "${SCRIPT_DIR}/scripts/install-support-attendance.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/support-attendance"
 bash "${SCRIPT_DIR}/scripts/install-offline-report.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/offline-report"
 bash "${SCRIPT_DIR}/scripts/install-client-support.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/client-support"
+printf '[suite-progress] 10/18\n'
 
 php "${SCRIPT_DIR}/scripts/patch-payment-trigger.php" "${BACKUP_DIR}/payment-trigger"
 bash "${SCRIPT_DIR}/scripts/install-receive-notice.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/receive-notice"
 bash "${SCRIPT_DIR}/scripts/install-ipv6-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/ipv6"
 python3 "${SCRIPT_DIR}/scripts/install-ipv6-menu-icon.py" "${TARGET_ADMIN_DIR}"
+printf '[suite-progress] 11/18\n'
 bash "${SCRIPT_DIR}/scripts/install-nfcom-dependency.sh" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/nfcom-dici-trafego"
+printf '[suite-progress] 12/18\n'
 python3 "${SCRIPT_DIR}/scripts/install-cleanup.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/cleanup"
 python3 "${SCRIPT_DIR}/scripts/install-time-monitor.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/time-monitor"
+printf '[suite-progress] 13/18\n'
 python3 "${SCRIPT_DIR}/scripts/install-admin-mobile.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/admin-mobile"
 python3 "${SCRIPT_DIR}/scripts/install-client-equipment.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/client-equipment" || echo '[aviso] Equipamentos preservados: consulte a compatibilidade do contrato e do estoque.'
 
+printf '[suite-progress] 14/18\n'
 echo "[etapas] Addons instalados; executando as validacoes finais"
 echo "Backup salvo em: ${BACKUP_DIR}"
 echo "Destino: ${TARGET_ADMIN_DIR}"
@@ -440,6 +456,7 @@ if getent group www-data >/dev/null 2>&1; then chgrp www-data /var/lib/mkauth-su
 php "${SCRIPT_DIR}/scripts/revalidate-search-optimization.php" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/search-optimization" || echo '[aviso] Otimizacao anterior requer nova analise; detalhes preservados no backup.'
 cp "${SCRIPT_DIR}/scripts/search-performance.py" /opt/mk-auth/scripts/mkauth-search-performance.py
 chmod 0700 /opt/mk-auth/scripts/mkauth-search-performance.py
+printf '[suite-progress] 15/18\n'
 echo "[desempenho] Validando e otimizando consultas Online/Offline automaticamente"
 if command -v php >/dev/null 2>&1; then
   php "${SCRIPT_DIR}/scripts/optimize-native-activity-install.php" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}" || echo '[aviso] Atividades nativas preservadas; consulte native-activity-performance.json no backup.'
@@ -447,6 +464,7 @@ if command -v php >/dev/null 2>&1; then
 else
   echo '[aviso] PHP ausente; otimizacao automatica nao executada.'
 fi
+printf '[suite-progress] 16/18\n'
 echo "Nova analise disponivel no botao Executar analise de desempenho da Dashboard e Busca."
 
 if command -v python3 >/dev/null 2>&1; then
@@ -460,6 +478,7 @@ if command -v python3 >/dev/null 2>&1; then
   python3 "${SCRIPT_DIR}/scripts/patch-map-traffic.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/map-traffic" || echo '[aviso] Grafico do Mapa preservado; patch nao aplicado. Consulte o log.'
 fi
 
+printf '[suite-progress] 17/18\n'
 # Reuse an existing Applications menu when the verified legacy injector is present.
 if command -v python3 >/dev/null 2>&1; then
   python3 "${SCRIPT_DIR}/scripts/reconcile-applications-menu.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/applications-menu"
@@ -467,7 +486,9 @@ fi
 
 php "${SCRIPT_DIR}/scripts/install-invoice-notes.php"
 
+printf '[suite-progress] 18/18\n'
 echo "[OK] Todas as etapas da suite concluidas"
 echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
 echo "Backup salvo em: ${BACKUP_DIR}"
+
 

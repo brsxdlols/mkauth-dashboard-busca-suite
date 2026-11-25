@@ -83,7 +83,7 @@ class Progress(unittest.TestCase):
     def test_quiet_terminal_does_not_redraw_same_percent_five_times_a_second(self):
         result,log=self.run_fixture("import time; print('[nfcom] Instalando'); time.sleep(1.2)",terminal=True,columns=80)
         clean=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',result.stdout)
-        frames=[x for x in clean.splitlines() if 'NFCom, DICI e Trafego' in x]
+        frames=[x for x in clean.splitlines() if 'NFCom, DICI e Trafego' in x and not x.startswith('[geral]')]
         self.assertLessEqual(len(frames),3,frames)
         self.assertNotIn('estimado',clean)
 
@@ -123,6 +123,30 @@ class Progress(unittest.TestCase):
         source = RUNNER.parent.parent.joinpath('install.sh').read_text()
         self.assertGreater(source.index('[OK] Todas as etapas da suite concluidas'), source.index('scripts/install-invoice-notes.php'))
 
+    def test_overall_progress_uses_completed_steps_and_final_exit(self):
+        code="print('[suite-progress] 0/4'); print('[caixa] Inicio'); print('[suite-progress] 1/4'); print('[suite-progress] 3/4'); print('[suite-progress] 2/4'); print('[suite-progress] 4/4'); print('[OK] Final')"
+        result,log=self.run_fixture(code)
+        values=[int(x)for x in re.findall(r'\[geral\] \[[#-]+\] (\d+)%',result.stdout)]
+        self.assertEqual(values,sorted(values));self.assertIn(25,values);self.assertIn(75,values);self.assertIn(99,values);self.assertEqual(values[-1],100)
+        self.assertEqual(values.count(100),1)
+        self.assertIn('[suite-progress] 4/4',log)
+
+    def test_overall_failure_never_reaches_hundred(self):
+        result,log=self.run_fixture("print('[suite-progress] 1/2');print('[suite-progress] 2/2');raise SystemExit(7)")
+        values=[int(x)for x in re.findall(r'\[geral\] \[[#-]+\] (\d+)%',result.stdout)]
+        self.assertEqual(result.returncode,7);self.assertIn(99,values);self.assertNotIn(100,values)
+
+    def test_overall_frame_fits_width_and_parser_rejects_bad_steps(self):
+        for width in [32,40,60,80,120]:
+            self.assertLess(len(module.overall_line('Etapa muito longa',75,3600,width)),width)
+        for line in ['[suite-progress] 3/2','[suite-progress] 1/0','[suite-progress] -1/2']:
+            self.assertIsNone(module.overall_checkpoint(line))
+        source=RUNNER.parent.parent.joinpath('install.sh').read_text()
+        points=re.findall(r"printf '\[suite-progress\] (\d+)/(\d+)\\n'",source)
+        total=int(points[-1][1]);self.assertEqual([int(n)for n,_ in points],list(range(total+1)))
+        self.assertTrue(all(int(t)==total for _,t in points))
+        self.assertGreater(source.index('[suite-progress] '+str(total)+'/'),source.index('scripts/install-invoice-notes.php'))
+
     def test_cancellation_terminates_child(self):
         with tempfile.TemporaryDirectory() as tmp:
             marker = str(Path(tmp)/'should-not-run')
@@ -145,3 +169,4 @@ class Progress(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
