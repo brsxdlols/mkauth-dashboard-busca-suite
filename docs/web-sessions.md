@@ -4,10 +4,12 @@ O cabeçalho mostra dois números distintos: **Usuários conectados** conta os u
 diferentes da lista administrativa nativa; **Minhas sessões** conta somente os
 acessos do operador atual. Esses indicadores não são conexões de clientes PPPoE.
 
-O primeiro atalho abre `web_users.php`, com uma linha por usuário e sua quantidade
-de sessões. O segundo abre a lista nativa com `scope=mine`, filtrada no servidor
+O primeiro atalho abre os cartões nativos com `scope=all`, mostrando os acessos de
+todos os usuários com sistema, navegador, horário e IP. O segundo usa o mesmo
+layout com `scope=mine`, filtrado no servidor
 pelo usuário da sessão autenticada, sem aceitar um nome de usuário pela URL.
-A ação Deslogar continua nativa para outras sessões desse mesmo usuário.
+A ação Deslogar continua nativa em ambas as listas. O contador de usuários é
+distinto, embora uma pessoa com vários acessos tenha mais de um cartão na lista.
 
 O contador usa o mesmo diretório, decodificador e chave `MKA_Usuario` da lista
 nativa. Atualiza a cada 30 segundos enquanto a página estiver visível e ao voltar

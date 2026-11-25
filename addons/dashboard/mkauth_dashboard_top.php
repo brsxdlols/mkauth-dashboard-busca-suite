@@ -293,7 +293,7 @@ jQuery(function($){
             event.stopImmediatePropagation();
             var clicked = event.target.closest('[data-dashboard-session-view]');
             var destination = clicked && clicked.dataset.dashboardSessionView === 'users'
-                ? '/admin/addons/dashboard/web_users.php'
+                ? <?php echo json_encode('/admin/sessoes'.$ext_mk.'?scope=all&v=20261125-4'); ?>
                 : <?php echo json_encode('/admin/sessoes'.$ext_mk.'?scope=mine&v=20261125-3'); ?>;
             window.open(destination, '_blank', 'width=500, height=650, scrollbars=YES');
         }, true);
