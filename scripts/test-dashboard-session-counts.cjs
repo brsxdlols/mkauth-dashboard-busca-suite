@@ -7,8 +7,8 @@ const context={sessionsOpener:box,document:{hidden:false,createElement:element,g
 vm.runInNewContext(script,context);
 let click,opened;
 const clickBox={dataset:{},addEventListener(name,fn,capture){assert.equal(name,'click');assert.equal(capture,true);click=fn;}};
-const openerScript=source.slice(source.indexOf('    var sessionsOpener ='),source.indexOf("    $('#systopo')")).replace(/<\?php.*?\?>/g,token=>JSON.stringify(token.includes('scope=all')?'/admin/sessoes.hhvm?scope=all&v=20261125-4':'/admin/sessoes.hhvm?scope=mine&v=20261125-3'));
+const openerScript=source.slice(source.indexOf('    var sessionsOpener ='),source.indexOf("    $('#systopo')")).replace(/<\?php.*?\?>/g,token=>JSON.stringify(token.includes('scope=all')?'/admin/sessoes.hhvm?scope=all&v=20261125-5':'/admin/sessoes.hhvm?scope=mine&v=20261125-5'));
 vm.runInNewContext(openerScript,{document:{getElementById:()=>clickBox},window:{open(url){opened=url}}});
-for(const view of ['users','mine']){click({preventDefault(){},stopImmediatePropagation(){},target:{closest:()=>({dataset:{dashboardSessionView:view}})}});assert.equal(opened,view==='users'?'/admin/sessoes.hhvm?scope=all&v=20261125-4':'/admin/sessoes.hhvm?scope=mine&v=20261125-3');}
+for(const view of ['users','mine']){click({preventDefault(){},stopImmediatePropagation(){},target:{closest:()=>({dataset:{dashboardSessionView:view}})}});assert.equal(opened,view==='users'?'/admin/sessoes.hhvm?scope=all&v=20261125-5':'/admin/sessoes.hhvm?scope=mine&v=20261125-5');}
 assert.equal(label.textContent,'Usuários conectados: ');assert.equal(counter.textContent,'02');assert.equal(context.document.getElementById('mkaDashboardWebSessionsTotal').textContent,'01');assert.equal(box.children.length,2);assert.equal(context.document.getElementById('UUE_SESSOES'),null);
 (async()=>{await focus();assert.equal(counter.textContent,'03');assert.equal(context.document.getElementById('mkaDashboardWebSessionsTotal').textContent,'02');console.log('PASS distinct-user display, total sessions, native SSE isolation and refresh');})().catch(e=>{console.error(e);process.exitCode=1;});

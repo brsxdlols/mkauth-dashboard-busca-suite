@@ -3,5 +3,5 @@
 require __DIR__.'/../shared/notification_bootstrap.php';
 header('Cache-Control: no-store, private');
 $extension=is_file(dirname(__DIR__,2).'/sessoes.hhvm')?'.hhvm':'.php';
-header('Location: /admin/sessoes'.$extension.'?scope=all&v=20261125-4');
+header('Location: /admin/sessoes'.$extension.'?scope=all&v=20261125-5');
 exit;

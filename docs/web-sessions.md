@@ -21,3 +21,6 @@ A atualização SSE nativa de sessões do operador atual não sobrescreve esse t
 O popup usa URL absoluta e versão de atualização para evitar uma página antiga
 em cache. O campo Usuário é produzido pelo controlador nativo com o complemento
 instalado pela suíte. Nenhuma sessão é removida ou encerrada para contar acessos.
+
+O botão Deslogar pede confirmação com o nome do usuário antes de seguir para a
+ação nativa. Cancelar mantém a página e não envia a requisição de encerramento.

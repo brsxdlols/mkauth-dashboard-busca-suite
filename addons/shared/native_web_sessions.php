@@ -11,7 +11,13 @@ function mka_web_sessions_patch($source) {
     $source=preg_replace_callback($assignment,function($row)use($guard){return $row[0].$guard;},$source,-1,$count);
     if($count!==1)throw new RuntimeException('Filtro nativo de sessoes incompativel; original preservado.');
     $label="<strong> Usu&aacute;rio: </strong> ';echo htmlspecialchars((string)(".$owner." ?? ''),ENT_QUOTES|ENT_SUBSTITUTE,'ISO-8859-1');echo '<br />\n<strong> SO: </strong>";
-    return str_replace('<strong> SO: </strong>',$label,$source);
+    $source=str_replace('<strong> SO: </strong>',$label,$source);
+    // Keep the vendor URL/action; cancellation prevents navigation before any request.
+    $confirm=' onclick="return window.confirm(&quot;Deslogar o usu&aacute;rio &quot; + this.getAttribute(&quot;data-mka-session-user&quot;) + &quot; desta sess&atilde;o? O acesso deste navegador ser&aacute; encerrado.&quot;)" ';
+    $attribute="data-mka-session-user=\"';echo htmlspecialchars((string)(".$owner."??''),ENT_QUOTES|ENT_SUBSTITUTE,'ISO-8859-1');echo '\"".$confirm;
+    $source=preg_replace_callback('/href="executar_sessao\.(?:hhvm|php)\?acao=deslogar(?=&|")/',function($match)use($attribute){return $attribute.$match[0];},$source,-1,$buttons);
+    if($buttons!==1)throw new RuntimeException('Acao nativa Deslogar incompativel; original preservado.');
+    return $source;
 }
 if(defined('MKA_WEB_SESSIONS_TEST'))return;
 if(!isset($mkaSessionsOriginal,$mkaSessionsOriginalHash) || !is_file($mkaSessionsOriginal) || !hash_equals($mkaSessionsOriginalHash,hash_file('sha256',$mkaSessionsOriginal))) {
