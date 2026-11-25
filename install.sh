@@ -485,6 +485,7 @@ if command -v python3 >/dev/null 2>&1; then
 fi
 
 php "${SCRIPT_DIR}/scripts/install-invoice-notes.php"
+python3 "${SCRIPT_DIR}/scripts/install-native-web-sessions.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/native-web-sessions" || echo '[aviso] Lista nativa de sessoes preservada; consulte o backup de compatibilidade.'
 
 printf '[suite-progress] 18/18\n'
 echo "[OK] Todas as etapas da suite concluidas"

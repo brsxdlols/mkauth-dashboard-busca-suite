@@ -25,7 +25,7 @@ def phase(line):
     match = re.match(r'^\[([a-z-]+)\]', line)
     names = {'radius': 'Log RADIUS', 'caixa': 'Caixa', 'cpf': 'CPF/CNPJ',
              'reconcile': 'Reconciliador online/offline',
-             'desconexao': 'Horario das desconexoes', 'checagem': 'Conferencia online/offline',
+             'desconexao': 'Horario das desconexoes', 'sessoes': 'Sessoes administrativas', 'checagem': 'Conferencia online/offline',
              'visitas': 'Visitas', 'atendimentos': 'Atendimentos', 'offline': 'Relatorio offline',
              'receber': 'Recebimento', 'ipv6': 'IPv6', 'nfcom': 'NFCom, DICI e Trafego',
              'limpeza': 'Limpeza diaria', 'horario': 'Diagnostico de horario', 'desempenho': 'Analise de desempenho',
@@ -116,22 +116,24 @@ def main():
     overall_percent = 0
     overall_total = None
     frame_visible = False
+    print('[instalacao] Total previsto: 18 etapas de instalacao de pacotes e validacoes.', flush=True)
+    print('[instalacao] Tempo estimado: 3 a 6 minutos; pode variar conforme o servidor e a conexao.', flush=True)
     print('[progresso] Log completo: '+logfile, flush=True)
     with os.fdopen(descriptor, 'w', encoding='utf-8') as log:
         color = (args.terminal or os.environ.get('FORCE_COLOR') == '1') and not os.environ.get('NO_COLOR')
         def clear_frame():
             nonlocal frame_visible
             if args.terminal and frame_visible:
-                print('\r\033[2K\033[1A\r\033[2K', end='', flush=True)
+                print('\r\033[2K', end='', flush=True)
                 frame_visible = False
         def progress(percent=None, failed=False, warning=False, completed=False, announce=False):
             nonlocal last_frame, last_draw, frame_visible
             width = shutil.get_terminal_size(fallback=(80,24)).columns if args.terminal else 200
-            message = progress_line(current, percent, time.monotonic()-changed,
+            message = progress_line(current, percent if completed else None, time.monotonic()-changed,
                                     failed, warning, completed,
                                     width)
             general = overall_line(current, overall_percent, time.monotonic()-started, width)
-            frame = (general, message)
+            frame = message
             if frame == last_frame:
                 return
             if not args.terminal and not (announce or completed or failed):
@@ -140,11 +142,10 @@ def main():
             if args.terminal:
                 clear_frame()
                 prefix = '\033[31m' if failed else ('\033[33m' if warning and completed else ('\033[32m' if completed else ''))
-                print(general+'\n'+(prefix if color else '')+message+('\033[0m' if color else ''),
+                print((prefix if color else '')+message+('\033[0m' if color else ''),
                       end='\n' if failed or completed else '', flush=True)
                 frame_visible = not (failed or completed)
             else:
-                print(general, flush=True)
                 print(message, flush=True)
         progress(announce=True)
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

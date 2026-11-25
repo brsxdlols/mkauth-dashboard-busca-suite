@@ -46,26 +46,24 @@ class Progress(unittest.TestCase):
     def test_unknown_progress_waits_for_real_completion(self):
         result,log=self.run_fixture("import time; print('[caixa] Instalando'); time.sleep(.8); raise SystemExit(7)",terminal=True)
         self.assertIn('Caixa em execucao',result.stdout)
-        self.assertNotIn('estimado',result.stdout)
+        self.assertNotIn('% estimado',result.stdout)
         self.assertNotIn('[OK] Caixa',result.stdout)
         self.assertNotIn('Caixa [',result.stdout)
         self.assertEqual(result.returncode,7)
 
-    def test_reported_checkpoints_are_real_monotonic_and_not_time_estimates(self):
-        code="import time; print('[ntp] 20% Conferindo'); print('[ntp] 40% Backup'); print('[ntp] 40% Duplicado'); print('[ntp] 30% Atrasado'); time.sleep(1.1); print('[ntp] 65% Sincronizando'); print('[ntp] 85% Validando')"
+    def test_running_stage_has_no_percent_but_keeps_child_checkpoints_in_log(self):
+        code="print('[ntp] 20% Conferindo'); print('[ntp] 40% Backup'); print('[ntp] 85% Validando')"
         result,log=self.run_fixture(code)
-        values=[int(x) for x in re.findall(r'Correcao e verificacao NTP \[[#-]+\] (\d+)%',result.stdout)]
-        unique=[v for i,v in enumerate(values) if i==0 or v!=values[i-1]]
-        self.assertEqual(unique,[20,40,65,85,100])
-        self.assertEqual(values,sorted(values))
-        self.assertNotIn('estimado',result.stdout)
-        self.assertIn('[ntp] 30% Atrasado',log)
+        self.assertNotIn('[geral]',result.stdout)
+        self.assertNotIn('40%',result.stdout)
+        self.assertIn('[ntp] 40% Backup',log)
+        self.assertIn('NTP [####################] 100%',result.stdout)
+        self.assertIn('Total previsto: 18 etapas',result.stdout)
+        self.assertIn('Tempo estimado: 3 a 6 minutos',result.stdout)
 
     def test_reported_hundred_waits_for_successful_exit(self):
-        result,log=self.run_fixture("print('[ntp] 20% Inicio'); print('[ntp] 100% Declarado pelo filho'); raise SystemExit(7)")
+        result,log=self.run_fixture("print('[ntp] 100% Declarado pelo filho'); raise SystemExit(7)")
         self.assertNotIn('NTP [####################] 100%',result.stdout)
-        self.assertIn('validando conclusao',result.stdout)
-        self.assertNotIn('[OK] Correcao',result.stdout)
         self.assertEqual(result.returncode,7)
 
     def test_report_parser_accepts_only_known_valid_phase_checkpoints(self):
@@ -85,7 +83,7 @@ class Progress(unittest.TestCase):
         clean=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',result.stdout)
         frames=[x for x in clean.splitlines() if 'NFCom, DICI e Trafego' in x and not x.startswith('[geral]')]
         self.assertLessEqual(len(frames),3,frames)
-        self.assertNotIn('estimado',clean)
+        self.assertNotIn('% estimado',clean)
 
     def test_formatting_does_not_turn_waiting_time_into_percentage(self):
         for width in [32,40,60,80,120]:
@@ -123,18 +121,12 @@ class Progress(unittest.TestCase):
         source = RUNNER.parent.parent.joinpath('install.sh').read_text()
         self.assertGreater(source.index('[OK] Todas as etapas da suite concluidas'), source.index('scripts/install-invoice-notes.php'))
 
-    def test_overall_progress_uses_completed_steps_and_final_exit(self):
-        code="print('[suite-progress] 0/4'); print('[caixa] Inicio'); print('[suite-progress] 1/4'); print('[suite-progress] 3/4'); print('[suite-progress] 2/4'); print('[suite-progress] 4/4'); print('[OK] Final')"
-        result,log=self.run_fixture(code)
-        values=[int(x)for x in re.findall(r'\[geral\] \[[#-]+\] (\d+)%',result.stdout)]
-        self.assertEqual(values,sorted(values));self.assertIn(25,values);self.assertIn(75,values);self.assertIn(99,values);self.assertEqual(values[-1],100)
-        self.assertEqual(values.count(100),1)
+    def test_internal_overall_markers_do_not_create_visible_bars(self):
+        result,log=self.run_fixture("print('[suite-progress] 0/4'); print('[caixa] Inicio'); print('[suite-progress] 3/4'); print('[suite-progress] 4/4')")
+        self.assertNotIn('[geral]',result.stdout)
+        self.assertNotIn('[suite-progress]',result.stdout)
         self.assertIn('[suite-progress] 4/4',log)
-
-    def test_overall_failure_never_reaches_hundred(self):
-        result,log=self.run_fixture("print('[suite-progress] 1/2');print('[suite-progress] 2/2');raise SystemExit(7)")
-        values=[int(x)for x in re.findall(r'\[geral\] \[[#-]+\] (\d+)%',result.stdout)]
-        self.assertEqual(result.returncode,7);self.assertIn(99,values);self.assertNotIn(100,values)
+        self.assertIn('[OK] Caixa',result.stdout)
 
     def test_overall_frame_fits_width_and_parser_rejects_bad_steps(self):
         for width in [32,40,60,80,120]:
