@@ -17,7 +17,6 @@ var statusRow=node('div');statusRow.className='field is-horizontal mka-equipment
 var emptyLabel=node('div');emptyLabel.className=equipmentRow.querySelector('.field-label').className;
 var statusBody=node('div');statusBody.className='field-body';var statusField=node('div');statusField.className='field';
 var status=node('p');status.className='help';status.setAttribute('role','status');statusField.append(status);statusBody.append(statusField);statusRow.append(emptyLabel,statusBody);extra.insertAdjacentElement('afterend',statusRow);
-var otherProducts=[],nativeEditor=null;
 var rows=[],baseline=[],catalog=[],revision=0,csrf='',dirty=false,busy=false,pending=null,ready=false,bypass=false;
 var stockDialog,stockOpener,stockName,stockHeading,stockReason;
 function explainStock(opener,name,available){stockOpener=opener;
@@ -70,45 +69,31 @@ rows.push({legacy:false,id:0,product_id:p.id,name:p.name,serial:draft.serial,com
 else action('bi-dash','Remover equipamento','button is-danger is-outlined',function(){rows.splice(index,1);changed();render();});
 }
 function dateLabel(value){if(!value)return 'Ao gravar';var m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[3]+'/'+m[2]+'/'+m[1]:String(value);}
-function nativeProductsEditor(){
-if(nativeEditor)return;
-var productSelect=document.getElementById('produto_id'),quantity=document.getElementById('produto_qtd'),list=document.getElementById('produtos');
-if(!productSelect||!quantity||!list)return;
-nativeEditor=node('details');nativeEditor.className='mka-equipment-native-editor';
-nativeEditor.append(node('summary','Gerenciar outros produtos pelo cadastro nativo'));
-var explanation=node('p','Produtos adicionados pelo cadastro nativo aparecem na tabela como “Comodato não informado”. Use esta área para gerenciar esses vínculos existentes.');explanation.className='help';nativeEditor.append(explanation);
-statusRow.insertAdjacentElement('afterend',nativeEditor);
-[productSelect,quantity,list].forEach(function(n){var field=n.closest('.field.is-horizontal');if(field)nativeEditor.append(field);});
-if(typeof MutationObserver!=='undefined'){var refreshTimer;new MutationObserver(function(){clearTimeout(refreshTimer);refreshTimer=setTimeout(function(){if(busy)return;request().then(function(data){otherProducts=data.other_products||[];render();}).catch(function(){});},150);}).observe(list,{childList:true,subtree:true});}
-}
 function render(){
 extra.replaceChildren();controls(equipmentRow,serialRow,draft,0,true);
 var label=node('div');label.className=emptyLabel.className;
 var body=node('div');body.className='field-body';var field=node('div');field.className='field';var container=node('div');container.className='table-container';
-var table=node('table');table.className='table is-fullwidth mka-equipment-table';table.setAttribute('aria-label','Equipamentos e produtos vinculados ao cliente');
+var table=node('table');table.className='table is-fullwidth mka-equipment-table';table.setAttribute('aria-label','Equipamentos vinculados ao cliente');
 var thead=node('thead'),head=node('tr');['EQUIPAMENTO','QTN','INSERIDO','COMODATO'].forEach(function(text){var th=node('th',text);th.scope='col';head.append(th);});thead.append(head);table.append(thead);var tbody=node('tbody');table.append(tbody);
 var groups=new Map();rows.forEach(function(r){var key=(r.legacy?'legacy:':r.product_id+':')+r.comodato;var g=groups.get(key);if(!g){g={name:r.name,loan:r.comodato,units:[],legacy:r.legacy};groups.set(key,g);}g.units.push(r);});
 function action(label,title,fn){var b=node('button',label);b.type='button';b.className='button is-small is-danger is-outlined';b.title=title;b.setAttribute('aria-label',title);b.dataset.mkaEquipmentControl='1';b.onclick=function(){if(!busy)fn();};return b;}
 groups.forEach(function(g){
-var tr=node('tr');tr.dataset.mkaEquipmentGroup='1';var name=node('td');var remove=action('','Remover uma unidade de '+g.name,function(){var r=g.units[g.units.length-1];rows.splice(rows.indexOf(r),1);changed();render();});remove.className='mka-equipment-remove';remove.dataset.mkaRemoveOne='1';var icon=node('i');icon.className='bi-trash';icon.setAttribute('aria-hidden','true');remove.append(icon);name.append(remove,node('span',g.name));if(g.legacy){var old=node('small','Cadastro anterior');old.className='mka-equipment-origin';name.append(old);}
-var detail=node('details');detail.className='mka-equipment-unit-details';detail.append(node('summary','MAC/serial e unidades ('+g.units.length+')'));
-g.units.forEach(function(r,i){var line=node('div');line.className='mka-equipment-unit';var caption=node('label','Unidade '+(i+1)+' · '+(r.legacy?'Cadastro anterior':dateLabel(r.inserted_at)));var input=node('input');input.type='text';input.className='input is-small';input.value=r.serial||'';input.maxLength=255;input.placeholder='MAC ou número de série';input.setAttribute('aria-label','MAC/serial '+g.name+' unidade '+(i+1));input.dataset.mkaEquipmentControl='1';input.dataset.mkaSerial='1';input.oninput=function(){r.serial=input.value;changed();};caption.append(input);line.append(caption,action('Remover','Remover equipamento '+g.name+' unidade '+(i+1),function(){rows.splice(rows.indexOf(r),1);changed();render();}));detail.append(line);});name.append(detail);
+var tr=node('tr');tr.dataset.mkaEquipmentGroup='1';var name=node('td');var remove=action('','Remover uma unidade de '+g.name,function(){var r=g.units[g.units.length-1];rows.splice(rows.indexOf(r),1);changed();render();});remove.className='mka-equipment-remove';remove.dataset.mkaRemoveOne='1';var icon=node('i');icon.className='bi-trash';icon.setAttribute('aria-hidden','true');remove.append(icon);name.append(remove,node('span',g.name));
+name.title=g.units.map(function(r){return r.serial||'';}).filter(Boolean).join(', ');
 var qty=node('td',String(g.units.length).padStart(3,'0'));qty.dataset.mkaQuantity='1';var dates=Array.from(new Set(g.units.map(function(r){return r.legacy?'—':dateLabel(r.inserted_at);})));var inserted=node('td',dates.length===1?dates[0]:'Várias datas');inserted.title=dates.join(', ');
 var loanCell=node('td'),wrap=node('div');wrap.className='select is-small';var select=node('select');select.dataset.mkaEquipmentControl='1';select.dataset.mkaLoan='group';select.setAttribute('aria-label','Comodato de '+g.name);['sim','nao'].forEach(function(value){var option=node('option',value==='sim'?'Sim':'Não');option.value=value;select.append(option);});select.value=g.loan;select.onchange=function(){g.units.forEach(function(r){r.comodato=select.value;if(r.legacy)document.querySelectorAll('[name="comodato"]').forEach(function(n){n.checked=n.value===r.comodato;});});changed();render();};wrap.append(select);loanCell.append(wrap);
 tr.append(name,qty,inserted,loanCell);if(g.units.some(function(r){return r.stale;})){tr.classList.add('has-text-danger');name.append(node('small','Vínculo alterado no estoque; remova a unidade desatualizada.'));}tbody.append(tr);
 });
-var external=new Map();otherProducts.forEach(function(r){var key=String(r.product_id),g=external.get(key);if(!g){g={name:r.name||'Produto removido do catálogo',quantity:0,dates:[]};external.set(key,g);}g.quantity+=Number(r.quantity)||0;g.dates.push(dateLabel(r.inserted_at));});
-external.forEach(function(g){var tr=node('tr');tr.dataset.mkaNativeProduct='1';var name=node('td',g.name);var origin=node('small','Produto do cadastro nativo');origin.className='mka-equipment-origin';name.append(origin);var dates=Array.from(new Set(g.dates)),date=node('td',dates.length===1?dates[0]:'Várias datas');date.title=dates.join(', ');if(nativeEditor){var manage=node('button','Gerenciar');manage.type='button';manage.className='mka-equipment-manage';manage.onclick=function(){nativeEditor.open=true;nativeEditor.scrollIntoView({block:'nearest'});};name.append(manage);}tr.append(name,node('td',String(g.quantity).padStart(3,'0')),date,node('td','Não informado'));tbody.append(tr);});
-if(!tbody.children.length){var tr=node('tr'),td=node('td','Nenhum equipamento ou produto adicionado.');td.colSpan=4;tr.append(td);tbody.append(tr);}
+if(!tbody.children.length){var tr=node('tr'),td=node('td','Nada cadastrado.');td.colSpan=4;tr.append(td);tbody.append(tr);}
 container.append(table);field.append(container);body.append(field);extra.append(label,body);balances();lock(busy);
 var primary=rows[0];nativeEquipment.value=primary?primary.name:'nenhum';nativeSerial.value=primary?primary.serial:'';
 }
 function apply(data,preserve){var first=preserve||rows.find(function(r){return r.legacy;});
-otherProducts=data.other_products||[];catalog=data.products;baseline=data.items.map(function(r){return Object.assign({legacy:false,name:r.name},r);});
+catalog=data.products;baseline=data.items.map(function(r){return Object.assign({legacy:false,name:r.name},r);});
 if(!ready){form.append(nativeEquipment,nativeSerial);equipment.name='mka_equipment_add';serial.name='mka_equipment_add_serial';var primaryProduct=product(original.name);var matched=baseline.some(function(r){return (keyName(r.name)===keyName(original.name)||(primaryProduct&&primaryProduct.id===r.product_id))&&r.serial===original.serial;});
 first=!matched&&original.name&&original.name!=='nenhum'?legacyRow(original.name,original.serial):null;}
 rows=baseline.map(function(r){return Object.assign({},r);});if(first)rows.unshift(first);
-revision=data.revision;csrf=data.csrf;ready=true;dirty=false;pending=null;nativeProductsEditor();render();}
+revision=data.revision;csrf=data.csrf;ready=true;dirty=false;pending=null;render();}
 
 async function request(options){var response=await fetch('/admin/addons/client_equipment/api.php?uuid='+encodeURIComponent(uuid),Object.assign({credentials:'same-origin',cache:'no-store'},options||{}));var data;
 try{data=await response.json();}catch(e){throw Error('Não foi possível consultar o estoque. Atualize a página.');}if(!response.ok||!data.ok)throw Error(data.error||'Não foi possível consultar o estoque.');return data;}
@@ -132,7 +117,7 @@ document.querySelectorAll('[name="comodato"]').forEach(function(n){n.addEventLis
 window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue='';}});
 // Until the authenticated read finishes, leave every native field and native action intact.
 request().then(function(data){original={name:equipment.value,serial:serial.value};apply(data);}).catch(function(e){message(e.message,true);});
-var refreshing=false;window.addEventListener('focus',async function(){if(!ready||busy||refreshing)return;refreshing=true;try{var data=await request();otherProducts=data.other_products||[];catalog=data.products;csrf=data.csrf;rows.forEach(function(r){var p=product(r.name);if(!r.legacy&&!r.product_id&&p)r.product_id=p.id;});document.querySelectorAll('select[data-mka-equipment-control]:not([data-mka-loan])').forEach(function(s){catalog.forEach(function(p){if(p.active)addOption(s,p.name);});});render();}catch(e){/* Keep local edits; server validates stock again on Gravar. */}finally{refreshing=false;}});
+var refreshing=false;window.addEventListener('focus',async function(){if(!ready||busy||refreshing)return;refreshing=true;try{var data=await request();catalog=data.products;csrf=data.csrf;rows.forEach(function(r){var p=product(r.name);if(!r.legacy&&!r.product_id&&p)r.product_id=p.id;});document.querySelectorAll('select[data-mka-equipment-control]:not([data-mka-loan])').forEach(function(s){catalog.forEach(function(p){if(p.active)addOption(s,p.name);});});render();}catch(e){/* Keep local edits; server validates stock again on Gravar. */}finally{refreshing=false;}});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

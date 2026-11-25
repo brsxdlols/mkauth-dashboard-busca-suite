@@ -18,13 +18,4 @@
 .mka-equipment-table-field .table-container{max-width:100%;overflow-x:auto}
 .mka-equipment-table td{vertical-align:top}
 .mka-equipment-remove{border:0;background:none;color:inherit;font:inherit;padding:0 5px 0 0;cursor:pointer}
-.mka-equipment-manage{border:0;background:none;color:#3273dc;font:inherit;padding:0;margin-left:8px;cursor:pointer}
-.mka-equipment-origin{display:block;color:#7a7a7a}
-.mka-equipment-unit-details{margin-top:6px;font-size:.85em}
-.mka-equipment-unit-details summary,.mka-equipment-native-editor summary{cursor:pointer}
-.mka-equipment-unit{display:flex;align-items:end;gap:8px;margin:8px 0}
-.mka-equipment-unit label{flex:1;min-width:120px}
-.mka-equipment-unit input{display:block;margin-top:4px}
-.mka-equipment-native-editor{margin:12px 0}
-.mka-equipment-native-editor>.help{margin:8px 0}
-@media(max-width:768px){.mka-equipment-table-field{display:block}.mka-equipment-table .button{white-space:nowrap}.mka-equipment-table{min-width:600px}.mka-equipment-unit{flex-wrap:wrap}}
+@media(max-width:768px){.mka-equipment-table-field{display:block}.mka-equipment-table{min-width:420px}}

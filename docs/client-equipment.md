@@ -39,16 +39,15 @@ Para testar o layout com o CSS nativo, execute `node scripts/test-client-equipme
 
 
 
-## Lista agrupada no cadastro do cliente
+## Lista de equipamentos no padrão nativo
 
-O campo antigo “Equipamento” descreve o cadastro; “Produto” identifica o item do
-estoque. A inclusão de equipamentos usa os produtos e o saldo nativos.
-O compositor mantém uma única linha de inclusão. A tabela abaixo reúne as unidades
-do mesmo produto e comodato, somando a quantidade. Comodatos diferentes formam
-grupos separados. As datas e os MACs/seriais individuais ficam nos detalhes de cada
-grupo. A gravação e o contrato continuam tratando cada unidade separadamente.
+Os campos de inclusão ficam no mesmo lugar. Logo abaixo do MAC/Serial, a tabela
+simples EQUIPAMENTO / QTN / INSERIDO / COMODATO agrupa unidades do mesmo produto e
+comodato. A lixeira remove uma unidade do grupo. Os MACs/seriais são informados na
+linha de inclusão e preservados individualmente no banco e no contrato; o título
+do nome na tabela permite consultar os números preenchidos.
 
-Produtos de vínculos nativos anteriores também aparecem, sem nova baixa e com
-comodato “Não informado”, pois o vínculo nativo não armazena esse atributo.
-“Gerenciar” abre os controles nativos em uma área recolhida. Não há importação
-automática de produtos nem alteração retroativa de estoque ou comodato.
+A área nativa de produtos, quantidade e sua lista permanece no lugar e não é
+recolhida nem misturada à lista de equipamentos. As duas telas usam o mesmo estoque;
+adicionar equipamentos pela lista não duplica a baixa quando o vínculo aparece
+na consulta nativa de produtos.
