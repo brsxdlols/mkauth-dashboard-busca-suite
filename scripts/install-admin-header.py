@@ -3,7 +3,7 @@
 import hashlib,json,os,re,sys,tempfile
 from pathlib import Path
 START=b'/* MKA-ADMIN-HEADER-START */';END=b'/* MKA-ADMIN-HEADER-END */'
-BLOCK=START+b"\n;(function(){if(window.mkaAdminHeaderLoader==='20261125-1')return;window.mkaAdminHeaderLoader='20261125-1';var s=document.createElement('script');s.src='/admin/addons/shared/admin_header.js?v=20261125-1';document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(window.mkaAdminHeaderLoader==='20261125-2')return;window.mkaAdminHeaderLoader='20261125-2';var s=document.createElement('script');s.src='/admin/addons/shared/admin_header.js?v=20261125-2';document.head.appendChild(s);})();\n"+END+b'\n'
 def patch(source):return re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',source,flags=re.S).rstrip(b'\r\n')+b'\n'+BLOCK
 def atomic(path,data):
  fd,name=tempfile.mkstemp(prefix='.admin-header-',dir=str(path.parent))

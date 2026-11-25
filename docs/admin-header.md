@@ -25,3 +25,9 @@ Verificações sem alterar dados operacionais:
 
 `CHROME_BIN` permite escolher o Chrome/Chromium para o teste de navegador. Ele
 usa uma tela sintética e respostas simuladas, sem acessar nem encerrar sessões.
+
+## Logo e retorno ao início
+
+A logo do provedor no cabeçalho e a logo da barra de navegação apontam para `/admin/`, respeitando o início configurado no servidor. O link do provedor é criado sem duplicação, com nome acessível e foco visível. A integração permanece nos dois carregadores globais, sem substituir páginas nativas.
+
+No desktop, o bloco `.level-left` da logo recebe o mesmo `padding-top: 1rem` das colunas de texto. Antes, apenas as colunas diretas `.level-item` recebiam o espaço, deixando a logo próxima demais da barra. A regra mantém o comportamento de espaçamento nativo no celular. O cache dos carregadores e da Dashboard foi atualizado para `20261125-2`.
