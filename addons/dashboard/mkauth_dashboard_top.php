@@ -97,23 +97,6 @@ html.has-navbar-fixed-top {
 #systopo.is-invisible {
     visibility: visible !important;
 }
-/* Align the native information blocks by their first label, independent of row count. */
-body.mka-suite-dashboard-page #systopo {
-    align-items: flex-start !important;
-}
-body.mka-suite-dashboard-page #systopo > .level-item,
-body.mka-suite-dashboard-page #systopo > .level-left {
-    align-self: flex-start;
-    align-items: flex-start;
-}
-body.mka-suite-dashboard-page #systopo > .level-item > div > p {
-    margin-top: 0;
-}
-@media screen and (min-width: 769px) {
-    body.mka-suite-dashboard-page #systopo > .level-item {
-        padding-top: 1rem;
-    }
-}
 nav.navbar.is-fixed-top:not(#mkauth-dashboard-navbar) {
     display: none !important;
 }
@@ -282,73 +265,13 @@ function dashboardMobileMenuToggle(event) {
     </div>
 </nav>
 <script src="../../menu.js<?php echo $ext_mk; ?>"></script>
+<script>window.mkaAdminHeaderInitialCounts = <?php echo json_encode($dashTopSessionCounts); ?>;</script>
+<script src="/admin/addons/shared/admin_header.js?v=20261125-1"></script>
 <script>
 jQuery(function($){
-    // The native header uses a relative popup URL, which resolves inside addons/dashboard.
-    var sessionsOpener = document.getElementById('run_open_sessoes');
-    if (sessionsOpener && !sessionsOpener.dataset.dashboardSessionsBound) {
-        sessionsOpener.dataset.dashboardSessionsBound = '1';
-        sessionsOpener.addEventListener('click', function(event) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            var clicked = event.target.closest('[data-dashboard-session-view]');
-            var destination = clicked && clicked.dataset.dashboardSessionView === 'users'
-                ? <?php echo json_encode('/admin/sessoes'.$ext_mk.'?scope=all&v=20261125-5'); ?>
-                : <?php echo json_encode('/admin/sessoes'.$ext_mk.'?scope=mine&v=20261125-5'); ?>;
-            window.open(destination, '_blank', 'width=500, height=650, scrollbars=YES');
-        }, true);
-    }
     $('#systopo').removeClass('is-invisible').css('visibility','visible');
     $('#UUE_NProvedor').text(<?php echo json_encode($dashTopProvider !== '' ? $dashTopProvider : $dashTopCompany); ?>);
     $('#UUE_Usuario').text(<?php echo json_encode($dashTopUser); ?>);
-    // Give the dashboard its own counter; the native SSE reports only the current user's sessions.
-    var sessionsCount = document.getElementById('UUE_SESSOES');
-    if (sessionsCount) {
-        sessionsCount.id = 'mkaDashboardWebSessions';
-        var sessionsLabel = sessionsCount.previousElementSibling;
-        if (sessionsLabel) sessionsLabel.textContent = 'Usuários conectados: ';
-        var sessionsTotal = document.createElement('span');
-        sessionsTotal.id = 'mkaDashboardWebSessionsTotal';
-        var counterBox = sessionsOpener || sessionsCount.parentElement;
-        var usersLine = document.createElement('span'), sessionsLine = document.createElement('span');
-        var totalLabel = document.createElement('strong');
-        totalLabel.textContent = 'Minhas sessões:';
-        usersLine.dataset.dashboardSessionView = 'users';
-        sessionsLine.dataset.dashboardSessionView = 'mine';
-        [usersLine,sessionsLine].forEach(function(line){line.setAttribute('role','button');line.tabIndex=0;line.addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();line.click();}});});
-        usersLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
-        sessionsLine.style.cssText = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap';
-        var sessionsIcon = counterBox.querySelector('i');
-        if (sessionsIcon) { sessionsIcon.className = 'bi-people-fill'; usersLine.append(sessionsIcon); }
-        if (sessionsLabel) usersLine.append(sessionsLabel);
-        usersLine.append(sessionsCount);
-        var totalIcon = document.createElement('i');
-        totalIcon.className = 'bi-pc-display-horizontal';
-        totalIcon.setAttribute('aria-hidden','true');
-        sessionsLine.append(totalIcon,totalLabel,sessionsTotal);
-        counterBox.replaceChildren(usersLine,sessionsLine);
-        counterBox.style.cssText += ';display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:3px';
-        function paintWebSessions(counts) {
-            sessionsCount.textContent = counts ? String(counts.users).padStart(2,'0') : 'indisponível';
-            sessionsTotal.textContent = counts ? String(counts.my_sessions).padStart(2,'0') : 'indisponível';
-            sessionsCount.title = 'Todos os usuários conectados ao painel administrativo.';
-            sessionsTotal.title = 'Somente as sessões do usuário atual: '+<?php echo json_encode($dashTopUser); ?>;
-        }
-        paintWebSessions(<?php echo json_encode($dashTopSessionCounts); ?>);
-        var checkingSessions = false;
-        async function refreshWebSessions() {
-            if (document.hidden || checkingSessions) return;
-            checkingSessions = true;
-            var controller = new AbortController(), timer = setTimeout(function(){controller.abort();},8000);
-            try {
-                var response = await fetch('/admin/addons/dashboard/web_session_counts.php',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
-                if (response.ok) paintWebSessions(await response.json());
-            } catch (error) { /* Preserve the last successful count. */ }
-            finally { clearTimeout(timer); checkingSessions = false; }
-        }
-        setInterval(refreshWebSessions,30000);
-        window.addEventListener('focus',refreshWebSessions);
-    }
     $('#UUE_Data').text(<?php echo json_encode($dashTopDate); ?>);
     $('#UUE_Ultacesso').text(<?php echo json_encode($dashTopLast); ?>);
     $('#UUE_IP').text(<?php echo json_encode($dashTopIp); ?>);
@@ -395,6 +318,7 @@ jQuery(function($){
     setTimeout(bindDashboardMobileMenu, 500);
 })();
 </script>
+
 
 
 

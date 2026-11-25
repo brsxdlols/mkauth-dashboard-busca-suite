@@ -436,6 +436,7 @@ python3 "${SCRIPT_DIR}/scripts/install-cleanup.py" "${TARGET_ADMIN_DIR}" "${BACK
 python3 "${SCRIPT_DIR}/scripts/install-time-monitor.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/time-monitor"
 printf '[suite-progress] 13/18\n'
 python3 "${SCRIPT_DIR}/scripts/install-admin-mobile.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/admin-mobile"
+python3 "${SCRIPT_DIR}/scripts/install-admin-header.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/admin-header"
 python3 "${SCRIPT_DIR}/scripts/install-client-equipment.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/client-equipment" || echo '[aviso] Equipamentos preservados: consulte a compatibilidade do contrato e do estoque.'
 
 printf '[suite-progress] 14/18\n'
@@ -491,5 +492,6 @@ printf '[suite-progress] 18/18\n'
 echo "[OK] Todas as etapas da suite concluidas"
 echo "Instalacao concluida em: ${TARGET_ADMIN_DIR}"
 echo "Backup salvo em: ${BACKUP_DIR}"
+
 
 
