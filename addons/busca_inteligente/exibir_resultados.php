@@ -1748,9 +1748,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             <a class="client-action-btn" href='../../cliente_alt.<?= $links_ext; ?>?uuid=<?= $uuid_cliente; ?>' title='ALTERAR CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-user-pen"></i>
                                                             </a>
-                                                            <a class="client-action-btn" href='det_conn.php?login=<?= $login_cliente; ?>' title='CONEXÕES CLIENTE: <?= $nome_cliente; ?>'>
-                                                                <i class="fa-solid fa-router"></i>
-                                                            </a>
                                                             <a class="client-action-btn" href='<?= htmlspecialchars(mka_suite_support_url($suite_support_destination,$nome_cliente,$login_cliente,$links_ext), ENT_QUOTES, 'UTF-8'); ?>' title='VER CHAMADOS: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-headset"></i>
                                                             </a>
@@ -1810,10 +1807,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 
                                                                     $add_online = ($username_on[trim(strtolower($username_cli_adicional))] ?? '');
 
-                                                                    $conn_add = " <a class='client-action-btn' href='det_conn.php?login=$username_cli_adicional' title='CONEXOES CLIENTE: $nome_cliente'>
-                                                                        <i class='fa-solid fa-router'></i>
-                                                                         </a> ";
-
                                                                     if (isset($username_on[trim(strtolower($username_cli_adicional))])) {
                                                             ?>
                                                                     <a class='client-add-status is-online' data-additional-uuid='<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
@@ -1824,7 +1817,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                                     } else {
                                                                 ?>
                                                                     <a class='client-add-status is-offline' data-additional-uuid='<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' href='../../adicional_alt.<?= $links_ext; ?>?uuid=<?= htmlspecialchars($uuid_cli_adicional, ENT_QUOTES, 'UTF-8'); ?>' title='VER ADICIONAL: <?= $nome_cli_adicional; ?>'>
-                                                                        <i class="fa-solid fa-circle-minus"></i><?= $username_cli_adicional; ?></a> <?= $conn_add; ?>
+                                                                        <i class="fa-solid fa-circle-minus"></i><?= $username_cli_adicional; ?></a>
                                                             <?php
                                                                     }
                                                                 }
@@ -2040,7 +2033,7 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
 
                                                                         <a class="connection-diagnostic-btn" href="../radius/live.php?login=<?= urlencode($login_cliente); ?>" data-radius-login="<?= htmlspecialchars($login_cliente, ENT_QUOTES, 'UTF-8'); ?>">LOG RADIUS</a>
-                                                                        <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenContentModal('client_connections_popup.php?login=<?= urlencode($login_cliente); ?>', <?= htmlspecialchars(json_encode('Últimas conexões — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Conexões</a>
+                                                                        <a class="connection-diagnostic-btn" href='det_conn.php?login=<?= rawurlencode((string)$login_cliente); ?>' title="Ver as últimas 10 conexões"><i class="fa-solid fa-clock-rotate-left"></i> Conexões</a>
                                                                         <a class="connection-diagnostic-btn" href="#" onclick="return mkaOpenRepairDiagnostic(<?= htmlspecialchars(json_encode($login_cliente), ENT_QUOTES, 'UTF-8'); ?>, <?= htmlspecialchars(json_encode($nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Diagnosticar e reparar este cliente"><i class="fa-solid fa-screwdriver-wrench"></i> Diagnostico</a>
 
                                                                         <?php if (strtolower(trim((string) $bloqueado)) === 'sim') { ?>

@@ -276,6 +276,14 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
             frame.name='mkaRepairDiagnosticFrame';frame.src='client_diagnostic.php?login='+encodeURIComponent(login||'');modal.hidden=false;document.body.style.overflow='hidden';return false;
         };
         frame.addEventListener('load',applyClientReportLayout);
+        frame.addEventListener('load',function(){
+            try {
+                var url=new URL(frame.src,document.baseURI);
+                if(url.origin===window.location.origin&&/\/contract_preview\.php$/.test(url.pathname)&&frame.contentDocument&&frame.contentDocument.title){
+                    title.textContent=frame.contentDocument.title;
+                }
+            } catch(error) {}
+        });
         printBtn.addEventListener('click',function(){try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){window.alert('Não foi possível abrir a impressão.');}});
         pdfBtn.addEventListener('click',function(){if(!clientUuid)return;pdfBtn.disabled=true;var downloadName='dados_cliente.pdf';Promise.resolve(connectionsPromise).catch(function(){}).then(function(){var doc=frame.contentDocument;if(!doc||!doc.documentElement)throw new Error('As informações do cliente ainda não carregaram.');var data=new FormData();data.append('uuid',clientUuid);data.append('report_html','<!DOCTYPE html>\n'+doc.documentElement.outerHTML);return fetch('client_pdf.php',{method:'POST',credentials:'same-origin',body:data});}).then(function(response){var type=(response.headers.get('Content-Type')||'').toLowerCase(),disposition=response.headers.get('Content-Disposition')||'',nameMatch=disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);if(nameMatch){try{downloadName=decodeURIComponent(nameMatch[1]||nameMatch[2]);}catch(e){downloadName=nameMatch[1]||nameMatch[2];}}if(!response.ok||type.indexOf('application/pdf')===-1)return response.text().then(function(message){var clean=document.createElement('div');clean.innerHTML=message;throw new Error(clean.textContent.trim()||'Não foi possível gerar o PDF.');});return response.blob();}).then(function(blob){if(blob.size<500)throw new Error('O servidor não retornou um PDF válido.');var url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=downloadName;document.body.appendChild(anchor);anchor.click();anchor.remove();window.setTimeout(function(){URL.revokeObjectURL(url);},2000);}).catch(function(error){window.alert(error.message||'Não foi possível gerar o PDF.');}).then(function(){pdfBtn.disabled=false;});});
         photoBtn.addEventListener('click',function(){photoFile.value='';photoFile.click();});
@@ -1227,3 +1235,4 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
 </body>
 
 </html>
+

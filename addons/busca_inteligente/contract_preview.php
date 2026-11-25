@@ -24,11 +24,19 @@ try {
     http_response_code(422);
     exit('<p>'.mka_native_contract_escape('Não foi possível preparar a prévia. '.$error->getMessage()).'</p>');
 }
+
+$previewModelNames = array();
+foreach ($documents as $document) {
+    $name = $document['model'] ? mka_native_contract_utf8($document['model']['nome']) : 'Sem modelo vinculado';
+    if (!in_array($name, $previewModelNames, true)) $previewModelNames[] = $name;
+}
+$previewTitle = (count($documents) === 1 ? 'Prévia do contrato' : 'Prévia dos contratos').' — '.implode(' / ', array_slice($previewModelNames, 0, 3));
+if (count($previewModelNames) > 3) $previewTitle .= ' (+'.(count($previewModelNames)-3).' modelos)';
 ?>
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prévia do contrato</title>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= mka_native_contract_escape($previewTitle); ?></title>
 <style>body{margin:0;padding:20px;font:14px Arial,sans-serif;color:#172b3a;background:#fff}.preview-info{padding:12px 0 16px;margin-bottom:20px;border-bottom:1px solid #dbe2eb;color:#43566b}.preview-info h1{font-size:18px;margin:0 0 8px}.preview-info p{margin:5px 0}.preview-document{margin-bottom:32px;overflow-wrap:anywhere}.preview-document img{max-width:100%;height:auto}.preview-document table{max-width:100%}@media print{.preview-info{display:none}.preview-document{break-after:page}.preview-document:last-child{break-after:auto}}</style></head><body>
 <?php foreach ($documents as $document) { ?>
-<article class="preview-document"><header class="preview-info"><h1>Prévia do contrato</h1><p><?= mka_native_contract_escape($document['client']['nome']); ?> — <?= mka_native_contract_escape($document['client']['login']); ?></p><p><?= $document['model'] ? mka_native_contract_escape($document['model']['nome']) : 'Nenhum modelo de contrato vinculado ao cadastro.'; ?></p><p>Modelo e dados atuais do cadastro. Esta prévia não é um documento assinado.</p></header>
+<article class="preview-document"><header class="preview-info"><h1>Prévia do contrato<?= $document['model'] ? ' — '.mka_native_contract_escape($document['model']['nome']) : ''; ?></h1><p><?= mka_native_contract_escape($document['client']['nome']); ?> — <?= mka_native_contract_escape($document['client']['login']); ?></p><p><?= $document['model'] ? mka_native_contract_escape($document['model']['nome']) : 'Nenhum modelo de contrato vinculado ao cadastro.'; ?></p><p>Modelo e dados atuais do cadastro. Esta prévia não é um documento assinado.</p></header>
 <?= $document['html'] !== null ? $document['html'] : '<p>Vincule um modelo de contrato ao cadastro do cliente para visualizar a prévia.</p>'; ?>
 </article>
 <?php } ?></body></html>
