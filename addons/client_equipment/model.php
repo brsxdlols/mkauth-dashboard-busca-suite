@@ -17,7 +17,7 @@ function mka_equipment_query($db,$sql,$types='',$values=array()) {
 function mka_equipment_rows($db,$uuid,$login,$lock=false) {
     // Keep broken native links visible, so a concurrent native removal is never credited twice.
     return mka_equipment_query($db,"SELECT e.id,e.idprod,e.allocation_id,e.serial,e.comodato,e.position,p.nome,
-        a.id native_id,a.idprod native_product_id,a.qtdcli,a.cliente FROM suite_equipment_items e
+        a.id native_id,a.idprod native_product_id,a.qtdcli,a.datains,a.cliente FROM suite_equipment_items e
         LEFT JOIN sis_produto p ON p.id=e.idprod LEFT JOIN sis_prodcliente a ON a.id=e.allocation_id
         WHERE e.uuid_cliente=? ORDER BY e.position,e.id".($lock?' FOR UPDATE':''),'s',array($uuid))->get_result()->fetch_all(MYSQLI_ASSOC);
 }
@@ -135,10 +135,12 @@ function mka_equipment_state($db,$client) {
     $uuid=$client['uuid_cliente'];$login=$client['login'];
     $q=mka_equipment_query($db,'SELECT revision FROM suite_equipment_clients WHERE uuid_cliente=?','s',array($uuid))->get_result()->fetch_assoc();
     $rows=mka_equipment_rows($db,$uuid,$login);$items=array();
-    foreach($rows as $r)$items[]=array('id'=>(int)$r['id'],'product_id'=>(int)$r['idprod'],'name'=>(string)$r['nome'],'serial'=>$r['serial'],'comodato'=>$r['comodato'],'stale'=>!mka_equipment_valid_allocation($r,$login));
+    foreach($rows as $r)$items[]=array('id'=>(int)$r['id'],'product_id'=>(int)$r['idprod'],'name'=>(string)$r['nome'],'serial'=>$r['serial'],'comodato'=>$r['comodato'],'inserted_at'=>$r['datains'],'stale'=>!mka_equipment_valid_allocation($r,$login));
     $products=$db->query("SELECT p.id,p.nome,p.ativo,COUNT(s.id) stock_rows,MIN(s.estoque) available FROM sis_produto p LEFT JOIN sis_estoque s ON s.idprod=p.id GROUP BY p.id,p.nome,p.ativo ORDER BY p.nome,p.id")->fetch_all(MYSQLI_ASSOC);
     $catalog=array();foreach($products as $p)$catalog[]=array('id'=>(int)$p['id'],'name'=>$p['nome'],'active'=>$p['ativo']==='sim','available'=>(int)$p['stock_rows']===1 && $p['available']!==null?(int)$p['available']:null);
-    return array('items'=>$items,'products'=>$catalog,'revision'=>$q?(int)$q['revision']:0);
+    // Keep native products visible without importing them or debiting stock again.
+    $other=mka_equipment_query($db,"SELECT a.id,a.idprod product_id,p.nome name,a.qtdcli quantity,a.datains inserted_at FROM sis_prodcliente a LEFT JOIN sis_produto p ON p.id=a.idprod WHERE a.cliente=? AND NOT EXISTS (SELECT 1 FROM suite_equipment_items e WHERE e.allocation_id=a.id AND e.uuid_cliente=?) ORDER BY a.datains,a.id",'ss',array($login,$uuid))->get_result()->fetch_all(MYSQLI_ASSOC);
+    return array('items'=>$items,'other_products'=>$other,'products'=>$catalog,'revision'=>$q?(int)$q['revision']:0);
 }
 function mka_equipment_contract_html($db,$login) {
     $q=mka_equipment_query($db,'SELECT uuid_cliente,equipamento,mac_serial,comodato FROM sis_cliente WHERE login=? LIMIT 1','s',array($login));$client=$q->get_result()->fetch_assoc();
@@ -164,3 +166,4 @@ function mka_equipment_contract_replace($db,$login,$html) {
     if(function_exists('iconv'))$table=iconv('UTF-8','ISO-8859-1//TRANSLIT',$table);
     return str_replace('%equipamentos%',$table,$html);
 }
+

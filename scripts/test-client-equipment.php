@@ -52,7 +52,11 @@ try {
  $row=$items()[0];$db->query('UPDATE sis_estoque SET estoque=estoque+1 WHERE idprod=2');$db->query('DELETE FROM sis_prodcliente WHERE id='.(int)mka_equipment_rows($db,$uuid,'a')[0]['allocation_id']);
  $save(array());check($stock(2)===2 && count($items())===0,'Native removal credited twice');
  // Unrelated native allocations belong to their existing workflow.
- $db->query("INSERT INTO sis_prodcliente(idprod,qtdcli,usuario,cliente,datains) VALUES(1,7,'native','a',NOW())");$save(array(array('product_id'=>1)));$save(array());
+ $db->query("INSERT INTO sis_prodcliente(idprod,qtdcli,usuario,cliente,datains) VALUES(1,7,'native','a',NOW())");$save(array(array('product_id'=>1)));
+ $view=mka_equipment_state($db,array('uuid_cliente'=>$uuid,'login'=>'a'));
+ check(count($view['items'])===1&&!empty($view['items'][0]['inserted_at']),'Managed unit insertion date missing');
+ check(count($view['other_products'])===1&&(int)$view['other_products'][0]['quantity']===7,'Native product hidden or owned allocation duplicated in grouped table');
+ $save(array());
  check((int)$db->query('SELECT SUM(qtdcli) n FROM sis_prodcliente')->fetch_assoc()['n']===7 && $stock(1)===3,'Unrelated native product modified');
  check(strpos(mka_equipment_contract_html($db,'a'),'ONU antiga')!==false,'Legacy equipment fallback lost');
  // A vendor expander may erase unknown variables; the equipment marker must survive it.
@@ -73,3 +77,4 @@ try {
  echo "PASS: repeated units; retry; serial edit; contract escaping; removal; swap; insufficient stock; stale revision; foreign row; inactive product; native removal; unrelated products; legacy; rollback; concurrent last unit (".$engine.").\n";
  $db->close();
 } finally {$root->query('DROP DATABASE `'.$schema.'`');$root->close();}
+

@@ -36,3 +36,19 @@ As tabelas da suíte são `suite_equipment_clients` (revisão), `suite_equipment
 
 Para testar o layout com o CSS nativo, execute `node scripts/test-client-equipment-native-ui.cjs` com `MKA_NATIVE_CSS` apontando para `estilos/mk-auth.css`. `CHROME_BIN` permite escolher o Chrome/Chromium. O teste usa dados fictícios e verifica desktop/celular, preservação dos campos, repetição das linhas, validação, Gravar, envio pelo teclado e repetição após erro de rede. Não acessa clientes nem movimenta estoque real.
 
+
+
+
+## Lista agrupada no cadastro do cliente
+
+O campo antigo “Equipamento” descreve o cadastro; “Produto” identifica o item do
+estoque. A inclusão de equipamentos usa os produtos e o saldo nativos.
+O compositor mantém uma única linha de inclusão. A tabela abaixo reúne as unidades
+do mesmo produto e comodato, somando a quantidade. Comodatos diferentes formam
+grupos separados. As datas e os MACs/seriais individuais ficam nos detalhes de cada
+grupo. A gravação e o contrato continuam tratando cada unidade separadamente.
+
+Produtos de vínculos nativos anteriores também aparecem, sem nova baixa e com
+comodato “Não informado”, pois o vínculo nativo não armazena esse atributo.
+“Gerenciar” abre os controles nativos em uma área recolhida. Não há importação
+automática de produtos nem alteração retroativa de estoque ou comodato.
