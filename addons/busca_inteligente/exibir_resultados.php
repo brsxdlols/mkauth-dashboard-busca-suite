@@ -1762,6 +1762,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                                                             <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('../../cliente_info.<?= $links_ext; ?>?cliente=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Detalhes do cliente — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title='DETALHES CLIENTE: <?= $nome_cliente; ?>'>
                                                                 <i class="fa-solid fa-circle-info"></i>
                                                             </a>
+                                                            <a class="client-action-btn" href="#" onclick="return mkaOpenContentModal('contract_preview.php?uuid=<?= rawurlencode((string)$uuid_cliente); ?>', 'Prévia do contrato');" title="Prévia do contrato do cadastro" aria-label="Prévia do contrato do cadastro"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></a>
                                                             <a class="client-action-btn" href='#' onclick="return mkaOpenContentModal('contrato_popup.php?embed=1&uuid=<?= urlencode($uuid_cliente); ?>&login=<?= urlencode($login_cliente); ?>&nome=<?= urlencode($nome_cliente); ?>', 'Ativar ou renovar contrato');" title="Ativar ou renovar contrato">
                                                                 <i class="fa-solid fa-file-signature"></i>
                                                             </a>
@@ -2066,6 +2067,8 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
                                                         </div>
                                                         <?php } ?>
                                                         <div class='opcoes no_print' style='display:flex;align-items:center;flex-wrap:wrap;gap:8px'>
+                                                            <button type="button" title="Prévia dos contratos selecionados" aria-label="Prévia dos contratos selecionados" style="border:0;background:transparent;color:#2563eb;padding:0;width:32px;height:32px;cursor:pointer;font-size:28px" onclick="var selected=this.form.querySelectorAll('.login_select:checked');if(!selected.length){alert('Selecione pelo menos um cliente para visualizar o contrato.');return;}var query=new URLSearchParams();selected.forEach(function(input){query.append('uuid[]',input.dataset.clientUuid);});mkaOpenContentModal('contract_preview.php?'+query.toString(),'Prévia dos contratos');"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></button>
+
                                                             <input type='image' src='img/icon_menu_add_cliente.png' formaction='../../cliente_ins.<?= $links_ext; ?>' title='Adicionar Cliente' />
 
                                                             <input type='image' src='img/icon_menu_deletar.png' formaction='../../cliente_del.<?= $links_ext; ?>' title='Deletar Clientes' />
