@@ -8,7 +8,8 @@ $dashTopIp = $_SERVER['REMOTE_ADDR'] ?? '';
 $dashTopRam = '';
 $dashTopCpu = '';
 $dashTopDisk = '';
-$dashTopSessions = $dashTopUser !== '' ? '01' : '00';
+require_once __DIR__.'/../shared/web_session_counts.php';
+$dashTopSessionCounts = mka_web_session_counts();
 $dashTopMenuColor = 'warning';
 $dashTopMenuClass = 'is-warning';
 $dashTopDb = null;
@@ -36,7 +37,6 @@ if ($dashTopDb instanceof mysqli) {
     if ($safeUser !== '' && $q = @mysqli_query($dashTopDb, "SELECT ultacesso, sesid FROM sis_acesso WHERE login = '$safeUser' LIMIT 1")) {
         if ($r = mysqli_fetch_assoc($q)) {
             $dashTopLast = $r['ultacesso'] ?? '';
-            $dashTopSessions = !empty($r['sesid']) ? '01' : '00';
         }
     }
 }
@@ -274,13 +274,37 @@ jQuery(function($){
         sessionsOpener.addEventListener('click', function(event) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            window.open(<?php echo json_encode('/admin/sessoes'.$ext_mk); ?>, '_blank', 'width=500, height=650, scrollbars=YES');
+            window.open(<?php echo json_encode('/admin/sessoes'.$ext_mk.'?v=20261125-2'); ?>, '_blank', 'width=500, height=650, scrollbars=YES');
         }, true);
     }
     $('#systopo').removeClass('is-invisible').css('visibility','visible');
     $('#UUE_NProvedor').text(<?php echo json_encode($dashTopProvider !== '' ? $dashTopProvider : $dashTopCompany); ?>);
     $('#UUE_Usuario').text(<?php echo json_encode($dashTopUser); ?>);
-    $('#UUE_SESSOES').text(<?php echo json_encode($dashTopSessions); ?>);
+    // Give the dashboard its own counter; the native SSE reports only the current user's sessions.
+    var sessionsCount = document.getElementById('UUE_SESSOES');
+    if (sessionsCount) {
+        sessionsCount.id = 'mkaDashboardWebSessions';
+        var sessionsLabel = sessionsCount.previousElementSibling;
+        if (sessionsLabel) sessionsLabel.textContent = 'Usuários conectados: ';
+        function paintWebSessions(counts) {
+            sessionsCount.textContent = counts ? String(counts.users).padStart(2,'0')+' | Sessões: '+String(counts.sessions).padStart(2,'0') : 'indisponível';
+            sessionsCount.title = 'Usuários diferentes e total de sessões administrativas da lista nativa. Um usuário pode ter várias sessões.';
+        }
+        paintWebSessions(<?php echo json_encode($dashTopSessionCounts); ?>);
+        var checkingSessions = false;
+        async function refreshWebSessions() {
+            if (document.hidden || checkingSessions) return;
+            checkingSessions = true;
+            var controller = new AbortController(), timer = setTimeout(function(){controller.abort();},8000);
+            try {
+                var response = await fetch('/admin/addons/dashboard/web_session_counts.php',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+                if (response.ok) paintWebSessions(await response.json());
+            } catch (error) { /* Preserve the last successful count. */ }
+            finally { clearTimeout(timer); checkingSessions = false; }
+        }
+        setInterval(refreshWebSessions,30000);
+        window.addEventListener('focus',refreshWebSessions);
+    }
     $('#UUE_Data').text(<?php echo json_encode($dashTopDate); ?>);
     $('#UUE_Ultacesso').text(<?php echo json_encode($dashTopLast); ?>);
     $('#UUE_IP').text(<?php echo json_encode($dashTopIp); ?>);
@@ -327,5 +351,6 @@ jQuery(function($){
     setTimeout(bindDashboardMobileMenu, 500);
 })();
 </script>
+
 
 
