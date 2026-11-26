@@ -1,0 +1,32 @@
+name: PGCORTE installer integration
+on:
+  push:
+    paths:
+      - 'install.sh'
+      - 'scripts/install-pgcorte-dual.py'
+      - 'scripts/install-progress.py'
+      - 'scripts/test-pgcorte-integration.py'
+      - 'scripts/test-install-progress.py'
+      - '.github/workflows/pgcorte-integration.yml'
+  pull_request:
+    paths:
+      - 'install.sh'
+      - 'scripts/install-pgcorte-dual.py'
+      - 'scripts/install-progress.py'
+      - 'scripts/test-pgcorte-integration.py'
+      - 'scripts/test-install-progress.py'
+      - '.github/workflows/pgcorte-integration.yml'
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: bash -n install.sh
+      - run: python scripts/test-pgcorte-integration.py
+      - run: python scripts/test-install-progress.py

@@ -223,3 +223,12 @@ Ausencia da chave ou valor `nao` exige documento. Somente `sim` permite document
 A validacao nativa de documentos preenchidos e os demais campos obrigatorios permanecem ativos conforme a configuracao do provedor.
 Cada destino passa por verificacao dos hooks nativos e do metodo de permissao local; formatos desconhecidos sao preservados com relatorio.
 Consulte [integracao e reversao do patch](addons/nn_cpf_opcional/INTEGRACAO-SUITE.md).
+
+
+## PGCORTE DUAL STACK 1.3.1 — instalação e atualização
+
+O instalador e as atualizações da suíte baixam o patch oficial e seu SHA256, verificam a integridade antes de extrair e mantêm o pacote em `/opt/mkauth-patches/mkauth-pgcorte-dual`. Depois das demais configurações do banco e do FreeRADIUS, executam como root o `install.sh` oficial e as três verificações: `patch.py check`, `native_pgcorte.py check` e `native_pgcorte.py check --admin`.
+
+A etapa só informa sucesso com os quatro códigos 0. Falha ou ativação RADIUS pendente (código 4) interrompe a conclusão geral e gera log e relatório privados no backup da suíte. O patch é reaplicado nas atualizações; seus próprios backups e regras de validação são preservados. Não há senhas embutidas, edição de fontes protegidas pelo integrador ou execução automática dos scripts MikroTik. A integração visual pode levar até cinco minutos para aparecer no PHP.
+
+Consulte [integração, códigos de retorno e testes](docs/pgcorte-dual.md). O comando de instalação/atualização da Dashboard continua sendo o mesmo.

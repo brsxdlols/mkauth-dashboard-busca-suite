@@ -30,7 +30,7 @@ def phase(line):
              'receber': 'Recebimento', 'ipv6': 'IPv6', 'nfcom': 'NFCom, DICI e Trafego',
              'limpeza': 'Limpeza diaria', 'horario': 'Diagnostico de horario', 'desempenho': 'Analise de desempenho',
              'ntp': 'Correcao e verificacao NTP', 'busca': 'Validacao da Busca', 'mapa': 'Integracao do Mapa',
-             'monitor': 'Monitor de trafego', 'applications': 'Menus', 'apparmor': 'Compatibilidade AppArmor'}
+             'monitor': 'Monitor de trafego', 'pgcorte': 'PGCORTE DUAL STACK', 'applications': 'Menus', 'apparmor': 'Compatibilidade AppArmor'}
     return names.get(match.group(1)) if match else None
 
 
@@ -116,7 +116,7 @@ def main():
     overall_percent = 0
     overall_total = None
     frame_visible = False
-    print('[instalacao] Total previsto: 18 etapas de instalacao de pacotes e validacoes.', flush=True)
+    print('[instalacao] Total previsto: 19 etapas de instalacao de pacotes e validacoes.', flush=True)
     print('[instalacao] Tempo estimado: 3 a 6 minutos; pode variar conforme o servidor e a conexao.', flush=True)
     print('[progresso] Log completo: '+logfile, flush=True)
     with os.fdopen(descriptor, 'w', encoding='utf-8') as log:
@@ -262,4 +262,5 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
 

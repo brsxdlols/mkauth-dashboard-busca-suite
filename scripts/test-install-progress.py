@@ -58,13 +58,20 @@ class Progress(unittest.TestCase):
         self.assertNotIn('40%',result.stdout)
         self.assertIn('[ntp] 40% Backup',log)
         self.assertIn('NTP [####################] 100%',result.stdout)
-        self.assertIn('Total previsto: 18 etapas',result.stdout)
+        self.assertIn('Total previsto: 19 etapas',result.stdout)
         self.assertIn('Tempo estimado: 3 a 6 minutos',result.stdout)
 
     def test_reported_hundred_waits_for_successful_exit(self):
         result,log=self.run_fixture("print('[ntp] 100% Declarado pelo filho'); raise SystemExit(7)")
         self.assertNotIn('NTP [####################] 100%',result.stdout)
         self.assertEqual(result.returncode,7)
+
+    def test_pgcorte_pending_is_not_reported_as_success(self):
+        result, log = self.run_fixture("print('[pgcorte] Executando RADIUS'); print('[erro] Patch PGCORTE nao concluido. Ativacao RADIUS pendente (codigo 4).'); print('[pgcorte] Log completo: fixture.log'); raise SystemExit(4)")
+        self.assertEqual(result.returncode,4)
+        self.assertIn('Ativacao RADIUS pendente',result.stdout)
+        self.assertNotIn('[OK] PGCORTE',result.stdout)
+        self.assertNotIn('[OK] Instalacao concluida',result.stdout)
 
     def test_report_parser_accepts_only_known_valid_phase_checkpoints(self):
         self.assertEqual(module.reported_percent('[ntp] 65% Sincronizando'),65)
@@ -161,4 +168,5 @@ class Progress(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
