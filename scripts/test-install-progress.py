@@ -58,7 +58,7 @@ class Progress(unittest.TestCase):
         self.assertNotIn('40%',result.stdout)
         self.assertIn('[ntp] 40% Backup',log)
         self.assertIn('NTP [####################] 100%',result.stdout)
-        self.assertIn('Total previsto: 19 etapas',result.stdout)
+        self.assertIn('Total previsto: 20 etapas',result.stdout)
         self.assertIn('Tempo estimado: 3 a 6 minutos',result.stdout)
 
     def test_reported_hundred_waits_for_successful_exit(self):
@@ -168,5 +168,6 @@ class Progress(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 

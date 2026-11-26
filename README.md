@@ -232,3 +232,12 @@ O instalador e as atualizações da suíte baixam o patch oficial e seu SHA256, 
 A etapa só informa sucesso com os quatro códigos 0. Falha ou ativação RADIUS pendente (código 4) interrompe a conclusão geral e gera log e relatório privados no backup da suíte. O patch é reaplicado nas atualizações; seus próprios backups e regras de validação são preservados. Não há senhas embutidas, edição de fontes protegidas pelo integrador ou execução automática dos scripts MikroTik. A integração visual pode levar até cinco minutos para aparecer no PHP.
 
 Consulte [integração, códigos de retorno e testes](docs/pgcorte-dual.md). O comando de instalação/atualização da Dashboard continua sendo o mesmo.
+
+
+## Permissões de addons e desbloqueio financeiro
+
+As instalações e atualizações revisam as permissões ao final, depois das dependências: diretórios públicos dos addons recebem `0755` e a propriedade é ajustada para `www-data` (ou `apache`, quando esse é o usuário disponível). Arquivos não recebem `chmod 755`; temporários continuam restritos, diretórios de backup/privados são preservados e links simbólicos não são seguidos. O backup registra as permissões e donos anteriores para reversão.
+
+Quando existe `/etc/cron.d/desbloqueio`, as chamadas nativas reconhecidas de `liberar.php` e `desbloq_obs.php` passam de intervalos como `*/10` para `*/1`. O cron só reinicia quando houver alteração. Comentários, demais campos e outras tarefas são preservados. Se o arquivo não existir, nenhum cron substituto é inventado. Agendamentos desconhecidos são preservados com aviso.
+
+Consulte [detalhes e reversão](docs/permissions-unblock-cron.md). Essa rotina não executa os scripts financeiros manualmente, não desbloqueia clientes por conta própria e mantém o PGCORTE como última etapa obrigatória.

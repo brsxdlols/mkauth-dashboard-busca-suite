@@ -1,0 +1,32 @@
+name: Addon permissions and native unblock cron
+on:
+  push:
+    paths:
+      - 'install.sh'
+      - 'scripts/fix-addon-permissions.py'
+      - 'scripts/configure-unblock-cron.py'
+      - 'scripts/test-addon-permissions.py'
+      - 'scripts/test-final-addon-permissions.py'
+      - 'scripts/test-unblock-cron.py'
+      - '.github/workflows/permissions-cron.yml'
+  pull_request:
+    paths:
+      - 'install.sh'
+      - 'scripts/fix-addon-permissions.py'
+      - 'scripts/configure-unblock-cron.py'
+      - 'scripts/test-addon-permissions.py'
+      - 'scripts/test-final-addon-permissions.py'
+      - 'scripts/test-unblock-cron.py'
+      - '.github/workflows/permissions-cron.yml'
+jobs:
+  isolated-fixtures:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: bash -n install.sh
+      - run: sudo "$(command -v python)" scripts/test-addon-permissions.py scripts/fix-addon-permissions.py
+      - run: sudo "$(command -v python)" scripts/test-final-addon-permissions.py
+      - run: sudo "$(command -v python)" scripts/test-unblock-cron.py

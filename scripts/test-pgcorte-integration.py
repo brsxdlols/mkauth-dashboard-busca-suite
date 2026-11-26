@@ -165,8 +165,9 @@ class PatchIntegrationTests(unittest.TestCase):
         self.assertLess(source.index('install_reconcile\n'), source.index(hook))
         self.assertLess(source.index('install-native-web-sessions.py'), source.index(hook))
         self.assertLess(source.index(hook), source.index('[OK] Todas as etapas da suite concluidas'))
-        self.assertIn('[suite-progress] 19/19', source)
+        self.assertIn('[suite-progress] 20/20', source)
 
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+
