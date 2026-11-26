@@ -12,6 +12,8 @@ import subprocess
 import tempfile
 import urllib.request
 import zipfile
+from pgcorte_apparmor import ensure_pgcorte_apparmor
+from pgcorte_modphp import configure_modphp
 
 VERSION = '1.3.1'
 ARCHIVE_NAME = 'mkauth-pgcorte-dual-v1.3.1.zip'
@@ -138,6 +140,9 @@ def install(log_directory, patch_root=Path('/opt/mkauth-patches')):
                     folder = extract_verified(archive, staging)
                     target = patch_root / PACKAGE_NAME
                     publish_package(folder, target)
+                print('[pgcorte] Conferindo leitura dos helpers pelo PHP/AppArmor.')
+                report['apparmor'] = ensure_pgcorte_apparmor(log_directory / 'apparmor')
+                log.write('AppArmor: ' + json.dumps(report['apparmor']) + '\n')
                 commands = [
                     ('instalacao', ['sh', str(target / 'install.sh')]),
                     ('RADIUS', ['python3', 'patch.py', 'check']),
@@ -154,6 +159,8 @@ def install(log_directory, patch_root=Path('/opt/mkauth-patches')):
                 failed = [s for s in report['steps'] if s['code'] != 0]
                 pending = any(s['code'] == 4 and s['component'] in ('instalacao', 'RADIUS') for s in failed)
                 report['activation_pending'] = pending
+                if not failed:
+                    report['modphp'] = configure_modphp(log_directory / 'modphp')
                 report['completed'] = not failed
                 status = 0 if not failed else (4 if pending and all(s['code'] == 4 and s['component'] in ('instalacao', 'RADIUS') for s in failed) else 1)
         except Exception as error:
@@ -187,3 +194,4 @@ if __name__ == '__main__':
         print('[erro] Patch PGCORTE nao concluido: ' + str(error), flush=True)
         code = 1
     raise SystemExit(code)
+

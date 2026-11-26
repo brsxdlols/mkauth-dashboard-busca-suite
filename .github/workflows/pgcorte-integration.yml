@@ -4,6 +4,10 @@ on:
     paths:
       - 'install.sh'
       - 'scripts/install-pgcorte-dual.py'
+      - 'scripts/pgcorte_apparmor.py'
+      - 'scripts/pgcorte_modphp.py'
+      - 'scripts/test-pgcorte-modphp.py'
+      - 'scripts/test-pgcorte-apparmor.py'
       - 'scripts/install-progress.py'
       - 'scripts/test-pgcorte-integration.py'
       - 'scripts/test-install-progress.py'
@@ -12,6 +16,10 @@ on:
     paths:
       - 'install.sh'
       - 'scripts/install-pgcorte-dual.py'
+      - 'scripts/pgcorte_apparmor.py'
+      - 'scripts/pgcorte_modphp.py'
+      - 'scripts/test-pgcorte-modphp.py'
+      - 'scripts/test-pgcorte-apparmor.py'
       - 'scripts/install-progress.py'
       - 'scripts/test-pgcorte-integration.py'
       - 'scripts/test-install-progress.py'
@@ -28,5 +36,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: bash -n install.sh
+      - run: python scripts/test-pgcorte-modphp.py
+      - run: python scripts/test-pgcorte-apparmor.py
       - run: python scripts/test-pgcorte-integration.py
       - run: python scripts/test-install-progress.py
+

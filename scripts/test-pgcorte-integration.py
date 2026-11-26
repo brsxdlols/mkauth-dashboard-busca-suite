@@ -30,7 +30,7 @@ class PatchIntegrationTests(unittest.TestCase):
                 archive.writestr(name, data)
         return buffer.getvalue()
 
-    def run_patch(self, codes=(0, 0, 0, 0), corrupt=False, failed_download=False, package=None, repeat=False):
+    def run_patch(self, codes=(0, 0, 0, 0), corrupt=False, failed_download=False, package=None, repeat=False, preflight_error=False):
         payload = package or self.package()
         digest = hashlib.sha256(payload).hexdigest()
         calls, downloads = [], []
@@ -47,7 +47,7 @@ class PatchIntegrationTests(unittest.TestCase):
                 return subprocess.CompletedProcess(args, codes[(len(calls) - 1) % 4])
             fake_lock = types.SimpleNamespace(LOCK_EX=1, LOCK_NB=2, flock=lambda *args: None)
             output = io.StringIO()
-            with mock.patch.object(installer.os, 'geteuid', return_value=0, create=True), mock.patch.object(installer, 'download', side_effect=download), mock.patch.object(installer.subprocess, 'run', side_effect=command), mock.patch.dict('sys.modules', {'fcntl': fake_lock}), contextlib.redirect_stdout(output):
+            with mock.patch.object(installer.os, 'geteuid', return_value=0, create=True), mock.patch.object(installer, 'configure_modphp', return_value={'status':'fixture'}), mock.patch.object(installer, 'ensure_pgcorte_apparmor', return_value={'status':'fixture'}, side_effect=RuntimeError('fixture AppArmor refusal')if preflight_error else None), mock.patch.object(installer, 'download', side_effect=download), mock.patch.object(installer.subprocess, 'run', side_effect=command), mock.patch.dict('sys.modules', {'fcntl': fake_lock}), contextlib.redirect_stdout(output):
                 code = installer.install(base / 'logs', base / 'patches')
                 if repeat:
                     marker = base / 'patches' / installer.PACKAGE_NAME / 'local-note.txt'
@@ -60,6 +60,11 @@ class PatchIntegrationTests(unittest.TestCase):
                 for p in (base / 'logs').iterdir():
                     self.assertEqual(stat.S_IMODE(p.stat().st_mode), 0o600)
             return code, calls, downloads, reports, logs, output.getvalue()
+
+    def test_preflight_failure_never_activates_patch(self):
+        code,calls,_,reports,logs,output=self.run_patch(preflight_error=True)
+        self.assertEqual(code,1);self.assertEqual(calls,[]);self.assertFalse(reports[0]['completed'])
+        self.assertIn('fixture AppArmor refusal',logs[0]);self.assertIn('nao concluido',output)
 
     def test_all_four_commands_and_checksum(self):
         code, calls, downloads, reports, logs, output = self.run_patch()
@@ -149,7 +154,7 @@ class PatchIntegrationTests(unittest.TestCase):
                 payload = buffer.getvalue()
                 def download(url, target, limit):
                     target.write_bytes(payload if url == installer.ZIP_URL else (hashlib.sha256(payload).hexdigest() + '  ' + installer.ARCHIVE_NAME).encode())
-                with mock.patch.object(installer, 'download', side_effect=download), mock.patch.object(installer.os, 'geteuid', return_value=0), contextlib.redirect_stdout(io.StringIO()):
+                with mock.patch.object(installer, 'configure_modphp', return_value={'status':'fixture'}), mock.patch.object(installer, 'ensure_pgcorte_apparmor', return_value={'status':'fixture'}), mock.patch.object(installer, 'download', side_effect=download), mock.patch.object(installer.os, 'geteuid', return_value=0), contextlib.redirect_stdout(io.StringIO()):
                     code = installer.install(base / 'logs', base / 'patches')
                 report = json.loads(next((base / 'logs').glob('*.json')).read_text())
                 self.assertEqual(len(report['steps']), 4)
@@ -170,4 +175,5 @@ class PatchIntegrationTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+
 

@@ -3,7 +3,12 @@
 import hashlib,json,os,re,sys,tempfile
 from pathlib import Path
 START=b'/* MKA-ADMIN-HEADER-START */';END=b'/* MKA-ADMIN-HEADER-END */'
-BLOCK=START+b"\n;(function(){if(window.mkaAdminHeaderLoader==='20261125-2')return;window.mkaAdminHeaderLoader='20261125-2';var s=document.createElement('script');s.src='/admin/addons/shared/admin_header.js?v=20261125-2';document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(window.mkaAdminHeaderLoader==='20261126-1')return;window.mkaAdminHeaderLoader='20261126-1';var s=document.createElement('script');s.src='/admin/addons/shared/admin_header.js?v=20261126-1';document.head.appendChild(s);})();\n"+END+b'\n'
+HOME_START=b'# BEGIN MKA-DASHBOARD-HOME';HOME_END=b'# END MKA-DASHBOARD-HOME'
+HOME_BLOCK=HOME_START+b'\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$\nRewriteRule ^(?:index\\.(?:php|hhvm))?$ /admin/addons/dashboard/ [R=302,L,NE]\n</IfModule>\n'+HOME_END+b'\n'
+def patch_home(source):
+ clean=re.sub(re.escape(HOME_START)+b'.*?'+re.escape(HOME_END)+b'\\r?\\n?',b'',source,flags=re.S)
+ return HOME_BLOCK+clean.lstrip(b'\\r\\n')
 def patch(source):return re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',source,flags=re.S).rstrip(b'\r\n')+b'\n'+BLOCK
 def atomic(path,data):
  fd,name=tempfile.mkstemp(prefix='.admin-header-',dir=str(path.parent))
@@ -17,6 +22,10 @@ def atomic(path,data):
   if os.path.exists(name):os.unlink(name)
 def main():
  admin,backup=map(Path,sys.argv[1:]);changes=[]
+ if not (admin/'addons/dashboard/index.php').is_file():raise RuntimeError('Dashboard ausente; inicio preservado.')
+ home=admin/'.htaccess'
+ if home.is_symlink():raise RuntimeError('Configuracao de inicio simbolica preservada.')
+ old=home.read_bytes()if home.exists()else None;changes.append((home,old,patch_home(old or b'')))
  for relative in ['addons/addon.js','scripts/mk-auth.js']:
   path=admin/relative
   if path.is_symlink()or any(p.is_symlink()for p in path.parents):raise RuntimeError('Loader simbolico preservado.')
@@ -37,3 +46,4 @@ def main():
   raise
  print('[applications] Cabecalho compartilhado integrado a todas as paginas administrativas nativas.')
 if __name__=='__main__':main()
+

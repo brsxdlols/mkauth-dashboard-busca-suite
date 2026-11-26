@@ -31,3 +31,10 @@ usa uma tela sintética e respostas simuladas, sem acessar nem encerrar sessões
 A logo do provedor no cabeçalho e a logo da barra de navegação apontam para `/admin/`, respeitando o início configurado no servidor. O link do provedor é criado sem duplicação, com nome acessível e foco visível. A integração permanece nos dois carregadores globais, sem substituir páginas nativas.
 
 No desktop, o bloco `.level-left` da logo recebe o mesmo `padding-top: 1rem` das colunas de texto. Antes, apenas as colunas diretas `.level-item` recebiam o espaço, deixando a logo próxima demais da barra. A regra mantém o comportamento de espaçamento nativo no celular. O cache dos carregadores e da Dashboard foi atualizado para `20261125-2`.
+
+
+A entrada `/admin/` e os logos abrem `/admin/addons/dashboard/`. Uma regra gerenciada no inicio do `.htaccess` trata somente GET/HEAD da raiz e de index.php/index.hhvm, preservando login, demais paginas e requisicoes POST. Isso evita que um index.php de outra dashboard tenha prioridade no Apache. A regra e reaplicada nas atualizacoes com backup e sem duplicacao.
+
+MK-Auth 24 usa o decoder nativo `MKAC_SESSAO::unserialize` e o diretorio de sessoes configurado no PHP. Quando nao existe a lista nativa `sessoes.hhvm/php`, o cabecalho usa a lista autenticada do addon. Campos de navegador/IP ausentes sao indicados como nao registrados; a lista nao cria uma acao de logout que essa versao nao fornece.
+
+As tabelas da dashboard e da visao multiempresa recebem identificadores de campos no celular: Atividades, Contas a pagar, Chamados e Instalacoes. Os registros ficam empilhados ate 767px, incluindo estados vazios; o desktop preserva a tabela em colunas.

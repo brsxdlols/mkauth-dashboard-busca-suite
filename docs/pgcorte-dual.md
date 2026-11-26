@@ -34,3 +34,8 @@ bash -n install.sh
 ```
 
 Os testes usam ZIPs e comandos de fixture, cobrem códigos de falha em cada uma das quatro chamadas, ativação pendente, checksum incorreto, download indisponível, extração inválida, repetição e propagação do resultado. No Linux, também executam processos filhos reais de fixture, sem banco, RADIUS ou roteadores. O ZIP oficial pode ser inspecionado e ter sua integridade validada sem executar seu instalador.
+
+
+Antes de ativar `auto_prepend_file`, o instalador confere os perfis PHP ativos do AppArmor e permite somente a leitura de `/usr/local/share/mkauth-pgcorte-dual/`. A politica e validada antes da recarga dos perfis PHP. Se o perfil nao puder ser identificado ou a politica nao puder ser carregada, o patch nao e ativado e a falha fica registrada no backup. Isso evita que a falta de permissao do helper interrompa o painel.
+
+Em instalacoes antigas com mod_php, o `.user.ini` nao controla paginas `.hhvm`. Depois das tres verificacoes, o instalador adiciona o prepend oficial no `.htaccess`, somente para os endpoints PGCORTE e detalhes do ramal, preservando as demais configuracoes. Uma requisicao local sem autenticacao verifica se o PHP consegue abrir o helper; erro fatal reverte essa configuracao e impede sucesso.

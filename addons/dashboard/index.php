@@ -1223,7 +1223,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <link rel="stylesheet" href="/admin/addons/shared/ip_conflicts.css?v=20261020-1">
 <script src="/admin/addons/shared/ip_conflicts.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="dashboard_density.css?v=<?=substr(hash_file('sha256',__DIR__.'/dashboard_density.css'),0,12)?>"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script><?php include __DIR__.'/mobile_layout.php'; ?></head>
+<link rel="stylesheet" href="dashboard_tables_mobile.css?v=20261126-1"><script src="dashboard_tables_mobile.js?v=20261126-1" defer></script><link rel="stylesheet" href="dashboard_density.css?v=<?=substr(hash_file('sha256',__DIR__.'/dashboard_density.css'),0,12)?>"><script src="dashboard_density.js?v=20261117-4" data-show-shortcuts="<?=mka_suite_get_show_shortcuts($conn)?'sim':'nao'?>" data-can-manage="<?=permissao('perm_config')?'sim':'nao'?>" defer></script><?php include __DIR__.'/mobile_layout.php'; ?></head>
 
 <body class="mka-suite-dashboard-page">
     <?php if (!defined('ADMIN2URL')) define('ADMIN2URL', '/admin/'); ?>
@@ -2769,4 +2769,5 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 </body>
 
 </html>
+
 

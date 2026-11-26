@@ -1,0 +1,29 @@
+name: Dashboard compatibility and mobile
+on:
+  push:
+    paths:
+      - 'addons/shared/admin_header.js'
+      - 'addons/shared/web_session_counts.php'
+      - 'addons/dashboard/web_session*.php'
+      - 'addons/dashboard/dashboard_tables_mobile.*'
+      - 'scripts/install-admin-header.py'
+      - 'scripts/test-admin-home.py'
+      - 'scripts/test-legacy-web-sessions.php'
+      - 'scripts/test-dashboard-mobile-tables.cjs'
+      - '.github/workflows/dashboard-compatibility.yml'
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python scripts/test-admin-home.py
+      - run: node scripts/test-dashboard-session-counts.cjs
+      - run: php scripts/test-legacy-web-sessions.php addons/shared/web_session_counts.php
+      - run: node scripts/test-dashboard-mobile-tables.cjs

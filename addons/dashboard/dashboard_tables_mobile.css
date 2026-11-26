@@ -1,0 +1,13 @@
+.mka-responsive-table .mka-table-label{display:none}.mka-responsive-table .mka-table-value{display:contents}.mka-table-label::before{content:attr(data-label)}
+@media(max-width:767.98px){
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"]{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;border:0!important;table-layout:auto;margin-bottom:0}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] thead{position:absolute!important;width:1px!important;min-width:0!important;height:1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;clip-path:inset(50%);white-space:nowrap}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tbody,body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tfoot{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tbody>tr{display:block!important;width:100%!important;min-width:0!important;box-sizing:border-box;border:1px solid #d5e2f4!important;border-radius:12px;margin:0 0 12px!important;padding:10px!important;background:#fff!important}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tbody>tr:last-child{margin-bottom:0!important}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tbody>tr>td,body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tbody>tr>th{display:grid!important;grid-template-columns:minmax(85px,.4fr) minmax(0,1fr);gap:10px;width:auto!important;min-width:0!important;max-width:100%!important;padding:7px 0!important;border:0!important;box-shadow:none!important;background:transparent!important;text-align:left!important;white-space:normal!important;font-size:14px!important;line-height:1.5!important;overflow-wrap:anywhere!important;word-break:normal!important}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] .mka-table-label{display:block;color:#526b87;font-size:12px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] .mka-table-value{display:block!important;min-width:0;max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] .mka-table-value>*{max-width:100%;white-space:normal!important;overflow-wrap:anywhere}
+ body.mka-suite-dashboard-page table.mka-responsive-table[role="table"] tbody>tr>.mka-table-full{grid-template-columns:minmax(0,1fr)}
+}
