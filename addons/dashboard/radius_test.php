@@ -114,8 +114,9 @@ echo json_encode(array(
     'executed' => $queryOk,
     'message' => !$queryOk
         ? 'Não foi possível consultar os ramais cadastrados.' . ($queryError !== '' ? ' Detalhe: ' . $queryError : ' Verifique a conexão com o banco mkradius.')
-        : ($routersFail === 0 ? 'Todas as conexões de ramais estão corretas.' : $routersFail . ' conexão(ões) precisam de correção.'),
+        : ($routersFail === 0 ? 'Acesso à API dos ramais monitorados validado.' : $routersFail . ' ramal(is) precisam de atenção na sincronização.'),
     'generated_at' => $generatedAt,
     'stats' => array('routers_ok' => $routersOk, 'routers_fail' => $routersFail),
     'routers' => $routers
 ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+

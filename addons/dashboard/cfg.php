@@ -599,7 +599,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                             <option value="s" <?php echo $radius_alert_enabled === 's' ? 'selected' : ''; ?>>Sim</option>
                             <option value="n" <?php echo $radius_alert_enabled === 'n' ? 'selected' : ''; ?>>Não</option>
                         </select>
-                        <label for="radius_alert_enabled">Exibir alerta de integração Radius?</label>
+                        <label for="radius_alert_enabled">Exibir alerta de sincronização dos ramais?</label>
                     </div>
                     </div>
                 </section>
@@ -792,7 +792,7 @@ if (isset($_SESSION['MM_Usuario'])) {
                     for (var i = 0; i < routers.length; i++) {
                         var router = routers[i];
                         var state = router.ok ? '<span class="text-success"><b>OK</b></span>' : '<span class="text-danger"><b>Falha</b></span>';
-                        rows += '<tr><td>' + radiusEscape(router.name || '-') + '</td><td>' + radiusEscape(router.router || '-') + '</td><td>' + state + '</td><td>' + radiusEscape(router.reason || '') + '</td></tr>';
+                        rows += '<tr><td>' + radiusEscape(router.name || '-') + '</td><td>' + radiusEscape(router.router || '-') + '</td><td>' + state + '</td><td>' + (window.mkaRamalSyncHelp ? window.mkaRamalSyncHelp.reasonHtml(router) : radiusEscape(router.reason || '')) + '</td></tr>';
                     }
                     var level = response.ok ? 'success' : (response.executed ? 'warning' : 'danger');
                     result.innerHTML = '<div class="alert alert-' + level + '">' + radiusEscape(response.message || '') + '</div>' +
@@ -810,8 +810,10 @@ if (isset($_SESSION['MM_Usuario'])) {
             return false;
         }
     </script>
+<script src="../shared/ramal_sync_help.js?v=20261126-1"></script>
 <script src="../shared/performance_modal.js?v=20261013-3"></script>
 <script src="/admin/addons/dashboard/cfg_preview.js?v=20261123-2" defer></script>
 </body>
 
 </html>
+

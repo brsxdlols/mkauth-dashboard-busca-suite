@@ -29,6 +29,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <head><?php include __DIR__.'/preview_runtime.php'; ?>
     <script src="/admin/addons/shared/admin_asset_paths.js?v=20261014-1"></script>
+    <script src="../shared/ramal_sync_help.js?v=20261126-1"></script>
     <link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
@@ -1718,15 +1719,15 @@ if (isset($_SESSION['MM_Usuario'])) {
             $radius_alert_payload = null;
             if (!empty($radius_alert_items)) {
                 $radius_alert_payload = [
-                    'id' => 'radius-' . md5(implode('|', $radius_alert_items) . $radius_alert_generated_at),
+                    'id' => 'radius-sync-' . md5(implode('|', $radius_alert_items) . $radius_alert_generated_at),
                     'type' => 'radius',
-                    'name' => 'Alerta de integração Radius',
-                    'login' => 'Verifique usuário `mkauth`, senha do ramal, porta `8728` ou rota VPN.',
-                    'concentrator' => count($radius_alert_items) . ' concentrador(es) com falha',
+                    'name' => 'Sincronização de Ramal precisa de atenção',
+                    'login' => 'Confira o acesso à API do ramal. Clique no diagnóstico para ver como resolver.',
+                    'concentrator' => count($radius_alert_items) . ' ramal(is) precisam de atenção',
                     'routers' => $radius_alert_routers,
                     'formatted_time' => $radius_alert_generated_at !== '' ? $radius_alert_generated_at : date('d/m/Y H:i:s'),
                     'contract_status' => 'inactive',
-                    'contract_label' => 'Falha de integração',
+                    'contract_label' => 'Sincronização pendente',
                     'contract_icon' => 'fa-solid fa-triangle-exclamation',
                     'show_contract' => true,
                     'radius_alert' => true,
@@ -2397,7 +2398,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                         var name = router.name || router.router || 'Concentrador';
                         var ip = router.router || '-';
                         var reason = router.reason || 'Falha não identificada';
-                        return '<li><strong>' + dashboardRadiusEscape(name) + ' — ' + dashboardRadiusEscape(ip) + '</strong>' + dashboardRadiusEscape(reason) + '</li>';
+                        return '<li><strong>' + dashboardRadiusEscape(name) + ' — ' + dashboardRadiusEscape(ip) + '</strong>' + (window.mkaRamalSyncHelp ? window.mkaRamalSyncHelp.reasonHtml(router) : dashboardRadiusEscape(reason)) + '</li>';
                     }).join('');
                     return '<details class="dashboard-radius-failures"' + (expanded ? ' open' : '') + '><summary>Ver concentradores com falha (' + failures.length + ')</summary><ul class="dashboard-radius-failure-list">' + rows + '</ul></details>';
                 }
@@ -2418,14 +2419,14 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     }
 
                     var iconClass = eventData.icon ? eventData.icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : (isLogin ? 'bi bi-box-arrow-in-right' : 'bi bi-box-arrow-right'));
-                    var label = eventData.label ? eventData.label : (isRadiusAlert ? 'Alerta Radius' : (isLogin ? 'Cliente conectou' : 'Cliente desconectou'));
+                    var label = eventData.label ? eventData.label : (isRadiusAlert ? 'Sincronização de Ramal' : (isLogin ? 'Cliente conectou' : 'Cliente desconectou'));
                     var concentratorHtml = '';
                     if (eventData.concentrator && eventData.concentrator !== '-') {
                         concentratorHtml = '<span class="' + (isRadiusAlert ? 'dashboard-radius-concentrator' : '') + '"><i class="bi bi-hdd-network"></i>' + dashboardRadiusEscape(eventData.concentrator) + '</span>';
                     }
                     var contractStatus = eventData.contract_status ? eventData.contract_status : (isRadiusAlert ? 'inactive' : 'active');
                     var contractIcon = eventData.contract_icon ? eventData.contract_icon : (isRadiusAlert ? 'bi bi-exclamation-triangle-fill' : 'bi bi-shield-check');
-                    var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Falha de integração' : 'Contrato ativo');
+                    var contractLabel = eventData.contract_label ? eventData.contract_label : (isRadiusAlert ? 'Sincronização pendente' : 'Contrato ativo');
                     var radiusAction = isRadiusAlert ? '<div class="dashboard-session-toast-actions"><button type="button" class="dashboard-radius-hide" data-disable-radius-alert="1">Não mostrar mais</button><button type="button" class="dashboard-radius-retest" data-radius-retest="1">Executar novamente</button><span class="dashboard-radius-result"></span></div>' : '';
                     var radiusFailures = isRadiusAlert ? radiusFailureDetails(eventData.routers || [], false) : '';
                     var descriptionHtml = eventData.description ? '<p class="dashboard-session-toast-description">' + eventData.description + '</p>' : '';
@@ -2588,17 +2589,17 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     }).done(function(response) {
                         if (!response || response.success !== true) {
                             button.prop('disabled', false).text('Não mostrar mais');
-                            window.alert('Não foi possível desativar o alerta Radius.');
+                            window.alert('Não foi possível desativar o alerta de sincronização dos ramais.');
                             return;
                         }
                         toast.remove();
                         toggleToastToolbar();
                         var list = document.getElementById('dashboard-session-toast-list');
                         if (list && list.children.length === 0) jQuery('#dashboard-session-toast-stack').remove();
-                        window.alert('Alerta Radius ocultado. Para mostrar novamente, acesse Configurações e ative “Exibir alerta de integração Radius?”.');
+                        window.alert('Alerta de sincronização dos ramais ocultado. Para mostrar novamente, acesse Configurações e ative “Exibir alerta de sincronização dos ramais?”.');
                     }).fail(function() {
                         button.prop('disabled', false).text('Não mostrar mais');
-                        window.alert('Não foi possível desativar o alerta Radius.');
+                        window.alert('Não foi possível desativar o alerta de sincronização dos ramais.');
                     });
                 });
 
@@ -2620,7 +2621,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     modal.id = 'dashboard-radius-modal';
                     modal.className = 'dashboard-radius-modal';
                     modal.innerHTML = '<div class="dashboard-radius-dialog" role="dialog" aria-modal="true" aria-labelledby="dashboard-radius-modal-title">' +
-                        '<div class="dashboard-radius-modal-head"><h3 id="dashboard-radius-modal-title">Teste de integração Radius</h3><button type="button" class="dashboard-radius-modal-close" data-radius-modal-close="1" aria-label="Fechar">&times;</button></div>' +
+                        '<div class="dashboard-radius-modal-head"><h3 id="dashboard-radius-modal-title">Verificar sincronização dos ramais</h3><button type="button" class="dashboard-radius-modal-close" data-radius-modal-close="1" aria-label="Fechar">&times;</button></div>' +
                         '<div class="dashboard-radius-modal-body"><div class="dashboard-radius-progress"><i class="bi bi-arrow-repeat"></i><span>Aguardando execução do teste.</span></div><ul class="dashboard-radius-modal-list"></ul></div>' +
                         '<div class="dashboard-radius-modal-actions"><button type="button" class="dashboard-radius-modal-dismiss" data-radius-modal-close="1">Fechar</button><button type="button" class="dashboard-radius-modal-repeat" data-radius-modal-repeat="1">Repetir teste</button></div></div>';
                     document.body.appendChild(modal);
@@ -2635,11 +2636,11 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     toast.find('.dashboard-radius-result').text(response.message || 'Teste concluído.');
                     if (!failures.length && response.ok) {
                         toast.attr('data-radius-normalized', '1');
-                        toast.find('.dashboard-radius-concentrator').html('<i class="bi bi-hdd-network"></i>Nenhum concentrador com falha');
-                        toast.find('.dashboard-session-toast-status').removeClass('is-inactive').addClass('is-active').html('<i class="bi bi-check-circle-fill"></i><span>Integração normalizada</span>');
+                        toast.find('.dashboard-radius-concentrator').html('<i class="bi bi-hdd-network"></i>API dos ramais validada');
+                        toast.find('.dashboard-session-toast-status').removeClass('is-inactive').addClass('is-active').html('<i class="bi bi-check-circle-fill"></i><span>Acesso à API validado</span>');
                     } else {
                         toast.removeAttr('data-radius-normalized');
-                        toast.find('.dashboard-radius-concentrator').html('<i class="bi bi-hdd-network"></i>' + failures.length + ' concentrador(es) com falha');
+                        toast.find('.dashboard-radius-concentrator').html('<i class="bi bi-hdd-network"></i>' + failures.length + ' ramal(is) precisam de atenção');
                         var details = radiusFailureDetails(failures, false);
                         toast.find('.dashboard-session-toast-actions').before(details);
                     }
@@ -2651,16 +2652,16 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
                     var list = root.find('.dashboard-radius-modal-list');
                     var repeat = root.find('[data-radius-modal-repeat="1"]');
                     repeat.prop('disabled', true).text('Testando...');
-                    progress.removeClass('is-success is-error').html('<i class="bi bi-arrow-repeat"></i><span>Testando todos os concentradores cadastrados...</span>');
+                    progress.removeClass('is-success is-error').html('<i class="bi bi-arrow-repeat"></i><span>Conferindo o acesso à API dos ramais monitorados...</span>');
                     list.empty();
                     jQuery.ajax({url: 'radius_test.php', method: 'POST', dataType: 'json'})
                         .done(function(response) {
                             var routers = Array.isArray(response.routers) ? response.routers : [];
                             var rows = routers.map(function(router) {
                                 var ok = router && router.ok === true;
-                                return '<li><strong>' + dashboardRadiusEscape(router.name || router.router || 'Concentrador') + '</strong><span>' + dashboardRadiusEscape(router.router || '-') + '</span><span style="color:' + (ok ? '#18794a' : '#b42318') + ';font-weight:700">' + dashboardRadiusEscape(router.reason || (ok ? 'Conexão realizada com sucesso' : 'Falha')) + '</span></li>';
+                                return '<li><strong>' + dashboardRadiusEscape(router.name || router.router || 'Concentrador') + '</strong><span>' + dashboardRadiusEscape(router.router || '-') + '</span><span style="color:' + (ok ? '#18794a' : '#b42318') + ';font-weight:700">' + (window.mkaRamalSyncHelp ? window.mkaRamalSyncHelp.reasonHtml(router) : dashboardRadiusEscape(router.reason || (ok ? 'Acesso à API validado' : 'Falha'))) + '</span></li>';
                             }).join('');
-                            list.html(rows || '<li><strong>Nenhum concentrador encontrado.</strong></li>');
+                            list.html(rows || '<li><strong>Nenhum ramal encontrado.</strong></li>');
                             progress.addClass(response.ok ? 'is-success' : 'is-error').html('<i class="bi ' + (response.ok ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + '"></i><span>' + dashboardRadiusEscape(response.message || 'Teste concluído.') + '</span>');
                             updateRadiusToast(toast, response);
                         })
@@ -2768,3 +2769,4 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 </body>
 
 </html>
+
