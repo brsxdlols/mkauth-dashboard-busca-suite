@@ -14,8 +14,7 @@ class MKAC_SHELL {
     }
 }
 if(isset($argv[1])){
-    $p=$argv[1];ob_start();eval('?>'.mka_activity_decoder_source(file_get_contents($p),$p));ob_end_clean();
-    eval(mka_native_disconnect_second_stage($mkaActivityDecoded,true));$patched=$GLOBALS['mkaNativeDisconnectBody'];
+    $p=$argv[1];ob_start();mka_native_disconnect_load(file_get_contents($p),$p,true);ob_end_clean();$patched=$GLOBALS['mkaNativeDisconnectBody'];
 }else{
     $fixture= <<<'PHP'
 class MKAC_FREERADIUS {
@@ -58,3 +57,4 @@ call_user_func(array('MKAC_FREERADIUS',$method),'fixture');
 $r=$db->query('SELECT acctterminatecause FROM radacct')->fetch_assoc();stop_check($r['acctterminatecause']==='NAS-Request','Accounting-Stop arriving during disconnect preserved');
 stop_check(MKAC_SHELL::$calls===3,'transport stub only; no real router packet sent');
 echo 'PASS temporary tables only; production accounting untouched'.PHP_EOL;
+

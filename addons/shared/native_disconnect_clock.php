@@ -18,10 +18,33 @@ function mka_native_disconnect_second_stage($stage,$capture=false) {
     return substr_replace($stage,$replacement,$match[1],strlen($match[0]));
 }
 
+function mka_native_disconnect_load($source,$original,$capture=false) {
+    // 24.03 puts the final eval inside a function in the first base64 codec.
+    // Replace only that eval; the vendor codec still reads the untouched original.
+    $legacy=false;
+    if(preg_match("/base64_decode\\('([A-Za-z0-9+\\/=]+)'/",$source,$first,PREG_OFFSET_CAPTURE)){
+        $codec=base64_decode($first[1][0],true);
+        if(is_string($codec)&&preg_match('/function (FFF[A-Z]+)\(\$(\w+)\)/',$codec,$function)){
+            $pattern='/eval\((\$\w+)\);return \$'.preg_quote($function[2],'/').';/';
+            if(preg_match_all($pattern,$codec,$calls)!==1)throw new RuntimeException('Codec legado de desconexao desconhecido; original preservado.');
+            $value=$calls[1][0];
+            $replacement=$capture?'$GLOBALS[\'mkaNativeDisconnectBody\']=mka_native_disconnect_patch('.$value.');':'eval(mka_native_disconnect_patch('.$value.'));';
+            $codec=preg_replace($pattern,str_replace('\\','\\\\',$replacement).'return $'.$function[2].';',$codec,1);
+            $source=substr_replace($source,base64_encode($codec),$first[1][1],strlen($first[1][0]));
+            $legacy=true;
+        }
+    }
+    eval('?>'.mka_activity_decoder_source($source,$original));
+    if($legacy){
+        if(!preg_match('/^FFF[A-Z]+\(\x27[A-Za-z0-9+\/=]+\x27\);\s*$/D',$mkaActivityDecoded))throw new RuntimeException('Payload legado de desconexao desconhecido.');
+        eval($mkaActivityDecoded);
+    }else eval(mka_native_disconnect_second_stage($mkaActivityDecoded,$capture));
+}
+
 if(defined('MKA_NATIVE_DISCONNECT_TEST'))return;
 if(realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__){http_response_code(404);exit;}
 if(!isset($mkaNativeDisconnectOriginal)||!is_file($mkaNativeDisconnectOriginal))throw new RuntimeException('Original nativo de desconexao indisponivel.');
 // Execute the original vendor codec; patch only the decoded SQL, retaining all
 // native method names, disconnect transport and other class methods.
-eval('?>'.mka_activity_decoder_source(file_get_contents($mkaNativeDisconnectOriginal),$mkaNativeDisconnectOriginal));
-eval(mka_native_disconnect_second_stage($mkaActivityDecoded));
+mka_native_disconnect_load(file_get_contents($mkaNativeDisconnectOriginal),$mkaNativeDisconnectOriginal);
+

@@ -33,10 +33,11 @@ def main():
     helper=root/'addons/shared/native_disconnect_clock.php'
     # Capture the decoded/patched class for linting. Never invoke any method.
     checker=a.backup/'check.php'
-    checker.write_text("<?php define('MKA_NATIVE_DISCONNECT_TEST',true);require "+quoted(helper)+";$p=$argv[1];ob_start();eval('?>'.mka_activity_decoder_source(file_get_contents($p),$p));ob_end_clean();eval(mka_native_disconnect_second_stage($mkaActivityDecoded,true));$b=$GLOBALS['mkaNativeDisconnectBody'];file_put_contents($argv[2],'<?php '.$b);chmod($argv[2],0600);echo hash('sha256',$b);",encoding='utf8')
+    checker.write_text("<?php define('MKA_NATIVE_DISCONNECT_TEST',true);require "+quoted(helper)+";$p=$argv[1];ob_start();mka_native_disconnect_load(file_get_contents($p),$p,true);ob_end_clean();$b=$GLOBALS['mkaNativeDisconnectBody'];file_put_contents($argv[2],'<?php '.$b);chmod($argv[2],0600);echo hash('sha256',$b);",encoding='utf8')
     checked=a.backup/'decoded.checked.php'
     result=subprocess.run(['php',str(checker),str(original),str(checked)],capture_output=True,text=True)
-    if result.returncode or not checked.is_file():raise RuntimeError('Formato nativo nao reconhecido; nenhuma substituicao aplicada. '+result.stderr[-350:])
+    diagnostic=a.backup/'compatibility.log';diagnostic.write_text(result.stdout+result.stderr,encoding='utf8');diagnostic.chmod(0o600)
+    if result.returncode or not checked.is_file():raise RuntimeError('Formato nativo nao reconhecido; nenhuma substituicao aplicada. '+result.stderr[-1200:]+' | Log: '+str(diagnostic))
     subprocess.run(['php','-l',str(checked)],check=True)
     if a.dry_run:print('[desconexao] Consulta conhecida e PHP validado; nenhuma sessao ou arquivo nativo alterado.');return
     storage.mkdir(mode=0o755,parents=True,exist_ok=True);storage.chmod(0o755)
@@ -71,3 +72,4 @@ if __name__=='__main__':
     try:main()
     except (RuntimeError,OSError,ValueError,subprocess.SubprocessError) as e:
         print('[aviso] Correcao nativa de desconexao nao aplicada: '+str(e));raise SystemExit(1)
+

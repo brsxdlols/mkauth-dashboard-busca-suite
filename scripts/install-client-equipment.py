@@ -11,7 +11,15 @@ def patch_loader(raw):
     return re.sub(re.escape(START)+b'.*?'+re.escape(END)+b'\r?\n?',b'',raw,flags=re.S).rstrip(b'\r\n')+b'\n'+BLOCK
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def php_string(s):return "'"+str(s).replace('\\','\\\\').replace("'","\\'")+"'"
-def command(args):return subprocess.check_output(args,stderr=subprocess.STDOUT).decode('utf8',errors='replace')
+def command(args,log=None):
+    result=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output=result.stdout.decode('utf8',errors='replace')
+    if log is not None:
+        Path(log).write_text(output,encoding='utf8');Path(log).chmod(0o600)
+    if result.returncode:
+        details=' '.join(output.strip().splitlines())[-1200:]
+        raise RuntimeError('Validacao PHP falhou (codigo '+str(result.returncode)+'): '+details+(' | Log: '+str(log) if log else ''))
+    return output
 def atomic(path,data):
     path.parent.mkdir(parents=True,exist_ok=True)
     fd,tmp=tempfile.mkstemp(prefix='.equipment-',dir=str(path.parent));os.close(fd)
@@ -35,12 +43,12 @@ def main():
     # Decode only the vendor codec and validate the exact authenticated insertion anchor.
     helper="<?php define('MKA_EQUIPMENT_CODEC_TEST',true);require "+php_string(source/'contract_runtime.php')+";$p=$argv[1];eval('?>'.mka_activity_decoder_source(file_get_contents($p),$p));mka_equipment_patch_contract($mkaActivityDecoded);echo 'compatible';"
     check=a.backup/'compatibility.php';check.write_bytes(helper.encode())
-    if command(['php',str(check),str(original)]).strip()!='compatible':raise RuntimeError('Contrato nativo incompatível.')
+    if command(['php',str(check),str(original)],a.backup/'compatibility.log').strip()!='compatible':raise RuntimeError('Contrato nativo incompatível.')
     # Stock debits and allocations must be transactional; never silently use MyISAM.
     schema="<?php require "+php_string(root/'scripts/installer-database.php')+";require "+php_string(source/'model.php')+";$db=mka_installer_database_connect();$r=$db->query(\"SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('sis_cliente','sis_produto','sis_estoque','sis_prodcliente','sis_prodhistorico')\");if($r->num_rows!==5)throw new RuntimeException('Tabelas nativas ausentes');while($t=$r->fetch_assoc())if(!in_array(strtolower($t['ENGINE']),array('innodb','tokudb'),true))throw new RuntimeException('Estoque sem suporte a transações');"
     if not a.dry_run:schema+="mka_equipment_schema($db);"
     schema+="echo 'compatible';";schemaFile=a.backup/'schema.php';schemaFile.write_bytes(schema.encode())
-    if command(['php',str(schemaFile)]).strip()!='compatible':raise RuntimeError('Estoque incompatível.')
+    if command(['php',str(schemaFile)],a.backup/'schema.log').strip()!='compatible':raise RuntimeError('Estoque incompatível.')
     if a.dry_run:print('[equipment] native contract and transactional stock compatible');return
     storage.mkdir(parents=True,exist_ok=True);os.chmod(storage,0o755);saved=storage/('gera_contrato-'+digest(original)+'.hhvm')
     if not saved.exists():shutil.copy2(original,saved);os.chmod(saved,0o444)
@@ -73,6 +81,10 @@ def main():
             else:p.unlink()
         raise
     print('[equipment] installed; backup: '+str(a.backup)+'; existing stock and customers unchanged')
-if __name__=='__main__':main()
+if __name__=='__main__':
+    try:main()
+    except (RuntimeError,OSError,ValueError,subprocess.SubprocessError) as error:
+        print('[aviso] Equipamentos preservados: '+str(error));raise SystemExit(1)
+
 
 
