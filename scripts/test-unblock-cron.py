@@ -20,13 +20,24 @@ class UnblockCron(unittest.TestCase):
         self.assertEqual(len(changes),2)
 
     def test_interpreter_crlf_and_inline_comment(self):
-        data='*/10 * * * * root /usr/bin/php -q -f /opt/mk-auth/scripts/liberar.php # liberação\r\n'.encode()
+        data='*/10 * * * * root /usr/bin/php -q -f /opt/mk-auth/scripts/liberar.php # liberaÃ§Ã£o\r\n'.encode()
         output,changes=module.patch(data);self.assertEqual(output,b'*/1'+data[len(b'*/10'):]);self.assertEqual(len(changes),1)
 
     def test_existing_every_minute_needs_no_change(self):
         for minute in (b'*',b'*/1'):
             data=minute+b' * * * * root /opt/mk-auth/scripts/liberar.php\n'
             output,changes=module.patch(data);self.assertEqual(output,data);self.assertFalse(changes)
+
+    def test_native_desbloqueio_variant_changes_only_minutes(self):
+        data=NATIVE.replace(b'liberar.php',b'desbloqueio.php')
+        output,changes=module.patch(data)
+        self.assertEqual(output,data.replace(b'*/10',b'*/1').replace(b'*/5',b'*/1'))
+        self.assertEqual(len(changes),2)
+        again,changes=module.patch(output)
+        self.assertEqual(again,output)
+        self.assertFalse(changes)
+        with self.assertRaises(RuntimeError):
+            module.patch(data.replace(b'/opt/mk-auth/scripts/desbloqueio.php',b'/custom/desbloqueio.php'))
 
     def test_unknown_custom_or_partial_jobs_refused(self):
         fixtures=[NATIVE.replace(b'*/10',b'0,10'),NATIVE.replace(b'root',b'apache'),b'*/10 * * * * root /unknown/liberar.php\n',b'*/10 * * * * root echo /opt/mk-auth/scripts/liberar.php\n',b'*/10 * * * * root /opt/mk-auth/scripts/desbloq_obs.php\n']

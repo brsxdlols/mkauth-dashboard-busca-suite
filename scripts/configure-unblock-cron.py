@@ -10,7 +10,8 @@ import shutil
 import subprocess
 import tempfile
 
-JOBS = frozenset(('/opt/mk-auth/scripts/liberar.php', '/opt/mk-auth/scripts/desbloq_obs.php'))
+FINANCIAL_JOBS = frozenset(('/opt/mk-auth/scripts/liberar.php', '/opt/mk-auth/scripts/desbloqueio.php'))
+JOBS = FINANCIAL_JOBS | frozenset(('/opt/mk-auth/scripts/desbloq_obs.php',))
 
 
 def native_job(command):
@@ -56,9 +57,9 @@ def patch(data):
         recognized.append(job)
         lines.append(line)
     if not recognized:
-        raise RuntimeError('Nenhuma chamada nativa liberar.php/desbloq_obs.php reconhecida; arquivo preservado.')
-    if '/opt/mk-auth/scripts/liberar.php' not in recognized:
-        raise RuntimeError('Rotina financeira liberar.php ausente neste arquivo; agendamento preservado.')
+        raise RuntimeError('Nenhuma chamada nativa liberar.php/desbloqueio.php/desbloq_obs.php reconhecida; arquivo preservado.')
+    if not FINANCIAL_JOBS.intersection(recognized):
+        raise RuntimeError('Rotina financeira liberar.php/desbloqueio.php ausente neste arquivo; agendamento preservado.')
     return b''.join(lines), changes
 
 
