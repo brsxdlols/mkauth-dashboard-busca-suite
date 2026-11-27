@@ -64,6 +64,29 @@ def find_parser(backup):
     wrapper.chmod(0o700)
     return str(wrapper)
 
+def ensure_securityfs(backup, security=Path('/sys/kernel/security'), mounts=Path('/proc/self/mounts'), filesystems=Path('/proc/filesystems')):
+    interface = security / 'apparmor/.load'
+    if interface.exists():
+        return
+    if security.is_symlink() or any(parent.is_symlink() for parent in security.parents) or not security.is_dir():
+        raise RuntimeError('Caminho securityfs nao reconhecido; politica preservada.')
+    for line in mounts.read_text().splitlines():
+        fields = line.split()
+        if len(fields) >= 3 and fields[1] == str(security):
+            raise RuntimeError('securityfs ja montado sem interface AppArmor utilizavel; politica preservada. Verifique as restricoes do host.')
+    if 'securityfs' not in filesystems.read_text().split():
+        raise RuntimeError('Kernel sem securityfs disponivel; politica preservada.')
+    mount = shutil.which('mount', path='/usr/sbin:/usr/bin:/sbin:/bin')
+    if not mount:
+        raise RuntimeError('Comando mount indisponivel; politica preservada.')
+    print('[apparmor] Disponibilizando securityfs para carregar somente os perfis PHP da suite.', flush=True)
+    result = subprocess.run([mount, '-t', 'securityfs', 'securityfs', str(security)], capture_output=True, text=True, timeout=15)
+    log = backup / 'securityfs-mount.log'
+    log.write_text(result.stdout + result.stderr)
+    log.chmod(0o600)
+    if result.returncode or not interface.exists():
+        raise RuntimeError('Nao foi possivel disponibilizar a interface AppArmor; politica preservada. Consulte securityfs-mount.log. O host pode restringir a montagem.')
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("backup")
@@ -75,10 +98,9 @@ def main():
     if not (root / "sistema.php-admin").is_file() or not enabled.is_file() or enabled.read_text().strip() != "Y":
         print("[apparmor] AppArmor PHP administrativo inativo ou ausente; nenhuma alteracao.")
         return
-    if not Path('/sys/kernel/security/apparmor/.load').exists():
-        raise RuntimeError('Interface de recarga do AppArmor indisponivel neste ambiente. Politica preservada; a interface precisa ser disponibilizada pelo host da virtualizacao.')
     backup.mkdir(parents=True, exist_ok=True)
     backup.chmod(0o700)
+    ensure_securityfs(backup)
     loader = find_parser(backup)
     apache = Path("/etc/apache2/conf-enabled/admin.conf")
     pools = diagnostic_pools(apache.read_text() if apache.is_file() else "")

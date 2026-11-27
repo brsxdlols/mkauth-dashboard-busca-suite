@@ -2,6 +2,9 @@ from pathlib import Path
 import importlib.util
 import unittest
 import tempfile
+from unittest import mock
+from types import SimpleNamespace
+import tempfile
 from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location("performance_apparmor", Path(__file__).with_name("install-performance-apparmor.py"))
@@ -53,6 +56,48 @@ class PerformancePolicyTests(unittest.TestCase):
         patched = module.patched_profile(old)
         self.assertNotIn("local/mkauth-suite-php-admin", patched)
         self.assertEqual(patched.count("local/mkauth-suite-performance"), 1)
+
+class SecurityFsTests(unittest.TestCase):
+    def fixture(self, root):
+        security=root/'security';security.mkdir()
+        mounts=root/'mounts';mounts.write_text('')
+        filesystems=root/'filesystems';filesystems.write_text('nodev securityfs\n')
+        backup=root/'backup';backup.mkdir()
+        return security,mounts,filesystems,backup
+
+    def test_mount_once_and_repeat_without_reload_or_global_service(self):
+        with tempfile.TemporaryDirectory() as directory:
+            security,mounts,filesystems,backup=self.fixture(Path(directory))
+            def mount(command, **kwargs):
+                self.assertEqual(command,['/bin/mount','-t','securityfs','securityfs',str(security)])
+                (security/'apparmor').mkdir();(security/'apparmor/.load').touch()
+                return SimpleNamespace(returncode=0,stdout='',stderr='')
+            with mock.patch.object(module.shutil,'which',return_value='/bin/mount'),mock.patch.object(module.subprocess,'run',side_effect=mount) as run:
+                module.ensure_securityfs(backup,security,mounts,filesystems)
+                module.ensure_securityfs(backup,security,mounts,filesystems)
+                self.assertEqual(run.call_count,1)
+
+    def test_denied_mount_is_reported_and_recorded(self):
+        with tempfile.TemporaryDirectory() as directory:
+            security,mounts,filesystems,backup=self.fixture(Path(directory))
+            with mock.patch.object(module.shutil,'which',return_value='/bin/mount'),mock.patch.object(module.subprocess,'run',return_value=SimpleNamespace(returncode=32,stdout='',stderr='permission denied')):
+                with self.assertRaises(RuntimeError):module.ensure_securityfs(backup,security,mounts,filesystems)
+            self.assertIn('permission denied',(backup/'securityfs-mount.log').read_text())
+
+    def test_existing_mount_without_apparmor_is_never_replaced(self):
+        with tempfile.TemporaryDirectory() as directory:
+            security,mounts,filesystems,backup=self.fixture(Path(directory))
+            mounts.write_text('securityfs '+str(security)+' securityfs rw 0 0\n')
+            with mock.patch.object(module.subprocess,'run') as run:
+                with self.assertRaises(RuntimeError):module.ensure_securityfs(backup,security,mounts,filesystems)
+                run.assert_not_called()
+
+    def test_kernel_without_securityfs_is_preserved(self):
+        with tempfile.TemporaryDirectory() as directory:
+            security,mounts,filesystems,backup=self.fixture(Path(directory));filesystems.write_text('nodev proc\n')
+            with mock.patch.object(module.subprocess,'run') as run:
+                with self.assertRaises(RuntimeError):module.ensure_securityfs(backup,security,mounts,filesystems)
+                run.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()
