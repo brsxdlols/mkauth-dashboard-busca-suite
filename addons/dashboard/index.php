@@ -29,7 +29,7 @@ if (isset($_SESSION['MM_Usuario'])) {
 
 <head><?php include __DIR__.'/preview_runtime.php'; ?>
     <script src="/admin/addons/shared/admin_asset_paths.js?v=20261014-1"></script>
-    <script src="../shared/ramal_sync_help.js?v=20261126-1"></script>
+    <script src="../shared/ramal_sync_help.js?v=20261127-1"></script>
     <link rel="icon" type="image/jpeg" href="/mkfiles/logo.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
@@ -2769,5 +2769,6 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
 </body>
 
 </html>
+
 
 

@@ -42,14 +42,17 @@
   var guide=guides[trigger.dataset.mkaRamalHelp]||guides.general,dialog=node('dialog','mka-ramal-help-dialog'),header=node('header'),title=node('h2','',guide.title),close=node('button','mka-ramal-help-close','×'),body=node('div','mka-ramal-help-body'),list=node('ol'),footer=node('footer'),done=node('button','mka-ramal-help-done','Entendi');
   dialog.id='mka-ramal-help-dialog';title.id='mka-ramal-help-title';dialog.setAttribute('aria-labelledby',title.id);close.type=done.type='button';close.setAttribute('aria-label','Fechar orientações');
   header.append(title,close);body.append(node('p','mka-ramal-help-context',(trigger.dataset.ramalName||'Ramal')+(trigger.dataset.ramalIp?' · '+trigger.dataset.ramalIp:'')),node('p','','Este aviso se refere à comunicação do MK-AUTH com a API do ramal.'));
-  guide.steps.forEach(function(step){list.append(node('li','',step));});body.append(list,node('p','mka-ramal-help-note','Use a conta de acesso à API cadastrada para o ramal. A senha PPPoE dos clientes e a chave compartilhada do RADIUS têm outra finalidade.'));
+  guide.steps.forEach(function(step){list.append(node('li','',step));});body.append(list);
+  var note=node('p','mka-ramal-help-note','Use a conta de acesso à API chamada mkauth. No MK-AUTH, defina a senha em Provedor → Ramais → Senha mkauth. No MikroTik, crie ou edite o usuário mkauth em System → Users com a mesma senha e permissão de acesso à API. Conferindo o IP de origem deste servidor…');body.append(note);
+  fetch('/admin/addons/dashboard/ramal_api_access.php?router='+encodeURIComponent(trigger.dataset.ramalIp||''),{credentials:'same-origin',cache:'no-store'}).then(function(response){if(!response.ok)throw new Error('context');return response.json();}).then(function(data){if(!note.isConnected)return;note.textContent='Use a conta de acesso à API chamada mkauth. No MK-AUTH, defina a senha em Provedor → Ramais → Senha mkauth. No MikroTik, crie ou edite o usuário mkauth em System → Users com a mesma senha e um grupo com acesso à API. '+(data.server_ip?'Permita o IP '+data.server_ip+(data.source_cached?', origem verificada na instalação deste servidor para o ramal. ':', origem deste servidor MK-AUTH para esse ramal. '):'Não foi possível identificar automaticamente o IP de origem; confira a rota do servidor até o ramal. ')+'Se houver NAT no caminho, autorize o IP traduzido que chega ao MikroTik.';}).catch(function(){if(note.isConnected)note.textContent='Use a conta de API mkauth: defina a senha no cadastro do ramal e crie ou edite o mesmo usuário no MikroTik com a mesma senha e acesso à API. Confira a rota para identificar o IP de origem do MK-AUTH que deve ser autorizado.';});
   footer.append(done);dialog.append(header,body,footer);document.body.append(dialog);
   function dismiss(){dialog.close();}close.addEventListener('click',dismiss);done.addEventListener('click',dismiss);
   dialog.addEventListener('close',function(){dialog.remove();if(trigger.isConnected)trigger.focus();});
   dialog.addEventListener('click',function(event){if(event.target!==dialog)return;var rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();});
   dialog.showModal();close.focus();
  }
- var style=document.createElement('link');style.rel='stylesheet';style.href='/admin/addons/shared/ramal_sync_help.css?v=20261126-1';document.head.append(style);
+ var style=document.createElement('link');style.rel='stylesheet';style.href='/admin/addons/shared/ramal_sync_help.css?v=20261127-1';document.head.append(style);
  document.addEventListener('click',function(event){if(!event.target||typeof event.target.closest!=='function')return;var trigger=event.target.closest('[data-mka-ramal-help]');if(trigger){event.preventDefault();open(trigger);}});
  window.mkaRamalSyncHelp={reasonHtml:reasonHtml,kind:kind};
 }());
+

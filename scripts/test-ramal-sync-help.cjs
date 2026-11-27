@@ -12,20 +12,20 @@ const fs=require('fs'),path=require('path'),os=require('os'),{spawn}=require('ch
    await call('Page.navigate',{url:'about:blank?ramal='+width});await new Promise(r=>setTimeout(r,60));await call('Emulation.setDeviceMetricsOverride',{width,height:800,deviceScaleFactor:1,mobile:width<500});
    const frame=(await call('Page.getFrameTree')).frameTree.frame.id;
    await call('Page.setDocumentContent',{frameId:frame,html:'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style><h1>Sincronização de Ramal precisa de atenção</h1><div id="results"></div>'});
-   await evaluate('window.networkCalls=0;window.fetch=()=>{networkCalls++;throw Error("Tutorial must not request any change");};');await evaluate(source);await evaluate(source);
+   await evaluate('window.networkCalls=0;window.fetch=async(url,options={})=>{networkCalls++;if(options.method&&options.method!=="GET")throw Error("No changes allowed");return {ok:true,json:async()=>({server_ip:"192.0.2.10",source_cached:false})};};');await evaluate(source);await evaluate(source);
    const rows=[{name:'RAMAL CENTRAL',router:'172.16.0.1',reason:'Usuário ou senha da API inválidos',ok:false},{name:'RAMAL PORTA',router:'172.16.0.2',reason:'Porta 8728 fechada ou indisponível',ok:false},{name:'RAMAL VPN',router:'172.16.0.3',reason:'Sem ping ou sem rota até o IP',ok:false},{name:'<img src=x onerror="window.evil=1">',router:'<script>bad</script>',reason:'Falha <script>window.evil=1</script>',ok:false},{name:'OK',router:'172.16.0.4',reason:'Acesso à API validado',ok:true}];
    await evaluate('document.getElementById("results").innerHTML='+JSON.stringify(rows)+'.map(r=>mkaRamalSyncHelp.reasonHtml(r)).join("<hr>")');
    assert.equal(await evaluate('document.querySelectorAll("[data-mka-ramal-help]").length'),4);
    assert(await evaluate('document.querySelector("[data-mka-ramal-help=credentials]").title.includes("System → Users")'));
-   await evaluate('document.querySelector("[data-mka-ramal-help=credentials]").click()');
+   await evaluate('document.querySelector("[data-mka-ramal-help=credentials]").click()');await new Promise(r=>setTimeout(r,30));
    let data=await evaluate('({text:document.getElementById("mka-ramal-help-dialog").textContent,steps:document.querySelectorAll("#mka-ramal-help-dialog li").length,width:document.getElementById("mka-ramal-help-dialog").getBoundingClientRect().width,viewport:innerWidth,networkCalls})');
    for(const expected of ['RAMAL CENTRAL','172.16.0.1','Provedor → Ramais','System → Users','8728','Repetir teste'])assert(data.text.includes(expected),expected);
-   assert.equal(data.steps,5);assert(data.width<=data.viewport);assert.equal(data.networkCalls,0);
+   assert.equal(data.steps,5);assert(data.width<=data.viewport);assert.equal(data.networkCalls,1);assert(data.text.includes('192.0.2.10')&&data.text.includes('mkauth'));
    if(process.env.MKA_RAMAL_SCREENSHOT_DIR){fs.mkdirSync(process.env.MKA_RAMAL_SCREENSHOT_DIR,{recursive:true});const screenshot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(process.env.MKA_RAMAL_SCREENSHOT_DIR,'ramal-help-'+width+'.png'),Buffer.from(screenshot.data,'base64'));}
    await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await new Promise(r=>setTimeout(r,50));
    assert(await evaluate('!document.getElementById("mka-ramal-help-dialog")&&document.activeElement.matches("[data-mka-ramal-help=credentials]")'));
    for(const kind of ['port','route','general']){await evaluate('document.querySelector("[data-mka-ramal-help='+kind+']").click()');const actual=await evaluate('({text:document.getElementById("mka-ramal-help-dialog").textContent,unsafe:!!document.querySelector("#mka-ramal-help-dialog img,#mka-ramal-help-dialog script"),evil:!!window.evil})');assert(!actual.unsafe&&!actual.evil);if(kind==='route')assert(actual.text.includes('VPN'));await evaluate('document.querySelector(".mka-ramal-help-done").click()');await new Promise(r=>setTimeout(r,30));}
-   console.log('PASS hover guidance, contextual dialogs, escaping, Escape/focus and no network calls',width);
+   console.log('PASS hover guidance, contextual dialogs, escaping, Escape/focus and read-only IP lookup',width);
   }
  }finally{if(ws)ws.close();chrome.kill();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -810,10 +810,11 @@ if (isset($_SESSION['MM_Usuario'])) {
             return false;
         }
     </script>
-<script src="../shared/ramal_sync_help.js?v=20261126-1"></script>
+<script src="../shared/ramal_sync_help.js?v=20261127-1"></script>
 <script src="../shared/performance_modal.js?v=20261013-3"></script>
 <script src="/admin/addons/dashboard/cfg_preview.js?v=20261123-2" defer></script>
 </body>
 
 </html>
+
 

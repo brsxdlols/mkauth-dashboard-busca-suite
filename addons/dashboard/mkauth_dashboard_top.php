@@ -266,7 +266,7 @@ function dashboardMobileMenuToggle(event) {
 </nav>
 <script src="../../menu.js<?php echo $ext_mk; ?>"></script>
 <script>window.mkaAdminHeaderInitialCounts = <?php echo json_encode($dashTopSessionCounts); ?>;</script>
-<script src="/admin/addons/shared/admin_header.js?v=20261126-2"></script>
+<script src="/admin/addons/shared/admin_header.js?v=20261127-1"></script>
 <script>
 jQuery(function($){
     $('#systopo').removeClass('is-invisible').css('visibility','visible');
@@ -318,6 +318,7 @@ jQuery(function($){
     setTimeout(bindDashboardMobileMenu, 500);
 })();
 </script>
+
 
 
 

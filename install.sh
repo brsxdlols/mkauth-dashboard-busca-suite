@@ -438,6 +438,7 @@ printf '[suite-progress] 13/20\n'
 python3 "${SCRIPT_DIR}/scripts/install-admin-mobile.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/admin-mobile"
 sh "${SCRIPT_DIR}/scripts/install-contract-addon.sh" "${BACKUP_DIR}/contracts-addon"
 python3 "${SCRIPT_DIR}/scripts/install-admin-header.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/admin-header"
+python3 "${SCRIPT_DIR}/scripts/install-ramal-api-password.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/ramal-api-password" || echo '[aviso] Protecao da senha do ramal nao aplicada; paginas nativas preservadas.'
 python3 "${SCRIPT_DIR}/scripts/install-client-equipment.py" "${TARGET_ADMIN_DIR}" "${BACKUP_DIR}/client-equipment" || echo '[aviso] Equipamentos preservados: consulte a compatibilidade do contrato e do estoque.'
 
 printf '[suite-progress] 14/20\n'
