@@ -3,7 +3,7 @@
 import hashlib,json,os,re,sys,tempfile
 from pathlib import Path
 START=b'/* MKA-ADMIN-HEADER-START */';END=b'/* MKA-ADMIN-HEADER-END */'
-BLOCK=START+b"\n;(function(){if(window.mkaAdminHeaderLoader==='20261126-1')return;window.mkaAdminHeaderLoader='20261126-1';var s=document.createElement('script');s.src='/admin/addons/shared/admin_header.js?v=20261126-1';document.head.appendChild(s);})();\n"+END+b'\n'
+BLOCK=START+b"\n;(function(){if(window.mkaAdminHeaderLoader==='20261126-2')return;window.mkaAdminHeaderLoader='20261126-2';var s=document.createElement('script');s.src='/admin/addons/shared/admin_header.js?v=20261126-2';document.head.appendChild(s);})();\n"+END+b'\n'
 HOME_START=b'# BEGIN MKA-DASHBOARD-HOME';HOME_END=b'# END MKA-DASHBOARD-HOME'
 HOME_BLOCK=HOME_START+b'\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$\nRewriteRule ^(?:index\\.(?:php|hhvm))?$ /admin/addons/dashboard/ [R=302,L,NE]\n</IfModule>\n'+HOME_END+b'\n'
 def patch_home(source):

@@ -4,6 +4,11 @@ on:
     paths:
       - 'addons/shared/admin_header.js'
       - 'addons/shared/web_session_counts.php'
+      - 'addons/shared/web_session_management.php'
+      - 'addons/dashboard/web_sessions.js'
+      - 'scripts/test-web-session-management.php'
+      - 'scripts/test-session-management-confirm.cjs'
+      - 'scripts/install-native-web-sessions.py'
       - 'addons/dashboard/web_session*.php'
       - 'addons/dashboard/dashboard_tables_mobile.*'
       - 'scripts/install-admin-header.py'
@@ -24,6 +29,10 @@ jobs:
         with:
           node-version: '22'
       - run: python scripts/test-admin-home.py
+      - run: python scripts/test-admin-header-loader.py
       - run: node scripts/test-dashboard-session-counts.cjs
+      - run: php scripts/test-web-session-management.php addons/shared
+      - run: node scripts/test-session-management-confirm.cjs
       - run: php scripts/test-legacy-web-sessions.php addons/shared/web_session_counts.php
       - run: node scripts/test-dashboard-mobile-tables.cjs
+

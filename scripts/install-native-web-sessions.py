@@ -6,7 +6,7 @@ def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def literal(s):return "'"+str(s).replace('\\','\\\\').replace("'","\\'")+"'"
 def main():
     admin=Path(sys.argv[1]);backup=Path(sys.argv[2]);target=admin/'sessoes.hhvm';runtime=admin/'addons/shared/native_web_sessions.php'
-    if not target.is_file():print('[sessoes] Lista nativa ausente; nada alterado.');return
+    if not target.is_file():print('[sessoes] Modo compativel da suite: lista nativa ausente; metadados e deslogar gerenciados pelo addon.');return
     if target.is_symlink()or any(p.is_symlink()for p in target.parents):raise RuntimeError('Lista simbolica preservada.')
     backup.mkdir(parents=True,exist_ok=True);backup.chmod(0o700)
     storage=admin.parent/'dados/suite-native-sessions';manifest=storage/'manifest.json'
@@ -42,3 +42,4 @@ def main():
 if __name__=='__main__':
     try:main()
     except Exception as e:print('[aviso] Lista de sessoes preservada: '+str(e));raise SystemExit(1)
+
