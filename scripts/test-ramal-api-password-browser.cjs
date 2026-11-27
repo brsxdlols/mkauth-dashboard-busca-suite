@@ -4,10 +4,11 @@ try{let portfile=path.join(profile,'DevToolsActivePort');for(let i=0;!fs.existsS
 
 
 
-const assert=require('assert'),fixture=path.join(fs.mkdtempSync(path.join(require('os').tmpdir(),'ramal-fixture-')),'ramal.html'),id='01234567-1234-1234-1234-0123456789ab';fs.writeFileSync(fixture,'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><form id="native"><input name="senha" type="password" value="__MKA_KEEP_fixture"><button>Gravar</button></form>');
+const assert=require('assert'),id='01234567-1234-1234-1234-0123456789ab',fixtureHtml='<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><form id="native"><input name="senha" type="password" value="__MKA_KEEP_fixture"><button>Gravar</button></form>';
 async function evaluate(expression){const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.exception&&r.exceptionDetails.exception.description||r.exceptionDetails.text);return r.result.value;}
 for(const allowed of [false,true]){
- await call('Page.navigate',{url:require('url').pathToFileURL(fixture).href+'?id='+id+'&case='+allowed});await new Promise(r=>setTimeout(r,120));
+ await call('Page.navigate',{url:'about:blank?id='+id+'&case='+allowed});const frame=(await call('Page.getFrameTree')).frameTree.frame.id;await call('Page.setDocumentContent',{frameId:frame,html:fixtureHtml});
+
  await evaluate(`window.posts=[];window.allow=${allowed};window.fetch=async(url,options={})=>{if(options.method==='POST'){window.posts.push(Object.fromEntries(options.body));const good=options.body.get('operator_password')==='fixture-operator';return{ok:good,json:async()=>good?{ok:true,password:'fixture-api-secret'}:{error:'Senha incorreta'}};}return{ok:true,json:async()=>({protected:true,can_reveal:window.allow,csrf:'fixture-csrf',operator:'fixture-user'})};};document.getElementById('native').addEventListener('submit',e=>e.preventDefault());`);
  await evaluate(fs.readFileSync(path.join(__dirname,'../addons/shared/ramal_api_password.js'),'utf8'));await new Promise(r=>setTimeout(r,30));
  assert.equal(await evaluate(`document.querySelector('.mka-ramal-password-eye').disabled`),!allowed);assert.equal(await evaluate(`document.querySelector('[name=senha]').value`),'********');
