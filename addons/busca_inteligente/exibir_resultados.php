@@ -1148,8 +1148,9 @@ if (!empty($isMultiBusiness)) {
     $username_on = $ip_conn = $nas_ip = $nas_nome = array();
 } elseif (true) {
     // INFO DE CLIENTES ONLINE COM MKAUTH
+    $ipv6_delegated = array();
     $radius_ipv6_fields = array();
-    foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk') as $ipv6_field) {
+    foreach (array('delegatedipv6prefix', 'delegatedipv6address', 'delegatedipv6addressmk', 'ipv6_script') as $ipv6_field) {
         $ipv6_column_query = @mysqli_query($link, "SHOW COLUMNS FROM radacct LIKE '" . $ipv6_field . "'");
         if ($ipv6_column_query && mysqli_num_rows($ipv6_column_query) > 0) $radius_ipv6_fields[] = $ipv6_field;
     }
@@ -1157,7 +1158,7 @@ if (!empty($isMultiBusiness)) {
     require_once __DIR__.'/../shared/online_rule.php';
     $username_on = array();
     $allowedOnlineSql = mka_online_sql($grupos);
-    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress{$radius_ipv6_select} FROM radacct WHERE acctstoptime IS NULL AND LOWER(TRIM(username)) IN ($allowedOnlineSql) ORDER BY radacctid ASC");
+    $query_cliente_on = mysqli_query($link, "SELECT username, nasipaddress, framedipaddress{$radius_ipv6_select} FROM radacct WHERE acctstoptime IS NULL AND COALESCE(acctupdatetime,acctstarttime)>=DATE_SUB(NOW(),INTERVAL 15 MINUTE) AND LOWER(TRIM(username)) IN ($allowedOnlineSql) ORDER BY radacctid ASC");
 
     while ($row2 = mysqli_fetch_assoc($query_cliente_on)) {
         $username_on[trim(strtolower($row2['username']))] = trim(strtolower($row2['username']));
@@ -1165,6 +1166,7 @@ if (!empty($isMultiBusiness)) {
         $nas_ip[trim(strtolower($row2['username']))] = $row2['nasipaddress'];
         $ip_conn[trim(strtolower($row2['username']))] = $row2['framedipaddress'];
         $ipv6_key = trim(strtolower($row2['username']));
+        unset($ipv6_delegated[$ipv6_key]); // Do not inherit a PD from an older session.
         foreach ($radius_ipv6_fields as $ipv6_field) {
             if (isset($row2[$ipv6_field]) && !empty($row2[$ipv6_field])) { $ipv6_delegated[$ipv6_key] = $row2[$ipv6_field]; break; }
         }
@@ -1283,6 +1285,7 @@ while ($row = mysqli_fetch_assoc($qTitulos)) {
         $login_cliente = $row['login'];
         $client_mac=trim((string)($row['mac']??''));
         $client_saved_ip=trim((string)($row['ip']??''));
+        $client_saved_ipv6=trim((string)($row['pool6']??''));
         $client_bind_mac=(string)($row['automac']??'');
         $client_fix_ip=(string)($row['autoip']??'');
         $senha_cliente = $row['senha'];
@@ -1990,7 +1993,14 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 
                                                                     </p>
 
-                                                                    <p class="dados_cliente"><b>IP cadastrado:</b> <?= htmlspecialchars($client_saved_ip!==''?$client_saved_ip:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></p>
+                                                                    <p class="dados_cliente" data-live-ipv6>
+                                                                    <?php $client_live_ipv6 = trim((string)($ipv6_delegated[strtolower(trim($login_cliente))] ?? '')); ?>
+                                                                    <?php if ($client_live_ipv6 !== ''): ?>
+                                                                        <span class="px-1 py-0 rounded-pill small2" style="background-color:#ffb347;color:#442400;overflow-wrap:anywhere"><b>IPv6:</b> <?= htmlspecialchars($client_live_ipv6, ENT_QUOTES, 'UTF-8'); ?> ONLINE</span>
+                                                                    <?php else: ?><b>IPv6:</b> -<?php endif; ?>
+                                                                    </p>
+                                                                    <p class="dados_cliente"><b>IPv6 cadastrado:</b> <?= htmlspecialchars($client_saved_ipv6!==''?$client_saved_ipv6:'-',ENT_QUOTES,'UTF-8'); ?></p>
+                                                                    <p class="dados_cliente"><b>IPv4 cadastrado:</b> <?= htmlspecialchars($client_saved_ip!==''?$client_saved_ip:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></p>
                                                                     <div class="dados_cliente client-mac-line"><span><b>MAC:</b> <span data-client-mac-value><?= htmlspecialchars($client_mac!==''?$client_mac:'Não preenchido',ENT_QUOTES,'UTF-8'); ?></span></span><button type="button" class="connection-diagnostic-btn binding-info-button" data-binding-info data-binding-login="<?= htmlspecialchars($login_cliente,ENT_QUOTES,'UTF-8'); ?>" data-saved-mac="<?= htmlspecialchars($client_mac,ENT_QUOTES,'UTF-8'); ?>" data-saved-ip="<?= htmlspecialchars($client_saved_ip,ENT_QUOTES,'UTF-8'); ?>" data-binding-mac="<?= htmlspecialchars($client_bind_mac,ENT_QUOTES,'UTF-8'); ?>" data-binding-ip="<?= htmlspecialchars($client_fix_ip,ENT_QUOTES,'UTF-8'); ?>" aria-label="Ver parâmetros de MAC e IP" title="Ver parâmetros de MAC e IP">?</button></div>
                                                                     <p class='dados_cliente'>
 
@@ -1998,7 +2008,7 @@ if ($observacao == "sim" && !empty($ip_conn[strtolower($login_cliente)])) {
 							                </p>
                                                                     <p class='dados_cliente'><b>Dias de corte:</b> <a class="cut-day-link no_print" href="#" onclick="return mkaOpenContentModal('client_cut_day.php?id=<?= urlencode($uuid_cliente); ?>', <?= htmlspecialchars(json_encode('Alterar dia de corte — ' . $nome_cliente), ENT_QUOTES, 'UTF-8'); ?>);" title="Consultar ou alterar os dias de corte"><?= $dias_corte_cliente; ?></a><span class="d-print-inline d-none"><?= $dias_corte_cliente; ?></span></p>
 
-                                                                    <p class='dados_cliente'><b>IPv6:</b> <?= htmlspecialchars(isset($ipv6_delegated[strtolower(trim($login_cliente))]) ? $ipv6_delegated[strtolower(trim($login_cliente))] : '-', ENT_QUOTES, 'UTF-8'); ?></p>
+                                                                    
 
                                                                     <p class='dados_cliente'>
 
