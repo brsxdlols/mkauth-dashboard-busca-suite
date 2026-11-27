@@ -1,0 +1,23 @@
+name: Official contracts integration
+on:
+  push:
+    paths:
+      - 'install.sh'
+      - 'scripts/install-contract-addon.sh'
+      - 'scripts/test-contract-addon-install.py'
+      - 'scripts/install-performance-apparmor.py'
+      - 'addons/shared/native_contract_renderer.php'
+      - '.github/workflows/contracts-integration.yml'
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sh -n scripts/install-contract-addon.sh && bash -n install.sh
+      - run: python scripts/test-contract-addon-install.py
+      - run: python scripts/test-performance-apparmor.py
+      - run: php scripts/test-native-contract.php addons/shared/native_contract_renderer.php

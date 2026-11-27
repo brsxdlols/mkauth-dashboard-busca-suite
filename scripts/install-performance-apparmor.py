@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Allow the PHP pools serving admin/addons to write private diagnostic state."""
 from pathlib import Path
-import argparse, shutil, subprocess, re, json
+import argparse, shutil, subprocess, re, json, shlex
 
 RULES = """# MK-AUTH suite: private diagnostic files only; no execution permission.
 /var/lib/mkauth-suite-performance/ rw,
@@ -56,7 +56,13 @@ def find_parser(backup):
     subprocess.run([deb,'--extract',str(files[0]),str(package/'extracted')],check=True,timeout=30)
     candidates=[p for p in (package/'extracted').rglob('apparmor_parser') if p.is_file() and not p.is_symlink()]
     if len(candidates)!=1:raise RuntimeError('Parser nao encontrado no pacote Debian.')
-    return str(candidates[0])
+    # Keep distro include files private too: minimal images may lack tunables/global.
+    real_parser=candidates[0];include=package/'extracted/etc/apparmor.d'
+    if not (include/'tunables/global').is_file():raise RuntimeError('Tunables do parser ausentes no pacote Debian.')
+    wrapper=package/'apparmor-parser-with-includes'
+    wrapper.write_text('#!/bin/sh\nexec '+shlex.quote(str(real_parser))+' -I /etc/apparmor.d -I '+shlex.quote(str(include))+' "$@"\n')
+    wrapper.chmod(0o700)
+    return str(wrapper)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -69,6 +75,8 @@ def main():
     if not (root / "sistema.php-admin").is_file() or not enabled.is_file() or enabled.read_text().strip() != "Y":
         print("[apparmor] AppArmor PHP administrativo inativo ou ausente; nenhuma alteracao.")
         return
+    if not Path('/sys/kernel/security/apparmor/.load').exists():
+        raise RuntimeError('Interface de recarga do AppArmor indisponivel neste ambiente. Politica preservada; a interface precisa ser disponibilizada pelo host da virtualizacao.')
     backup.mkdir(parents=True, exist_ok=True)
     backup.chmod(0o700)
     loader = find_parser(backup)
@@ -97,11 +105,13 @@ def main():
             # Validate all profiles before updating the running policy.
             result = subprocess.run([loader, "-Q", "-T", str(profile)], capture_output=True, text=True)
             if result.returncode:
-                raise RuntimeError("AppArmor recusou o perfil; alteracao revertida.")
+                (backup / "validation.log").write_text(result.stdout+result.stderr)
+                raise RuntimeError("AppArmor recusou o perfil; alteracao revertida. Consulte validation.log no backup.")
         for profile in originals:
             result = subprocess.run([loader, "-r", "-T", str(profile)], capture_output=True, text=True)
             if result.returncode:
-                raise RuntimeError("AppArmor recusou a recarga; alteracao revertida.")
+                (backup / "reload.log").write_text(result.stdout+result.stderr)
+                raise RuntimeError("AppArmor recusou a recarga; alteracao revertida. Consulte reload.log no backup.")
     except Exception:
         for profile, source in originals.items():
             profile.write_text(source)
@@ -122,3 +132,4 @@ if __name__ == "__main__":
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:
         print("[aviso] AppArmor preservado: " + str(error))
         raise SystemExit(1)
+

@@ -1,4 +1,8 @@
 <?php
+// Prefer the official installed addon so previews and signatures use one implementation.
+$mkaOfficialContractRenderer=__DIR__.'/../contratos/functions/native_contract_renderer.php';
+if(is_file($mkaOfficialContractRenderer)){require_once $mkaOfficialContractRenderer;if(function_exists('mka_native_contract_render'))return;}
+
 // Shared verbatim with dashboard/shared/native_contract_renderer.php.
 // Only the MK-Auth variable engine is invoked, never gera_contrato's selection/print workflow.
 if (!defined('VERSAO2UPDATE') && is_file('/opt/mk-auth/include/configure.php')) {
@@ -89,3 +93,4 @@ if (!function_exists('mka_native_contract_render')) {
         }
     }
 }
+
