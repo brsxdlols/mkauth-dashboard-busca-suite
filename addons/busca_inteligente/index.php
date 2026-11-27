@@ -708,7 +708,7 @@ if (mka_suite_get_layout_mode(isset($link) ? $link : null) === 'legado') {
     // actual schema so one absent column never makes the whole client list fail.
     $client_optional_select = '';
     $has_tipobloq = false;
-    foreach (array('conta', 'dias_corte', 'tipobloq') as $optional_client_column) {
+    foreach (array('conta', 'dias_corte', 'tipobloq', 'pool6') as $optional_client_column) {
         $optional_column_query = @mysqli_query($link, "SHOW COLUMNS FROM sis_cliente LIKE '" . $optional_client_column . "'");
         if ($optional_column_query && mysqli_num_rows($optional_column_query) > 0) {
             $client_optional_select .= ", c.`" . $optional_client_column . "`";
